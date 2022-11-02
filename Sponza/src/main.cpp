@@ -4,7 +4,7 @@
 #include <Shlwapi.h>
 
 #include <Application.h>
-#include <Tutorial4.h>
+#include <Sponza.h>
 
 #include <dxgidebug.h>
 
@@ -41,7 +41,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
     Application::Create(hInstance);
     {
-        std::shared_ptr<Tutorial4> demo = std::make_shared<Tutorial4>(L"Learning DirectX 12 - Lesson 4", 1280, 720, true);
+        std::shared_ptr<Sponza> demo = std::make_shared<Sponza>(L"Learning DirectX 12 - Lesson 4", 1280, 720, true);
         retCode = Application::Get().Run(demo);
     }
     Application::Destroy();
