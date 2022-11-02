@@ -1,7 +1,7 @@
 #pragma once
 
 /*
- *  Copyright(c) 2022 Xardas110
+ *  Copyright(c) 2018 Jeremiah van Oosten
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files(the "Software"), to deal
@@ -22,25 +22,67 @@
  *  IN THE SOFTWARE.
  */
 
+/**
+ *  @file Tutorial4.h
+ *  @date October 24, 2018
+ *  @author Jeremiah van Oosten
+ *
+ *  @brief Tutorial 4.
+ */
+
 #include <Game.h>
+#include <Window.h>
 #include <DirectXMath.h>
 
-class Sponza : public Game
+class Tutorial4 : public Game
 {
 public:
     using super = Game;
 
-    Sponza(const std::wstring& name, int width, int height, bool vSync = false);
-    virtual ~Sponza();
+    Tutorial4(const std::wstring& name, int width, int height, bool vSync = false);
+    virtual ~Tutorial4();
 
     /**
- *  Load content required for the demo.
- */
+     *  Load content required for the demo.
+     */
     virtual bool LoadContent() override;
 
     /**
      *  Unload demo specific content that was loaded in LoadContent.
      */
     virtual void UnloadContent() override;
+protected:
+    /**
+     *  Update the game logic.
+     */
+    virtual void OnUpdate(UpdateEventArgs& e) override;
 
+    /**
+     *  Render stuff.
+     */
+    virtual void OnRender(RenderEventArgs& e) override;
+
+    /**
+     * Invoked by the registered window when a key is pressed
+     * while the window has focus.
+     */
+    virtual void OnKeyPressed(KeyEventArgs& e) override;
+
+    /**
+     * Invoked when a key on the keyboard is released.
+     */
+    virtual void OnKeyReleased(KeyEventArgs& e);
+
+    /**
+     * Invoked when the mouse is moved over the registered window.
+     */
+    virtual void OnMouseMoved(MouseMotionEventArgs& e);
+
+    /**
+     * Invoked when the mouse wheel is scrolled while the registered window has focus.
+     */
+    virtual void OnMouseWheel(MouseWheelEventArgs& e) override;
+
+    virtual void OnResize(ResizeEventArgs& e) override; 
+private:
 };

@@ -44,13 +44,13 @@
 
 #include <DirectXMath.h>
 
-class Sponza : public Game
+class Tutorial4 : public Game
 {
 public:
     using super = Game;
 
-    Sponza(const std::wstring& name, int width, int height, bool vSync = false);
-    virtual ~Sponza();
+    Tutorial4(const std::wstring& name, int width, int height, bool vSync = false);
+    virtual ~Tutorial4();
 
     /**
      *  Load content required for the demo.
@@ -133,9 +133,30 @@ private:
 
     D3D12_RECT m_ScissorRect;
 
+    Camera m_Camera;
+    struct alignas( 16 ) CameraData
+    {
+        DirectX::XMVECTOR m_InitialCamPos;
+        DirectX::XMVECTOR m_InitialCamRot;
+        float m_InitialFov;
+    };
+    CameraData* m_pAlignedCameraData;
+
+    // Camera controller
+    float m_Forward;
+    float m_Backward;
+    float m_Left;
+    float m_Right;
+    float m_Up;
+    float m_Down;
+
+    float m_Pitch;
+    float m_Yaw;
+
     // Rotate the lights in a circle.
     bool m_AnimateLights;
     // Set to true if the Shift key is pressed.
+    bool m_Shift;
 
     int m_Width;
     int m_Height;

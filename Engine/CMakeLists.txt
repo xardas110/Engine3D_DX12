@@ -117,7 +117,7 @@ add_library( Engine STATIC
 target_include_directories( Engine
     PUBLIC inc
     PUBLIC external
-    PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
+    PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${Platform}/${Configuration}/Shaders"
 )
 
 target_link_libraries( Engine 
@@ -125,7 +125,7 @@ target_link_libraries( Engine
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
     PUBLIC dxguid.lib
-    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Engine.dir/${CMAKE_CFG_INTDIR}/Engine.res # This is the only way I could figure out how to link the compiled resource file.
+   # PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Engine.dir/${CMAKE_CFG_INTDIR}/Engine.res # This is the only way I could figure out how to link the compiled resource file.
 )
 
 # Enable precompiled header files.
@@ -142,7 +142,7 @@ set_source_files_properties( src/EnginePCH.cpp
 set_source_files_properties( ${SHADER_FILES}
     PROPERTIES
         VS_SHADER_MODEL 5.1
-        VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders/%(Filename).h"
+        VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/${Platform}/${Configuration}/Shaders/%(Filename).h"
         VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
         VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
 )
