@@ -25,58 +25,55 @@ using namespace DirectX;
 #undef max
 #endif
 
-Tutorial4::Tutorial4(const std::wstring& name, int width, int height, bool vSync)
+Sponza::Sponza(const std::wstring& name, int width, int height, bool vSync)
     : super(name, width, height, vSync)
 {
 }
 
-Tutorial4::~Tutorial4()
+Sponza::~Sponza()
 {
 }
 
-bool Tutorial4::LoadContent()
+bool Sponza::LoadContent()
 {
     return true;
 }
 
-void Tutorial4::OnResize(ResizeEventArgs& e)
+void Sponza::OnResize(ResizeEventArgs& e)
 {
     super::OnResize(e);
 }
 
-void Tutorial4::UnloadContent()
+void Sponza::UnloadContent()
 {
 }
 
-static double g_FPS = 0.0;
-
-void Tutorial4::OnUpdate(UpdateEventArgs& e)
+void Sponza::OnUpdate(UpdateEventArgs& e)
 {
     super::OnUpdate(e);
 }
 
-void Tutorial4::OnRender(RenderEventArgs& e)
+void Sponza::OnRender(RenderEventArgs& e)
 {
     super::OnRender(e);
 }
 
-void Tutorial4::OnKeyPressed(KeyEventArgs& e)
+void Sponza::OnKeyPressed(KeyEventArgs& e)
 {
     super::OnKeyPressed(e);
 }
 
-void Tutorial4::OnKeyReleased(KeyEventArgs& e)
+void Sponza::OnKeyReleased(KeyEventArgs& e)
 {
     super::OnKeyReleased(e);
 }
 
-void Tutorial4::OnMouseMoved(MouseMotionEventArgs& e)
+void Sponza::OnMouseMoved(MouseMotionEventArgs& e)
 {
     super::OnMouseMoved(e);
 }
 
-
-void Tutorial4::OnMouseWheel(MouseWheelEventArgs& e)
+void Sponza::OnMouseWheel(MouseWheelEventArgs& e)
 {
   
 }

@@ -34,13 +34,13 @@
 #include <Window.h>
 #include <DirectXMath.h>
 
-class Tutorial4 : public Game
+class Sponza : public Game
 {
 public:
     using super = Game;
 
-    Tutorial4(const std::wstring& name, int width, int height, bool vSync = false);
-    virtual ~Tutorial4();
+    Sponza(const std::wstring& name, int width, int height, bool vSync = false);
+    virtual ~Sponza();
 
     /**
      *  Load content required for the demo.
