@@ -1,27 +1,40 @@
-cbuffer vertexBuffer : register(b0)
+struct Mat
 {
-    float4x4 ProjectionMatrix;
+    matrix model; // Updates pr. object
+    matrix mvp; // Updates pr. object
+    matrix invTransposeMvp; // Updates pr. object
+    
+    matrix view; // Updates pr. frame
+    matrix proj; // Updates pr. frame
+    
+    matrix invView; // Updates pr. frame
+    matrix invProj; // Updates pr. frame
 };
 
-struct VS_INPUT
+ConstantBuffer<Mat> MatCB : register(b0);
+
+struct VertexPositionNormalTexture
 {
-    float2 pos : POSITION;
-    float4 col : COLOR0;
-    float2 uv  : TEXCOORD0;
+    float3 Position : POSITION;
+    float3 Normal   : NORMAL;
+    float2 TexCoord : TEXCOORD;
 };
 
-struct PS_INPUT
+struct VertexShaderOutput
 {
-    float4 pos : SV_POSITION;
-    float4 col : COLOR0;
-    float2 uv  : TEXCOORD0;
+    float4 PositionWS : POSITION;
+    float3 NormalWS   : NORMAL;
+    float2 TexCoord   : TEXCOORD;
+    float4 Position   : SV_Position;
 };
 
-PS_INPUT main(VS_INPUT input)
+VertexShaderOutput main(VertexPositionNormalTexture IN)
 {
-    PS_INPUT output;
-    output.pos = mul( ProjectionMatrix, float4(input.pos.xy, 0.f, 1.f));
-    output.col = input.col;
-    output.uv  = input.uv;
-    return output;
+    VertexShaderOutput OUT;
+    OUT.Position = mul(MatCB.mvp, float4(IN.Position, 1.0f));
+    OUT.PositionWS = mul(MatCB.model, float4(IN.Position, 1.f));
+    OUT.NormalWS = mul((float3x3)MatCB.invTransposeMvp, IN.Normal);
+    OUT.TexCoord = IN.TexCoord;
+    
+    return OUT;
 }

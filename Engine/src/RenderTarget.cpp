@@ -96,7 +96,6 @@ D3D12_RT_FORMAT_ARRAY RenderTarget::GetRenderTargetFormats() const
 {
     D3D12_RT_FORMAT_ARRAY rtvFormats = {};
 
-
     for ( int i = AttachmentPoint::Color0; i <= AttachmentPoint::Color7; ++i )
     {
         const Texture& texture = m_Textures[i];

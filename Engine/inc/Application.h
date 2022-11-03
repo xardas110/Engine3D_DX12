@@ -39,6 +39,7 @@
 #include <memory>
 #include <string>
 #include <AssetManager.h>
+#include <PipelineManager.h>
 
 class CommandQueue;
 class DescriptorAllocator;
@@ -147,7 +148,8 @@ public:
         return ms_FrameCount;
     }
 
-    AssetManager& GetAssetManager();
+    AssetManager* GetAssetManager();
+    PipelineManager* GetPipelineManager();
 protected:
 
     // Create an application instance.
@@ -181,5 +183,8 @@ private:
 
     static uint64_t ms_FrameCount;
 
-    AssetManager m_AssetManager;
+    //Contains all assets(Meshes, textures, materials) for game objects
+    std::unique_ptr<AssetManager> m_AssetManager{nullptr};
+    //Contains all pipelines for the application
+    std::unique_ptr<PipelineManager> m_PipelineManager{ nullptr };
 };

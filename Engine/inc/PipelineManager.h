@@ -1,12 +1,13 @@
 #pragma once
 
 #include <RootSignature.h>
+#include <array>
 
 using PipelineRef = Microsoft::WRL::ComPtr<ID3D12PipelineState>;
 
 namespace Pipeline
 {
-	enum Type
+	enum
 	{
 		GeometryMesh,
 		Size
@@ -29,14 +30,19 @@ struct PipelineData
 	RootSignature rootSignature;
 };
 
-using PipelineArray = std::array<PipelineData, Pipeline::Type::Size>;
+using PipelineArray = std::array<PipelineData, Pipeline::Size>;
 
 class PipelineManager
 {
+	friend class Application;
+	friend class std::default_delete<PipelineManager>;
+
 	PipelineManager();
 	~PipelineManager();
 
+	static std::unique_ptr<PipelineManager> CreateInstance();
+
 private:
-	void CreateGeometryPSO();
+	void CreateGeometryMeshPSO();
 	PipelineArray m_Pipelines;
 };

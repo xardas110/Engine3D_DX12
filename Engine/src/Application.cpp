@@ -32,9 +32,14 @@ struct MakeWindow : public Window
     {}
 };
 
-AssetManager& Application::GetAssetManager()
+AssetManager* Application::GetAssetManager()
 {
-    return m_AssetManager;
+    return m_AssetManager.get();
+}
+
+PipelineManager* Application::GetPipelineManager()
+{
+    return m_PipelineManager.get();
 }
 
 Application::Application(HINSTANCE hInst)
@@ -110,6 +115,10 @@ void Application::Initialize()
 
     // Initialize frame counter 
     ms_FrameCount = 0;
+
+    // Initialize managers
+    m_AssetManager = AssetManager::CreateInstance();
+    m_PipelineManager = PipelineManager::CreateInstance();
 }
 
 void Application::Create(HINSTANCE hInst)
