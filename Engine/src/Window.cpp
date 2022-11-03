@@ -205,7 +205,7 @@ void Window::OnRender(RenderEventArgs& e)
     {
         RenderEventArgs renderEventArgs(m_RenderClock.GetDeltaSeconds(), m_RenderClock.GetTotalSeconds(), e.FrameNumber);
         m_DeferredRenderer.Render(pGame);
-        pGame->OnRender(renderEventArgs);
+        //pGame->OnRender(renderEventArgs);
     }
 
     Present(m_DeferredRenderer.m_GBufferRenderTarget.GetTexture(AttachmentPoint::Color0));
@@ -297,10 +297,10 @@ void Window::OnResize(ResizeEventArgs& e)
 
         m_CurrentBackBufferIndex = m_dxgiSwapChain->GetCurrentBackBufferIndex();
 
-        UpdateRenderTargetViews();
-
-        m_DeferredRenderer.OnResize(e);
+        UpdateRenderTargetViews();     
     }
+
+    m_DeferredRenderer.OnResize(e);
 
     if (auto pGame = m_pGame.lock())
     {

@@ -4,6 +4,13 @@
 #include <Game.h>
 #include <Window.h>
 
+// Clamp a value between a min and max range.
+template<typename T>
+constexpr const T& clamp(const T& val, const T& min = T(0), const T& max = T(1))
+{
+    return val < min ? min : val > max ? max : val;
+}
+
 Game::Game( const std::wstring& name, int width, int height, bool vSync )
     : m_Name( name )
     , m_Width( width )
@@ -16,18 +23,11 @@ Game::Game( const std::wstring& name, int width, int height, bool vSync )
 
     m_Camera.set_LookAt(cameraPos, cameraTarget, cameraUp);
     m_Camera.set_Projection(45.0f, width / (float)height, 0.1f, 100.0f);
-
-    m_pAlignedCameraData = (CameraData*)_aligned_malloc(sizeof(CameraData), 16);
-
-    m_pAlignedCameraData->m_InitialCamPos = m_Camera.get_Translation();
-    m_pAlignedCameraData->m_InitialCamRot = m_Camera.get_Rotation();
-    m_pAlignedCameraData->m_InitialFov = m_Camera.get_FoV();
 }
 
 Game::~Game()
 {
     assert(!m_pWindow && "Use Game::Destroy() before destruction.");
-    _aligned_free(m_pAlignedCameraData);
 }
 
 bool Game::Initialize()
@@ -85,17 +85,103 @@ void Game::OnRender(RenderEventArgs& e)
 
 void Game::OnKeyPressed(KeyEventArgs& e)
 {
-    // By default, do nothing.
+    if (!ImGui::GetIO().WantCaptureKeyboard)
+    {
+        switch (e.Key)
+        {
+        case KeyCode::Escape:
+            Application::Get().Quit(0);
+            break;
+        case KeyCode::Enter:
+            if (e.Alt)
+            {
+        case KeyCode::V:
+            m_pWindow->ToggleVSync();
+            break;
+        case KeyCode::Up:
+        case KeyCode::W:
+            m_Forward = 1.0f;
+            break;
+        case KeyCode::Left:
+        case KeyCode::A:
+            m_Left = 1.0f;
+            break;
+        case KeyCode::Down:
+        case KeyCode::S:
+            m_Backward = 1.0f;
+            break;
+        case KeyCode::Right:
+        case KeyCode::D:
+            m_Right = 1.0f;
+            break;
+        case KeyCode::Q:
+            m_Down = 1.0f;
+            break;
+        case KeyCode::E:
+            m_Up = 1.0f;
+            break;
+        case KeyCode::ShiftKey:
+            m_Shift = true;
+            break;
+            }
+        }
+    }
 }
 
 void Game::OnKeyReleased(KeyEventArgs& e)
 {
-    // By default, do nothing.
+    if (!ImGui::GetIO().WantCaptureKeyboard)
+    {
+        switch (e.Key)
+        {
+        case KeyCode::Enter:
+            if (e.Alt)
+            {
+        case KeyCode::Up:
+        case KeyCode::W:
+            m_Forward = 0.0f;
+            break;
+        case KeyCode::Left:
+        case KeyCode::A:
+            m_Left = 0.0f;
+            break;
+        case KeyCode::Down:
+        case KeyCode::S:
+            m_Backward = 0.0f;
+            break;
+        case KeyCode::Right:
+        case KeyCode::D:
+            m_Right = 0.0f;
+            break;
+        case KeyCode::Q:
+            m_Down = 0.0f;
+            break;
+        case KeyCode::E:
+            m_Up = 0.0f;
+            break;
+        case KeyCode::ShiftKey:
+            m_Shift = false;
+            break;
+            }
+        }
+    }
 }
 
 void Game::OnMouseMoved(class MouseMotionEventArgs& e)
 {
     // By default, do nothing.
+    const float mouseSpeed = 0.1f;
+    if (!ImGui::GetIO().WantCaptureMouse)
+    {
+        if (e.LeftButton)
+        {
+            m_Pitch -= e.RelY * mouseSpeed;
+
+            m_Pitch = clamp(m_Pitch, -90.0f, 90.0f);
+
+            m_Yaw -= e.RelX * mouseSpeed;
+        }
+    }
 }
 
 void Game::OnMouseButtonPressed(MouseButtonEventArgs& e)

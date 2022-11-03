@@ -18,7 +18,7 @@ namespace GeometryMeshRootParam
 {
 	enum
 	{
-		CameraCB,
+		MatCB,
 		MaterialCB,
 		Size
 	};
@@ -35,6 +35,7 @@ using PipelineArray = std::array<PipelineData, Pipeline::Size>;
 class PipelineManager
 {
 	friend class Application;
+	friend class DeferredRenderer;
 	friend class std::default_delete<PipelineManager>;
 
 	PipelineManager();
