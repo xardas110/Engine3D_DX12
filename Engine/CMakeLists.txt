@@ -38,6 +38,8 @@ set( HEADER_FILES
     inc/DeferredRenderer.h
     inc/AssetManager.h
     inc/PipelineManager.h
+    inc/Components.h
+    inc/Transform.h
 )
 
 set( SOURCE_FILES

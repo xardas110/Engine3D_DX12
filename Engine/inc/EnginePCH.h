@@ -81,5 +81,11 @@ using namespace DirectX;
 
 namespace fs = std::filesystem;
 
+template<class T>
+using Ref = std::shared_ptr<T>;
+
+template<class T>
+using Weak = std::weak_ptr<T>;
+
 // Helper functions
 #include <Helpers.h>

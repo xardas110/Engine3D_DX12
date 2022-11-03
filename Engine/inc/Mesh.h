@@ -86,6 +86,7 @@ public:
 protected:
 
 private:
+    friend class AssetManager;
     friend struct std::default_delete<Mesh>;
 
     Mesh();

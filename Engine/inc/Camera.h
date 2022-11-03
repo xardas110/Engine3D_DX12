@@ -41,13 +41,6 @@ enum class Space
     World,
 };
 
-struct CameraCB
-{
-    DirectX::XMMATRIX view;
-    DirectX::XMMATRIX proj;
-    DirectX::XMMATRIX VP;
-};
-
 class Camera
 {
 public:
