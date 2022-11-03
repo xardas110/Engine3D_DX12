@@ -43,9 +43,9 @@ enum class Space
 
 struct CameraCB
 {
-    XMMATRIX view;
-    XMMATRIX proj;
-    XMMATRIX VP;
+    DirectX::XMMATRIX view;
+    DirectX::XMMATRIX proj;
+    DirectX::XMMATRIX VP;
 };
 
 class Camera
