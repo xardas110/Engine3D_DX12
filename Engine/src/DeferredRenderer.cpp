@@ -4,6 +4,8 @@
 #include <Application.h>
 #include <CommandQueue.h>
 #include <CommandList.h>
+#include <Window.h>
+#include <Transform.h>
 
 using namespace DirectX;
 
@@ -71,8 +73,12 @@ void DeferredRenderer::CreateGBuffer()
     m_GBufferRenderTarget.AttachTexture(AttachmentPoint::DepthStencil, depthTexture);
 }
 
-void DeferredRenderer::Render(std::shared_ptr<Game>& game)
+void DeferredRenderer::Render(Window& window)
 {
+    if (!window.m_pGame.lock()) return;
+    
+    auto game = window.m_pGame.lock();
+
     auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
     auto commandList = commandQueue->GetCommandList();
 
@@ -101,13 +107,16 @@ void DeferredRenderer::Render(std::shared_ptr<Game>& game)
     commandList->SetPipelineState(pipelines[Pipeline::GeometryMesh].pipelineRef);
     commandList->SetGraphicsRootSignature(pipelines[Pipeline::GeometryMesh].rootSignature);
 
-    mat.model = DirectX::XMMatrixIdentity();
+    Transform transform;
+    transform.pos = { 0.f, 5.f, -10.f, 0.f };
+    transform.rot = XMQuaternionRotationRollPitchYaw(XMConvertToRadians(45.f), XMConvertToRadians(45.f), XMConvertToRadians(45.f));
+    mat.model = transform.GetTransform();
     mat.mvp = mat.model * mat.view * mat.proj;
     mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));
 
     commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, mat);
     
-    primitves[Primitives::Cube]->Draw(*commandList);
+    primitves[Primitives::Cube].Draw(*commandList);
 
     commandQueue->ExecuteCommandList(commandList);
 }
