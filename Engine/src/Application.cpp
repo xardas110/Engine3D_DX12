@@ -32,6 +32,11 @@ struct MakeWindow : public Window
     {}
 };
 
+AssetManager& Application::GetAssetManager()
+{
+    return m_AssetManager;
+}
+
 Application::Application(HINSTANCE hInst)
     : m_hInstance(hInst)
     , m_TearingSupported(false)

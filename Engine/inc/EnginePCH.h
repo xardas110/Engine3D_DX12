@@ -77,6 +77,7 @@ using namespace DirectX;
 #include <unordered_map>
 #include <thread>
 #include <vector>
+#include <array>
 
 namespace fs = std::filesystem;
 

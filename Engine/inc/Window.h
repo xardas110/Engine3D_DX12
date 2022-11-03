@@ -44,6 +44,7 @@
 #include <Texture.h>
 
 #include <memory>
+#include <DeferredRenderer.h>
 
 class Game;
 class Texture;
@@ -184,6 +185,7 @@ private:
     uint64_t m_FrameValues[BufferCount];
 
     std::weak_ptr<Game> m_pGame;
+    DeferredRenderer m_DeferredRenderer;
 
     Microsoft::WRL::ComPtr<IDXGISwapChain4> m_dxgiSwapChain;
     Texture m_BackBufferTextures[BufferCount];

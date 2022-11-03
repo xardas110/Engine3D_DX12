@@ -35,6 +35,9 @@ set( HEADER_FILES
     inc/Window.h
     inc/d3dx12.h
     inc/Camera.h
+    inc/DeferredRenderer.h
+    inc/AssetManager.h
+    inc/PipelineManager.h
 )
 
 set( SOURCE_FILES
@@ -66,6 +69,9 @@ set( SOURCE_FILES
     src/VertexBuffer.cpp
     src/Window.cpp
     src/Camera.cpp
+    src/DeferredRenderer.cpp
+    src/AssetManager.cpp
+    src/PipelineManager.cpp
 )
 
 set( IMGUI_HEADERS
@@ -95,6 +101,8 @@ set( SHADER_FILES
     Resources/Shaders/PanoToCubemap_CS.hlsl
     Resources/Shaders/ImGUI_VS.hlsl
     Resources/Shaders/ImGUI_PS.hlsl
+    Resources/Shaders/GeometryMesh_VS.hlsl
+    Resources/Shaders/GeometryMesh_PS.hlsl
 )
 
 set( RESOURCE_FILES 
@@ -169,4 +177,16 @@ set_source_files_properties( Resources/Shaders/ImGUI_PS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Pixel
         VS_SHADER_VARIABLE_NAME g_ImGUI_PS
+)
+
+set_source_files_properties( Resources/Shaders/GeometryMesh_VS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Vertex
+        VS_SHADER_VARIABLE_NAME g_GeometryMesh_VS
+)
+
+set_source_files_properties( Resources/Shaders/GeometryMesh_PS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Pixel
+        VS_SHADER_VARIABLE_NAME g_GeometryMesh_PS
 )

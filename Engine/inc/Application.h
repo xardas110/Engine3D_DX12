@@ -38,6 +38,7 @@
 
 #include <memory>
 #include <string>
+#include <AssetManager.h>
 
 class CommandQueue;
 class DescriptorAllocator;
@@ -146,6 +147,7 @@ public:
         return ms_FrameCount;
     }
 
+    AssetManager& GetAssetManager();
 protected:
 
     // Create an application instance.
@@ -178,4 +180,6 @@ private:
     bool m_TearingSupported;
 
     static uint64_t ms_FrameCount;
+
+    AssetManager m_AssetManager;
 };
