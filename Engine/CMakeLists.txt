@@ -40,6 +40,7 @@ set( HEADER_FILES
     inc/PipelineManager.h
     inc/Components.h
     inc/Transform.h
+    inc/PhysicsSystem.h
 )
 
 set( SOURCE_FILES
@@ -74,6 +75,7 @@ set( SOURCE_FILES
     src/DeferredRenderer.cpp
     src/AssetManager.cpp
     src/PipelineManager.cpp
+    src/PhysicsSystem.cpp
 )
 
 set( IMGUI_HEADERS

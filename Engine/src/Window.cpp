@@ -204,8 +204,7 @@ void Window::OnRender(RenderEventArgs& e)
     if (auto pGame = m_pGame.lock())
     {
         RenderEventArgs renderEventArgs(m_RenderClock.GetDeltaSeconds(), m_RenderClock.GetTotalSeconds(), e.FrameNumber);
-        m_DeferredRenderer.Render(pGame);
-        //pGame->OnRender(renderEventArgs);
+        m_DeferredRenderer.Render(*this);
     }
 
     Present(m_DeferredRenderer.m_GBufferRenderTarget.GetTexture(AttachmentPoint::Color0));

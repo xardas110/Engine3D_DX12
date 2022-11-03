@@ -9,7 +9,7 @@ AssetManager::AssetManager()
 	auto cq = Application::Get().GetCommandQueue();
 	auto cl = cq->GetCommandList();
 
-	m_Primitives[Primitives::Cube] = Mesh::CreateCube(*cl);
+	m_Primitives[Primitives::Cube] = *Mesh::CreateCube(*cl);
 
 	auto fenceVal = cq->ExecuteCommandList(cl);
 	cq->WaitForFenceValue(fenceVal);
@@ -17,6 +17,7 @@ AssetManager::AssetManager()
 
 AssetManager::~AssetManager()
 {
+	//m_Primitives will be deleted once its unreferenced.
 }
 
 std::unique_ptr<AssetManager> AssetManager::CreateInstance()

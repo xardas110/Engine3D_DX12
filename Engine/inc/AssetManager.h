@@ -22,5 +22,5 @@ class AssetManager
 	static std::unique_ptr<AssetManager> CreateInstance();
 
 private:
-	std::unique_ptr<Mesh> m_Primitives[Primitives::Size];
+	Mesh m_Primitives[Primitives::Size];
 };

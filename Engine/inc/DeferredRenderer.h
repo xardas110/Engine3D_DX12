@@ -13,7 +13,7 @@ class DeferredRenderer
 	~DeferredRenderer();
 
 	void CreateGBuffer();
-	void Render(std::shared_ptr<Game>& game);
+	void Render(class Window& window);
 
 	void OnResize(ResizeEventArgs& e);
 
