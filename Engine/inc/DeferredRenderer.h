@@ -17,7 +17,8 @@ class DeferredRenderer
 
 	void OnResize(ResizeEventArgs& e);
 
-	RenderTarget m_GBufferRenderTarget;
 	int m_Width, m_Height;
+	RenderTarget m_GBufferRenderTarget;
+	D3D12_RECT m_ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
 };
 

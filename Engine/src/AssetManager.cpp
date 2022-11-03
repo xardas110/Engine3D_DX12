@@ -10,6 +10,9 @@ AssetManager::AssetManager()
 	auto cl = cq->GetCommandList();
 
 	m_Primitives[Primitives::Cube] = Mesh::CreateCube(*cl);
+
+	auto fenceVal = cq->ExecuteCommandList(cl);
+	cq->WaitForFenceValue(fenceVal);
 }
 
 AssetManager::~AssetManager()

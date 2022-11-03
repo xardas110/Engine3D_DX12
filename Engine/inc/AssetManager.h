@@ -13,6 +13,7 @@ namespace Primitives
 class AssetManager
 {
 	friend class Application;
+	friend class DeferredRenderer;
 	friend class std::default_delete<AssetManager>;
 
 	AssetManager();

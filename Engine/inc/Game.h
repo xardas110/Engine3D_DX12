@@ -159,14 +159,6 @@ private:
     //Window Render camera. Weak Ref.
     Camera* m_RenderCamera{ &m_Camera };
 
-    struct alignas(16) CameraData
-    {
-        DirectX::XMVECTOR m_InitialCamPos;
-        DirectX::XMVECTOR m_InitialCamRot;
-        float m_InitialFov;
-    };
-    CameraData* m_pAlignedCameraData;
-
     // Camera controller
     float m_Forward{ 0.f };
     float m_Backward{ 0.f };
