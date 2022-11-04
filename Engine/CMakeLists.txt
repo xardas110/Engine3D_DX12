@@ -1,97 +1,97 @@
 cmake_minimum_required( VERSION 3.12.1 ) # Latest version of CMake when this file was created.
 
 set( HEADER_FILES 
-    inc/EnginePCH.h
-    inc/Application.h
-    inc/Buffer.h
-    inc/ByteAddressBuffer.h
-    inc/CommandList.h
-    inc/CommandQueue.h
-    inc/ConstantBuffer.h
-    inc/DescriptorAllocation.h
-    inc/DescriptorAllocator.h
-    inc/DescriptorAllocatorPage.h
-    inc/DynamicDescriptorHeap.h
-    inc/Events.h
-    inc/Game.h
-    inc/GenerateMipsPSO.h
-    inc/GUI.h
-    inc/Helpers.h
-    inc/HighResolutionClock.h
-    inc/IndexBuffer.h
-    inc/KeyCodes.h
-    inc/Mesh.h
-    inc/PanoToCubemapPSO.h
-    inc/RenderTarget.h
-    inc/Resource.h
-    inc/ResourceStateTracker.h
-    inc/RootSignature.h
-    inc/StructuredBuffer.h
-    inc/Texture.h
-    inc/TextureUsage.h
-    inc/ThreadSafeQueue.h
-    inc/UploadBuffer.h
-    inc/VertexBuffer.h
-    inc/Window.h
-    inc/d3dx12.h
-    inc/Camera.h
-    inc/DeferredRenderer.h
-    inc/AssetManager.h
-    inc/PipelineManager.h
-    inc/Components.h
-    inc/Transform.h
-    inc/PhysicsSystem.h
+    "core/EnginePCH.h"
+    "DX12/Application.h"
+    "DX12/Buffer.h"
+    "DX12/ByteAddressBuffer.h"
+    "DX12/CommandList.h"
+    "DX12/CommandQueue.h"
+    "DX12/ConstantBuffer.h"
+    "DX12/DescriptorAllocation.h"
+    "DX12/DescriptorAllocator.h"
+    "DX12/DescriptorAllocatorPage.h"
+    "DX12/DynamicDescriptorHeap.h"
+    "core/Events.h"
+    "core/Game.h"
+    "DX12/GenerateMipsPSO.h"
+    "core/GUI.h"
+    "core/Helpers.h"
+    "core/HighResolutionClock.h"
+    "DX12/IndexBuffer.h"
+    "core/KeyCodes.h"
+    "DX12/Mesh.h"
+    "DX12/PanoToCubemapPSO.h"
+    "DX12/RenderTarget.h"
+    "DX12/Resource.h"
+    "DX12/ResourceStateTracker.h"
+    "DX12/RootSignature.h"
+    "DX12/StructuredBuffer.h"
+    "DX12/Texture.h"
+    "DX12/TextureUsage.h"
+    "core/ThreadSafeQueue.h"
+    "DX12/UploadBuffer.h"
+    "DX12/VertexBuffer.h"
+    "core/Window.h"
+    "DX12/d3dx12.h"
+    "core/Camera.h"
+    "DX12/DeferredRenderer.h"
+    "DX12/AssetManager.h"
+    "DX12/PipelineManager.h"
+    "core/Components.h"
+    "core/Transform.h"
+    "Physics/PhysicsSystem.h"
 )
 
 set( SOURCE_FILES
-    src/EnginePCH.cpp
-    src/Application.cpp
-    src/Buffer.cpp
-    src/ByteAddressBuffer.cpp
-    src/CommandQueue.cpp
-    src/CommandList.cpp
-    src/ConstantBuffer.cpp
-    src/DescriptorAllocation.cpp
-    src/DescriptorAllocator.cpp
-    src/DescriptorAllocatorPage.cpp
-    src/DynamicDescriptorHeap.cpp
-    src/Game.cpp
-    src/GenerateMipsPSO.cpp
-    src/GUI.cpp
-    src/HighResolutionClock.cpp
-    src/IndexBuffer.cpp
-    src/Mesh.cpp
-    src/PanoToCubemapPSO.cpp
-    src/RenderTarget.cpp
-    src/Resource.cpp
-    src/ResourceStateTracker.cpp
-    src/RootSignature.cpp
-    src/StructuredBuffer.cpp
-    src/Texture.cpp
-    src/UploadBuffer.cpp
-    src/VertexBuffer.cpp
-    src/Window.cpp
-    src/Camera.cpp
-    src/DeferredRenderer.cpp
-    src/AssetManager.cpp
-    src/PipelineManager.cpp
-    src/PhysicsSystem.cpp
+    "core/EnginePCH.cpp"
+    "core/Application.cpp"
+    "DX12/Buffer.cpp"
+    "DX12/ByteAddressBuffer.cpp"
+    "DX12/CommandQueue.cpp"
+    "DX12/CommandList.cpp"
+    "DX12/ConstantBuffer.cpp"
+    "DX12/DescriptorAllocation.cpp"
+    "DX12/DescriptorAllocator.cpp"
+    "DX12/DescriptorAllocatorPage.cpp"
+    "DX12/DynamicDescriptorHeap.cpp"
+    "core/Game.cpp"
+    "DX12/GenerateMipsPSO.cpp"
+    "DX12/GUI.cpp"
+    "core/HighResolutionClock.cpp"
+    "DX12/IndexBuffer.cpp"
+    "DX12/Mesh.cpp"
+    "DX12/PanoToCubemapPSO.cpp"
+    "DX12/RenderTarget.cpp"
+    "DX12/Resource.cpp"
+    "DX12/ResourceStateTracker.cpp"
+    "DX12/RootSignature.cpp"
+    "DX12/StructuredBuffer.cpp"
+    "DX12/Texture.cpp"
+    "DX12/UploadBuffer.cpp"
+    "DX12/VertexBuffer.cpp"
+    "core/Window.cpp"
+    "core/Camera.cpp"
+    "DX12/DeferredRenderer.cpp"
+    "DX12/AssetManager.cpp"
+    "DX12/PipelineManager.cpp"
+    "Physics/PhysicsSystem.cpp"
 )
 
 set( IMGUI_HEADERS
-    inc/imgui.h
-    inc/imconfig.h
-    inc/imgui_impl_win32.h
+    external/ImGui/imgui.h
+    external/ImGui/imconfig.h
+    external/ImGui/imgui_impl_win32.h
 )
 
 source_group( "Header Files\\ImGUI" FILES ${IMGUI_HEADERS} )
 
 set( IMGUI_SOURCE
-    src/imgui.cpp
-    src/imgui_demo.cpp
-    src/imgui_draw.cpp
-    src/imgui_widgets.cpp
-    src/imgui_impl_win32.cpp
+    "external/ImGui/imgui.cpp"
+    "external/ImGui/imgui_demo.cpp"
+    "external/ImGui/imgui_draw.cpp"
+    "external/ImGui/imgui_widgets.cpp"
+    "external/ImGui/imgui_impl_win32.cpp"
 )
 
 set( ENTT_HEADERS
@@ -127,8 +127,10 @@ add_library( Engine STATIC
 )
 
 target_include_directories( Engine
-    PUBLIC inc
+    PUBLIC DX12
     PUBLIC external
+    PUBLIC external/ImGui
+    PUBLIC core
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
 )
 
