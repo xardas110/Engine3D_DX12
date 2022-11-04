@@ -1,5 +1,7 @@
 cmake_minimum_required( VERSION 3.12.1 ) # Latest version of CMake when this file was created.
 
+add_compile_definitions(DEBUG_CMD)
+
 set( HEADER_FILES 
     "core/EnginePCH.h"
     "DX12/Application.h"
