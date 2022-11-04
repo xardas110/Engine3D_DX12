@@ -85,6 +85,9 @@ template<class T>
 using Ref = std::shared_ptr<T>;
 
 template<class T>
+using Scope = std::unique_ptr<T>;
+
+template<class T>
 using Weak = std::weak_ptr<T>;
 
 // Helper functions
