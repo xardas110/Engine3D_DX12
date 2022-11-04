@@ -129,7 +129,7 @@ add_library( Engine STATIC
 target_include_directories( Engine
     PUBLIC inc
     PUBLIC external
-    PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${Platform}/${Configuration}/Shaders"
+    PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
 )
 
 target_link_libraries( Engine 
@@ -141,20 +141,24 @@ target_link_libraries( Engine
 )
 
 # Enable precompiled header files.
-set_source_files_properties( ${SOURCE_FILES} 
-    PROPERTIES 
-        COMPILE_FLAGS /Yu"EnginePCH.h"
-)
+#set_source_files_properties( ${SOURCE_FILES} 
+#    PROPERTIES 
+#        COMPILE_FLAGS /Yu"EnginePCH.h"
+#)
 
-set_source_files_properties( src/EnginePCH.cpp
-    PROPERTIES
-        COMPILE_FLAGS /Yc"EnginePCH.h"
-)
+#set_source_files_properties( src/EnginePCH.cpp
+#    PROPERTIES
+#        COMPILE_FLAGS /Yc"EnginePCH.h"
+#)
 
+#install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Shaders ${directory})
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Shaders)
+
+add_custom_target(shaders)
 set_source_files_properties( ${SHADER_FILES}
     PROPERTIES
-        VS_SHADER_MODEL 5.1
-        VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/${Platform}/${Configuration}/Shaders/%(Filename).h"
+        VS_SHADER_MODEL 5_1
+        VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/Shaders/%(Filename).h"
         VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
         VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
 )
@@ -163,34 +167,55 @@ set_source_files_properties( Resources/Shaders/GenerateMips_CS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Compute
         VS_SHADER_VARIABLE_NAME g_GenerateMips_CS
+        ShaderType "cs"
 )
 
 set_source_files_properties( Resources/Shaders/PanoToCubemap_CS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Compute
         VS_SHADER_VARIABLE_NAME g_PanoToCubemap_CS
+        ShaderType "cs"
 )
 
 set_source_files_properties( Resources/Shaders/ImGUI_VS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Vertex
         VS_SHADER_VARIABLE_NAME g_ImGUI_VS
+        ShaderType "vs"
 )
 
 set_source_files_properties( Resources/Shaders/ImGUI_PS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Pixel
         VS_SHADER_VARIABLE_NAME g_ImGUI_PS
+        ShaderType "ps"
 )
 
 set_source_files_properties( Resources/Shaders/GeometryMesh_VS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Vertex
         VS_SHADER_VARIABLE_NAME g_GeometryMesh_VS
+        ShaderType "vs"
 )
 
 set_source_files_properties( Resources/Shaders/GeometryMesh_PS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Pixel
         VS_SHADER_VARIABLE_NAME g_GeometryMesh_PS
+        ShaderType "ps"
 )
+
+foreach(FILE ${SHADER_FILES})
+  get_filename_component(FILE_WE ${FILE} NAME_WE)
+  get_source_file_property(shadertype ${FILE} ShaderType)
+  get_source_file_property(shadermodel ${FILE} VS_SHADER_MODEL)
+  get_source_file_property(var ${FILE} VS_SHADER_VARIABLE_NAME)
+  add_custom_command(TARGET shaders
+                     COMMAND fxc.exe /nologo /Emain /T ${shadertype}_${shadermodel} $<IF:$<CONFIG:DEBUG>,/Od,/O1> /Zi /Fh ${CMAKE_CURRENT_BINARY_DIR}/Shaders/${FILE_WE}.h /Vn ${var} ${FILE}
+                     MAIN_DEPENDENCY ${FILE}
+                     COMMENT "HLSL ${FILE}"
+                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                     VERBATIM)
+endforeach(FILE)
+
+add_dependencies(Engine shaders)
