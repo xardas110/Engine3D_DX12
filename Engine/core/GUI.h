@@ -30,7 +30,7 @@
  *  @brief Wrapper for ImGui. This class is used internally by the Window class.
  */
 
-#include "imgui.h"
+#include <imgui.h>
 
 #include <d3dx12.h>
 #include <wrl.h>
