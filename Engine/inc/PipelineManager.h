@@ -3,8 +3,6 @@
 #include <RootSignature.h>
 #include <array>
 
-using PipelineRef = Microsoft::WRL::ComPtr<ID3D12PipelineState>;
-
 namespace Pipeline
 {
 	enum
@@ -23,6 +21,8 @@ namespace GeometryMeshRootParam
 		Size
 	};
 }
+
+using PipelineRef = Microsoft::WRL::ComPtr<ID3D12PipelineState>;
 
 struct PipelineData
 {
