@@ -7,6 +7,8 @@
 #include <DescriptorAllocator.h>
 #include <Window.h>
 
+#include <CMD.h>
+
 constexpr wchar_t WINDOW_CLASS_NAME[] = L"DX12RenderWindowClass";
 
 using WindowPtr = std::shared_ptr<Window>;
@@ -123,6 +125,10 @@ void Application::Initialize()
 
 void Application::Create(HINSTANCE hInst)
 {
+#ifdef DEBUG_CMD
+    RedirectIOToConsole();
+#endif // DEBUG
+
     if (!gs_pSingelton)
     {
         gs_pSingelton = new Application(hInst);

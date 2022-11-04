@@ -301,6 +301,7 @@ build DirectXTex\edit_cache: phony DirectXTex\CMakeFiles\edit_cache.util
 build cmake_object_order_depends_target_Engine: phony || Engine\shaders cmake_object_order_depends_target_DirectXTex
 
 build Engine\CMakeFiles\Engine.dir\core\EnginePCH.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\EnginePCH.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -309,6 +310,7 @@ build Engine\CMakeFiles\Engine.dir\core\EnginePCH.cpp.obj: CXX_COMPILER__Engine_
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\core\Application.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\Application.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -317,6 +319,7 @@ build Engine\CMakeFiles\Engine.dir\core\Application.cpp.obj: CXX_COMPILER__Engin
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\Buffer.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\Buffer.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -325,6 +328,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\Buffer.cpp.obj: CXX_COMPILER__Engine_Deb
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\ByteAddressBuffer.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\ByteAddressBuffer.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -333,6 +337,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\ByteAddressBuffer.cpp.obj: CXX_COMPILER_
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\CommandQueue.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\CommandQueue.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -341,6 +346,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\CommandQueue.cpp.obj: CXX_COMPILER__Engi
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\CommandList.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\CommandList.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -349,6 +355,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\CommandList.cpp.obj: CXX_COMPILER__Engin
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\ConstantBuffer.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\ConstantBuffer.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -357,6 +364,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\ConstantBuffer.cpp.obj: CXX_COMPILER__En
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocation.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\DescriptorAllocation.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -365,6 +373,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocation.cpp.obj: CXX_COMPIL
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocator.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\DescriptorAllocator.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -373,6 +382,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocator.cpp.obj: CXX_COMPILE
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocatorPage.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\DescriptorAllocatorPage.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -381,6 +391,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocatorPage.cpp.obj: CXX_COM
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\DynamicDescriptorHeap.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\DynamicDescriptorHeap.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -389,6 +400,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\DynamicDescriptorHeap.cpp.obj: CXX_COMPI
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\core\Game.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\Game.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -397,6 +409,7 @@ build Engine\CMakeFiles\Engine.dir\core\Game.cpp.obj: CXX_COMPILER__Engine_Debug
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\GenerateMipsPSO.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\GenerateMipsPSO.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -405,6 +418,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\GenerateMipsPSO.cpp.obj: CXX_COMPILER__E
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\GUI.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\GUI.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -413,6 +427,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\GUI.cpp.obj: CXX_COMPILER__Engine_Debug 
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\core\HighResolutionClock.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\HighResolutionClock.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -421,6 +436,7 @@ build Engine\CMakeFiles\Engine.dir\core\HighResolutionClock.cpp.obj: CXX_COMPILE
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\IndexBuffer.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\IndexBuffer.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -429,6 +445,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\IndexBuffer.cpp.obj: CXX_COMPILER__Engin
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\Mesh.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\Mesh.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -437,6 +454,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\Mesh.cpp.obj: CXX_COMPILER__Engine_Debug
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\PanoToCubemapPSO.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\PanoToCubemapPSO.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -445,6 +463,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\PanoToCubemapPSO.cpp.obj: CXX_COMPILER__
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\RenderTarget.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\RenderTarget.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -453,6 +472,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\RenderTarget.cpp.obj: CXX_COMPILER__Engi
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\Resource.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\Resource.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -461,6 +481,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\Resource.cpp.obj: CXX_COMPILER__Engine_D
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\ResourceStateTracker.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\ResourceStateTracker.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -469,6 +490,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\ResourceStateTracker.cpp.obj: CXX_COMPIL
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\RootSignature.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\RootSignature.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -477,6 +499,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\RootSignature.cpp.obj: CXX_COMPILER__Eng
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\StructuredBuffer.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\StructuredBuffer.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -485,6 +508,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\StructuredBuffer.cpp.obj: CXX_COMPILER__
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\Texture.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\Texture.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -493,6 +517,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\Texture.cpp.obj: CXX_COMPILER__Engine_De
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\UploadBuffer.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\UploadBuffer.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -501,6 +526,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\UploadBuffer.cpp.obj: CXX_COMPILER__Engi
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\VertexBuffer.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\VertexBuffer.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -509,6 +535,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\VertexBuffer.cpp.obj: CXX_COMPILER__Engi
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\core\Window.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\Window.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -517,6 +544,7 @@ build Engine\CMakeFiles\Engine.dir\core\Window.cpp.obj: CXX_COMPILER__Engine_Deb
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\core\Camera.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\Camera.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -525,6 +553,7 @@ build Engine\CMakeFiles\Engine.dir\core\Camera.cpp.obj: CXX_COMPILER__Engine_Deb
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\DeferredRenderer.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\DeferredRenderer.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -533,6 +562,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\DeferredRenderer.cpp.obj: CXX_COMPILER__
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\core\AssetManager.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\AssetManager.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -541,6 +571,7 @@ build Engine\CMakeFiles\Engine.dir\core\AssetManager.cpp.obj: CXX_COMPILER__Engi
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\DX12\PipelineManager.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\PipelineManager.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -549,6 +580,7 @@ build Engine\CMakeFiles\Engine.dir\DX12\PipelineManager.cpp.obj: CXX_COMPILER__E
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\Physics\PhysicsSystem.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\Physics\PhysicsSystem.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -557,6 +589,7 @@ build Engine\CMakeFiles\Engine.dir\Physics\PhysicsSystem.cpp.obj: CXX_COMPILER__
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\Engine.rc.res: RC_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\Engine.rc || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   DEP_FILE = Engine\CMakeFiles\Engine.dir\Engine.rc.res.d
   FLAGS = -DWIN32 -D_DEBUG
   INCLUDES = -I C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -I C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -I C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -I C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -I C:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -I C:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
@@ -566,6 +599,7 @@ build Engine\CMakeFiles\Engine.dir\Engine.rc.res: RC_COMPILER__Engine_Debug C$:\
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\external\ImGui\imgui.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui\imgui.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -574,6 +608,7 @@ build Engine\CMakeFiles\Engine.dir\external\ImGui\imgui.cpp.obj: CXX_COMPILER__E
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_demo.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui\imgui_demo.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -582,6 +617,7 @@ build Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_demo.cpp.obj: CXX_COMPIL
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_draw.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui\imgui_draw.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -590,6 +626,7 @@ build Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_draw.cpp.obj: CXX_COMPIL
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_widgets.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui\imgui_widgets.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -598,6 +635,7 @@ build Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_widgets.cpp.obj: CXX_COM
   TARGET_PDB = lib\Engine.pdb
 
 build Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_impl_win32.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui\imgui_impl_win32.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
