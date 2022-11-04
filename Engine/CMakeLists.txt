@@ -36,7 +36,7 @@ set( HEADER_FILES
     "DX12/d3dx12.h"
     "core/Camera.h"
     "DX12/DeferredRenderer.h"
-    "DX12/AssetManager.h"
+    "core/AssetManager.h"
     "DX12/PipelineManager.h"
     "core/Components.h"
     "core/Transform.h"
@@ -73,7 +73,7 @@ set( SOURCE_FILES
     "core/Window.cpp"
     "core/Camera.cpp"
     "DX12/DeferredRenderer.cpp"
-    "DX12/AssetManager.cpp"
+    "core/AssetManager.cpp"
     "DX12/PipelineManager.cpp"
     "Physics/PhysicsSystem.cpp"
 )

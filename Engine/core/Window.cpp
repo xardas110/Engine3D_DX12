@@ -207,6 +207,8 @@ void Window::OnRender(RenderEventArgs& e)
         m_DeferredRenderer.Render(*this);
     }
 
+    OnGui();
+
     Present(m_DeferredRenderer.m_GBufferRenderTarget.GetTexture(AttachmentPoint::Color0));
 }
 
@@ -367,6 +369,58 @@ void Window::UpdateRenderTargetViews()
         m_BackBufferTextures[i].SetD3D12Resource(backBuffer);
         m_BackBufferTextures[i].CreateViews();
     }
+}
+
+void Window::OnGui()
+{
+    static bool showDemoWindow = false;
+    static bool showOptions = true;
+    
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("Exit", "Esc"))
+            {
+                Application::Get().Quit();
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("View"))
+        {
+            ImGui::MenuItem("ImGui Demo", nullptr, &showDemoWindow);
+            ImGui::MenuItem("Tonemapping", nullptr, &showOptions);
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Options"))
+        {
+            bool vSync = IsVSync();
+            if (ImGui::MenuItem("V-Sync", "V", &vSync))
+            {
+                SetVSync(vSync);
+            }
+
+            bool fullscreen = IsFullScreen();
+            if (ImGui::MenuItem("Full screen", "Alt+Enter", &fullscreen))
+            {
+                SetFullscreen(fullscreen);
+            }
+
+            ImGui::EndMenu();
+        }
+
+        char buffer[256];
+
+        ImGui::EndMainMenuBar();
+    }
+
+    if (showDemoWindow)
+    {
+        ImGui::ShowDemoWindow(&showDemoWindow);
+    }  
 }
 
 const RenderTarget& Window::GetRenderTarget() const
