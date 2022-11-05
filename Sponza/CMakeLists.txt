@@ -1,17 +1,15 @@
 cmake_minimum_required( VERSION 3.12.1 ) # Latest version of CMake when this file was created.
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DEBUG:FULL")
-
 set( HEADER_FILES
     inc/Sponza.h
 )
 
 set( SRC_FILES
-    
+    src/main.cpp
     src/Sponza.cpp
 )
 
-add_library ( Sponza SHARED
+add_executable( Sponza WIN32
     ${HEADER_FILES} 
     ${SRC_FILES}
 )
@@ -27,11 +25,9 @@ target_link_libraries( Sponza
 )
 
 # Set debug database to enable the "Edit and Continue" feature.
-#target_compile_options( Sponza 
-#    PRIVATE $<$<CONFIG:Debug>:/ZI>
-#)
-
-target_link_options(Engine PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/DEBUG:NONE>)
+target_compile_options( Sponza 
+    PRIVATE $<$<CONFIG:Debug>:/ZI>
+)
 
 # Set Local Debugger Settings (Command Arguments and Environment Variables)
 set( COMMAND_ARGUMENTS "-wd \"${CMAKE_SOURCE_DIR}\"" )

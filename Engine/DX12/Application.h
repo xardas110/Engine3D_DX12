@@ -63,10 +63,7 @@ public:
     * Get the application singleton.
     */
     static Application& Get();
-    /**
-    * Set the application singleton, this is for native scripting. Application is made by the editor and sent to the script instance.
-    */
-    static void SetInstance(Application* app);
+
     /**
      * Check to see if VSync-off is supported.
      */

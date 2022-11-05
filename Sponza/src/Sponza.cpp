@@ -25,15 +25,8 @@ using namespace DirectX;
 #undef max
 #endif
 
-#include <iostream>
-
-extern "C" __declspec(dllexport) GameMode* CALLBACK Entry(Game* gameEntry)
-{
-    return new Sponza(gameEntry);
-}
-
-Sponza::Sponza(Game* game)
-    : GameMode(game)
+Sponza::Sponza(const std::wstring& name, int width, int height, bool vSync)
+    : super(name, width, height, vSync)
 {
 }
 
@@ -43,10 +36,13 @@ Sponza::~Sponza()
 
 bool Sponza::LoadContent()
 {
-    std::cout << "Sponza xcv content " << std::endl;
     return true;
 }
 
+void Sponza::OnResize(ResizeEventArgs& e)
+{
+    super::OnResize(e);
+}
 
 void Sponza::UnloadContent()
 {
@@ -54,5 +50,30 @@ void Sponza::UnloadContent()
 
 void Sponza::OnUpdate(UpdateEventArgs& e)
 {
+    super::OnUpdate(e);
 }
 
+void Sponza::OnRender(RenderEventArgs& e)
+{
+    super::OnRender(e);
+}
+
+void Sponza::OnKeyPressed(KeyEventArgs& e)
+{
+    super::OnKeyPressed(e);
+}
+
+void Sponza::OnKeyReleased(KeyEventArgs& e)
+{
+    super::OnKeyReleased(e);
+}
+
+void Sponza::OnMouseMoved(MouseMotionEventArgs& e)
+{
+    super::OnMouseMoved(e);
+}
+
+void Sponza::OnMouseWheel(MouseWheelEventArgs& e)
+{
+  
+}
