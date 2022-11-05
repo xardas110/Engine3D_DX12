@@ -6,8 +6,7 @@ set( HEADER_FILES
     inc/Sponza.h
 )
 
-set( SRC_FILES
-    
+set( SRC_FILES   
     src/Sponza.cpp
 )
 
