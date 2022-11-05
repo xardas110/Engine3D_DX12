@@ -80,6 +80,7 @@ set( SOURCE_FILES
     "DX12/PipelineManager.cpp"
     "Physics/PhysicsSystem.cpp"
     "core/GameMode.cpp"
+    "main.cpp"
 )
 
 set( IMGUI_HEADERS
@@ -123,26 +124,50 @@ source_group( "Resources" FILES Engine.rc resource.h )
 source_group( "Resources\\Icon" FILES Resources/Icon/app_icon.ico )
 source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
 
-add_library( Engine STATIC
-    ${HEADER_FILES}
-    ${SOURCE_FILES}
-    ${RESOURCE_FILES}
-    ${IMGUI_HEADERS} ${IMGUI_SOURCE}
- "main.cpp")
-
-target_include_directories( Engine
+ set ( TARGET_INCLUDES
     PUBLIC DX12
     PUBLIC external
     PUBLIC external/ImGui
     PUBLIC core
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
-)
+ )
 
-target_link_libraries( Engine 
-	PUBLIC DirectXTex
+ set ( TARGET_LINK_LIBS
+    PUBLIC DirectXTex
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
     PUBLIC dxguid.lib
+ )
+
+add_library( Engine STATIC
+    ${HEADER_FILES}
+    ${SOURCE_FILES}
+    ${RESOURCE_FILES}
+    ${IMGUI_HEADERS} ${IMGUI_SOURCE}
+ )
+
+ add_executable( EngineBin WIN32
+    ${HEADER_FILES}
+    ${SOURCE_FILES}
+    ${RESOURCE_FILES}
+    ${IMGUI_HEADERS} ${IMGUI_SOURCE}
+ )
+
+target_include_directories( Engine
+    ${TARGET_INCLUDES}
+)
+
+target_link_libraries( Engine
+	${TARGET_LINK_LIBS}
+   # PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Engine.dir/${CMAKE_CFG_INTDIR}/Engine.res # This is the only way I could figure out how to link the compiled resource file.
+)
+
+target_include_directories( EngineBin
+    ${TARGET_INCLUDES}
+)
+
+target_link_libraries( EngineBin
+	${TARGET_LINK_LIBS}
    # PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Engine.dir/${CMAKE_CFG_INTDIR}/Engine.res # This is the only way I could figure out how to link the compiled resource file.
 )
 
@@ -225,3 +250,4 @@ foreach(FILE ${SHADER_FILES})
 endforeach(FILE)
 
 add_dependencies(Engine shaders)
+add_dependencies(EngineBin shaders)
