@@ -1,0 +1,229 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "bin/Sponza.dll"
+		},
+		{
+			"path" : "lib/Sponza.lib"
+		},
+		{
+			"path" : "bin/Sponza.pdb"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"target_link_libraries",
+			"add_compile_options",
+			"target_include_directories"
+		],
+		"files" : 
+		[
+			"Sponza/CMakeLists.txt",
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 14,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 23,
+				"parent" : 0
+			},
+			{
+				"file" : 1
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 17,
+				"parent" : 3
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 19,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "/DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "/MP"
+				},
+				{
+					"fragment" : "-std:c++17"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"define" : "Sponza_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 5,
+					"path" : "C:/Users/Ali/Documents/GitHub/Engine3D_DX12/Sponza/inc"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "C:/Users/Ali/Documents/GitHub/Engine3D_DX12/Engine/DX12"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "C:/Users/Ali/Documents/GitHub/Engine3D_DX12/Engine/external"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "C:/Users/Ali/Documents/GitHub/Engine3D_DX12/Engine/external/ImGui"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "C:/Users/Ali/Documents/GitHub/Engine3D_DX12/Engine/core"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "C:/Users/Ali/Documents/GitHub/Engine3D_DX12/DirectXTex/DirectXTex"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					1
+				],
+				"standard" : "17"
+			},
+			"sourceIndexes" : 
+			[
+				1
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 2,
+			"id" : "DirectXTex::@0182fc2a9ab8d5144aec"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "Engine::@8f69bdd092c897d92c1e"
+		}
+	],
+	"id" : "Sponza::@ba6ce5cf092d61510751",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "/machine:x64 /debug /INCREMENTAL",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/DEBUG:NONE",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "lib\\Engine.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "D3DCompiler.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "Shlwapi.lib",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib\\DirectXTex.lib",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "d3d12.lib",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "dxgi.lib",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "dxguid.lib",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "Sponza",
+	"nameOnDisk" : "Sponza.dll",
+	"paths" : 
+	{
+		"build" : "Sponza",
+		"source" : "Sponza"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Header Files",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		},
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				1
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"path" : "Sponza/inc/Sponza.h",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Sponza/src/Sponza.cpp",
+			"sourceGroupIndex" : 1
+		}
+	],
+	"type" : "SHARED_LIBRARY"
+}

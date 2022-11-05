@@ -33,13 +33,13 @@
 #include <Game.h>
 #include <Window.h>
 #include <DirectXMath.h>
+#include <GameMode.h>
 
-class Sponza : public Game
+class Sponza : public GameMode
 {
 public:
-    using super = Game;
 
-    Sponza(const std::wstring& name, int width, int height, bool vSync = false);
+    Sponza(Game* game);
     virtual ~Sponza();
 
     /**
@@ -56,33 +56,4 @@ protected:
      *  Update the game logic.
      */
     virtual void OnUpdate(UpdateEventArgs& e) override;
-
-    /**
-     *  Render stuff.
-     */
-    virtual void OnRender(RenderEventArgs& e) override;
-
-    /**
-     * Invoked by the registered window when a key is pressed
-     * while the window has focus.
-     */
-    virtual void OnKeyPressed(KeyEventArgs& e) override;
-
-    /**
-     * Invoked when a key on the keyboard is released.
-     */
-    virtual void OnKeyReleased(KeyEventArgs& e);
-
-    /**
-     * Invoked when the mouse is moved over the registered window.
-     */
-    virtual void OnMouseMoved(MouseMotionEventArgs& e);
-
-    /**
-     * Invoked when the mouse wheel is scrolled while the registered window has focus.
-     */
-    virtual void OnMouseWheel(MouseWheelEventArgs& e) override;
-
-    virtual void OnResize(ResizeEventArgs& e) override; 
-private:
 };
