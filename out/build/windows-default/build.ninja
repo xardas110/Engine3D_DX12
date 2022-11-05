@@ -597,6 +597,15 @@ build Engine\CMakeFiles\Engine.dir\core\GameMode.cpp.obj: CXX_COMPILER__Engine_D
   TARGET_COMPILE_PDB = Engine\CMakeFiles\Engine.dir\Engine.pdb
   TARGET_PDB = lib\Engine.pdb
 
+build Engine\CMakeFiles\Engine.dir\main.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\main.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\Engine.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\Engine.dir
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\Engine.dir\Engine.pdb
+  TARGET_PDB = lib\Engine.pdb
+
 build Engine\CMakeFiles\Engine.dir\Engine.rc.res: RC_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\Engine.rc || cmake_object_order_depends_target_Engine
   DEFINES = -DDEBUG_CMD
   DEP_FILE = Engine\CMakeFiles\Engine.dir\Engine.rc.res.d
@@ -660,7 +669,7 @@ build Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_impl_win32.cpp.obj: CXX_
 #############################################
 # Link the static library lib\Engine.lib
 
-build lib\Engine.lib: CXX_STATIC_LIBRARY_LINKER__Engine_Debug Engine\CMakeFiles\Engine.dir\core\EnginePCH.cpp.obj Engine\CMakeFiles\Engine.dir\core\Application.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Buffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\ByteAddressBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\CommandQueue.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\CommandList.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\ConstantBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocation.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocator.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocatorPage.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DynamicDescriptorHeap.cpp.obj Engine\CMakeFiles\Engine.dir\core\Game.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\GenerateMipsPSO.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\GUI.cpp.obj Engine\CMakeFiles\Engine.dir\core\HighResolutionClock.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\IndexBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Mesh.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\PanoToCubemapPSO.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\RenderTarget.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Resource.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\ResourceStateTracker.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\RootSignature.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\StructuredBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Texture.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\UploadBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\VertexBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\core\Window.cpp.obj Engine\CMakeFiles\Engine.dir\core\Camera.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DeferredRenderer.cpp.obj Engine\CMakeFiles\Engine.dir\core\AssetManager.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\PipelineManager.cpp.obj Engine\CMakeFiles\Engine.dir\Physics\PhysicsSystem.cpp.obj Engine\CMakeFiles\Engine.dir\core\GameMode.cpp.obj Engine\CMakeFiles\Engine.dir\Engine.rc.res Engine\CMakeFiles\Engine.dir\external\ImGui\imgui.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_demo.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_draw.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_widgets.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_impl_win32.cpp.obj || Engine\shaders lib\DirectXTex.lib
+build lib\Engine.lib: CXX_STATIC_LIBRARY_LINKER__Engine_Debug Engine\CMakeFiles\Engine.dir\core\EnginePCH.cpp.obj Engine\CMakeFiles\Engine.dir\core\Application.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Buffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\ByteAddressBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\CommandQueue.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\CommandList.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\ConstantBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocation.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocator.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocatorPage.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DynamicDescriptorHeap.cpp.obj Engine\CMakeFiles\Engine.dir\core\Game.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\GenerateMipsPSO.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\GUI.cpp.obj Engine\CMakeFiles\Engine.dir\core\HighResolutionClock.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\IndexBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Mesh.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\PanoToCubemapPSO.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\RenderTarget.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Resource.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\ResourceStateTracker.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\RootSignature.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\StructuredBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Texture.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\UploadBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\VertexBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\core\Window.cpp.obj Engine\CMakeFiles\Engine.dir\core\Camera.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DeferredRenderer.cpp.obj Engine\CMakeFiles\Engine.dir\core\AssetManager.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\PipelineManager.cpp.obj Engine\CMakeFiles\Engine.dir\Physics\PhysicsSystem.cpp.obj Engine\CMakeFiles\Engine.dir\core\GameMode.cpp.obj Engine\CMakeFiles\Engine.dir\main.cpp.obj Engine\CMakeFiles\Engine.dir\Engine.rc.res Engine\CMakeFiles\Engine.dir\external\ImGui\imgui.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_demo.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_draw.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_widgets.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_impl_win32.cpp.obj || Engine\shaders lib\DirectXTex.lib
   LANGUAGE_COMPILE_FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
   LINK_FLAGS = /machine:x64
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -672,17 +681,6 @@ build lib\Engine.lib: CXX_STATIC_LIBRARY_LINKER__Engine_Debug Engine\CMakeFiles\
 
 
 #############################################
-# Utility command for shaders
-
-build Engine\CMakeFiles\shaders.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine && fxc.exe /nologo /Emain /T cs_5_1 /Od /Zi /Fh C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Engine/Shaders/GenerateMips_CS.h /Vn g_GenerateMips_CS Resources/Shaders/GenerateMips_CS.hlsl && cd /D C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine && fxc.exe /nologo /Emain /T cs_5_1 /Od /Zi /Fh C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Engine/Shaders/PanoToCubemap_CS.h /Vn g_PanoToCubemap_CS Resources/Shaders/PanoToCubemap_CS.hlsl && cd /D C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine && fxc.exe /nologo /Emain /T vs_5_1 /Od /Zi /Fh C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Engine/Shaders/ImGUI_VS.h /Vn g_ImGUI_VS Resources/Shaders/ImGUI_VS.hlsl && cd /D C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine && fxc.exe /nologo /Emain /T ps_5_1 /Od /Zi /Fh C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Engine/Shaders/ImGUI_PS.h /Vn g_ImGUI_PS Resources/Shaders/ImGUI_PS.hlsl && cd /D C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine && fxc.exe /nologo /Emain /T vs_5_1 /Od /Zi /Fh C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Engine/Shaders/GeometryMesh_VS.h /Vn g_GeometryMesh_VS Resources/Shaders/GeometryMesh_VS.hlsl && cd /D C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine && fxc.exe /nologo /Emain /T ps_5_1 /Od /Zi /Fh C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Engine/Shaders/GeometryMesh_PS.h /Vn g_GeometryMesh_PS Resources/Shaders/GeometryMesh_PS.hlsl"
-  DESC = Running utility command for shaders
-  restat = 1
-
-build Engine\shaders: phony Engine\CMakeFiles\shaders.util
-
-
-#############################################
 # Utility command for edit_cache
 
 build Engine\CMakeFiles\edit_cache.util: CUSTOM_COMMAND
@@ -691,6 +689,407 @@ build Engine\CMakeFiles\edit_cache.util: CUSTOM_COMMAND
   restat = 1
 
 build Engine\edit_cache: phony Engine\CMakeFiles\edit_cache.util
+
+# =============================================================================
+# Object build statements for EXECUTABLE target EngineBin
+
+
+#############################################
+# Order-only phony target for EngineBin
+
+build cmake_object_order_depends_target_EngineBin: phony || Engine\shaders cmake_object_order_depends_target_DirectXTex
+
+build Engine\CMakeFiles\EngineBin.dir\core\EnginePCH.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\EnginePCH.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\core
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\core\Application.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\Application.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\core
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\Buffer.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\Buffer.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\ByteAddressBuffer.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\ByteAddressBuffer.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\CommandQueue.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\CommandQueue.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\CommandList.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\CommandList.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\ConstantBuffer.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\ConstantBuffer.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\DescriptorAllocation.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\DescriptorAllocation.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\DescriptorAllocator.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\DescriptorAllocator.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\DescriptorAllocatorPage.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\DescriptorAllocatorPage.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\DynamicDescriptorHeap.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\DynamicDescriptorHeap.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\core\Game.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\Game.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\core
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\GenerateMipsPSO.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\GenerateMipsPSO.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\GUI.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\GUI.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\core\HighResolutionClock.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\HighResolutionClock.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\core
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\IndexBuffer.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\IndexBuffer.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\Mesh.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\Mesh.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\PanoToCubemapPSO.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\PanoToCubemapPSO.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\RenderTarget.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\RenderTarget.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\Resource.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\Resource.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\ResourceStateTracker.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\ResourceStateTracker.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\RootSignature.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\RootSignature.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\StructuredBuffer.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\StructuredBuffer.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\Texture.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\Texture.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\UploadBuffer.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\UploadBuffer.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\VertexBuffer.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\VertexBuffer.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\core\Window.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\Window.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\core
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\core\Camera.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\Camera.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\core
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\DeferredRenderer.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\DeferredRenderer.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\core\AssetManager.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\AssetManager.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\core
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\DX12\PipelineManager.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12\PipelineManager.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\DX12
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\Physics\PhysicsSystem.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\Physics\PhysicsSystem.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\Physics
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\core\GameMode.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\GameMode.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\core
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\main.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\main.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\Engine.rc.res: RC_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\Engine.rc || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  DEP_FILE = Engine\CMakeFiles\EngineBin.dir\Engine.rc.res.d
+  FLAGS = -DWIN32 -D_DEBUG
+  INCLUDES = -I C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -I C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -I C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -I C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -I C:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -I C:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\external\ImGui\imgui.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui\imgui.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\external\ImGui
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\external\ImGui\imgui_demo.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui\imgui_demo.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\external\ImGui
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\external\ImGui\imgui_draw.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui\imgui_draw.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\external\ImGui
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\external\ImGui\imgui_widgets.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui\imgui_widgets.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\external\ImGui
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+build Engine\CMakeFiles\EngineBin.dir\external\ImGui\imgui_impl_win32.cpp.obj: CXX_COMPILER__EngineBin_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui\imgui_impl_win32.cpp || cmake_object_order_depends_target_EngineBin
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\EngineBin.dir\external\ImGui
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_PDB = bin\EngineBin.pdb
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target EngineBin
+
+
+#############################################
+# Link the executable bin\EngineBin.exe
+
+build bin\EngineBin.exe: CXX_EXECUTABLE_LINKER__EngineBin_Debug Engine\CMakeFiles\EngineBin.dir\core\EnginePCH.cpp.obj Engine\CMakeFiles\EngineBin.dir\core\Application.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\Buffer.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\ByteAddressBuffer.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\CommandQueue.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\CommandList.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\ConstantBuffer.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\DescriptorAllocation.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\DescriptorAllocator.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\DescriptorAllocatorPage.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\DynamicDescriptorHeap.cpp.obj Engine\CMakeFiles\EngineBin.dir\core\Game.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\GenerateMipsPSO.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\GUI.cpp.obj Engine\CMakeFiles\EngineBin.dir\core\HighResolutionClock.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\IndexBuffer.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\Mesh.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\PanoToCubemapPSO.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\RenderTarget.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\Resource.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\ResourceStateTracker.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\RootSignature.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\StructuredBuffer.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\Texture.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\UploadBuffer.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\VertexBuffer.cpp.obj Engine\CMakeFiles\EngineBin.dir\core\Window.cpp.obj Engine\CMakeFiles\EngineBin.dir\core\Camera.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\DeferredRenderer.cpp.obj Engine\CMakeFiles\EngineBin.dir\core\AssetManager.cpp.obj Engine\CMakeFiles\EngineBin.dir\DX12\PipelineManager.cpp.obj Engine\CMakeFiles\EngineBin.dir\Physics\PhysicsSystem.cpp.obj Engine\CMakeFiles\EngineBin.dir\core\GameMode.cpp.obj Engine\CMakeFiles\EngineBin.dir\main.cpp.obj Engine\CMakeFiles\EngineBin.dir\Engine.rc.res Engine\CMakeFiles\EngineBin.dir\external\ImGui\imgui.cpp.obj Engine\CMakeFiles\EngineBin.dir\external\ImGui\imgui_demo.cpp.obj Engine\CMakeFiles\EngineBin.dir\external\ImGui\imgui_draw.cpp.obj Engine\CMakeFiles\EngineBin.dir\external\ImGui\imgui_widgets.cpp.obj Engine\CMakeFiles\EngineBin.dir\external\ImGui\imgui_impl_win32.cpp.obj | lib\DirectXTex.lib || Engine\shaders lib\DirectXTex.lib
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:windows
+  LINK_LIBRARIES = lib\DirectXTex.lib  d3d12.lib  dxgi.lib  dxguid.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+  OBJECT_DIR = Engine\CMakeFiles\EngineBin.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\EngineBin.dir\
+  TARGET_FILE = bin\EngineBin.exe
+  TARGET_IMPLIB = lib\EngineBin.lib
+  TARGET_PDB = bin\EngineBin.pdb
+
+
+#############################################
+# Utility command for shaders
+
+build Engine\CMakeFiles\shaders.util: CUSTOM_COMMAND
+  COMMAND = cmd.exe /C "cd /D C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine && fxc.exe /nologo /Emain /T cs_5_1 /Od /Zi /Fh C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Engine/Shaders/GenerateMips_CS.h /Vn g_GenerateMips_CS Resources/Shaders/GenerateMips_CS.hlsl && cd /D C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine && fxc.exe /nologo /Emain /T cs_5_1 /Od /Zi /Fh C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Engine/Shaders/PanoToCubemap_CS.h /Vn g_PanoToCubemap_CS Resources/Shaders/PanoToCubemap_CS.hlsl && cd /D C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine && fxc.exe /nologo /Emain /T vs_5_1 /Od /Zi /Fh C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Engine/Shaders/ImGUI_VS.h /Vn g_ImGUI_VS Resources/Shaders/ImGUI_VS.hlsl && cd /D C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine && fxc.exe /nologo /Emain /T ps_5_1 /Od /Zi /Fh C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Engine/Shaders/ImGUI_PS.h /Vn g_ImGUI_PS Resources/Shaders/ImGUI_PS.hlsl && cd /D C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine && fxc.exe /nologo /Emain /T vs_5_1 /Od /Zi /Fh C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Engine/Shaders/GeometryMesh_VS.h /Vn g_GeometryMesh_VS Resources/Shaders/GeometryMesh_VS.hlsl && cd /D C:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine && fxc.exe /nologo /Emain /T ps_5_1 /Od /Zi /Fh C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Engine/Shaders/GeometryMesh_PS.h /Vn g_GeometryMesh_PS Resources/Shaders/GeometryMesh_PS.hlsl"
+  DESC = Running utility command for shaders
+  restat = 1
+
+build Engine\shaders: phony Engine\CMakeFiles\shaders.util
 
 
 #############################################
@@ -948,6 +1347,10 @@ build Engine: phony lib\Engine.lib
 
 build Engine.lib: phony lib\Engine.lib
 
+build EngineBin: phony bin\EngineBin.exe
+
+build EngineBin.exe: phony bin\EngineBin.exe
+
 build Sponza: phony bin\Sponza.dll
 
 build Sponza.dll: phony bin\Sponza.dll
@@ -987,7 +1390,7 @@ build Editor\all: phony bin\Editor.exe
 #############################################
 # Folder: C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Engine
 
-build Engine\all: phony lib\Engine.lib
+build Engine\all: phony lib\Engine.lib bin\EngineBin.exe
 
 # =============================================================================
 
@@ -1010,14 +1413,14 @@ build Tutorial4\all: phony bin\Tutorial4.exe
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja: RERUN_CMAKE | ..\..\..\CMakeLists.txt ..\..\..\DirectXTex\CMakeLists.txt ..\..\..\Editor\CMakeLists.txt ..\..\..\Editor\Editor.vcxproj.user.in ..\..\..\Engine\CMakeLists.txt ..\..\..\Sponza\CMakeLists.txt ..\..\..\Sponza\Sponza.vcxproj.user.in ..\..\..\Tutorial4\CMakeLists.txt ..\..\..\Tutorial4\Tutorial4.vcxproj.user.in C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCXXInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake CMakeCache.txt CMakeFiles\3.21.21080301-MSVC_2\CMakeCXXCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeRCCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeSystem.cmake
+build build.ninja: RERUN_CMAKE | ..\..\..\CMakeLists.txt ..\..\..\DirectXTex\CMakeLists.txt ..\..\..\Editor\CMakeLists.txt ..\..\..\Editor\Editor.vcxproj.user.in ..\..\..\Engine\CMakeLists.txt ..\..\..\Sponza\CMakeLists.txt ..\..\..\Sponza\Sponza.vcxproj.user.in ..\..\..\Tutorial4\CMakeLists.txt ..\..\..\Tutorial4\Tutorial4.vcxproj.user.in C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCXXCompiler.cmake.in C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCXXCompilerABI.cpp C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCXXInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCompilerIdDetection.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeDetermineCXXCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeDetermineCompileFeatures.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeDetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeDetermineCompilerABI.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeDetermineCompilerId.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeDetermineRCCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeDetermineSystem.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeFindBinUtils.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeParseImplicitIncludeInfo.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeParseImplicitLinkInfo.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeParseLibraryArchitecture.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeRCCompiler.cmake.in C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystem.cmake.in C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeTestCXXCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeTestCompilerCommon.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeTestRCCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\ADSP-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\ARMCC-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\ARMClang-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\AppleClang-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Borland-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Clang-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Clang-DetermineCompilerInternal.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Comeau-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Cray-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Embarcadero-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Fujitsu-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\FujitsuClang-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\GHS-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\HP-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\IAR-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Intel-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\IntelLLVM-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\MSVC-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\NVHPC-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\NVIDIA-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\PGI-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\PathScale-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\ROCMClang-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\SCO-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\TI-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Watcom-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\XL-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Internal\FeatureTesting.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-Determine-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake CMakeCache.txt CMakeFiles\3.21.21080301-MSVC_2\CMakeCXXCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeRCCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeSystem.cmake
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build ..\..\..\CMakeLists.txt ..\..\..\DirectXTex\CMakeLists.txt ..\..\..\Editor\CMakeLists.txt ..\..\..\Editor\Editor.vcxproj.user.in ..\..\..\Engine\CMakeLists.txt ..\..\..\Sponza\CMakeLists.txt ..\..\..\Sponza\Sponza.vcxproj.user.in ..\..\..\Tutorial4\CMakeLists.txt ..\..\..\Tutorial4\Tutorial4.vcxproj.user.in C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCXXInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake CMakeCache.txt CMakeFiles\3.21.21080301-MSVC_2\CMakeCXXCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeRCCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeSystem.cmake: phony
+build ..\..\..\CMakeLists.txt ..\..\..\DirectXTex\CMakeLists.txt ..\..\..\Editor\CMakeLists.txt ..\..\..\Editor\Editor.vcxproj.user.in ..\..\..\Engine\CMakeLists.txt ..\..\..\Sponza\CMakeLists.txt ..\..\..\Sponza\Sponza.vcxproj.user.in ..\..\..\Tutorial4\CMakeLists.txt ..\..\..\Tutorial4\Tutorial4.vcxproj.user.in C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCXXCompiler.cmake.in C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCXXCompilerABI.cpp C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCXXInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCompilerIdDetection.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeDetermineCXXCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeDetermineCompileFeatures.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeDetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeDetermineCompilerABI.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeDetermineCompilerId.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeDetermineRCCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeDetermineSystem.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeFindBinUtils.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeParseImplicitIncludeInfo.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeParseImplicitLinkInfo.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeParseLibraryArchitecture.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeRCCompiler.cmake.in C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystem.cmake.in C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeTestCXXCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeTestCompilerCommon.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeTestRCCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\ADSP-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\ARMCC-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\ARMClang-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\AppleClang-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Borland-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Clang-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Clang-DetermineCompilerInternal.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Comeau-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Cray-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Embarcadero-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Fujitsu-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\FujitsuClang-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\GHS-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\HP-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\IAR-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Intel-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\IntelLLVM-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\MSVC-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\NVHPC-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\NVIDIA-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\PGI-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\PathScale-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\ROCMClang-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\SCO-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\TI-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\Watcom-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\XL-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Internal\FeatureTesting.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-Determine-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake CMakeCache.txt CMakeFiles\3.21.21080301-MSVC_2\CMakeCXXCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeRCCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeSystem.cmake: phony
 
 
 #############################################
