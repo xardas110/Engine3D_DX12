@@ -588,6 +588,15 @@ build Engine\CMakeFiles\Engine.dir\Physics\PhysicsSystem.cpp.obj: CXX_COMPILER__
   TARGET_COMPILE_PDB = Engine\CMakeFiles\Engine.dir\Engine.pdb
   TARGET_PDB = lib\Engine.pdb
 
+build Engine\CMakeFiles\Engine.dir\core\GameMode.cpp.obj: CXX_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core\GameMode.cpp || cmake_object_order_depends_target_Engine
+  DEFINES = -DDEBUG_CMD
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Engine\Shaders -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Engine\CMakeFiles\Engine.dir
+  OBJECT_FILE_DIR = Engine\CMakeFiles\Engine.dir\core
+  TARGET_COMPILE_PDB = Engine\CMakeFiles\Engine.dir\Engine.pdb
+  TARGET_PDB = lib\Engine.pdb
+
 build Engine\CMakeFiles\Engine.dir\Engine.rc.res: RC_COMPILER__Engine_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\Engine.rc || cmake_object_order_depends_target_Engine
   DEFINES = -DDEBUG_CMD
   DEP_FILE = Engine\CMakeFiles\Engine.dir\Engine.rc.res.d
@@ -651,7 +660,7 @@ build Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_impl_win32.cpp.obj: CXX_
 #############################################
 # Link the static library lib\Engine.lib
 
-build lib\Engine.lib: CXX_STATIC_LIBRARY_LINKER__Engine_Debug Engine\CMakeFiles\Engine.dir\core\EnginePCH.cpp.obj Engine\CMakeFiles\Engine.dir\core\Application.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Buffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\ByteAddressBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\CommandQueue.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\CommandList.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\ConstantBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocation.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocator.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocatorPage.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DynamicDescriptorHeap.cpp.obj Engine\CMakeFiles\Engine.dir\core\Game.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\GenerateMipsPSO.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\GUI.cpp.obj Engine\CMakeFiles\Engine.dir\core\HighResolutionClock.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\IndexBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Mesh.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\PanoToCubemapPSO.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\RenderTarget.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Resource.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\ResourceStateTracker.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\RootSignature.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\StructuredBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Texture.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\UploadBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\VertexBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\core\Window.cpp.obj Engine\CMakeFiles\Engine.dir\core\Camera.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DeferredRenderer.cpp.obj Engine\CMakeFiles\Engine.dir\core\AssetManager.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\PipelineManager.cpp.obj Engine\CMakeFiles\Engine.dir\Physics\PhysicsSystem.cpp.obj Engine\CMakeFiles\Engine.dir\Engine.rc.res Engine\CMakeFiles\Engine.dir\external\ImGui\imgui.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_demo.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_draw.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_widgets.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_impl_win32.cpp.obj || Engine\shaders lib\DirectXTex.lib
+build lib\Engine.lib: CXX_STATIC_LIBRARY_LINKER__Engine_Debug Engine\CMakeFiles\Engine.dir\core\EnginePCH.cpp.obj Engine\CMakeFiles\Engine.dir\core\Application.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Buffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\ByteAddressBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\CommandQueue.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\CommandList.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\ConstantBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocation.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocator.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DescriptorAllocatorPage.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DynamicDescriptorHeap.cpp.obj Engine\CMakeFiles\Engine.dir\core\Game.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\GenerateMipsPSO.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\GUI.cpp.obj Engine\CMakeFiles\Engine.dir\core\HighResolutionClock.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\IndexBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Mesh.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\PanoToCubemapPSO.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\RenderTarget.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Resource.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\ResourceStateTracker.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\RootSignature.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\StructuredBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\Texture.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\UploadBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\VertexBuffer.cpp.obj Engine\CMakeFiles\Engine.dir\core\Window.cpp.obj Engine\CMakeFiles\Engine.dir\core\Camera.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\DeferredRenderer.cpp.obj Engine\CMakeFiles\Engine.dir\core\AssetManager.cpp.obj Engine\CMakeFiles\Engine.dir\DX12\PipelineManager.cpp.obj Engine\CMakeFiles\Engine.dir\Physics\PhysicsSystem.cpp.obj Engine\CMakeFiles\Engine.dir\core\GameMode.cpp.obj Engine\CMakeFiles\Engine.dir\Engine.rc.res Engine\CMakeFiles\Engine.dir\external\ImGui\imgui.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_demo.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_draw.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_widgets.cpp.obj Engine\CMakeFiles\Engine.dir\external\ImGui\imgui_impl_win32.cpp.obj || Engine\shaders lib\DirectXTex.lib
   LANGUAGE_COMPILE_FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
   LINK_FLAGS = /machine:x64
   OBJECT_DIR = Engine\CMakeFiles\Engine.dir
@@ -759,7 +768,7 @@ build Tutorial4\CMakeFiles\Tutorial4.dir\src\Tutorial4.cpp.obj: CXX_COMPILER__Tu
 
 build bin\Tutorial4.exe: CXX_EXECUTABLE_LINKER__Tutorial4_Debug Tutorial4\CMakeFiles\Tutorial4.dir\src\Camera.cpp.obj Tutorial4\CMakeFiles\Tutorial4.dir\src\main.cpp.obj Tutorial4\CMakeFiles\Tutorial4.dir\src\Light.cpp.obj Tutorial4\CMakeFiles\Tutorial4.dir\src\Material.cpp.obj Tutorial4\CMakeFiles\Tutorial4.dir\src\Tutorial4.cpp.obj | lib\Engine.lib lib\DirectXTex.lib || lib\DirectXTex.lib lib\Engine.lib
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:windows
+  LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:windows  /DEBUG:NONE
   LINK_LIBRARIES = lib\Engine.lib  D3DCompiler.lib  Shlwapi.lib  lib\DirectXTex.lib  d3d12.lib  dxgi.lib  dxguid.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
   OBJECT_DIR = Tutorial4\CMakeFiles\Tutorial4.dir
   POST_BUILD = cd .
@@ -798,7 +807,7 @@ build Tutorial4\rebuild_cache: phony Tutorial4\CMakeFiles\rebuild_cache.util
 # =============================================================================
 
 # =============================================================================
-# Object build statements for EXECUTABLE target Sponza
+# Object build statements for SHARED_LIBRARY target Sponza
 
 
 #############################################
@@ -806,16 +815,9 @@ build Tutorial4\rebuild_cache: phony Tutorial4\CMakeFiles\rebuild_cache.util
 
 build cmake_object_order_depends_target_Sponza: phony || cmake_object_order_depends_target_DirectXTex cmake_object_order_depends_target_Engine
 
-build Sponza\CMakeFiles\Sponza.dir\src\main.cpp.obj: CXX_COMPILER__Sponza_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Sponza\src\main.cpp || cmake_object_order_depends_target_Sponza
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP /ZI -std:c++17
-  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Sponza\inc -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
-  OBJECT_DIR = Sponza\CMakeFiles\Sponza.dir
-  OBJECT_FILE_DIR = Sponza\CMakeFiles\Sponza.dir\src
-  TARGET_COMPILE_PDB = Sponza\CMakeFiles\Sponza.dir\
-  TARGET_PDB = bin\Sponza.pdb
-
 build Sponza\CMakeFiles\Sponza.dir\src\Sponza.cpp.obj: CXX_COMPILER__Sponza_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Sponza\src\Sponza.cpp || cmake_object_order_depends_target_Sponza
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP /ZI -std:c++17
+  DEFINES = -DSponza_EXPORTS
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP -std:c++17
   INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Sponza\inc -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
   OBJECT_DIR = Sponza\CMakeFiles\Sponza.dir
   OBJECT_FILE_DIR = Sponza\CMakeFiles\Sponza.dir\src
@@ -824,21 +826,22 @@ build Sponza\CMakeFiles\Sponza.dir\src\Sponza.cpp.obj: CXX_COMPILER__Sponza_Debu
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target Sponza
+# Link build statements for SHARED_LIBRARY target Sponza
 
 
 #############################################
-# Link the executable bin\Sponza.exe
+# Link the shared library bin\Sponza.dll
 
-build bin\Sponza.exe: CXX_EXECUTABLE_LINKER__Sponza_Debug Sponza\CMakeFiles\Sponza.dir\src\main.cpp.obj Sponza\CMakeFiles\Sponza.dir\src\Sponza.cpp.obj | lib\Engine.lib lib\DirectXTex.lib || lib\DirectXTex.lib lib\Engine.lib
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:windows
+build bin\Sponza.dll lib\Sponza.lib: CXX_SHARED_LIBRARY_LINKER__Sponza_Debug Sponza\CMakeFiles\Sponza.dir\src\Sponza.cpp.obj | lib\Engine.lib lib\DirectXTex.lib || lib\DirectXTex.lib lib\Engine.lib
+  LANGUAGE_COMPILE_FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  LINK_FLAGS = /machine:x64 /debug /INCREMENTAL  /DEBUG:NONE
   LINK_LIBRARIES = lib\Engine.lib  D3DCompiler.lib  Shlwapi.lib  lib\DirectXTex.lib  d3d12.lib  dxgi.lib  dxguid.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
   OBJECT_DIR = Sponza\CMakeFiles\Sponza.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
+  RESTAT = 1
   TARGET_COMPILE_PDB = Sponza\CMakeFiles\Sponza.dir\
-  TARGET_FILE = bin\Sponza.exe
+  TARGET_FILE = bin\Sponza.dll
   TARGET_IMPLIB = lib\Sponza.lib
   TARGET_PDB = bin\Sponza.pdb
 
@@ -866,19 +869,88 @@ build Sponza\CMakeFiles\rebuild_cache.util: CUSTOM_COMMAND
 build Sponza\rebuild_cache: phony Sponza\CMakeFiles\rebuild_cache.util
 
 # =============================================================================
+# Write statements declared in CMakeLists.txt:
+# C:/Users/Ali/Documents/GitHub/Engine3D_DX12/CMakeLists.txt
+# =============================================================================
+
+
+#############################################
+# Utility command for edit_cache
+
+build Editor\CMakeFiles\edit_cache.util: CUSTOM_COMMAND
+  COMMAND = cmd.exe /C "cd /D C:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Editor && "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
+  DESC = No interactive CMake dialog available...
+  restat = 1
+
+build Editor\edit_cache: phony Editor\CMakeFiles\edit_cache.util
+
+# =============================================================================
+# Object build statements for EXECUTABLE target Editor
+
+
+#############################################
+# Order-only phony target for Editor
+
+build cmake_object_order_depends_target_Editor: phony || cmake_object_order_depends_target_DirectXTex cmake_object_order_depends_target_Engine
+
+build Editor\CMakeFiles\Editor.dir\main.cpp.obj: CXX_COMPILER__Editor_Debug C$:\Users\Ali\Documents\GitHub\Engine3D_DX12\Editor\main.cpp || cmake_object_order_depends_target_Editor
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /MP /ZI -std:c++17
+  INCLUDES = -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Editor\inc -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Sponza -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\DX12 -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\external\ImGui -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\Engine\core -IC:\Users\Ali\Documents\GitHub\Engine3D_DX12\DirectXTex\DirectXTex
+  OBJECT_DIR = Editor\CMakeFiles\Editor.dir
+  OBJECT_FILE_DIR = Editor\CMakeFiles\Editor.dir
+  TARGET_COMPILE_PDB = Editor\CMakeFiles\Editor.dir\
+  TARGET_PDB = bin\Editor.pdb
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target Editor
+
+
+#############################################
+# Link the executable bin\Editor.exe
+
+build bin\Editor.exe: CXX_EXECUTABLE_LINKER__Editor_Debug Editor\CMakeFiles\Editor.dir\main.cpp.obj | lib\Engine.lib lib\DirectXTex.lib || lib\DirectXTex.lib lib\Engine.lib
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+  LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:windows  /DEBUG:NONE
+  LINK_LIBRARIES = lib\Engine.lib  D3DCompiler.lib  Shlwapi.lib  lib\DirectXTex.lib  d3d12.lib  dxgi.lib  dxguid.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+  OBJECT_DIR = Editor\CMakeFiles\Editor.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_COMPILE_PDB = Editor\CMakeFiles\Editor.dir\
+  TARGET_FILE = bin\Editor.exe
+  TARGET_IMPLIB = lib\Editor.lib
+  TARGET_PDB = bin\Editor.pdb
+
+
+#############################################
+# Utility command for rebuild_cache
+
+build Editor\CMakeFiles\rebuild_cache.util: CUSTOM_COMMAND
+  COMMAND = cmd.exe /C "cd /D C:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default\Editor && "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SC:\Users\Ali\Documents\GitHub\Engine3D_DX12 -BC:\Users\Ali\Documents\GitHub\Engine3D_DX12\out\build\windows-default"
+  DESC = Running CMake to regenerate build system...
+  pool = console
+  restat = 1
+
+build Editor\rebuild_cache: phony Editor\CMakeFiles\rebuild_cache.util
+
+# =============================================================================
 # Target aliases.
 
 build DirectXTex: phony lib\DirectXTex.lib
 
 build DirectXTex.lib: phony lib\DirectXTex.lib
 
+build Editor: phony bin\Editor.exe
+
+build Editor.exe: phony bin\Editor.exe
+
 build Engine: phony lib\Engine.lib
 
 build Engine.lib: phony lib\Engine.lib
 
-build Sponza: phony bin\Sponza.exe
+build Sponza: phony bin\Sponza.dll
 
-build Sponza.exe: phony bin\Sponza.exe
+build Sponza.dll: phony bin\Sponza.dll
 
 build Tutorial4: phony bin\Tutorial4.exe
 
@@ -894,7 +966,7 @@ build shaders: phony Engine\shaders
 #############################################
 # Folder: C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default
 
-build all: phony DirectXTex\all Engine\all Tutorial4\all Sponza\all
+build all: phony DirectXTex\all Engine\all Tutorial4\all Sponza\all Editor\all
 
 # =============================================================================
 
@@ -902,6 +974,13 @@ build all: phony DirectXTex\all Engine\all Tutorial4\all Sponza\all
 # Folder: C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/DirectXTex
 
 build DirectXTex\all: phony lib\DirectXTex.lib
+
+# =============================================================================
+
+#############################################
+# Folder: C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Editor
+
+build Editor\all: phony bin\Editor.exe
 
 # =============================================================================
 
@@ -915,7 +994,7 @@ build Engine\all: phony lib\Engine.lib
 #############################################
 # Folder: C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default/Sponza
 
-build Sponza\all: phony bin\Sponza.exe
+build Sponza\all: phony bin\Sponza.dll
 
 # =============================================================================
 
@@ -931,14 +1010,14 @@ build Tutorial4\all: phony bin\Tutorial4.exe
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja: RERUN_CMAKE | ..\..\..\CMakeLists.txt ..\..\..\DirectXTex\CMakeLists.txt ..\..\..\Engine\CMakeLists.txt ..\..\..\Sponza\CMakeLists.txt ..\..\..\Sponza\Sponza.vcxproj.user.in ..\..\..\Tutorial4\CMakeLists.txt ..\..\..\Tutorial4\Tutorial4.vcxproj.user.in C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCXXInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake CMakeCache.txt CMakeFiles\3.21.21080301-MSVC_2\CMakeCXXCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeRCCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeSystem.cmake
+build build.ninja: RERUN_CMAKE | ..\..\..\CMakeLists.txt ..\..\..\DirectXTex\CMakeLists.txt ..\..\..\Editor\CMakeLists.txt ..\..\..\Editor\Editor.vcxproj.user.in ..\..\..\Engine\CMakeLists.txt ..\..\..\Sponza\CMakeLists.txt ..\..\..\Sponza\Sponza.vcxproj.user.in ..\..\..\Tutorial4\CMakeLists.txt ..\..\..\Tutorial4\Tutorial4.vcxproj.user.in C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCXXInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake CMakeCache.txt CMakeFiles\3.21.21080301-MSVC_2\CMakeCXXCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeRCCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeSystem.cmake
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build ..\..\..\CMakeLists.txt ..\..\..\DirectXTex\CMakeLists.txt ..\..\..\Engine\CMakeLists.txt ..\..\..\Sponza\CMakeLists.txt ..\..\..\Sponza\Sponza.vcxproj.user.in ..\..\..\Tutorial4\CMakeLists.txt ..\..\..\Tutorial4\Tutorial4.vcxproj.user.in C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCXXInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake CMakeCache.txt CMakeFiles\3.21.21080301-MSVC_2\CMakeCXXCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeRCCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeSystem.cmake: phony
+build ..\..\..\CMakeLists.txt ..\..\..\DirectXTex\CMakeLists.txt ..\..\..\Editor\CMakeLists.txt ..\..\..\Editor\Editor.vcxproj.user.in ..\..\..\Engine\CMakeLists.txt ..\..\..\Sponza\CMakeLists.txt ..\..\..\Sponza\Sponza.vcxproj.user.in ..\..\..\Tutorial4\CMakeLists.txt ..\..\..\Tutorial4\Tutorial4.vcxproj.user.in C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCXXInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Compiler\MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-CXX.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake C$:\Program$ Files\Microsoft$ Visual$ Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake CMakeCache.txt CMakeFiles\3.21.21080301-MSVC_2\CMakeCXXCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeRCCompiler.cmake CMakeFiles\3.21.21080301-MSVC_2\CMakeSystem.cmake: phony
 
 
 #############################################
