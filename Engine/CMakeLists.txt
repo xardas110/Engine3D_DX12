@@ -43,7 +43,6 @@ set( HEADER_FILES
     "core/Components.h"
     "core/Transform.h"
     "Physics/PhysicsSystem.h"
-    "core/GameMode.h"
 )
 
 set( SOURCE_FILES
@@ -79,7 +78,6 @@ set( SOURCE_FILES
     "core/AssetManager.cpp"
     "DX12/PipelineManager.cpp"
     "Physics/PhysicsSystem.cpp"
-    "core/GameMode.cpp"
 )
 
 set( IMGUI_HEADERS
@@ -128,7 +126,7 @@ add_library( Engine STATIC
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
     ${IMGUI_HEADERS} ${IMGUI_SOURCE}
- "main.cpp")
+)
 
 target_include_directories( Engine
     PUBLIC DX12
