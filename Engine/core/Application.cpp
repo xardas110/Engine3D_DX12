@@ -136,6 +136,11 @@ void Application::Create(HINSTANCE hInst)
     }
 }
 
+void Application::SetInstance(Application* app)
+{
+    gs_pSingelton = app;
+}
+
 Application& Application::Get()
 {
     assert(gs_pSingelton);
