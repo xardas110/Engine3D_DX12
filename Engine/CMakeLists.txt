@@ -149,14 +149,14 @@ add_library( Engine STATIC
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
     ${IMGUI_HEADERS} ${IMGUI_SOURCE}
-  )
+   "core/Entity.h" "core/Entity.cpp")
 
  add_executable( EngineBin WIN32
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
     ${IMGUI_HEADERS} ${IMGUI_SOURCE}
-)
+ "core/Entity.h" "core/Entity.cpp")
 
 target_include_directories( Engine
     ${TARGET_INCLUDES}

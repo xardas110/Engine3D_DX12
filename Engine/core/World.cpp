@@ -13,7 +13,10 @@ World::World(const std::wstring& name, int width, int height, bool vSync)
 void World::LoadGameMode()
 {
 	if (m_GameMode)
+    { 
+        ClearGameWorld();
 		m_GameMode->LoadContent();
+    }
 }
 
 void World::UnLoadGameMode()

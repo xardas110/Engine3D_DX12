@@ -3,6 +3,8 @@
 #include <Application.h>
 #include <Game.h>
 #include <Window.h>
+#include <Entity.h>
+#include <Components.h>
 
 // Clamp a value between a min and max range.
 template<typename T>
@@ -60,6 +62,15 @@ void Game::SetRenderCamera(Camera* camera)
 const Camera* Game::GetRenderCamera() const
 {
     return m_RenderCamera;
+}
+
+Entity Game::CreateEntity(const std::string& tag)
+{
+    Entity ent(registry.create(), shared_from_this());
+    ent.AddComponent<TransformComponent>();
+    ent.AddComponent<TagComponent>(tag);
+    ent.AddComponent<RelationComponent>();
+    return ent;
 }
 
 void Game::OnUpdate(UpdateEventArgs& e)
@@ -220,3 +231,7 @@ void Game::OnWindowDestroy()
     UnloadContent();
 }
 
+void Game::ClearGameWorld()
+{
+    registry.clear();
+}
