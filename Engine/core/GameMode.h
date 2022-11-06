@@ -6,8 +6,8 @@ class Game;
 
 class GameMode
 {
-	friend class GameWrapper;
-
+	friend class World;
+	
 protected:
 	GameMode(Game* game);
 
