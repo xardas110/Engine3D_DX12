@@ -1,6 +1,7 @@
 #include <EnginePCH.h>
 #include <World.h>
 #include <Editor.h>
+#include <Application.h>
 
 World::World(const std::wstring& name, int width, int height, bool vSync)
     :Game(name, width, height, vSync)

@@ -254,7 +254,18 @@ void Editor::UpdateSceneGraph(entt::entity entity, const std::string& tag, Relat
 
 void Editor::UpdateSelectedEntity(RenderEventArgs& e)
 {
+    if (selectedEntity == entt::null) return;
 
+    auto& reg = m_World->registry;
+
+    auto& tag = reg.get<TagComponent>(selectedEntity);
+    auto& trans = reg.get<TransformComponent>(selectedEntity);
+
+    ImGui::Begin(std::string("Selected Entity: " + tag.GetTag() + " -> id: " + std::to_string((std::uint32_t)selectedEntity)).c_str());
+    ImGui::InputFloat3("Position", &trans.pos.m128_f32[0]);
+    ImGui::InputFloat3("Scale", &trans.scale.m128_f32[0]);
+    ImGui::InputFloat4("Rotation", &trans.rot.m128_f32[0]);
+    ImGui::End();
 }
 
 void Editor::SelectEntity(entt::entity entity)

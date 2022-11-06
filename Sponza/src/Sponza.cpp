@@ -56,7 +56,10 @@ bool Sponza::LoadContent()
     auto ent6 = game->CreateEntity("ent6");
 
     ent.AddChild(ent2);
+    ent.AddChild(ent3);
+    ent3.AddChild(ent4);
     ent2.AddChild(ent6);
+    ent2.AddChild(ent5);
 
     return true;
 }
