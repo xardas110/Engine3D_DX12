@@ -151,8 +151,9 @@ private:
     int m_Height;
     bool m_vSync;
 
+public:
     entt::registry registry;
-
+private:
     //Window camera
     Camera m_Camera;
 
