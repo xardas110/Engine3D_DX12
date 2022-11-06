@@ -40,10 +40,12 @@
 #include <entt/entt.hpp>
 
 class Window;
+class Entity;
 
 class Game : public std::enable_shared_from_this<Game>
 {
     friend class Editor;
+    friend class Entity;
 public:
     /**
      * Create the DirectX demo using the specified window dimensions.
@@ -90,6 +92,9 @@ public:
      * Get Render Camera.
      */
     const Camera* GetRenderCamera() const;
+
+    Entity CreateEntity(const std::string& tag);
+
 protected:
     friend class Window;
 
@@ -144,17 +149,22 @@ protected:
      */
     virtual void OnWindowDestroy();
 
+    /**
+   * Clear game world
+   */
+    void ClearGameWorld();
+
     std::shared_ptr<Window> m_pWindow;
 
 private:
+
     std::wstring m_Name;
     int m_Width;
     int m_Height;
     bool m_vSync;
 
-public:
     entt::registry registry;
-private:
+
     //Window camera
     Camera m_Camera;
 

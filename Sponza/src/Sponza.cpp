@@ -13,6 +13,7 @@ using namespace Microsoft::WRL;
 #include <d3dcompiler.h>
 #include <DirectXColors.h>
 #include <DirectXMath.h>
+#include <Entity.h>
 
 using namespace DirectX;
 
@@ -47,13 +48,19 @@ bool Sponza::LoadContent()
 {
     std::cout << "test1000 " << std::endl;
 
-    auto ent = game->registry.create();
+    auto ent = game->CreateEntity("Parent1");
+    auto& tag = ent.GetComponent<TagComponent>();
 
-    auto& trans = game->registry.emplace<TransformComponent>(ent);
+    auto ent2 = game->CreateEntity("Child1");
+    ent.AddChild(ent2);
 
-    trans.pos = { 10.f, 0.f, 0.f, 0.f };
+    auto ent3 = game->CreateEntity("ent1");
 
-    std::cout << trans.pos.m128_f32[0] << std::endl;
+    auto ent4 = game->CreateEntity("ent2");
+
+    auto ent5 = game->CreateEntity("ent4");
+
+    auto ent6 = game->CreateEntity("ent6");
 
     return true;
 }

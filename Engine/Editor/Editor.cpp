@@ -4,6 +4,7 @@
 #include <iostream>
 #include <Application.h>
 #include <Window.h>
+#include <Components.h>
 
 FILETIME GetLastWriteTime(const std::string& file)
 {
@@ -62,8 +63,11 @@ void Editor::OnGui(RenderEventArgs& e)
     if (!m_World) return;
 
     UpdateGameMenuBar(e);
-    UpdateRuntimeGame(e);
+    UpdateWorldHierarchy(e);
 
+    //Beware! Might need to run last
+    UpdateRuntimeGame(e);
+  
     if (showDemoWindow)
     {
         ImGui::ShowDemoWindow(&showDemoWindow);
@@ -182,4 +186,79 @@ void Editor::UpdateRuntimeGame(RenderEventArgs& e)
     }
 
     ImGui::End();
+}
+
+void Editor::UpdateWorldHierarchy(RenderEventArgs& e)
+{
+    static ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow
+        | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+
+    static ImGuiTreeNodeFlags leafFlags = nodeFlags
+        | ImGuiTreeNodeFlags_Leaf
+        | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+
+    static ImGuiTreeNodeFlags selectedFlag = ImGuiTreeNodeFlags_Selected;
+
+    ImGui::Begin("World Hierarchy");   
+    auto view = m_World->registry.view<TagComponent, RelationComponent>();
+    for (auto [entity, tag, relation] : view.each())
+    {
+        if (!relation.HasChildren())
+        { 
+            ImGui::TreeNodeEx(
+                (void*)(intptr_t)entity,
+                entity == selectedEntity? leafFlags | selectedFlag : leafFlags,
+                std::string(tag.GetTag() + " -> Id: " + std::to_string((std::uint32_t)entity)).c_str(),
+                static_cast<uint32_t>(entity)
+            );
+
+            if (ImGui::IsItemClicked())
+            {
+                SelectEntity(entity);
+            }
+        }
+        else
+        {
+            bool bNodeOpen = ImGui::TreeNodeEx(
+                (void*)(intptr_t)entity,
+                entity == selectedEntity ? nodeFlags | selectedFlag : nodeFlags, 
+                std::string(tag.GetTag() + " -> Id: " + std::to_string((std::uint32_t)entity)).c_str(),
+                static_cast<uint32_t>(entity)
+            );
+
+            if (ImGui::IsItemClicked())
+            {
+                SelectEntity(entity);
+            }
+
+            if (bNodeOpen)
+            {             
+                for (auto child : relation.GetChildren())
+                {
+                    auto& childTag = m_World->registry.get<TagComponent>(child);
+
+                    ImGui::TreeNodeEx(
+                        (void*)(intptr_t)child,
+                        child == selectedEntity ? leafFlags | selectedFlag : leafFlags,
+                        std::string(childTag.GetTag() + " -> Id: " + std::to_string((std::uint32_t)child)).c_str(),
+                        static_cast<uint32_t>(child)
+                    );
+
+                    if (ImGui::IsItemClicked())
+                    {
+                        SelectEntity(child);
+                    }
+
+                    ImGui::TreePop();
+                }
+            }
+        }
+    }
+                
+   ImGui::End();
+}
+
+void Editor::SelectEntity(entt::entity entity)
+{
+    selectedEntity = entity;
 }
