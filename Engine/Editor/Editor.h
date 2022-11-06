@@ -2,6 +2,7 @@
 
 #include <Events.h>
 #include <entt/entt.hpp>
+#include <Components.h>
 
 class World;
 
@@ -14,7 +15,11 @@ class Editor
 	void OnGui(RenderEventArgs& e);
 	void UpdateGameMenuBar(RenderEventArgs& e);
 	void UpdateRuntimeGame(RenderEventArgs& e);
+
+	void UpdateSceneGraph(entt::entity entity, const std::string& tag, RelationComponent& relation);
+
 	void UpdateWorldHierarchy(RenderEventArgs& e);
+	void UpdateSelectedEntity(RenderEventArgs& e);
 
 	void SelectEntity(entt::entity entity);
 

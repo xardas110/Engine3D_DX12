@@ -48,19 +48,15 @@ bool Sponza::LoadContent()
 {
     std::cout << "test1000 " << std::endl;
 
-    auto ent = game->CreateEntity("Parent1");
-    auto& tag = ent.GetComponent<TagComponent>();
-
-    auto ent2 = game->CreateEntity("Child1");
-    ent.AddChild(ent2);
-
-    auto ent3 = game->CreateEntity("ent1");
-
-    auto ent4 = game->CreateEntity("ent2");
-
-    auto ent5 = game->CreateEntity("ent4");
-
+    auto ent = game->CreateEntity("ent");
+    auto ent2 = game->CreateEntity("ent2");
+    auto ent3 = game->CreateEntity("ent3");
+    auto ent4 = game->CreateEntity("ent4");
+    auto ent5 = game->CreateEntity("ent5");
     auto ent6 = game->CreateEntity("ent6");
+
+    ent.AddChild(ent2);
+    ent2.AddChild(ent6);
 
     return true;
 }
