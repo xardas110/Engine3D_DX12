@@ -52,6 +52,7 @@ class Texture;
 class Window : public std::enable_shared_from_this<Window>
 {
     friend class DeferredRenderer;
+    friend class Editor;
 public:
     // Number of swapchain back buffers.
     static const UINT BufferCount = 3;

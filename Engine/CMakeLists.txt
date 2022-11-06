@@ -44,6 +44,8 @@ set( HEADER_FILES
     "core/Transform.h"
     "Physics/PhysicsSystem.h"
     "core/GameMode.h"
+    "Editor/Editor.h"
+    "core/World.h"
 )
 
 set( SOURCE_FILES
@@ -81,6 +83,8 @@ set( SOURCE_FILES
     "Physics/PhysicsSystem.cpp"
     "core/GameMode.cpp"
     "main.cpp"
+    "Editor/Editor.cpp"  
+    "core/World.cpp"
 )
 
 set( IMGUI_HEADERS
@@ -129,6 +133,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC external
     PUBLIC external/ImGui
     PUBLIC core
+    PUBLIC Editor
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
 
@@ -144,14 +149,14 @@ add_library( Engine STATIC
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
     ${IMGUI_HEADERS} ${IMGUI_SOURCE}
- )
+  )
 
  add_executable( EngineBin WIN32
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
     ${IMGUI_HEADERS} ${IMGUI_SOURCE}
- )
+)
 
 target_include_directories( Engine
     ${TARGET_INCLUDES}
