@@ -165,8 +165,6 @@ protected:
     // Update the render target views for the swapchain back buffers.
     void UpdateRenderTargetViews();
 
-    //Default gui
-    void OnGui();
 private:
     // Windows should not be copied.
     Window(const Window& copy) = delete;

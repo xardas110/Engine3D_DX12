@@ -1,0 +1,169 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4
+					],
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12.0"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "DirectXTex",
+					"jsonFile" : "directory-DirectXTex-Debug-41be9049bbd5ee0511e9.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12.3"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "DirectXTex",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "Engine",
+					"jsonFile" : "directory-Engine-Debug-e7cda9100e735d363573.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Engine",
+					"targetIndexes" : 
+					[
+						1,
+						2,
+						5
+					]
+				},
+				{
+					"build" : "Tutorial4",
+					"jsonFile" : "directory-Tutorial4-Debug-f0023c8cfe58d2913d80.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Tutorial4",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "Sponza",
+					"jsonFile" : "directory-Sponza-Debug-c72d6dd42e087976b43e.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Sponza",
+					"targetIndexes" : 
+					[
+						3
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					],
+					"name" : "Engine3D_DX12",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "DirectXTex::@0182fc2a9ab8d5144aec",
+					"jsonFile" : "target-DirectXTex-Debug-05db75bd0915c2f96f62.json",
+					"name" : "DirectXTex",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "Engine::@8f69bdd092c897d92c1e",
+					"jsonFile" : "target-Engine-Debug-25d23f6359d1fb6388d8.json",
+					"name" : "Engine",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "EngineBin::@8f69bdd092c897d92c1e",
+					"jsonFile" : "target-EngineBin-Debug-6ab1e04a7d0e04607499.json",
+					"name" : "EngineBin",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "Sponza::@ba6ce5cf092d61510751",
+					"jsonFile" : "target-Sponza-Debug-03b7e931c4968bf6bceb.json",
+					"name" : "Sponza",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "Tutorial4::@0f2dff933f4eff55eee0",
+					"jsonFile" : "target-Tutorial4-Debug-c18fe943eb4e29388839.json",
+					"name" : "Tutorial4",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "shaders::@8f69bdd092c897d92c1e",
+					"jsonFile" : "target-shaders-Debug-0872d63b1cb0de91480e.json",
+					"name" : "shaders",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/Ali/Documents/GitHub/Engine3D_DX12/out/build/windows-default",
+		"source" : "C:/Users/Ali/Documents/GitHub/Engine3D_DX12"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

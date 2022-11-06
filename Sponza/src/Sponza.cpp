@@ -27,6 +27,8 @@ using namespace DirectX;
 
 #include <iostream>
 
+#include <Components.h>
+
 extern "C" __declspec(dllexport) GameMode* CALLBACK Entry(Game* gameEntry)
 {
     return new Sponza(gameEntry);
@@ -43,7 +45,16 @@ Sponza::~Sponza()
 
 bool Sponza::LoadContent()
 {
-    std::cout << "Sponza xcv content " << std::endl;
+    std::cout << "test1000 " << std::endl;
+
+    auto ent = game->registry.create();
+
+    auto& trans = game->registry.emplace<TransformComponent>(ent);
+
+    trans.pos = { 10.f, 0.f, 0.f, 0.f };
+
+    std::cout << trans.pos.m128_f32[0] << std::endl;
+
     return true;
 }
 
