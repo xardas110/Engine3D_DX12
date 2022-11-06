@@ -67,3 +67,11 @@ void Sponza::OnUpdate(UpdateEventArgs& e)
 {
 }
 
+void Sponza::OnGui(RenderEventArgs& e)
+{
+    //std::cout << "OnGui running " << std::endl;
+   // ImGui::Begin("Sponza");
+   // ImGui::Text("Sponza mode");
+   // ImGui::End();
+}
+
