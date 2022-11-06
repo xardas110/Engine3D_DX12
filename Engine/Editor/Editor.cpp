@@ -59,17 +59,19 @@ Editor::Editor(World* world)
 
 void Editor::OnGui(RenderEventArgs& e)
 {
-    auto world = m_World;
+    if (!m_World) return;
 
-    if (!world) return;
+    UpdateGameMenuBar(e);
+    UpdateRuntimeGame(e);
 
-    static bool showDemoWindow = false;
-    static char gameDLL[20] = { "Sponza" };
-    static bool bHotReload = true;
-    static float reloadTimer = 0.f;
-    static float changesDetectedTimer = 0.f;
-    static bool bShowReloadOverlay = false;
+    if (showDemoWindow)
+    {
+        ImGui::ShowDemoWindow(&showDemoWindow);
+    }
+}
 
+void Editor::UpdateGameMenuBar(RenderEventArgs& e)
+{
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
@@ -84,36 +86,42 @@ void Editor::OnGui(RenderEventArgs& e)
         if (ImGui::BeginMenu("View"))
         {
             ImGui::MenuItem("ImGui Demo", nullptr, &showDemoWindow);
+            ImGui::MenuItem("Game Loader", nullptr, &bShowGameLoader);
 
             ImGui::EndMenu();
         }
 
         if (ImGui::BeginMenu("Options"))
         {
-            bool vSync = world->m_pWindow->IsVSync();
+            bool vSync = m_World->m_pWindow->IsVSync();
             if (ImGui::MenuItem("V-Sync", "V", &vSync))
             {
-                world->m_pWindow->SetVSync(vSync);
+                m_World->m_pWindow->SetVSync(vSync);
             }
 
-            bool fullscreen = world->m_pWindow->IsFullScreen();
+            bool fullscreen = m_World->m_pWindow->IsFullScreen();
             if (ImGui::MenuItem("Full screen", "Alt+Enter", &fullscreen))
             {
-                world->m_pWindow->SetFullscreen(fullscreen);
+                m_World->m_pWindow->SetFullscreen(fullscreen);
             }
 
             ImGui::EndMenu();
         }
 
-        char buffer[256];
-
         ImGui::EndMainMenuBar();
     }
+}
 
-    if (showDemoWindow)
-    {
-        ImGui::ShowDemoWindow(&showDemoWindow);
-    }
+void Editor::UpdateRuntimeGame(RenderEventArgs& e)
+{
+    if (!bShowGameLoader) return;
+
+    static bool bHotReload = true;
+    static float reloadTimer = 0.f;
+    static float changesDetectedTimer = 0.f;
+    static bool bShowReloadOverlay = false;
+
+    ImGui::Begin("Game Loader");
 
     ImGuiInputTextFlags flags;
     flags = ImGuiInputTextFlags_EnterReturnsTrue;
@@ -126,19 +134,19 @@ void Editor::OnGui(RenderEventArgs& e)
     if (ImGui::InputText("", gameDLL, 20, flags))
     {
         changesDetectedTimer = 1.f;
-        world->UnloadRuntimeGame();
-        if (!world->LoadRuntimeGame(gameDLL))
+        m_World->UnloadRuntimeGame();
+        if (!m_World->LoadRuntimeGame(gameDLL))
         {
             ImGui::Text("Game not found!");
         }
     }
     ImGui::SameLine();
 
-    if (ImGui::Button("Reload Dll"))
+    if (ImGui::Button("Reload"))
     {
         changesDetectedTimer = 1.f;
-        world->UnloadRuntimeGame();
-        if (!world->LoadRuntimeGame(gameDLL))
+        m_World->UnloadRuntimeGame();
+        if (!m_World->LoadRuntimeGame(gameDLL))
         {
             ImGui::Text("Game not found!");
         }
@@ -154,13 +162,13 @@ void Editor::OnGui(RenderEventArgs& e)
         std::string dllString = std::string(gameDLL) + ".dll";
 
         FILETIME lastWriteTime = GetLastWriteTime(dllString);
-        if (CompareFileTime(&world->runTimeGame.lastWriteTime, &lastWriteTime) != 0)
+        if (CompareFileTime(&m_World->runTimeGame.lastWriteTime, &lastWriteTime) != 0)
         {
             changesDetectedTimer = 1.f;
-            world->UnloadRuntimeGame();
-            world->LoadRuntimeGame(gameDLL);
+            m_World->UnloadRuntimeGame();
+            m_World->LoadRuntimeGame(gameDLL);
 
-            world->runTimeGame.lastWriteTime = GetLastWriteTime(dllString);
+            m_World->runTimeGame.lastWriteTime = GetLastWriteTime(dllString);
         }
     }
     if (changesDetectedTimer > 0)
@@ -172,4 +180,6 @@ void Editor::OnGui(RenderEventArgs& e)
     {
         bShowReloadOverlay = false;
     }
+
+    ImGui::End();
 }
