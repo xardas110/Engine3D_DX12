@@ -12,23 +12,22 @@ World::World(const std::wstring& name, int width, int height, bool vSync)
 
 void World::LoadGameMode()
 {
-	if (this->m_GameMode)
-		this->m_GameMode->LoadContent();
+	if (m_GameMode)
+		m_GameMode->LoadContent();
 }
 
 void World::UnLoadGameMode()
 {
-	if (this->m_GameMode)
-		this->m_GameMode->UnloadContent();
+	if (m_GameMode)
+		m_GameMode->UnloadContent();
 }
 
 void World::OnUpdate(UpdateEventArgs& e)
 {
 	super::OnUpdate(e);
 
-	if (!m_GameMode) return;
-
-	if (m_GameMode) m_GameMode->OnUpdate(e);
+    if (m_GameMode)
+        m_GameMode->OnUpdate(e);
 }
 
 void World::OnRender(RenderEventArgs& e)
@@ -36,6 +35,7 @@ void World::OnRender(RenderEventArgs& e)
 	super::OnRender(e);
 #ifdef DEBUG_EDITOR
     m_Editor->OnGui(e);
+    if (m_GameMode) m_GameMode->OnGui(e);
 #endif
 }
 
