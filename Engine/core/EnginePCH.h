@@ -78,6 +78,7 @@ using namespace DirectX;
 #include <thread>
 #include <vector>
 #include <array>
+#include <iostream>
 
 namespace fs = std::filesystem;
 
