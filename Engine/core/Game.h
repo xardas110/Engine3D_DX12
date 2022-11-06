@@ -43,6 +43,7 @@ class Window;
 
 class Game : public std::enable_shared_from_this<Game>
 {
+    friend class Editor;
 public:
     /**
      * Create the DirectX demo using the specified window dimensions.
