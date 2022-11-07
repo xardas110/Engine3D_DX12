@@ -154,11 +154,6 @@ protected:
      */
     virtual void OnWindowDestroy();
 
-    /**
-   * Clear game world
-   */
-    void ClearGameWorld();
-
     std::shared_ptr<Window> m_pWindow;
 
 private:
