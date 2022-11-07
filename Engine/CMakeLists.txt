@@ -56,7 +56,7 @@ set( HEADER_FILES
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
-    "core/Application.cpp"
+    "DX12/Application.cpp"
     "DX12/Buffer.cpp"
     "DX12/ByteAddressBuffer.cpp"
     "DX12/CommandQueue.cpp"
