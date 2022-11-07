@@ -8,6 +8,8 @@
 #include <Transform.h>
 #include <AssimpLoader.h>
 #include <Components.h>
+#include <entt/entt.hpp>
+#include <Entity.h>
 
 using namespace DirectX;
 
@@ -126,10 +128,13 @@ void DeferredRenderer::Render(Window& window)
             auto& textures = mesh.m_Material.textures;
 
             if (material.HasTexture(MaterialType::Diffuse))
-            { 
-                commandList->SetShaderResourceView(GeometryMeshRootParam::Textures, 0, 
+            {    
+                auto& g = commandList->GetGraphicsCommandList();
+
+                commandList->SetShaderResourceView(
+                    GeometryMeshRootParam::Textures, 0, 
                     textures[MaterialType::Diffuse],
-                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);                   
             }
             mesh.Draw(*commandList);
         } 
