@@ -29,9 +29,12 @@ using namespace DirectX;
 #include <iostream>
 
 #include <Components.h>
+#include <ResourceStateTracker.h>
 
-extern "C" __declspec(dllexport) GameMode* CALLBACK Entry(Game* gameEntry)
+extern "C" __declspec(dllexport) GameMode* CALLBACK Entry(Game* gameEntry, Application* app)
 {
+    Application::SetInstance(app);
+
     return new Sponza(gameEntry);
 }
 
@@ -46,6 +49,11 @@ Sponza::~Sponza()
 
 bool Sponza::LoadContent()
 {
+
+    auto ent = game->CreateEntity("Sponza");
+    auto& sm = ent.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.dae");
+    auto& trans = ent.GetComponent<TransformComponent>().scale = { 0.01f, 0.01f, 0.01f };
+
     /*
     auto ent = game->CreateEntity("ent");
     auto ent2 = game->CreateEntity("ent2");

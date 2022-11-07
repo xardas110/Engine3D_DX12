@@ -31,7 +31,6 @@ std::unique_ptr<AssetManager> AssetManager::CreateInstance()
 	return std::unique_ptr<AssetManager>(new AssetManager);
 }
 
-
 bool AssetManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh)
 {
 	if (staticMeshMap.find(path) != staticMeshMap.end())

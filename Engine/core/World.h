@@ -1,10 +1,12 @@
 #pragma once
 #include <GameMode.h>
 #include <Game.h>
+#include <Application.h>
+#include <ResourceStateTracker.h>
 
 class Editor;
 
-typedef GameMode* (CALLBACK* GameEntry)(Game*);
+typedef GameMode* (CALLBACK* GameEntry)(Game*, Application*);
 
 /**
 *  GameWorld class, presitent trought different games.

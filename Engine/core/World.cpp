@@ -68,7 +68,7 @@ bool World::LoadRuntimeGame(const std::string& name)
         return false;
     }
 
-    m_GameMode = std::unique_ptr<GameMode>(gameEntry(this));
+    m_GameMode = std::unique_ptr<GameMode>(gameEntry(this, &Application::Get()));
     LoadGameMode();
 }
 

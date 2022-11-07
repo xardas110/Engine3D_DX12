@@ -121,7 +121,7 @@ public:
 
 protected:
     // The underlying D3D12 resource.
-    Microsoft::WRL::ComPtr<ID3D12Resource> m_d3d12Resource;
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_d3d12Resource{nullptr};
     D3D12_FEATURE_DATA_FORMAT_SUPPORT m_FormatSupport;
     std::unique_ptr<D3D12_CLEAR_VALUE> m_d3d12ClearValue;
     std::wstring m_ResourceName;
