@@ -2,6 +2,8 @@ cmake_minimum_required( VERSION 3.20.0 ) # Latest version of CMake when this fil
 
 add_compile_definitions(DEBUG_CMD)
 
+add_compile_definitions(DEBUG_CMD)
+
 set( HEADER_FILES 
     "core/EnginePCH.h"
     "DX12/Application.h"

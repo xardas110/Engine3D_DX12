@@ -14,7 +14,8 @@ World::World(const std::wstring& name, int width, int height, bool vSync)
 void World::LoadGameMode()
 {
 	if (m_GameMode)
-    {       
+    { 
+        ClearGameWorld();
 		m_GameMode->LoadContent();
     }
 }
@@ -72,9 +73,9 @@ bool World::LoadRuntimeGame(const std::string& name)
 }
 
 void World::UnloadRuntimeGame()
-{  
+{
     UnLoadGameMode();
     FreeLibrary(runTimeGame.hDLL);
     runTimeGame.Reset();
-    m_GameMode = nullptr;   
+    m_GameMode = nullptr;
 }
