@@ -14,6 +14,15 @@ const D3D12_INPUT_ELEMENT_DESC VertexPositionNormalTexture::InputElements[] =
     { "TEXCOORD",   0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 };
 
+const D3D12_INPUT_ELEMENT_DESC VertexPositionNormalTextureTangentBitangent::InputElements[] =
+{
+    { "POSITION",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "NORMAL",     0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "TEXCOORD",   0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "TANGENT",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "BITTANGENT",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+};
+
 Mesh::Mesh()
     : m_IndexCount(0)
 {}
@@ -367,6 +376,12 @@ std::unique_ptr<Mesh> Mesh::CreatePlane(CommandList& commandList, float width, f
     return mesh;
 }
 
+std::unique_ptr<Mesh> Mesh::CreateMesh(CommandList& commandList, const VertexCollection32& vertices, const IndexCollection32& indices, bool rhcoords)
+{
+    std::unique_ptr<Mesh> mesh(new Mesh());
+    mesh->Initialize(commandList, vertices, indices, rhcoords);
+    return mesh;
+}
 
 // Helper for flipping winding of geometric primitives for LH vs. RH coords
 static void ReverseWinding(IndexCollection& indices, VertexCollection& vertices)
@@ -395,4 +410,19 @@ void Mesh::Initialize(CommandList& commandList, VertexCollection& vertices, Inde
     commandList.CopyIndexBuffer(m_IndexBuffer, indices);
 
     m_IndexCount = static_cast<UINT>(indices.size());
+}
+
+
+void Mesh::Initialize(CommandList& commandList, const VertexCollection32& vertices, const IndexCollection32& indices, bool rhcoords)
+{
+    commandList.CopyVertexBuffer(m_VertexBuffer, vertices);
+    commandList.CopyIndexBuffer(m_IndexBuffer, indices);
+
+    m_IndexCount = static_cast<UINT>(indices.size());
+}
+
+StaticMesh::StaticMesh(const std::string& path)
+{
+    auto* smm = Application::Get().GetAssetManager();
+    smm->LoadStaticMesh(path, *this);
 }

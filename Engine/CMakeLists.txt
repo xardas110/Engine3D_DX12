@@ -51,6 +51,7 @@ set( HEADER_FILES
     "core/World.h"
     "core/Entity.h" 
     "core/AssimpLoader.h"
+    "core/Material.h"
 )
 
 set( SOURCE_FILES
@@ -158,8 +159,7 @@ add_library( Engine STATIC
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
-    ${IMGUI_HEADERS} ${IMGUI_SOURCE}
-)
+    ${IMGUI_HEADERS} ${IMGUI_SOURCE})
 
  add_executable( EngineBin WIN32
     ${HEADER_FILES}

@@ -16,11 +16,17 @@ class AssetManager
 	friend class DeferredRenderer;
 	friend class std::default_delete<AssetManager>;
 
+	using StaticMeshMap = std::map<std::string, StaticMesh>;
+
+public:
+	bool LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh);
+private:
 	AssetManager();
 	~AssetManager();
 
 	static std::unique_ptr<AssetManager> CreateInstance();
 
-private:
+	StaticMeshMap staticMeshMap;
 	Mesh m_Primitives[Primitives::Size];
+	Mesh m_Meshes[50000]; std::uint32_t lastIndex = 0;
 };

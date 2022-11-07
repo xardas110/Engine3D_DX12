@@ -72,7 +72,7 @@ void PipelineManager::CreateGeometryMeshPSO()
 
     pipelineStateStream.pRootSignature = rootSignature.GetRootSignature().Get();
 
-    pipelineStateStream.InputLayout = { VertexPositionNormalTexture::InputElements ,VertexPositionNormalTexture::InputElementCount };
+    pipelineStateStream.InputLayout = { VertexPositionNormalTextureTangentBitangent::InputElements ,VertexPositionNormalTextureTangentBitangent::InputElementCount };
 
     pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE::D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 

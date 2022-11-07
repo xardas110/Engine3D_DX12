@@ -40,6 +40,7 @@
 
 #include <memory> // For std::unique_ptr
 #include <vector>
+#include <Material.h>
 
  // Vertex struct holding position, normal vector, and texture mapping information.
 struct VertexPositionNormalTexture
@@ -68,8 +69,44 @@ struct VertexPositionNormalTexture
     static const D3D12_INPUT_ELEMENT_DESC InputElements[InputElementCount];
 };
 
+// Vertex struct holding position, normal vector, and texture mapping information.
+struct VertexPositionNormalTextureTangentBitangent
+{
+    VertexPositionNormalTextureTangentBitangent()
+    { }
+
+    VertexPositionNormalTextureTangentBitangent(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& normal, const DirectX::XMFLOAT2& textureCoordinate, const DirectX::XMFLOAT3& tangent, const DirectX::XMFLOAT3& bitTangent)
+        : position(position),
+        normal(normal),
+        textureCoordinate(textureCoordinate),
+        tangent(tangent),
+        bitTangent(bitTangent)
+    { }
+
+    VertexPositionNormalTextureTangentBitangent(DirectX::FXMVECTOR position, DirectX::FXMVECTOR normal, DirectX::FXMVECTOR textureCoordinate, DirectX::FXMVECTOR tangent, DirectX::FXMVECTOR bitTangent)
+    {
+        XMStoreFloat3(&this->position, position);
+        XMStoreFloat3(&this->normal, normal);
+        XMStoreFloat2(&this->textureCoordinate, textureCoordinate);
+        XMStoreFloat3(&this->tangent, tangent);
+        XMStoreFloat3(&this->bitTangent, bitTangent);
+    }
+
+    DirectX::XMFLOAT3 position;
+    DirectX::XMFLOAT3 normal;
+    DirectX::XMFLOAT2 textureCoordinate;
+    DirectX::XMFLOAT3 tangent;
+    DirectX::XMFLOAT3 bitTangent;
+
+    static const int InputElementCount = 5;
+    static const D3D12_INPUT_ELEMENT_DESC InputElements[InputElementCount];
+};
+
 using VertexCollection = std::vector<VertexPositionNormalTexture>;
 using IndexCollection = std::vector<uint16_t>;
+
+using VertexCollection32 = std::vector<VertexPositionNormalTextureTangentBitangent>;
+using IndexCollection32 = std::vector<uint32_t>;
 
 class Mesh
 {
@@ -82,6 +119,10 @@ public:
     static std::unique_ptr<Mesh> CreateCone(CommandList& commandList, float diameter = 1, float height = 1, size_t tessellation = 32, bool rhcoords = false);
     static std::unique_ptr<Mesh> CreateTorus(CommandList& commandList, float diameter = 1, float thickness = 0.333f, size_t tessellation = 32, bool rhcoords = false);
     static std::unique_ptr<Mesh> CreatePlane(CommandList& commandList, float width = 1, float height = 1, bool rhcoords = false);
+    //Used to create a mesh from a model
+    static std::unique_ptr<Mesh> CreateMesh(CommandList& commandList, const VertexCollection32& vertices, const IndexCollection32& indices, bool rhcoords);
+
+    virtual ~Mesh();
 
 protected:
 
@@ -91,12 +132,26 @@ private:
 
     Mesh();
     Mesh(const Mesh& copy) = delete;
-    virtual ~Mesh();
-
+    
     void Initialize(CommandList& commandList, VertexCollection& vertices, IndexCollection& indices, bool rhcoords);
+
+    void Initialize(CommandList& commandList, const VertexCollection32& vertices, const IndexCollection32& indices, bool rhcoords);
 
     VertexBuffer m_VertexBuffer;
     IndexBuffer m_IndexBuffer;
 
     UINT m_IndexCount;
+};
+
+class StaticMesh
+{
+    friend class AssetManager;
+    friend class DeferredRenderer;
+
+public:
+    StaticMesh() = default;
+    StaticMesh(const std::string& path);
+private:
+    std::uint32_t startOffset{0};
+    std::uint32_t count{0};
 };

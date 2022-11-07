@@ -1,7 +1,9 @@
 #pragma once
-#include "Transform.h"
+#include <Transform.h>
+#include <Mesh.h>
 
 using TransformComponent = Transform;
+using StaticMeshComponent = StaticMesh;
 
 struct TagComponent
 {
