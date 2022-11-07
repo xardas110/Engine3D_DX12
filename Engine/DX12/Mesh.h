@@ -110,6 +110,7 @@ using IndexCollection32 = std::vector<uint32_t>;
 
 class Mesh
 {
+    friend class DeferredRenderer;
 public:
 
     void Draw(CommandList& commandList);
@@ -136,6 +137,8 @@ private:
     void Initialize(CommandList& commandList, VertexCollection& vertices, IndexCollection& indices, bool rhcoords);
 
     void Initialize(CommandList& commandList, const VertexCollection32& vertices, const IndexCollection32& indices, bool rhcoords);
+
+    Material m_Material;
 
     VertexBuffer m_VertexBuffer;
     IndexBuffer m_IndexBuffer;

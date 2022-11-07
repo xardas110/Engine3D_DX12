@@ -52,14 +52,14 @@ bool AssetManager::LoadStaticMesh(const std::string& path, StaticMesh& outStatic
 	for (int i = 0; i < sm.meshes.size(); i++)
 	{
 		auto& assimpMesh = sm.meshes[i];
-
-		m_Meshes[i + startIndex] = *Mesh::CreateMesh(*cl, assimpMesh.vertices, assimpMesh.indices, false);
+		auto& mesh = m_Meshes[i + startIndex];
+		mesh = *Mesh::CreateMesh(*cl, assimpMesh.vertices, assimpMesh.indices, false);
 		
 		for (size_t i = 0; i < AssimpMaterialType::Size; i++)
 		{
 			if (assimpMesh.material.textures[i].IsValid())
 			{
-				//cl->LoadTextureFromFile(mesh->material->textures[i], StringToWString(assimpMesh.material.textures[i].path));
+				cl->LoadTextureFromFile(mesh.m_Material.textures[i], StringToWString(assimpMesh.material.textures[i].path));
 			}
 		}	
 	}
