@@ -24,7 +24,7 @@ class Editor
 	void SelectEntity(entt::entity entity);
 
 	//Default Game
-	char gameDLL[20] = { "Sponza" };
+	char gameDLL[20] = { "Sponzad" };
 	
 	//Menu items
 	bool showDemoWindow = false;

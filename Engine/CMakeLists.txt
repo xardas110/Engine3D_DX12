@@ -2,7 +2,8 @@ cmake_minimum_required( VERSION 3.20.0 ) # Latest version of CMake when this fil
 
 add_compile_definitions(DEBUG_CMD)
 
-add_compile_definitions(DEBUG_CMD)
+set(BUILD_SHARED_LIBS OFF)
+add_subdirectory(Libs/assimp)
 
 set( HEADER_FILES 
     "core/EnginePCH.h"
@@ -48,7 +49,7 @@ set( HEADER_FILES
     "core/GameMode.h"
     "Editor/Editor.h"
     "core/World.h"
-     "core/Entity.h" 
+    "core/Entity.h" 
     "core/AssimpLoader.h"
 )
 
@@ -138,12 +139,15 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC DX12
     PUBLIC external
     PUBLIC external/ImGui
+    PUBLIC Libs/assimp/include
+    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Libs/assimp/include
     PUBLIC core
     PUBLIC Editor
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
 
  set ( TARGET_LINK_LIBS
+    PUBLIC assimp
     PUBLIC DirectXTex
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
@@ -164,12 +168,8 @@ add_library( Engine STATIC
     ${IMGUI_HEADERS} ${IMGUI_SOURCE}
 )
 
-set(BUILD_SHARED_LIBS OFF)
-add_subdirectory(Libs/assimp)
-
 target_link_libraries( Engine
-	${TARGET_LINK_LIBS}
-    assimp
+	${TARGET_LINK_LIBS}   
    # PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Engine.dir/${CMAKE_CFG_INTDIR}/Engine.res # This is the only way I could figure out how to link the compiled resource file.
 )
 
@@ -267,3 +267,15 @@ endforeach(FILE)
 
 add_dependencies(Engine shaders)
 add_dependencies(EngineBin shaders)
+
+add_custom_command(TARGET Engine POST_BUILD COMMAND
+    ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/Assets
+    ${CMAKE_BINARY_DIR}/bin/Assets
+)
+
+add_custom_command(TARGET EngineBin POST_BUILD COMMAND
+    ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/Assets
+    ${CMAKE_BINARY_DIR}/bin/Assets
+)

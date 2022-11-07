@@ -6,6 +6,7 @@
 #include <CommandList.h>
 #include <Window.h>
 #include <Transform.h>
+#include <AssimpLoader.h>
 
 using namespace DirectX;
 
@@ -27,11 +28,16 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     :m_Width(width), m_Height(height)
 {
 	CreateGBuffer();
+
+    auto currentDir = std::filesystem::current_path();
+
+    std::cout << currentDir << std::endl;
+
+    AssimpLoader loader("Assets/Models/crytek-sponza-noflag/sponza.dae");
 }
 
 DeferredRenderer::~DeferredRenderer()
 {
-
 }
 
 void DeferredRenderer::CreateGBuffer()

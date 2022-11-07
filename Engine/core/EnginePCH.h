@@ -80,6 +80,11 @@ using namespace DirectX;
 #include <array>
 #include <iostream>
 
+//Assimp
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 namespace fs = std::filesystem;
 
 template<class T>
