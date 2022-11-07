@@ -21,5 +21,4 @@ endif()
 
 add_subdirectory( DirectXTex )
 add_subdirectory( Engine )
-add_subdirectory( Tutorial4 )
 add_subdirectory( Sponza )
