@@ -122,9 +122,10 @@ void DeferredRenderer::Render(Window& window)
         for (int i = sm.startOffset; i < sm.startOffset + sm.count; i++)
         {
             auto& mesh = meshes[i];
+            auto& material = mesh.m_Material;
             auto& textures = mesh.m_Material.textures;
 
-            if (mesh.m_Material.HasMaterial(MaterialType::Diffuse))
+            if (material.HasTexture(MaterialType::Diffuse))
             { 
                 commandList->SetShaderResourceView(GeometryMeshRootParam::Textures, 0, 
                     textures[MaterialType::Diffuse],

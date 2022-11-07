@@ -25,7 +25,7 @@ class Material
 	friend class DeferredRenderer;
 
 public:
-	bool HasMaterial(MaterialType::Type type) const
+	bool HasTexture(MaterialType::Type type) const
 	{
 		return textures[type].IsValid();
 	}
