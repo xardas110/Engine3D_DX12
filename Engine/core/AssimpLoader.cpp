@@ -8,10 +8,13 @@ void GetTexturePath(aiTextureType type, aiMaterial* material, const std::string&
     if (material->GetTextureCount(type))
     {
         aiString aiTexName;
+
         material->GetTexture(type, 0, &aiTexName);
         std::filesystem::path p(aiTexName.C_Str());
+
         auto texName = p.filename().string();
         outTexPath = std::string(modelPath.begin(), modelPath.begin() + modelPath.find_last_of('/')) + "/" + texName;
+
         std::cout << "Tex path: " << outTexPath << std::endl;
     }
 }
@@ -41,26 +44,25 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene)
 
     for (auto i = 0; i < mesh->mNumVertices; i++)
     {
-        AssimpVertex vertex;
+        VertexPositionNormalTextureTangentBitangent vertex;
 
         {	//Position and normals
-
-            vertex.pos.x = mesh->mVertices[i].x;
-            vertex.pos.y = mesh->mVertices[i].y;
-            vertex.pos.z = mesh->mVertices[i].z;
+            vertex.position.x = mesh->mVertices[i].x;
+            vertex.position.y = mesh->mVertices[i].y;
+            vertex.position.z = mesh->mVertices[i].z;
             
             if (mesh->HasNormals())
             { 
-                vertex.norm.x = mesh->mNormals[i].x;
-                vertex.norm.y = mesh->mNormals[i].y;
-                vertex.norm.z = mesh->mNormals[i].z;
+                vertex.normal.x = mesh->mNormals[i].x;
+                vertex.normal.y = mesh->mNormals[i].y;
+                vertex.normal.z = mesh->mNormals[i].z;
             }
         }
         {	//Texture coords
             if (mesh->mTextureCoords[0])
             {
-                vertex.uv.x = mesh->mTextureCoords[0][i].x;
-                vertex.uv.y = mesh->mTextureCoords[0][i].y;                
+                vertex.textureCoordinate.x = mesh->mTextureCoords[0][i].x;
+                vertex.textureCoordinate.y = mesh->mTextureCoords[0][i].y;
             }
         }
         {	//Tangents
@@ -73,9 +75,7 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene)
                 vertex.bitTangent.x = mesh->mBitangents[i].x;
                 vertex.bitTangent.y = mesh->mBitangents[i].y;
                 vertex.bitTangent.z = mesh->mBitangents[i].z;
-
-            }
-                
+            }                
         }
         internalMesh.vertices.emplace_back(vertex);
     }
@@ -128,7 +128,6 @@ void AssimpLoader::LoadModel(const std::string& path)
     if (!std::filesystem::exists(path))
     {
         std::cout << "Failed to load model from path: " << path << std::endl;
-        // throw std::exception("Failed to find Assimp Model Path!");
     }
 
     scene = importer.ReadFile(path, aiFlags);

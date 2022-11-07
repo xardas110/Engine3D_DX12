@@ -38,7 +38,7 @@ private:
 
 	struct AssimpTexture
 	{
-		std::string path = "";
+		std::string path;
 		bool IsValid() const
 		{
 			return !path.empty();
@@ -60,20 +60,11 @@ private:
 		AssimpTexture textures[AssimpMaterialType::Size];
 	};
 
-	struct AssimpVertex
-	{
-		DirectX::XMFLOAT3 pos{0.f, 0.f, 0.f};
-		DirectX::XMFLOAT3 norm{ 0.f, 0.f, 0.f };
-		DirectX::XMFLOAT2 uv{ 0.f, 0.f};
-		DirectX::XMFLOAT3 tangent{ 0.f, 0.f, 0.f };
-		DirectX::XMFLOAT3 bitTangent{ 0.f, 0.f, 0.f };
-	};
-
 	struct AssimpMesh
 	{
 		AssimpMaterial material;
-		std::vector<AssimpVertex> vertices;
-		std::vector<uint32_t> indices;
+		VertexCollection32 vertices;
+		IndexCollection32 indices;
 	};
 
 	struct AssimpCollisionMesh

@@ -46,6 +46,7 @@ Sponza::~Sponza()
 
 bool Sponza::LoadContent()
 {
+    /*
     auto ent = game->CreateEntity("ent");
     auto ent2 = game->CreateEntity("ent2");
     auto ent3 = game->CreateEntity("ent3");
@@ -69,7 +70,7 @@ bool Sponza::LoadContent()
     ent3.AddChild(ent4);
     ent2.AddChild(ent6);
     ent2.AddChild(ent5);
-
+    */
     return true;
 }
 

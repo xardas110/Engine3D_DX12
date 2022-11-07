@@ -7,6 +7,7 @@
 #include <Window.h>
 #include <Transform.h>
 #include <AssimpLoader.h>
+#include <Components.h>
 
 using namespace DirectX;
 
@@ -28,12 +29,6 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     :m_Width(width), m_Height(height)
 {
 	CreateGBuffer();
-
-    auto currentDir = std::filesystem::current_path();
-
-    std::cout << currentDir << std::endl;
-
-    AssimpLoader loader("Assets/Models/crytek-sponza-noflag/sponza.dae");
 }
 
 DeferredRenderer::~DeferredRenderer()
@@ -90,6 +85,7 @@ void DeferredRenderer::Render(Window& window)
 
     auto& pipelines = Application::Get().GetPipelineManager()->m_Pipelines;
     auto& primitves = Application::Get().GetAssetManager()->m_Primitives;
+    auto& meshes = Application::Get().GetAssetManager()->m_Meshes;
 
     auto* camera = game->GetRenderCamera();
 
@@ -113,16 +109,22 @@ void DeferredRenderer::Render(Window& window)
     commandList->SetPipelineState(pipelines[Pipeline::GeometryMesh].pipelineRef);
     commandList->SetGraphicsRootSignature(pipelines[Pipeline::GeometryMesh].rootSignature);
 
-    Transform transform;
-    transform.pos = { 0.f, 5.f, -10.f, 0.f };
-    transform.rot = XMQuaternionRotationRollPitchYaw(XMConvertToRadians(45.f), XMConvertToRadians(45.f), XMConvertToRadians(45.f));
-    mat.model = transform.GetTransform();
-    mat.mvp = mat.model * mat.view * mat.proj;
-    mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));
+    auto& view = game->registry.view<TransformComponent, StaticMeshComponent>();
 
-    commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, mat);
-    
-    primitves[Primitives::Cube].Draw(*commandList);
+    for (auto [entity, transform, sm] : view.each())
+    {
+        mat.model = transform.GetTransform();
+        mat.mvp = mat.model * mat.view * mat.proj;
+        mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));
+
+        commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, mat);
+        
+        for (int i = sm.startOffset; i < sm.startOffset + sm.count; i++)
+        {
+            auto& mesh = meshes[i];
+            mesh.Draw(*commandList);
+        } 
+    }
 
     commandQueue->ExecuteCommandList(commandList);
 }

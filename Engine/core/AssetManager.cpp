@@ -3,6 +3,12 @@
 #include <Application.h>
 #include <CommandQueue.h>
 #include <CommandList.h>
+#include <AssimpLoader.h>
+
+std::wstring StringToWString(const std::string& s)
+{
+	return std::wstring(s.begin(), s.end());
+}
 
 AssetManager::AssetManager()
 {
@@ -23,4 +29,50 @@ AssetManager::~AssetManager()
 std::unique_ptr<AssetManager> AssetManager::CreateInstance()
 {
 	return std::unique_ptr<AssetManager>(new AssetManager);
+}
+
+
+bool AssetManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh)
+{
+	if (staticMeshMap.find(path) != staticMeshMap.end())
+	{
+		outStaticMesh = staticMeshMap[path];
+		return true;
+	}
+	
+	auto cq = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
+	auto cl = cq->GetCommandList();
+
+	AssimpLoader loader(path);
+
+	auto& sm = loader.GetAssimpStaticMesh();
+	
+	auto startIndex = lastIndex;
+
+	for (int i = 0; i < sm.meshes.size(); i++)
+	{
+		auto& assimpMesh = sm.meshes[i];
+
+		m_Meshes[i + startIndex] = *Mesh::CreateMesh(*cl, assimpMesh.vertices, assimpMesh.indices, false);
+		
+		for (size_t i = 0; i < AssimpMaterialType::Size; i++)
+		{
+			if (assimpMesh.material.textures[i].IsValid())
+			{
+				//cl->LoadTextureFromFile(mesh->material->textures[i], StringToWString(assimpMesh.material.textures[i].path));
+			}
+		}	
+	}
+
+	outStaticMesh.startOffset = startIndex;
+	outStaticMesh.count = sm.meshes.size();
+
+	lastIndex = startIndex + sm.meshes.size();
+
+	staticMeshMap[path] = outStaticMesh;
+
+	auto fenceVal = cq->ExecuteCommandList(cl);
+	cq->WaitForFenceValue(fenceVal);
+
+	return true;
 }
