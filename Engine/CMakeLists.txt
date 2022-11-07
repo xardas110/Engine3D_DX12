@@ -48,6 +48,8 @@ set( HEADER_FILES
     "core/GameMode.h"
     "Editor/Editor.h"
     "core/World.h"
+     "core/Entity.h" 
+    "core/AssimpLoader.h"
 )
 
 set( SOURCE_FILES
@@ -86,7 +88,9 @@ set( SOURCE_FILES
     "core/GameMode.cpp"
     "main.cpp"
     "Editor/Editor.cpp"  
-    "core/World.cpp"
+    "core/World.cpp"   
+    "core/Entity.cpp" 
+    "core/AssimpLoader.cpp"
 )
 
 set( IMGUI_HEADERS
@@ -151,31 +155,36 @@ add_library( Engine STATIC
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
     ${IMGUI_HEADERS} ${IMGUI_SOURCE}
-   "core/Entity.h" "core/Entity.cpp")
+)
 
  add_executable( EngineBin WIN32
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
     ${IMGUI_HEADERS} ${IMGUI_SOURCE}
- "core/Entity.h" "core/Entity.cpp")
-
-target_include_directories( Engine
-    ${TARGET_INCLUDES}
 )
+
+set(BUILD_SHARED_LIBS OFF)
+add_subdirectory(Libs/assimp)
 
 target_link_libraries( Engine
 	${TARGET_LINK_LIBS}
+    assimp
    # PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Engine.dir/${CMAKE_CFG_INTDIR}/Engine.res # This is the only way I could figure out how to link the compiled resource file.
-)
-
-target_include_directories( EngineBin
-    ${TARGET_INCLUDES}
 )
 
 target_link_libraries( EngineBin
 	${TARGET_LINK_LIBS}
    # PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Engine.dir/${CMAKE_CFG_INTDIR}/Engine.res # This is the only way I could figure out how to link the compiled resource file.
+)
+
+target_include_directories( Engine
+    ${TARGET_INCLUDES}
+)
+
+
+target_include_directories( EngineBin
+    ${TARGET_INCLUDES}
 )
 
 # Enable precompiled header files.
