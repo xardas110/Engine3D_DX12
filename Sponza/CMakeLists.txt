@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.12.1 ) # Latest version of CMake when this file was created.
+cmake_minimum_required( VERSION 3.20.0 ) # Latest version of CMake when this file was created.
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DEBUG:FULL")
 

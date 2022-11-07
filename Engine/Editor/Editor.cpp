@@ -258,6 +258,8 @@ void Editor::UpdateSelectedEntity(RenderEventArgs& e)
 
     auto& reg = m_World->registry;
 
+    if (!reg.valid(selectedEntity)) return;
+
     auto& tag = reg.get<TagComponent>(selectedEntity);
     auto& trans = reg.get<TransformComponent>(selectedEntity);
 

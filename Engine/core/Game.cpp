@@ -234,4 +234,5 @@ void Game::OnWindowDestroy()
 void Game::ClearGameWorld()
 {
     registry.clear();
+    registry = entt::registry();
 }

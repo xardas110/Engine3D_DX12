@@ -46,14 +46,23 @@ Sponza::~Sponza()
 
 bool Sponza::LoadContent()
 {
-    std::cout << "test1000 " << std::endl;
-
     auto ent = game->CreateEntity("ent");
     auto ent2 = game->CreateEntity("ent2");
     auto ent3 = game->CreateEntity("ent3");
     auto ent4 = game->CreateEntity("ent4");
     auto ent5 = game->CreateEntity("ent5");
     auto ent6 = game->CreateEntity("ent6");
+
+    auto ent10 = game->CreateEntity("Created a new entity 5677");
+
+
+    for (int i = 0; i < 10; i++)
+    {
+        auto ent10 = game->CreateEntity("Created a new entity " + std::to_string(i));
+    }
+
+    ent2.GetComponent<TransformComponent>().pos = { 0.f, 20.f, 10.f, 0.f };
+    ent5.GetComponent<TransformComponent>().pos = { 50.f, 25.f, 10.f, 0.f };
 
     ent.AddChild(ent2);
     ent.AddChild(ent3);
@@ -67,6 +76,9 @@ bool Sponza::LoadContent()
 
 void Sponza::UnloadContent()
 {
+    std::cout << "Unloading content " << std::endl;
+    game->ClearGameWorld();
+    std::cout << "Clearing gameworld! " << std::endl;
 }
 
 void Sponza::OnUpdate(UpdateEventArgs& e)

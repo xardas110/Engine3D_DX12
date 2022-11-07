@@ -95,6 +95,11 @@ public:
 
     Entity CreateEntity(const std::string& tag);
 
+    /**
+    * Clear game world
+    */
+    void ClearGameWorld();
+
 protected:
     friend class Window;
 
@@ -148,11 +153,6 @@ protected:
      * Invoked when the registered window instance is destroyed.
      */
     virtual void OnWindowDestroy();
-
-    /**
-   * Clear game world
-   */
-    void ClearGameWorld();
 
     std::shared_ptr<Window> m_pWindow;
 
