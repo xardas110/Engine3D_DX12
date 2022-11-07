@@ -99,6 +99,7 @@ set( IMGUI_HEADERS
     external/ImGui/imgui.h
     external/ImGui/imconfig.h
     external/ImGui/imgui_impl_win32.h
+    external/ImGui/imgui_impl_dx12.h
 )
 
 source_group( "Header Files\\ImGUI" FILES ${IMGUI_HEADERS} )
@@ -109,6 +110,8 @@ set( IMGUI_SOURCE
     "external/ImGui/imgui_draw.cpp"
     "external/ImGui/imgui_widgets.cpp"
     "external/ImGui/imgui_impl_win32.cpp"
+    external/ImGui/imgui_impl_dx12.cpp
+    external/ImGui/imgui_tables.cpp
 )
 
 set( ENTT_HEADERS

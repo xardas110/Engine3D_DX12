@@ -70,6 +70,8 @@ Editor::Editor(World* world)
 
 void Editor::OnGui(RenderEventArgs& e)
 {
+    return;
+
     if (!m_World) return;
 
     UpdateGameMenuBar(e);
