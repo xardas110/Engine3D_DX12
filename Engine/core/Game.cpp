@@ -107,6 +107,9 @@ void Game::OnKeyPressed(KeyEventArgs& e)
         case KeyCode::Escape:
             Application::Get().Quit(0);
             break;
+        case KeyCode::F11:
+            m_pWindow->ToggleFullscreen();
+            break;
         case KeyCode::Enter:
             if (e.Alt)
             {
@@ -188,13 +191,13 @@ void Game::OnMouseMoved(class MouseMotionEventArgs& e)
     const float mouseSpeed = 0.1f;
     if (!ImGui::GetIO().WantCaptureMouse)
     {
-        if (e.LeftButton)
+        if (e.RightButton)
         {
-            m_Pitch -= e.RelY * mouseSpeed;
+            m_Pitch += e.RelY * mouseSpeed;
 
             m_Pitch = clamp(m_Pitch, -90.0f, 90.0f);
 
-            m_Yaw -= e.RelX * mouseSpeed;
+            m_Yaw += e.RelX * mouseSpeed;
         }
     }
 }
