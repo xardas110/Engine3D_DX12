@@ -18,6 +18,7 @@ namespace GeometryMeshRootParam
 	{
 		MatCB,
 		MaterialCB,
+		Textures,
 		Size
 	};
 }

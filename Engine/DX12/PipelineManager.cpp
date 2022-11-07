@@ -42,13 +42,18 @@ void PipelineManager::CreateGeometryMeshPSO()
         D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
+    CD3DX12_DESCRIPTOR_RANGE1 descriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+
     CD3DX12_ROOT_PARAMETER1 rootParameters[GeometryMeshRootParam::Size];
     rootParameters[GeometryMeshRootParam::MatCB].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_VERTEX);
     rootParameters[GeometryMeshRootParam::MaterialCB].InitAsConstantBufferView(0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_VERTEX);
+    rootParameters[GeometryMeshRootParam::Textures].InitAsDescriptorTable(1, &descriptorRange, D3D12_SHADER_VISIBILITY_PIXEL);
+
+    CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
 
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc(
         GeometryMeshRootParam::Size,
-        rootParameters, 0, 0, 
+        rootParameters, 1, &linearRepeatSampler,
         rootSignatureFlags
     );
 

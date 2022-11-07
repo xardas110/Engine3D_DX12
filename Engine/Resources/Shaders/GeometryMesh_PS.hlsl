@@ -14,6 +14,8 @@ struct Material
     // Total:                              16 * 5 = 80 bytes
 };
 
+Texture2D DiffuseTexture : register(t0);
+SamplerState LinearRepeatSampler : register(s0);
 ConstantBuffer<Material> MaterialCB : register(b0, space1);
 
 struct PixelShaderInput
@@ -25,6 +27,6 @@ struct PixelShaderInput
 
 float4 main(PixelShaderInput IN) : SV_Target
 {
-    float4 out_col = float4(1.f, 0.f, 0.f, 1.f);
-    return out_col;
+    float4 texColor = DiffuseTexture.Sample(LinearRepeatSampler, IN.TexCoord);
+    return texColor;
 }
