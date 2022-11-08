@@ -64,15 +64,6 @@ protected:
 
 private:
     ImGuiContext* m_pImGuiCtx;
-    std::unique_ptr<Texture> m_FontTexture;
-    std::unique_ptr<RootSignature> m_RootSignature;
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;
     std::shared_ptr<Window> m_Window;
-
-    DynamicDescriptorHeap m_DynamicDescHeap;
-    Texture m_DirectXTexture;
-
-    D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle;
-
-    bool bTextureCopied = false;
+    ID3D12DescriptorHeap* g_pd3dSrvDescHeap = NULL;
 };
