@@ -6,6 +6,7 @@
 #include <Window.h>
 #include <Components.h>
 #include <Entity.h>
+#include <imgui_impl_dx12.h>
 
 static ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow
 | ImGuiTreeNodeFlags_OpenOnDoubleClick;
@@ -44,7 +45,7 @@ static void ShowReloadOverlay(bool* p_open)
     if (corner != -1)
         ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
     ImGui::SetNextWindowBgAlpha(0.3f); // Transparent background
-    if (ImGui::Begin("Example: Simple Overlay", p_open, (corner != -1 ? ImGuiWindowFlags_NoMove : 0) | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
+    if (ImGui::Begin("Overlay", p_open, (corner != -1 ? ImGuiWindowFlags_NoMove : 0) | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMouseInputs))
     {
         ImGui::TextColored({ 255.f, 0.f, 0.f, 255.f }, "RELOADING GAME DLL...");
         ImGui::Separator();
@@ -63,14 +64,58 @@ static void ShowReloadOverlay(bool* p_open)
     ImGui::End();
 }
 
+void Editor::ShowDockSpace(bool* p_open)
+{
+    ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
+
+    if (bDockFullScreen)
+    {
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+    }
+    else
+    {
+        dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+    }
+
+    if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+        window_flags |= ImGuiWindowFlags_NoBackground;
+
+    ImGui::Begin("DockSpace", p_open, window_flags);
+
+    if (bDockFullScreen)
+        ImGui::PopStyleVar(2);
+
+    // Submit the DockSpace
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+    {
+        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+    }
+
+    ImGui::End();
+}
+
 Editor::Editor(World* world)
 	:m_World(world)
 {
+
 }
 
 void Editor::OnGui(RenderEventArgs& e)
 {
     if (!m_World) return;
+
+    ShowDockSpace(&bUseDocking);
+    ImGui::ShowMetricsWindow();
 
     UpdateGameMenuBar(e);
     UpdateWorldHierarchy(e);
@@ -83,6 +128,30 @@ void Editor::OnGui(RenderEventArgs& e)
     {
         ImGui::ShowDemoWindow(&showDemoWindow);
     }
+}
+
+void Editor::OnViewportRender(const Texture& sceneTexture, ID3D12DescriptorHeap* heap)
+{
+    auto device = Application::Get().GetDevice();
+    UINT handle_increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+    D3D12_CPU_DESCRIPTOR_HANDLE my_texture_srv_cpu_handle = heap->GetCPUDescriptorHandleForHeapStart();
+    my_texture_srv_cpu_handle.ptr += (handle_increment);
+    D3D12_GPU_DESCRIPTOR_HANDLE my_texture_srv_gpu_handle = heap->GetGPUDescriptorHandleForHeapStart();
+    my_texture_srv_gpu_handle.ptr += (handle_increment);
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
+    ZeroMemory(&srvDesc, sizeof(srvDesc));
+    srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = 1;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    device->CreateShaderResourceView(sceneTexture.GetD3D12Resource().Get(), &srvDesc, my_texture_srv_cpu_handle);
+
+    ImGui::Begin("ViewPort", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav);   
+    ImGui::Image((ImTextureID)my_texture_srv_gpu_handle.ptr, ImGui::GetWindowSize());
+    ImGui::End();
 }
 
 void Editor::UpdateGameMenuBar(RenderEventArgs& e)
@@ -102,7 +171,7 @@ void Editor::UpdateGameMenuBar(RenderEventArgs& e)
         {
             ImGui::MenuItem("ImGui Demo", nullptr, &showDemoWindow);
             ImGui::MenuItem("Game Loader", nullptr, &bShowGameLoader);
-
+            ImGui::MenuItem("DockSpace Fullscreen", nullptr, &bDockFullScreen);            
             ImGui::EndMenu();
         }
 

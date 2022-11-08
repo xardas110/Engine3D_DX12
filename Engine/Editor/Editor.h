@@ -10,9 +10,13 @@ class Editor
 {
 	friend class World;
 
+	void ShowDockSpace(bool* p_open);
+
 	Editor(World* world);
 
 	void OnGui(RenderEventArgs& e);
+	void OnViewportRender(const Texture& sceneTexture, ID3D12DescriptorHeap* heap);
+
 	void UpdateGameMenuBar(RenderEventArgs& e);
 	void UpdateRuntimeGame(RenderEventArgs& e);
 
@@ -29,6 +33,9 @@ class Editor
 	//Menu items
 	bool showDemoWindow = false;
 	bool bShowGameLoader = true;
+
+	bool bUseDocking = true;
+	bool bDockFullScreen = true;
 
 	//No ownership, safe ptr. Editor can't be alive without the ptr presisting.
 	World* m_World{nullptr};

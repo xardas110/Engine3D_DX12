@@ -2,6 +2,7 @@
 #include <World.h>
 #include <Editor.h>
 #include <Application.h>
+#include <Window.h>
 
 World::World(const std::wstring& name, int width, int height, bool vSync)
     :Game(name, width, height, vSync)
@@ -40,6 +41,7 @@ void World::OnRender(RenderEventArgs& e)
 #ifdef DEBUG_EDITOR
     m_Editor->OnGui(e);
     if (m_GameMode) m_GameMode->OnGui(e);
+    m_Editor->OnViewportRender(m_pWindow->m_DeferredRenderer.m_GBufferRenderTarget.GetTexture(AttachmentPoint::Color0), m_pWindow->m_GUI.g_pd3dSrvDescHeap);
 #endif
 }
 

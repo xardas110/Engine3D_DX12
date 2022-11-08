@@ -45,13 +45,16 @@ bool Game::Initialize()
     m_pWindow->RegisterCallbacks(shared_from_this());
     m_pWindow->Show();
 
-    /*
+   /*
     StaticMesh temp;
 
     auto* smm = Application::Get().GetAssetManager();
     smm->LoadStaticMesh("Assets/Models/crytek-sponza-noflag/sponza.dae", temp);
     */
 
+    auto ent = CreateEntity("Sponza");
+    auto& sm = ent.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.dae");
+    auto& trans = ent.GetComponent<TransformComponent>().scale = { 0.01f, 0.01f, 0.01f };
     return true;
 }
 
@@ -151,8 +154,8 @@ void Game::OnKeyPressed(KeyEventArgs& e)
 
 void Game::OnKeyReleased(KeyEventArgs& e)
 {
-    if (!ImGui::GetIO().WantCaptureKeyboard)
-    {
+   // if (!ImGui::GetIO().WantCaptureKeyboard)
+   // {
         switch (e.Key)
         {
         case KeyCode::Enter:
@@ -185,15 +188,15 @@ void Game::OnKeyReleased(KeyEventArgs& e)
             break;
             }
         }
-    }
+  //  }
 }
 
 void Game::OnMouseMoved(class MouseMotionEventArgs& e)
 {
     // By default, do nothing.
     const float mouseSpeed = 0.1f;
-    if (!ImGui::GetIO().WantCaptureMouse)
-    {
+   // if (!ImGui::GetIO().WantCaptureMouse)
+  //  {
         if (e.RightButton)
         {
             m_Pitch += e.RelY * mouseSpeed;
@@ -202,7 +205,7 @@ void Game::OnMouseMoved(class MouseMotionEventArgs& e)
 
             m_Yaw += e.RelX * mouseSpeed;
         }
-    }
+   // }
 }
 
 void Game::OnMouseButtonPressed(MouseButtonEventArgs& e)
