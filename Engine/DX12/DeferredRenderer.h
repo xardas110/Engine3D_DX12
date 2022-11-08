@@ -8,6 +8,7 @@ class Game;
 class DeferredRenderer
 {
 	friend class Window;
+	friend class World;
 
 	DeferredRenderer(int width, int height);
 	~DeferredRenderer();

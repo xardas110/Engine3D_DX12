@@ -53,6 +53,7 @@ class Window : public std::enable_shared_from_this<Window>
 {
     friend class DeferredRenderer;
     friend class Editor;
+    friend class World;
 public:
     // Number of swapchain back buffers.
     static const UINT BufferCount = 3;

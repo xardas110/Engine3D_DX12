@@ -46,6 +46,7 @@ class Window;
 
 class GUI
 {
+    friend class World;
 public:
     GUI();
     virtual ~GUI();
@@ -63,10 +64,8 @@ public:
 protected:
 
 private:
-    bool bUseDocking = true;
     ImGuiContext* m_pImGuiCtx;
     std::shared_ptr<Window> m_Window;
 
     ID3D12DescriptorHeap* g_pd3dSrvDescHeap = NULL;
-
 };
