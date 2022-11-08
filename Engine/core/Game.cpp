@@ -45,11 +45,12 @@ bool Game::Initialize()
     m_pWindow->RegisterCallbacks(shared_from_this());
     m_pWindow->Show();
 
+/*
     StaticMesh temp;
 
     auto* smm = Application::Get().GetAssetManager();
     smm->LoadStaticMesh("Assets/Models/crytek-sponza-noflag/sponza.dae", temp);
-
+*/
     return true;
 }
 
