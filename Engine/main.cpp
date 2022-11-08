@@ -6,7 +6,7 @@
 #include <Application.h>
 #include <World.h>
 #include <GameMode.h>
-#include <dxgidebug.h>'
+#include <dxgidebug.h>
 #include <filesystem>
 #include <iostream>
 #include <Window.h>

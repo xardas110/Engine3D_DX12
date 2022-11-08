@@ -70,7 +70,6 @@ Editor::Editor(World* world)
 
 void Editor::OnGui(RenderEventArgs& e)
 {
-    return;
 
     if (!m_World) return;
 
@@ -79,7 +78,7 @@ void Editor::OnGui(RenderEventArgs& e)
     UpdateSelectedEntity(e);
 
     //Beware! Might need to run last
-    UpdateRuntimeGame(e);
+    //UpdateRuntimeGame(e);
   
     if (showDemoWindow)
     {

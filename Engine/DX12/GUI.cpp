@@ -15,6 +15,7 @@
 #include <ImGUI_PS.h>
 
 #include <imgui_impl_win32.h>
+#include <imgui_impl_dx12.h>
 
 void ShowExampleAppDockSpace(bool* p_open)
 {
@@ -130,7 +131,7 @@ void GetSurfaceInfo(
     _Out_opt_ size_t* outNumRows );
 
 GUI::GUI()
-    : m_pImGuiCtx( nullptr ), m_DynamicDescHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
+    : m_pImGuiCtx( nullptr )
 {}
 
 GUI::~GUI()
@@ -164,130 +165,21 @@ bool GUI::Initialize( std::shared_ptr<Window> window )
         return false;
     }
 
-    // Build texture atlas
-    unsigned char* pixelData = nullptr;
-    int width, height;
-    io.Fonts->GetTexDataAsRGBA32( &pixelData, &width, &height );
+    auto& device = Application::Get().GetDevice();
 
-    auto device = Application::Get().GetDevice();
-    auto commandQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
-    auto commandList = commandQueue->GetCommandList();
-
-    auto fontTextureDesc = CD3DX12_RESOURCE_DESC::Tex2D( DXGI_FORMAT_R8G8B8A8_UNORM, width, height );
-
-    m_FontTexture = std::make_unique<Texture>( fontTextureDesc );
-    m_FontTexture->SetName( L"ImGui Font Texture" );
-
-    size_t rowPitch, slicePitch;
-    GetSurfaceInfo( width, height, DXGI_FORMAT_R8G8B8A8_UNORM, &slicePitch, &rowPitch, nullptr );
-
-    D3D12_SUBRESOURCE_DATA subresourceData;
-    subresourceData.pData = pixelData;
-    subresourceData.RowPitch = rowPitch;
-    subresourceData.SlicePitch = slicePitch;
-
-    commandList->CopyTextureSubresource( *m_FontTexture, 0, 1, &subresourceData );
-    commandList->GenerateMips( *m_FontTexture );
-
-    commandQueue->ExecuteCommandList( commandList );
-
-    // Create the root signature for the ImGUI shaders.
-    D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
-    featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
-    if ( FAILED( device->CheckFeatureSupport( D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof( featureData ) ) ) )
     {
-        featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
+        D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+        desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        desc.NumDescriptors = 2;
+        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        if (device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&g_pd3dSrvDescHeap)) != S_OK)
+            return false;
     }
-    // Allow input layout and deny unnecessary access to certain pipeline stages.
-    D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
-        D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-    CD3DX12_DESCRIPTOR_RANGE1 descriptorRage( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0 );
-
-    CD3DX12_ROOT_PARAMETER1 rootParameters[RootParameters::NumRootParameters];
-    rootParameters[RootParameters::MatrixCB].InitAsConstants( sizeof( DirectX::XMMATRIX ) / 4, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_VERTEX );
-    rootParameters[RootParameters::FontTexture].InitAsDescriptorTable( 1, &descriptorRage, D3D12_SHADER_VISIBILITY_PIXEL );
-
-    CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler( 0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR );
-    linearRepeatSampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
-    linearRepeatSampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
-    rootSignatureDescription.Init_1_1( RootParameters::NumRootParameters, rootParameters, 1, &linearRepeatSampler, rootSignatureFlags );
-
-    m_RootSignature = std::make_unique<RootSignature>( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
-
-    const D3D12_INPUT_ELEMENT_DESC inputLayout[] =
-    {
-        { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT,   0, offsetof( ImDrawVert, pos ), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,   0, offsetof( ImDrawVert, uv ),  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        { "COLOR",    0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof( ImDrawVert, col ), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-    };
-
-    D3D12_RT_FORMAT_ARRAY rtvFormats = {};
-    rtvFormats.NumRenderTargets = 1;
-    rtvFormats.RTFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-
-    D3D12_BLEND_DESC blendDesc = {};
-    blendDesc.RenderTarget[0].BlendEnable = true;
-    blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-    blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-    blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
-    blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-    blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-    D3D12_RASTERIZER_DESC rasterizerDesc = {};
-    rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-    rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
-    rasterizerDesc.FrontCounterClockwise = FALSE;
-    rasterizerDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
-    rasterizerDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
-    rasterizerDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
-    rasterizerDesc.DepthClipEnable = true;
-    rasterizerDesc.MultisampleEnable = FALSE;
-    rasterizerDesc.AntialiasedLineEnable = FALSE;
-    rasterizerDesc.ForcedSampleCount = 0;
-    rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-
-    D3D12_DEPTH_STENCIL_DESC depthStencilDesc = {};
-    depthStencilDesc.DepthEnable = false;
-    depthStencilDesc.StencilEnable = false;
-
-    // Setup the pipeline state.
-    struct PipelineStateStream
-    {
-        CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
-        CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT InputLayout;
-        CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;
-        CD3DX12_PIPELINE_STATE_STREAM_VS VS;
-        CD3DX12_PIPELINE_STATE_STREAM_PS PS;
-        CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
-        CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC SampleDesc;
-        CD3DX12_PIPELINE_STATE_STREAM_BLEND_DESC BlendDesc;
-        CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER RasterizerState;
-        CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL DepthStencilState;
-    } pipelineStateStream;
-
-    pipelineStateStream.pRootSignature = m_RootSignature->GetRootSignature().Get();
-    pipelineStateStream.InputLayout = { inputLayout, 3 };
-    pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-    pipelineStateStream.VS = { g_ImGUI_VS, sizeof( g_ImGUI_VS ) };
-    pipelineStateStream.PS = { g_ImGUI_PS, sizeof( g_ImGUI_PS ) };
-    pipelineStateStream.RTVFormats = rtvFormats;
-    pipelineStateStream.SampleDesc = { 1, 0 };
-    pipelineStateStream.BlendDesc = CD3DX12_BLEND_DESC( blendDesc );
-    pipelineStateStream.RasterizerState = CD3DX12_RASTERIZER_DESC( rasterizerDesc );
-    pipelineStateStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC( depthStencilDesc );
-    
-    D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
-        sizeof( PipelineStateStream ), &pipelineStateStream
-    };
-    ThrowIfFailed( device->CreatePipelineState( &pipelineStateStreamDesc, IID_PPV_ARGS( &m_PipelineState ) ) );
+    ImGui_ImplDX12_Init(device.Get(), 3,
+        DXGI_FORMAT_R8G8B8A8_UNORM, g_pd3dSrvDescHeap,
+        g_pd3dSrvDescHeap->GetCPUDescriptorHandleForHeapStart(),
+        g_pd3dSrvDescHeap->GetGPUDescriptorHandleForHeapStart());
 
     return true;
 }
@@ -295,138 +187,47 @@ bool GUI::Initialize( std::shared_ptr<Window> window )
 void GUI::NewFrame()
 {
     ImGui::SetCurrentContext( m_pImGuiCtx );
+    ImGui_ImplDX12_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
-
+  
     static bool bUseDocking = true;
-    ShowExampleAppDockSpace(&bUseDocking);
-
-    ImGui::Begin("test");
-    ImGui::Button("test button");
-    ImGui::End();
-
-    ImGui::Begin("win2");
-    ImGui::Button("test button");
-    ImGui::End();
-
-    static bool bShowDemo = true;
-   
-
-    ImGui::ShowDemoWindow(&bShowDemo);
-    
+    ShowExampleAppDockSpace(&bUseDocking);  
 }
 
 void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& renderTarget, const Texture& texture)
 {
-
-    //commandList->LoadTextureFromFile(m_DirectXTexture, L"Assets/Textures/Directx9.png", TextureUsage::Diffuse);
-
-
-    //commandList->TransitionBarrier(m_DirectXTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-
-    //m_DynamicDescHeap.StageDescriptors(0, 0, 1, m_DirectXTexture.GetShaderResourceView());
-
-
-    //auto cq = Application::Get().GetCommandQueue();
-    //auto cl = cq->GetCommandList();
-
-
-    gpuHandle = m_DynamicDescHeap.CopyDescriptor(*commandList, texture.GetShaderResourceView());
-    
-    std::cout << "gpu ptr: " << gpuHandle.ptr << std::endl;
-
-    ImGui::Begin("ViewPort");
-    
-    ImGui::Image((void*)gpuHandle.ptr, ImVec2((float)renderTarget.GetSize().x, (float)renderTarget.GetSize().y));
-    ImGui::End();
-
-    ImGui::SetCurrentContext( m_pImGuiCtx );
-    ImGui::Render();
-    
-
     ImGuiIO& io = ImGui::GetIO();
     ImDrawData* drawData = ImGui::GetDrawData();
 
-    // Check if there is anything to render.
-    if ( !drawData || drawData->CmdListsCount == 0 )
-        return;
+    auto device = Application::Get().GetDevice();
 
-    ImVec2 displayPos = drawData->DisplayPos;
+    UINT handle_increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    commandList->SetGraphicsRootSignature( *m_RootSignature );
-    commandList->SetPipelineState( m_PipelineState );
-    commandList->SetRenderTarget( renderTarget );
+    D3D12_CPU_DESCRIPTOR_HANDLE my_texture_srv_cpu_handle = g_pd3dSrvDescHeap->GetCPUDescriptorHandleForHeapStart();
+    my_texture_srv_cpu_handle.ptr += (handle_increment);
+    D3D12_GPU_DESCRIPTOR_HANDLE my_texture_srv_gpu_handle = g_pd3dSrvDescHeap->GetGPUDescriptorHandleForHeapStart();
+    my_texture_srv_gpu_handle.ptr += (handle_increment);
 
-    // Set root arguments.
-//    DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixOrthographicRH( drawData->DisplaySize.x, drawData->DisplaySize.y, 0.0f, 1.0f );
-    float L = drawData->DisplayPos.x;
-    float R = drawData->DisplayPos.x + drawData->DisplaySize.x;
-    float T = drawData->DisplayPos.y;
-    float B = drawData->DisplayPos.y + drawData->DisplaySize.y;
-    float mvp[4][4] =
-    {
-        { 2.0f / ( R - L ),   0.0f,           0.0f,       0.0f },
-        { 0.0f,         2.0f / ( T - B ),     0.0f,       0.0f },
-        { 0.0f,         0.0f,           0.5f,       0.0f },
-        { ( R + L ) / ( L - R ),  ( T + B ) / ( B - T ),    0.5f,       1.0f },
-    };
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
+    ZeroMemory(&srvDesc, sizeof(srvDesc));
+    srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = 1;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    device->CreateShaderResourceView(texture.GetD3D12Resource().Get(), &srvDesc, my_texture_srv_cpu_handle);
 
-    commandList->SetGraphics32BitConstants( RootParameters::MatrixCB, mvp );
-    commandList->SetShaderResourceView( RootParameters::FontTexture, 0, *m_FontTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    ImGui::Begin("ViewPort");
+    ImGui::Image((void*)my_texture_srv_gpu_handle.ptr, ImVec2((float)renderTarget.GetSize().x, (float)renderTarget.GetSize().y));
+    ImGui::End();
 
-    D3D12_VIEWPORT viewport = {};
-    viewport.Width = drawData->DisplaySize.x;
-    viewport.Height = drawData->DisplaySize.y;
-    viewport.MinDepth = 0.0f;
-    viewport.MaxDepth = 1.0f;
+    // Rendering
+    ImGui::Render();
+    commandList->SetRenderTarget(renderTarget);
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, g_pd3dSrvDescHeap);
 
-    commandList->SetViewport( viewport );
-    commandList->SetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-
-    const DXGI_FORMAT indexFormat = sizeof( ImDrawIdx ) == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
-
-    // It may happen that ImGui doesn't actually render anything. In this case,
-    // any pending resource barriers in the commandList will not be flushed (since 
-    // resource barriers are only flushed when a draw command is executed).
-    // In that case, manually flushing the resource barriers will ensure that
-    // they are properly flushed before exiting this function.
-    commandList->FlushResourceBarriers();
-
-    for ( int i = 0; i < drawData->CmdListsCount; ++i )
-    {
-        const ImDrawList* drawList = drawData->CmdLists[i];
-
-        commandList->SetDynamicVertexBuffer( 0, drawList->VtxBuffer.size(), sizeof( ImDrawVert ), drawList->VtxBuffer.Data );
-        commandList->SetDynamicIndexBuffer( drawList->IdxBuffer.size(), indexFormat, drawList->IdxBuffer.Data );
-
-        int indexOffset = 0;
-        for ( int j = 0; j < drawList->CmdBuffer.size(); ++j )
-        {
-            const ImDrawCmd& drawCmd = drawList->CmdBuffer[j];
-            if ( drawCmd.UserCallback )
-            {
-                drawCmd.UserCallback( drawList, &drawCmd );
-            }
-            else
-            {
-                ImVec4 clipRect = drawCmd.ClipRect;
-                D3D12_RECT scissorRect;
-                scissorRect.left = static_cast<LONG>( clipRect.x - displayPos.x);
-                scissorRect.top = static_cast<LONG>( clipRect.y - displayPos.y );
-                scissorRect.right = static_cast<LONG>( clipRect.z - displayPos.x );
-                scissorRect.bottom = static_cast<LONG>( clipRect.w - displayPos.y );
-
-                if ( scissorRect.right - scissorRect.left > 0.0f && 
-                     scissorRect.bottom - scissorRect.top > 0.0 )
-                {
-                    commandList->SetScissorRect( scissorRect );
-                    commandList->DrawIndexed( drawCmd.ElemCount, 1, indexOffset );
-                }
-            }
-            indexOffset += drawCmd.ElemCount;
-        }
-    }
+    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList->GetGraphicsCommandList().Get());
 
     // Update and Render additional Platform Windows
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -434,17 +235,17 @@ void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& 
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault(NULL, (void*)commandList->GetGraphicsCommandList().Get());
     }
-
-
-    m_DynamicDescHeap.Reset();
 }
 
 void GUI::Destroy()
 {
-    if ( m_Window )
+    if (m_Window)
     {
+        ImGui_ImplDX12_Shutdown();
         ImGui_ImplWin32_Shutdown();
-        ImGui::DestroyContext( m_pImGuiCtx );
+        ImGui::DestroyContext(m_pImGuiCtx);
+        if (g_pd3dSrvDescHeap) { g_pd3dSrvDescHeap->Release(); g_pd3dSrvDescHeap = NULL; }
+
         m_pImGuiCtx = nullptr;
         m_Window.reset();
     }
