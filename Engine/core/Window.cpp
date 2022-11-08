@@ -186,7 +186,6 @@ void Window::RegisterCallbacks(std::shared_ptr<Game> pGame)
 void Window::OnUpdate(UpdateEventArgs& e)
 {
     m_GUI.NewFrame();
-
     m_UpdateClock.Tick();
 
     if (auto pGame = m_pGame.lock())

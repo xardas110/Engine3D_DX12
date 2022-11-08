@@ -2,6 +2,8 @@ cmake_minimum_required( VERSION 3.20.0 ) # Latest version of CMake when this fil
 
 add_compile_definitions(DEBUG_CMD)
 
+add_compile_definitions(ImTextureID=ImU64)
+
 set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(Libs/assimp)
 
@@ -20,7 +22,7 @@ set( HEADER_FILES
     "core/Events.h"
     "core/Game.h"
     "DX12/GenerateMipsPSO.h"
-    "core/GUI.h"
+    "Editor/GUI.h"
     "core/Helpers.h"
     "core/HighResolutionClock.h"
     "DX12/IndexBuffer.h"
@@ -68,7 +70,7 @@ set( SOURCE_FILES
     "DX12/DynamicDescriptorHeap.cpp"
     "core/Game.cpp"
     "DX12/GenerateMipsPSO.cpp"
-    "DX12/GUI.cpp"
+    "Editor/GUI.cpp"
     "core/HighResolutionClock.cpp"
     "DX12/IndexBuffer.cpp"
     "DX12/Mesh.cpp"

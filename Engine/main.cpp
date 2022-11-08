@@ -45,7 +45,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
     Application::Create(hInstance);
     {
-        auto world = std::shared_ptr<World>(new World(L"Engine", 1280, 720, true));
+        auto world = std::shared_ptr<World>(new World(L"Engine", 1280, 720, false));
         Application::Get().Run(world);
     }
     Application::Destroy();

@@ -143,14 +143,15 @@ bool GUI::Initialize( std::shared_ptr<Window> window )
     auto& device = Application::Get().GetDevice();
 
     m_Window = window;
+
     m_pImGuiCtx = ImGui::CreateContext();
     ImGui::SetCurrentContext( m_pImGuiCtx );
 
     ImGuiIO& io = ImGui::GetIO();
-
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
 
     ImGui::StyleColorsDark();
 
@@ -186,12 +187,14 @@ bool GUI::Initialize( std::shared_ptr<Window> window )
 void GUI::NewFrame()
 {
     ImGui::SetCurrentContext( m_pImGuiCtx );
+
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();   
 
-    static bool bUseDocking = true;
+    ImGui::NewFrame();   
+    
     ShowExampleAppDockSpace(&bUseDocking);
+    ImGui::ShowMetricsWindow();
 }
 
 void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& renderTarget, const Texture& texture)
@@ -216,7 +219,7 @@ void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& 
     device->CreateShaderResourceView(texture.GetD3D12Resource().Get(), &srvDesc, my_texture_srv_cpu_handle);
 
     ImGui::Begin("ViewPort");
-    ImGui::Image((void*)my_texture_srv_gpu_handle.ptr, ImVec2((float)renderTarget.GetSize().x, (float)renderTarget.GetSize().y));
+    ImGui::Image((ImTextureID)my_texture_srv_gpu_handle.ptr, ImVec2((float)renderTarget.GetSize().x, (float)renderTarget.GetSize().y));
     ImGui::End();
 
     // Rendering
