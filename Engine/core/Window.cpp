@@ -397,7 +397,7 @@ UINT Window::Present( const Texture& texture )
     RenderTarget renderTarget;
     renderTarget.AttachTexture( AttachmentPoint::Color0, backBuffer );
 
-    m_GUI.Render( commandList, renderTarget );
+    m_GUI.Render( commandList, renderTarget, texture );
 
     commandList->TransitionBarrier( backBuffer, D3D12_RESOURCE_STATE_PRESENT );
     commandQueue->ExecuteCommandList( commandList );

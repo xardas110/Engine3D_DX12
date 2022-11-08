@@ -34,6 +34,8 @@
 
 #include <d3dx12.h>
 #include <wrl.h>
+#include <DynamicDescriptorHeap.h>
+#include <Texture.h>
 
 class CommandList;
 class Texture;
@@ -53,7 +55,7 @@ public:
 
     // Begin a new frame.
     virtual void NewFrame();
-    virtual void Render( std::shared_ptr<CommandList> commandList, const RenderTarget& renderTarget );
+    virtual void Render( std::shared_ptr<CommandList> commandList, const RenderTarget& renderTarget, const Texture& texture );
 
     // Destroy the ImGui context.
     virtual void Destroy();
@@ -66,4 +68,11 @@ private:
     std::unique_ptr<RootSignature> m_RootSignature;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;
     std::shared_ptr<Window> m_Window;
+
+    DynamicDescriptorHeap m_DynamicDescHeap;
+    Texture m_DirectXTexture;
+
+    D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle;
+
+    bool bTextureCopied = false;
 };
