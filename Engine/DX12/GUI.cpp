@@ -82,7 +82,6 @@ void ShowExampleAppDockSpace(bool* p_open)
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
     }
 
-
     if (ImGui::BeginMenuBar())
     {
         if (ImGui::BeginMenu("Options"))
@@ -141,6 +140,8 @@ GUI::~GUI()
 
 bool GUI::Initialize( std::shared_ptr<Window> window )
 {
+    auto& device = Application::Get().GetDevice();
+
     m_Window = window;
     m_pImGuiCtx = ImGui::CreateContext();
     ImGui::SetCurrentContext( m_pImGuiCtx );
@@ -165,8 +166,6 @@ bool GUI::Initialize( std::shared_ptr<Window> window )
         return false;
     }
 
-    auto& device = Application::Get().GetDevice();
-
     {
         D3D12_DESCRIPTOR_HEAP_DESC desc = {};
         desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -189,19 +188,17 @@ void GUI::NewFrame()
     ImGui::SetCurrentContext( m_pImGuiCtx );
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
-  
+    ImGui::NewFrame();   
+
     static bool bUseDocking = true;
-    ShowExampleAppDockSpace(&bUseDocking);  
+    ShowExampleAppDockSpace(&bUseDocking);
 }
 
 void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& renderTarget, const Texture& texture)
 {
-    ImGuiIO& io = ImGui::GetIO();
-    ImDrawData* drawData = ImGui::GetDrawData();
-
     auto device = Application::Get().GetDevice();
-
+  
+    ImGuiIO& io = ImGui::GetIO();  
     UINT handle_increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     D3D12_CPU_DESCRIPTOR_HANDLE my_texture_srv_cpu_handle = g_pd3dSrvDescHeap->GetCPUDescriptorHandleForHeapStart();

@@ -78,7 +78,7 @@ void Editor::OnGui(RenderEventArgs& e)
     UpdateSelectedEntity(e);
 
     //Beware! Might need to run last
-    //UpdateRuntimeGame(e);
+    UpdateRuntimeGame(e);
   
     if (showDemoWindow)
     {
@@ -138,16 +138,11 @@ void Editor::UpdateRuntimeGame(RenderEventArgs& e)
     static bool bShowReloadOverlay = false;
 
     ImGui::Begin("Game Loader");
-
-    ImGuiInputTextFlags flags;
-    flags = ImGuiInputTextFlags_EnterReturnsTrue;
-
     ImGui::Checkbox("HotReload", &bHotReload);
-
     ImGui::Text("Game DLL:");
     ImGui::SameLine();
 
-    if (ImGui::InputText("", gameDLL, 20, flags))
+    if (ImGui::InputText(":", gameDLL, 20))
     {
         changesDetectedTimer = 1.f;
         m_World->UnloadRuntimeGame();
@@ -156,6 +151,7 @@ void Editor::UpdateRuntimeGame(RenderEventArgs& e)
             ImGui::Text("Game not found!");
         }
     }
+
     ImGui::SameLine();
 
     if (ImGui::Button("Reload"))
@@ -196,7 +192,7 @@ void Editor::UpdateRuntimeGame(RenderEventArgs& e)
     {
         bShowReloadOverlay = false;
     }
-
+  
     ImGui::End();
 }
 
