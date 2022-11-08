@@ -203,5 +203,4 @@ private:
     int m_PreviousMouseY;
 
     GUI m_GUI;
-
 };
