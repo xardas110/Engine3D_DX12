@@ -307,12 +307,14 @@ void Window::OnResize(ResizeEventArgs& e)
         UpdateRenderTargetViews();     
     }
 
+#ifndef DEBUG_EDITOR
     m_DeferredRenderer.OnResize(e);
 
     if (auto pGame = m_pGame.lock())
     {
         pGame->OnResize(e);
     }
+#endif // DEBUG_EDITOR
 }
 
 Microsoft::WRL::ComPtr<IDXGISwapChain4> Window::CreateSwapChain()
@@ -433,5 +435,8 @@ UINT Window::Present(const Texture & texture, GUI& m_GUI)
     return m_CurrentBackBufferIndex;
 }
 
-
+const Texture& Window::GetDeferredRendererFinalTexture()
+{
+    return m_DeferredRenderer.m_GBufferRenderTarget.GetTexture(AttachmentPoint::Color0);
+}
 

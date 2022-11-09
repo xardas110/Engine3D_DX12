@@ -515,6 +515,7 @@ MouseButtonEventArgs::MouseButton DecodeMouseButton(UINT messageID)
     return mouseButton;
 }
 
+#ifdef DEBUG_EDITOR
 void Application::UpdateEditor(UpdateEventArgs& e, std::shared_ptr<Window>& window)
 {
     m_Editor->OnUpdate(e, window);
@@ -524,6 +525,12 @@ void Application::RenderEditor(RenderEventArgs& e, std::shared_ptr<Window>& wind
 {
     m_Editor->OnRender(e, window);
 }
+
+void Application::ResizeEditor(ResizeEventArgs& e, std::shared_ptr<Window>& window)
+{
+    m_Editor->OnResize(e, window);
+}
+#endif // DEBUG_EDITOR
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -556,6 +563,15 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             RenderEventArgs renderEventArgs(0.0f, 0.0f, Application::ms_FrameCount);
             // Delta time will be filled in by the Window.
             Application::Get().RenderEditor(renderEventArgs, pWindow);
+        }
+        break;
+        case WM_SIZE:
+        {
+            int width = ((int)(short)LOWORD(lParam));
+            int height = ((int)(short)HIWORD(lParam));
+
+            ResizeEventArgs resizeEventArgs(width, height);
+            Application::Get().ResizeEditor(resizeEventArgs, pWindow);
         }
         break;
 #else

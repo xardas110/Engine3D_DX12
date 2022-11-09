@@ -133,6 +133,23 @@ void GUI::Destroy()
     }
 }
 
+void GUI::GetNextHeapHandle(D3D12_CPU_DESCRIPTOR_HANDLE& cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE& gpuHandle)
+{
+    auto device = Application::Get().GetDevice();
+    UINT handle_increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+    ++nextHeapHandle;
+    cpuHandle = g_pd3dSrvDescHeap->GetCPUDescriptorHandleForHeapStart();
+    gpuHandle = g_pd3dSrvDescHeap->GetGPUDescriptorHandleForHeapStart();
+
+    cpuHandle.ptr += (handle_increment) * nextHeapHandle;
+    gpuHandle.ptr += (handle_increment) * nextHeapHandle;
+}
+void GUI::ResetHeapHandle()
+{
+    nextHeapHandle = 0;
+}
+
 //--------------------------------------------------------------------------------------
 // Get surface information for a particular format
 //--------------------------------------------------------------------------------------

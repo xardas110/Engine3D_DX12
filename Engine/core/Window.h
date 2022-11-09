@@ -176,6 +176,8 @@ private:
     Window(const Window& copy) = delete;
     Window& operator=(const Window& other) = delete;
 
+    const Texture& GetDeferredRendererFinalTexture();
+
     HWND m_hWnd;
 
     std::wstring m_WindowName;

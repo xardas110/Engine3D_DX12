@@ -69,7 +69,7 @@ void Editor::ShowDockSpace(bool* p_open)
     ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
 
-    if (bDockFullScreen)
+    if (m_UI.bDockFullScreen)
     {
         const ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -90,7 +90,7 @@ void Editor::ShowDockSpace(bool* p_open)
 
     ImGui::Begin("DockSpace", p_open, window_flags);
 
-    if (bDockFullScreen)
+    if (m_UI.bDockFullScreen)
         ImGui::PopStyleVar(2);
 
     // Submit the DockSpace
@@ -120,20 +120,57 @@ void Editor::OnUpdate(UpdateEventArgs& e, std::shared_ptr<Window> window)
     m_Gui.NewFrame();
     RenderGui(e);
 
+    PollGlobalInputs();
+    PollWindowInputs(window);
+
     window->OnUpdate(e);
 }
 
 void Editor::OnRender(RenderEventArgs& e, std::shared_ptr<Window> window)
 {
     window->OnRender(e);
-    window->Present(window->m_DeferredRenderer.m_GBufferRenderTarget.GetTexture(AttachmentPoint::Color0), m_Gui);
+    OnViewportRender(window);
+
+    //Redudant param1 due to choice.
+    window->Present(Texture(), m_Gui);
+
+    m_Gui.ResetHeapHandle();
+}
+
+void Editor::OnViewportRender(std::shared_ptr<Window> window)
+{
+    auto device = Application::Get().GetDevice();
+
+    D3D12_CPU_DESCRIPTOR_HANDLE my_texture_srv_cpu_handle;
+    D3D12_GPU_DESCRIPTOR_HANDLE my_texture_srv_gpu_handle;
+    
+    m_Gui.GetNextHeapHandle(my_texture_srv_cpu_handle, my_texture_srv_gpu_handle);
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
+    ZeroMemory(&srvDesc, sizeof(srvDesc));
+    srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = 1;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    device->CreateShaderResourceView(window->GetDeferredRendererFinalTexture().GetD3D12Resource().Get(), &srvDesc, my_texture_srv_cpu_handle);
+
+    ImGui::Begin(std::string(std::string(window->GetWindowName().begin(), window->GetWindowName().end()) + " Viewport").c_str(), 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav);
+    ImGui::Image((ImTextureID)my_texture_srv_gpu_handle.ptr, ImGui::GetWindowSize());
+    ImGui::End();
+}
+
+void Editor::OnResize(ResizeEventArgs& e, std::shared_ptr<Window>& window)
+{
+    //resizes swapchain relative to the window
+    window->OnResize(e);
 }
 
 void Editor::RenderGui(UpdateEventArgs& e)
 {
     if (!m_World) return;
 
-    ShowDockSpace(&bUseDocking);
+    ShowDockSpace(&m_UI.bUseDocking);
     ImGui::ShowMetricsWindow();
 
     UpdateGameMenuBar();
@@ -143,33 +180,42 @@ void Editor::RenderGui(UpdateEventArgs& e)
     //Beware! Might need to run last
     UpdateRuntimeGame(e);
 
-    if (showDemoWindow)
+    if (m_UI.showDemoWindow)
     {
-        ImGui::ShowDemoWindow(&showDemoWindow);
+        ImGui::ShowDemoWindow(&m_UI.showDemoWindow);
     }
 }
 
-void Editor::OnViewportRender(const Texture& sceneTexture)
+void Editor::PollGlobalInputs()
 {
-    auto device = Application::Get().GetDevice();
-    UINT handle_increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    POINT p;
+    if (GetCursorPos(&p))
+    {
+        m_GlobalInputs.mouseX = p.x;
+        m_GlobalInputs.mouseY = p.y;
+    }
+}
 
-    D3D12_CPU_DESCRIPTOR_HANDLE my_texture_srv_cpu_handle = heap->GetCPUDescriptorHandleForHeapStart();
-    my_texture_srv_cpu_handle.ptr += (handle_increment);
-    D3D12_GPU_DESCRIPTOR_HANDLE my_texture_srv_gpu_handle = heap->GetGPUDescriptorHandleForHeapStart();
-    my_texture_srv_gpu_handle.ptr += (handle_increment);
+void Editor::PollWindowInputs(std::shared_ptr<Window> window)
+{
+    ViewportData& data = m_ViewportDataMap[window->GetWindowName()];
 
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
-    ZeroMemory(&srvDesc, sizeof(srvDesc));
-    srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels = 1;
-    srvDesc.Texture2D.MostDetailedMip = 0;
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    device->CreateShaderResourceView(sceneTexture.GetD3D12Resource().Get(), &srvDesc, my_texture_srv_cpu_handle);
+    std::string title = 
+        std::string(std::string(window->GetWindowName().begin(),      
+        window->GetWindowName().end()) + " Viewport");
 
-    ImGui::Begin("ViewPort", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav);   
-    ImGui::Image((ImTextureID)my_texture_srv_gpu_handle.ptr, ImGui::GetWindowSize());
+    ImGui::Begin(title.c_str(), 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav);
+
+    ResizeEventArgs e(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
+    if (data.width != e.Width || data.height != e.Height)
+    { 
+        window->m_DeferredRenderer.OnResize(e);
+        if (auto pGame = window->m_pGame.lock())
+        {
+            pGame->OnResize(e);
+        }
+    }
+
     ImGui::End();
 }
 
@@ -188,9 +234,8 @@ void Editor::UpdateGameMenuBar()
 
         if (ImGui::BeginMenu("View"))
         {
-            ImGui::MenuItem("ImGui Demo", nullptr, &showDemoWindow);
-            ImGui::MenuItem("Game Loader", nullptr, &bShowGameLoader);
-            ImGui::MenuItem("DockSpace Fullscreen", nullptr, &bDockFullScreen);            
+            ImGui::MenuItem("ImGui Demo", nullptr, &m_UI.showDemoWindow);
+            ImGui::MenuItem("Game Loader", nullptr, &m_UI.bShowGameLoader);           
             ImGui::EndMenu();
         }
 
@@ -208,6 +253,8 @@ void Editor::UpdateGameMenuBar()
                 m_World->m_pWindow->SetFullscreen(fullscreen);
             }
 
+            ImGui::MenuItem("DockSpace Fullscreen", nullptr, &m_UI.bDockFullScreen);
+
             ImGui::EndMenu();
         }
 
@@ -217,7 +264,7 @@ void Editor::UpdateGameMenuBar()
 
 void Editor::UpdateRuntimeGame(UpdateEventArgs& e)
 {
-    if (!bShowGameLoader) return;
+    if (!m_UI.bShowGameLoader) return;
 
     static bool bHotReload = true;
     static float reloadTimer = 0.f;
