@@ -107,30 +107,49 @@ void Editor::ShowDockSpace(bool* p_open)
 Editor::Editor(World* world)
 	:m_World(world)
 {
-
+    m_Gui.Initialize(world->m_pWindow);
 }
 
-void Editor::OnGui(RenderEventArgs& e)
+void Editor::Destroy()
+{
+    m_Gui.Destroy();
+}
+
+void Editor::OnUpdate(UpdateEventArgs& e, std::shared_ptr<Window> window)
+{
+    m_Gui.NewFrame();
+    RenderGui(e);
+
+    window->OnUpdate(e);
+}
+
+void Editor::OnRender(RenderEventArgs& e, std::shared_ptr<Window> window)
+{
+    window->OnRender(e);
+    window->Present(window->m_DeferredRenderer.m_GBufferRenderTarget.GetTexture(AttachmentPoint::Color0), m_Gui);
+}
+
+void Editor::RenderGui(UpdateEventArgs& e)
 {
     if (!m_World) return;
 
     ShowDockSpace(&bUseDocking);
     ImGui::ShowMetricsWindow();
 
-    UpdateGameMenuBar(e);
-    UpdateWorldHierarchy(e);
-    UpdateSelectedEntity(e);
+    UpdateGameMenuBar();
+    UpdateWorldHierarchy();
+    UpdateSelectedEntity();
 
     //Beware! Might need to run last
     UpdateRuntimeGame(e);
-  
+
     if (showDemoWindow)
     {
         ImGui::ShowDemoWindow(&showDemoWindow);
     }
 }
 
-void Editor::OnViewportRender(const Texture& sceneTexture, ID3D12DescriptorHeap* heap)
+void Editor::OnViewportRender(const Texture& sceneTexture)
 {
     auto device = Application::Get().GetDevice();
     UINT handle_increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -154,7 +173,7 @@ void Editor::OnViewportRender(const Texture& sceneTexture, ID3D12DescriptorHeap*
     ImGui::End();
 }
 
-void Editor::UpdateGameMenuBar(RenderEventArgs& e)
+void Editor::UpdateGameMenuBar()
 {
     if (ImGui::BeginMainMenuBar())
     {
@@ -196,7 +215,7 @@ void Editor::UpdateGameMenuBar(RenderEventArgs& e)
     }
 }
 
-void Editor::UpdateRuntimeGame(RenderEventArgs& e)
+void Editor::UpdateRuntimeGame(UpdateEventArgs& e)
 {
     if (!bShowGameLoader) return;
 
@@ -264,7 +283,7 @@ void Editor::UpdateRuntimeGame(RenderEventArgs& e)
     ImGui::End();
 }
 
-void Editor::UpdateWorldHierarchy(RenderEventArgs& e)
+void Editor::UpdateWorldHierarchy()
 {
     ImGui::Begin("World Hierarchy");   
     auto view = m_World->registry.view<TagComponent, RelationComponent>();
@@ -317,7 +336,7 @@ void Editor::UpdateSceneGraph(entt::entity entity, const std::string& tag, Relat
     }
 }
 
-void Editor::UpdateSelectedEntity(RenderEventArgs& e)
+void Editor::UpdateSelectedEntity()
 {
     if (selectedEntity == entt::null) return;
 

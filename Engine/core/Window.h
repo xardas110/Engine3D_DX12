@@ -121,7 +121,11 @@ public:
      * will be performed. Use the Window::GetRenderTarget method to get a render
      * target for the window's color buffer. 
      */
+#ifndef DEBUG_EDITOR
     UINT Present( const Texture& texture = Texture() );
+#else
+    UINT Present(const Texture& texture, GUI& m_GUI);
+#endif // !DEBUG_EDITOR
 
 protected:
     // The Window procedure needs to call protected methods of this class.
@@ -203,5 +207,7 @@ private:
     int m_PreviousMouseX;
     int m_PreviousMouseY;
 
+#ifndef DEBUG_EDITOR
     GUI m_GUI;
+#endif // !DEBUG_EDITOR
 };

@@ -40,11 +40,14 @@
 #include <string>
 #include <AssetManager.h>
 #include <PipelineManager.h>
+#include <Events.h>
+
 
 class CommandQueue;
 class DescriptorAllocator;
 class Game;
 class Window;
+class Editor;
 
 class Application
 {
@@ -190,4 +193,10 @@ private:
     std::unique_ptr<AssetManager> m_AssetManager{nullptr};
     //Contains all pipelines for the application
     std::unique_ptr<PipelineManager> m_PipelineManager{ nullptr };
+
+#ifdef DEBUG_EDITOR
+    void UpdateEditor(UpdateEventArgs& e, std::shared_ptr<Window>& window);
+    void RenderEditor(RenderEventArgs& e, std::shared_ptr<Window>& window);
+    std::unique_ptr<Editor> m_Editor{ nullptr };
+#endif // DEBUG_EDITOR
 };

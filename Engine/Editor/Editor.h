@@ -3,27 +3,33 @@
 #include <Events.h>
 #include <entt/entt.hpp>
 #include <Components.h>
+#include <Window.h>
+#include <GUI.h>
 
 class World;
 
 class Editor
 {
-	friend class World;
+	friend class Application;
 
 	void ShowDockSpace(bool* p_open);
 
 	Editor(World* world);
+	void Destroy(); //Destructor needs to be public, destruction is by application.
 
-	void OnGui(RenderEventArgs& e);
-	void OnViewportRender(const Texture& sceneTexture, ID3D12DescriptorHeap* heap);
+	void RenderGui(UpdateEventArgs& e);
+	void OnViewportRender(const Texture& sceneTexture);
 
-	void UpdateGameMenuBar(RenderEventArgs& e);
-	void UpdateRuntimeGame(RenderEventArgs& e);
+	void OnUpdate(UpdateEventArgs& e, std::shared_ptr<Window> window);
+	void OnRender(RenderEventArgs& e, std::shared_ptr<Window> window);
+
+	void UpdateGameMenuBar();
+	void UpdateRuntimeGame(UpdateEventArgs& e);
 
 	void UpdateSceneGraph(entt::entity entity, const std::string& tag, RelationComponent& relation);
 
-	void UpdateWorldHierarchy(RenderEventArgs& e);
-	void UpdateSelectedEntity(RenderEventArgs& e);
+	void UpdateWorldHierarchy();
+	void UpdateSelectedEntity();
 
 	void SelectEntity(entt::entity entity);
 
@@ -36,6 +42,9 @@ class Editor
 
 	bool bUseDocking = true;
 	bool bDockFullScreen = true;
+
+	//Imgui system
+	GUI m_Gui;
 
 	//No ownership, safe ptr. Editor can't be alive without the ptr presisting.
 	World* m_World{nullptr};

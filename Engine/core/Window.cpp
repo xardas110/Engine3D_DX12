@@ -44,7 +44,9 @@ Window::~Window()
 
 void Window::Initialize()
 {
+#ifndef DEBUG_EDITOR
     m_GUI.Initialize( shared_from_this() );
+#endif // !DEBUG_EDITOR
 }
 
 
@@ -73,7 +75,9 @@ void Window::Hide()
 
 void Window::Destroy()
 {
+#ifndef DEBUG_EDITOR
     m_GUI.Destroy();
+#endif // !DEBUG_EDITOR
 
     if (auto pGame = m_pGame.lock())
     {
@@ -185,7 +189,10 @@ void Window::RegisterCallbacks(std::shared_ptr<Game> pGame)
 
 void Window::OnUpdate(UpdateEventArgs& e)
 {
+#ifndef DEBUG_EDITOR
     m_GUI.NewFrame();
+#endif // !DEBUG_EDITOR
+
     m_UpdateClock.Tick();
 
     if (auto pGame = m_pGame.lock())
@@ -206,7 +213,9 @@ void Window::OnRender(RenderEventArgs& e)
         pGame->OnRender(renderEventArgs);
     }
 
+#ifndef DEBUG_EDITOR
     Present(m_DeferredRenderer.m_GBufferRenderTarget.GetTexture(AttachmentPoint::Color0));
+#endif // !DEBUG_EDITOR
 }
 
 void Window::OnKeyPressed(KeyEventArgs& e)
@@ -374,8 +383,13 @@ const RenderTarget& Window::GetRenderTarget() const
     return m_RenderTarget;
 }
 
+#ifndef DEBUG_EDITOR
 UINT Window::Present( const Texture& texture )
 {
+#else
+UINT Window::Present(const Texture & texture, GUI& m_GUI)
+{
+#endif // !DEBUG_EDITOR
     auto commandQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
     auto commandList = commandQueue->GetCommandList();
 
@@ -398,7 +412,7 @@ UINT Window::Present( const Texture& texture )
     RenderTarget renderTarget;
     renderTarget.AttachTexture( AttachmentPoint::Color0, backBuffer );
 
-    m_GUI.Render( commandList, renderTarget, texture );
+    m_GUI.Render( commandList, renderTarget );
 
     commandList->TransitionBarrier( backBuffer, D3D12_RESOURCE_STATE_PRESENT );
     commandQueue->ExecuteCommandList( commandList );
@@ -418,3 +432,6 @@ UINT Window::Present( const Texture& texture )
 
     return m_CurrentBackBufferIndex;
 }
+
+
+

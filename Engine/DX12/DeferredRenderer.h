@@ -9,6 +9,7 @@ class DeferredRenderer
 {
 	friend class Window;
 	friend class World;
+	friend class Editor;
 
 	DeferredRenderer(int width, int height);
 	~DeferredRenderer();
