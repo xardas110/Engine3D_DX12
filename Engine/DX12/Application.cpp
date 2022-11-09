@@ -8,6 +8,7 @@
 #include <Window.h>
 
 #include <CMD.h>
+#include <Editor.h>
 
 constexpr wchar_t WINDOW_CLASS_NAME[] = L"DX12RenderWindowClass";
 
@@ -121,6 +122,7 @@ void Application::Initialize()
     // Initialize managers
     m_AssetManager = AssetManager::CreateInstance();
     m_PipelineManager = PipelineManager::CreateInstance();
+
 }
 
 void Application::Create(HINSTANCE hInst)
@@ -369,6 +371,11 @@ int Application::Run(std::shared_ptr<Game> pGame)
     if (!pGame->Initialize()) return 1;
     if (!pGame->LoadContent()) return 2;
 
+#ifdef DEBUG_EDITOR
+    if (auto world = std::reinterpret_pointer_cast<World>(pGame))
+        m_Editor = std::unique_ptr<Editor>(new Editor(world.get()));
+#endif
+
     MSG msg = { 0 };
     while (msg.message != WM_QUIT)
     {
@@ -384,6 +391,11 @@ int Application::Run(std::shared_ptr<Game> pGame)
 
     pGame->UnloadContent();
     pGame->Destroy();
+
+#ifdef DEBUG_EDITOR
+    m_Editor->Destroy();
+#endif // DEBUG_EDITOR
+
 
     return static_cast<int>(msg.wParam);
 }
@@ -503,6 +515,16 @@ MouseButtonEventArgs::MouseButton DecodeMouseButton(UINT messageID)
     return mouseButton;
 }
 
+void Application::UpdateEditor(UpdateEventArgs& e, std::shared_ptr<Window>& window)
+{
+    m_Editor->OnUpdate(e, window);
+}
+
+void Application::RenderEditor(RenderEventArgs& e, std::shared_ptr<Window>& window)
+{
+    m_Editor->OnRender(e, window);
+}
+
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     if ( ImGui_ImplWin32_WndProcHandler( hwnd, message, wParam, lParam ) )
@@ -523,6 +545,20 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
     {
         switch (message)
         {
+#ifdef DEBUG_EDITOR
+        case WM_PAINT:
+        {
+            ++Application::ms_FrameCount;
+
+            // Delta time will be filled in by the Window.
+            UpdateEventArgs updateEventArgs(0.0f, 0.0f, Application::ms_FrameCount);
+            Application::Get().UpdateEditor(updateEventArgs, pWindow);
+            RenderEventArgs renderEventArgs(0.0f, 0.0f, Application::ms_FrameCount);
+            // Delta time will be filled in by the Window.
+            Application::Get().RenderEditor(renderEventArgs, pWindow);
+        }
+        break;
+#else
         case WM_PAINT:
         {
             ++Application::ms_FrameCount;
@@ -676,6 +712,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             pWindow->OnResize(resizeEventArgs);
         }
         break;
+#endif // !DEBUG_EDITOR
         case WM_DESTROY:
         {
             // If a window is being destroyed, remove it from the 

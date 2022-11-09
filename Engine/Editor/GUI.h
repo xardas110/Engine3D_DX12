@@ -56,7 +56,7 @@ public:
 
     // Begin a new frame.
     virtual void NewFrame();
-    virtual void Render( std::shared_ptr<CommandList> commandList, const RenderTarget& renderTarget, const Texture& texture );
+    virtual void Render( std::shared_ptr<CommandList> commandList, const RenderTarget& renderTarget);
 
     // Destroy the ImGui context.
     virtual void Destroy();
@@ -67,5 +67,6 @@ private:
     ImGuiContext* m_pImGuiCtx;
     std::shared_ptr<Window> m_Window;
 
+    //Max 24 windows for now(assigned inside virtual bool Initialize( std::shared_ptr<Window> window );)
     ID3D12DescriptorHeap* g_pd3dSrvDescHeap = NULL;
 };

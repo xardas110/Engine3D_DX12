@@ -7,9 +7,7 @@
 World::World(const std::wstring& name, int width, int height, bool vSync)
     :Game(name, width, height, vSync)
 {
-#ifdef DEBUG_EDITOR
-    m_Editor = std::unique_ptr<Editor>(new Editor(this));
-#endif
+
 }
 
 void World::LoadGameMode()
@@ -38,11 +36,6 @@ void World::OnUpdate(UpdateEventArgs& e)
 void World::OnRender(RenderEventArgs& e)
 {
 	super::OnRender(e);
-#ifdef DEBUG_EDITOR
-    m_Editor->OnGui(e);
-    if (m_GameMode) m_GameMode->OnGui(e);
-    m_Editor->OnViewportRender(m_pWindow->m_DeferredRenderer.m_GBufferRenderTarget.GetTexture(AttachmentPoint::Color0), m_pWindow->m_GUI.g_pd3dSrvDescHeap);
-#endif
 }
 
 bool World::LoadRuntimeGame(const std::string& name)

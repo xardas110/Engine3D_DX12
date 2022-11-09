@@ -10,7 +10,6 @@ typedef GameMode* (CALLBACK* GameEntry)(Game*, Application*);
 
 /**
 *  GameWorld class, presitent trought different games.
-*  Runs all the systems(Physics, Audio, Rendering etc.)
 */
 class World : public Game
 {
@@ -83,8 +82,4 @@ private:
     }runTimeGame;
 
     std::unique_ptr<GameMode> m_GameMode{ nullptr };
-
-#ifdef DEBUG_EDITOR
-    std::unique_ptr<Editor> m_Editor{ nullptr};
-#endif // DEBUG_EDITOR
 };
