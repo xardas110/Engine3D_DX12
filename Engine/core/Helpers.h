@@ -317,3 +317,8 @@ namespace Math
 #define WSTR1(x) L##x
 #define WSTR(x) WSTR1(x)
 #define NAME_D3D12_OBJECT(x) x->SetName( WSTR(__FILE__ "(" STR(__LINE__) "): " L#x) )
+
+inline bool Cmp(const float a, const float b, const float epsilon = 0.0005f)
+{
+    return (fabs(a - b) < epsilon);
+}

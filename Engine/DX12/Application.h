@@ -197,6 +197,7 @@ private:
 #ifdef DEBUG_EDITOR
     void UpdateEditor(UpdateEventArgs& e, std::shared_ptr<Window>& window);
     void RenderEditor(RenderEventArgs& e, std::shared_ptr<Window>& window);
+    void ResizeEditor(ResizeEventArgs& e, std::shared_ptr<Window>& window);
     std::unique_ptr<Editor> m_Editor{ nullptr };
 #endif // DEBUG_EDITOR
 };

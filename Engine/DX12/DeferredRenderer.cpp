@@ -10,6 +10,7 @@
 #include <Components.h>
 #include <entt/entt.hpp>
 #include <Entity.h>
+#include <Helpers.h>
 
 using namespace DirectX;
 
@@ -145,6 +146,10 @@ void DeferredRenderer::Render(Window& window)
 
 void DeferredRenderer::OnResize(ResizeEventArgs& e)
 {
+    if (Cmp(m_Width, e.Width) && Cmp(m_Height, e.Height)) return;
+
+    Application::Get().Flush();
+
     m_Width = std::max(1, e.Width);
     m_Height = std::max(1, e.Height);
 
