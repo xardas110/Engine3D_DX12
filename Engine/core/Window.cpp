@@ -239,8 +239,6 @@ void Window::OnKeyReleased(KeyEventArgs& e)
 // The mouse was moved
 void Window::OnMouseMoved(MouseMotionEventArgs& e)
 {
-    std::cout << "mouse moved" << std::endl;
-
     e.RelX = e.X - m_PreviousMouseX;
     e.RelY = e.Y - m_PreviousMouseY;
 
