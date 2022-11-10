@@ -76,7 +76,7 @@ void Texture::Resize(uint32_t width, uint32_t height, uint32_t depthOrArraySize 
         resDesc.Height = std::max( height, 1u );
         resDesc.DepthOrArraySize = depthOrArraySize;
 
-        if (width < 500 || height < 500)
+        if (width < 20000 || height < 20000)
         {
             resDesc.MipLevels = 1;
         }
