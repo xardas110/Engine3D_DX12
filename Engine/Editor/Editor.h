@@ -9,17 +9,6 @@
 #ifdef DEBUG_EDITOR
 class World;
 
-//This struct is only used for the editor layer
-//Due to the viewports can be outside of the window bounds
-struct GlobalInputs
-{
-	float mouseX{ 0.f };
-	float mouseY{ 0.f };
-
-	//keymap for global key input
-	std::map<KeyCode::Key, bool> keys;
-};
-
 class Editor
 {
 	friend class Application;
@@ -77,6 +66,12 @@ class Editor
 		bool bShift{ false };
 		bool bControl{ false };
 		bool bAlt{ false };
+
+		float mouseGlobalPosX{ 0.f };
+		float mouseGlobalPosY{ 0.f };
+
+		//keymap for global key input
+		std::map<KeyCode::Key, bool> keys;
 	};
 
 	//Viewport data pr. window.
@@ -84,9 +79,6 @@ class Editor
 
 	//Imgui system
 	GUI m_Gui;
-
-	//Poll global input will update this
-	GlobalInputs m_GlobalInputs;
 
 	//No ownership, safe ptr. Editor can't be alive without the ptr presisting.
 	World* m_World{nullptr};

@@ -162,7 +162,7 @@ void Editor::OnViewportRender(std::shared_ptr<Window> window)
 
 void Editor::OnResize(ResizeEventArgs& e, std::shared_ptr<Window>& window)
 {
-    //resizes swapchain relative to the window
+    //Resizes swapchain relative to the window
     //This will only resize the swapchain and the renderwindow
     //The game will be resized by the imgui viewport
     window->OnResize(e);
@@ -188,6 +188,31 @@ void Editor::RenderGui(UpdateEventArgs& e)
     }
 }
 
+MouseButtonEventArgs::MouseButton DecodeMouseButton(KeyCode::Key key)
+{
+    MouseButtonEventArgs::MouseButton mouseButton = MouseButtonEventArgs::None;
+    switch (key)
+    {
+    case KeyCode::LButton:
+    {
+        mouseButton = MouseButtonEventArgs::Left;
+    }
+    break;
+    case KeyCode::RButton:
+    {
+        mouseButton = MouseButtonEventArgs::Right;
+    }
+    break;
+    case KeyCode::MButton:
+    {
+        mouseButton = MouseButtonEventArgs::Middel;
+    }
+    break;
+    }
+
+    return mouseButton;
+}
+
 void Editor::PollWindowInputs(std::shared_ptr<Window> window)
 {
     ViewportData& data = m_ViewportDataMap[window->GetWindowName()];
@@ -201,8 +226,8 @@ void Editor::PollWindowInputs(std::shared_ptr<Window> window)
     POINT p;
     if (GetCursorPos(&p))
     {
-        m_GlobalInputs.mouseX = p.x;
-        m_GlobalInputs.mouseY = p.y;
+        data.mouseGlobalPosX = p.x;
+        data.mouseGlobalPosY = p.y;
     }
 
     ResizeEventArgs e(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
@@ -221,8 +246,8 @@ void Editor::PollWindowInputs(std::shared_ptr<Window> window)
     data.bFocused = ImGui::IsWindowFocused();
     data.bHovered = ImGui::IsWindowHovered();
 
-    data.mousePosX = m_GlobalInputs.mouseX - ImGui::GetCursorScreenPos().x;
-    data.mousePosY = m_GlobalInputs.mouseY - ImGui::GetCursorScreenPos().y;
+    data.mousePosX = data.mouseGlobalPosX - ImGui::GetCursorScreenPos().x;
+    data.mousePosY = data.mouseGlobalPosY - ImGui::GetCursorScreenPos().y;
 
     if (data.bHovered)
     { 
@@ -235,28 +260,55 @@ void Editor::PollWindowInputs(std::shared_ptr<Window> window)
             KeyCode::Key keyCode = KeyCode::Key(i);
             if (GetAsyncKeyState(keyCode))
             {
-                if (!m_GlobalInputs.keys[keyCode])
+                if (!data.keys[keyCode])
                 { 
-                    KeyEventArgs keyEventArgs(keyCode, 0, KeyEventArgs::Pressed, data.bControl, data.bShift, data.bAlt);
-                    window->OnKeyPressed(keyEventArgs);
+                    if (keyCode >= KeyCode::None && keyCode <= KeyCode::XButton2)
+                    {
+                        MouseButtonEventArgs mouseEventArgs(
+                            DecodeMouseButton(keyCode), 
+                            MouseButtonEventArgs::Pressed, data.keys[KeyCode::Left],
+                            data.keys[KeyCode::MButton],
+                            data.keys[KeyCode::Right],
+                            data.bControl, data.bShift, data.mousePosX, data.mousePosY);
+                        window->OnMouseButtonPressed(mouseEventArgs);
+                    }
+                    else
+                    { 
+                        KeyEventArgs keyEventArgs(keyCode, 0, KeyEventArgs::Pressed, data.bControl, data.bShift, data.bAlt);
+                        window->OnKeyPressed(keyEventArgs);
+                    }
                 }
 
-                m_GlobalInputs.keys[keyCode] = true;
+                data.keys[keyCode] = true;
             }
             else
             {
-                if (m_GlobalInputs.keys[keyCode])
+                if (data.keys[keyCode])
                 {
-                    KeyEventArgs keyEventArgs(keyCode, 0, KeyEventArgs::Released, data.bControl, data.bShift, data.bAlt);
-                    window->OnKeyReleased(keyEventArgs);
+                    if (keyCode >= KeyCode::None && keyCode <= KeyCode::XButton2)
+                    {
+                        MouseButtonEventArgs mouseEventArgs(
+                            DecodeMouseButton(keyCode),
+                            MouseButtonEventArgs::Released, data.keys[KeyCode::Left],
+                            data.keys[KeyCode::MButton],
+                            data.keys[KeyCode::Right],
+                            data.bControl, data.bShift, data.mousePosX, data.mousePosY);
+                        window->OnMouseButtonReleased(mouseEventArgs);
+                    }
+                    else
+                    { 
+                        KeyEventArgs keyEventArgs(keyCode, 0, KeyEventArgs::Released, data.bControl, data.bShift, data.bAlt);
+                        window->OnKeyReleased(keyEventArgs);
+                    }
                 }
 
-                m_GlobalInputs.keys[keyCode] = false;
+                data.keys[keyCode] = false;
             }
         }
 
-        MouseMotionEventArgs mouseMotion(m_GlobalInputs.keys[KeyCode::LButton], m_GlobalInputs.keys[KeyCode::MButton], m_GlobalInputs.keys[KeyCode::RButton], data.bControl, data.bShift, data.mousePosX, data.mousePosY);
+        MouseMotionEventArgs mouseMotion(data.keys[KeyCode::LButton], data.keys[KeyCode::MButton], data.keys[KeyCode::RButton], data.bControl, data.bShift, data.mousePosX, data.mousePosY);
         window->OnMouseMoved(mouseMotion);
+
     }
 
     ImGui::End();
