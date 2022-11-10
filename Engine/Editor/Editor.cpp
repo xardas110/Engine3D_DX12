@@ -116,23 +116,33 @@ void Editor::Destroy()
     m_Gui.Destroy();
 }
 
-void Editor::OnUpdate(UpdateEventArgs& e, std::shared_ptr<Window> window)
+void Editor::OnUpdate(UpdateEventArgs& e)
 {
+    auto mainWindow = m_World->m_pWindow;
+
     m_Gui.NewFrame();
-    RenderGui(e);
 
-    PollWindowInputs(window);
+    m_UpdateClock.Tick();
+    UpdateEventArgs updateEventArgs(m_UpdateClock.GetDeltaSeconds(), m_UpdateClock.GetTotalSeconds(), e.FrameNumber);  
 
-    window->OnUpdate(e);
+    RenderGui(updateEventArgs);
+
+    PollWindowInputs(mainWindow);
+    mainWindow->OnUpdate(updateEventArgs);
+
 }
 
-void Editor::OnRender(RenderEventArgs& e, std::shared_ptr<Window> window)
+void Editor::OnRender(RenderEventArgs& e)
 {
-    window->OnRender(e);
-    OnViewportRender(window);
+    auto mainWindow = m_World->m_pWindow;
 
-    //Redudant param1 due to choice.
-    window->Present(Texture(), m_Gui);
+    m_RenderClock.Tick();
+    RenderEventArgs renderEventArgs(m_RenderClock.GetDeltaSeconds(), m_RenderClock.GetTotalSeconds(), e.FrameNumber);
+
+    mainWindow->OnRender(renderEventArgs);
+    OnViewportRender(mainWindow);
+
+    mainWindow->Present(Texture(), m_Gui);
 
     m_Gui.ResetHeapHandle();
 }

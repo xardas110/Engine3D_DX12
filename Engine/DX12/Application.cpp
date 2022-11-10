@@ -23,11 +23,6 @@ static WindowNameMap gs_WindowByName;
 uint64_t Application::ms_FrameCount = 0;
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK HookProc(
-    int message,
-    WPARAM wParam,
-    LPARAM lParam
-);
 extern LRESULT ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
 // A wrapper struct to allow shared pointers for the window class.
@@ -370,7 +365,6 @@ std::shared_ptr<Window> Application::GetWindowByName(const std::wstring& windowN
     return window;
 }
 
-
 int Application::Run(std::shared_ptr<Game> pGame)
 {
     if (!pGame->Initialize()) return 1;
@@ -384,11 +378,20 @@ int Application::Run(std::shared_ptr<Game> pGame)
     MSG msg = { 0 };
     while (msg.message != WM_QUIT)
     {
+#ifdef DEBUG_EDITOR
+        ++Application::ms_FrameCount;
+        UpdateEventArgs updateEventArgs(0.0f, 0.0f, Application::ms_FrameCount);  
+        m_Editor->OnUpdate(updateEventArgs);
+#endif
         if (PeekMessageW(&msg, 0, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
         }
+#ifdef DEBUG_EDITOR
+        RenderEventArgs renderEventArgs(0.0f, 0.0f, Application::ms_FrameCount);
+        m_Editor->OnRender(renderEventArgs);
+#endif
     }
 
     // Flush any commands in the commands queues before quiting.
@@ -400,7 +403,6 @@ int Application::Run(std::shared_ptr<Game> pGame)
 #ifdef DEBUG_EDITOR
     m_Editor->Destroy();
 #endif // DEBUG_EDITOR
-
 
     return static_cast<int>(msg.wParam);
 }
@@ -521,14 +523,13 @@ MouseButtonEventArgs::MouseButton DecodeMouseButton(UINT messageID)
 }
 
 #ifdef DEBUG_EDITOR
-void Application::UpdateEditor(UpdateEventArgs& e, std::shared_ptr<Window>& window)
+void Application::UpdateEditor(UpdateEventArgs& e)
 {
-    m_Editor->OnUpdate(e, window);
+    m_Editor->OnUpdate(e);
 }
-
-void Application::RenderEditor(RenderEventArgs& e, std::shared_ptr<Window>& window)
+void Application::RenderEditor(RenderEventArgs& e)
 {
-    m_Editor->OnRender(e, window);
+    m_Editor->OnRender(e);
 }
 
 void Application::ResizeEditor(ResizeEventArgs& e, std::shared_ptr<Window>& window)
@@ -558,18 +559,6 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
         switch (message)
         {
 #ifdef DEBUG_EDITOR
-        case WM_PAINT:
-        {
-            ++Application::ms_FrameCount;
-
-            // Delta time will be filled in by the Window.
-            UpdateEventArgs updateEventArgs(0.0f, 0.0f, Application::ms_FrameCount);
-            Application::Get().UpdateEditor(updateEventArgs, pWindow);
-            RenderEventArgs renderEventArgs(0.0f, 0.0f, Application::ms_FrameCount);
-            // Delta time will be filled in by the Window.
-            Application::Get().RenderEditor(renderEventArgs, pWindow);
-        }
-        break;
         case WM_SIZE:
         {
             int width = ((int)(short)LOWORD(lParam));
