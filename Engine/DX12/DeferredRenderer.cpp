@@ -146,7 +146,7 @@ void DeferredRenderer::Render(Window& window)
 
 void DeferredRenderer::OnResize(ResizeEventArgs& e)
 {
-    if (Cmp(m_Width, e.Width) && Cmp(m_Height, e.Height)) return;
+    if (m_Width == e.Width && m_Height == e.Height) return;
 
     Application::Get().Flush();
 

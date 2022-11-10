@@ -239,5 +239,6 @@ namespace KeyCode
         NoName          = 0xfc, // Reserved
         Pa1             = 0xfd, // The PA1 key
         OemClear        = 0xfe, // The Clear key
+        Size
     };
 }

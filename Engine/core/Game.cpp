@@ -225,11 +225,11 @@ void Game::OnMouseWheel(MouseWheelEventArgs& e)
 
 void Game::OnResize(ResizeEventArgs& e)
 {
-    m_Width = e.Width;
-    m_Height = e.Height;
-
     if (m_Width != e.Width || m_Height != e.Height)
     {
+        m_Width = e.Width;
+        m_Height = e.Height;
+
         float fov = m_Camera.get_FoV();
         float aspectRatio = m_Width / (float)m_Height;
         m_Camera.set_Projection(fov, aspectRatio, 0.1f, 100.0f);
