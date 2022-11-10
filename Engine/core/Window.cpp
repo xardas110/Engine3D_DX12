@@ -255,6 +255,8 @@ void Window::OnMouseButtonPressed(MouseButtonEventArgs& e)
     m_PreviousMouseX = e.X;
     m_PreviousMouseY = e.Y;
 
+    std::cout << "mouse button pressed " << std::endl;
+
     if (auto pGame = m_pGame.lock())
     {
         pGame->OnMouseButtonPressed(e);
