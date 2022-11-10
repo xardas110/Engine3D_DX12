@@ -149,6 +149,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Libs/assimp/include
     PUBLIC core
     PUBLIC Editor
+    PUBLIC Physics
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
 
