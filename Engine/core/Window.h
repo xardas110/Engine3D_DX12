@@ -159,7 +159,7 @@ protected:
     virtual void OnMouseButtonPressed(MouseButtonEventArgs& e);
     // A button on the mouse was released
     virtual void OnMouseButtonReleased(MouseButtonEventArgs& e);
-    // The mouse wheel was moved.
+    // The mouse wheel was moved. TODO: Implement for editor layer too
     virtual void OnMouseWheel(MouseWheelEventArgs& e);
 
     // The window was resized.
