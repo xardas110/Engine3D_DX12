@@ -18,6 +18,7 @@ Game::Game( const std::wstring& name, int width, int height, bool vSync )
     , m_Width( width )
     , m_Height( height )
     , m_vSync( vSync )
+    , m_AudioSystem(this)
 {
     XMVECTOR cameraPos = XMVectorSet(0, 5, -20, 1);
     XMVECTOR cameraTarget = XMVectorSet(0, 5, 0, 1);
@@ -97,6 +98,7 @@ void Game::OnUpdate(UpdateEventArgs& e)
     m_Camera.set_Rotation(cameraRotation);
 
     XMMATRIX viewMatrix = m_Camera.get_ViewMatrix();
+    m_AudioSystem.Update();
 }
 
 void Game::OnRender(RenderEventArgs& e)

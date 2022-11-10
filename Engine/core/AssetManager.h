@@ -20,6 +20,7 @@ class AssetManager
 
 public:
 	bool LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh);
+	//bool LoadAudiofile(const std::string& path, Audioid)
 private:
 	AssetManager();
 	~AssetManager();

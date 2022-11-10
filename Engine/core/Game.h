@@ -49,6 +49,7 @@ class Game : public std::enable_shared_from_this<Game>
     friend class Entity;
     friend class DeferredRenderer;
     friend class World;
+    friend class AudioSystem;
 public:
     /**
      * Create the DirectX demo using the specified window dimensions.
@@ -192,5 +193,5 @@ private:
         POINT previousGlobalMousePos;
 
     } m_CameraController;
-   
+    AudioSystem m_AudioSystem;
 };

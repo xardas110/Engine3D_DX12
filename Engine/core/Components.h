@@ -1,9 +1,11 @@
 #pragma once
 #include <Transform.h>
 #include <Mesh.h>
+#include <AudioSystem.h>
 
 using TransformComponent = Transform;
 using StaticMeshComponent = StaticMesh;
+using AudioComponent = Audio;
 
 struct TagComponent
 {
