@@ -120,7 +120,6 @@ void Editor::OnUpdate(UpdateEventArgs& e, std::shared_ptr<Window> window)
     m_Gui.NewFrame();
     RenderGui(e);
 
-    PollGlobalInputs();
     PollWindowInputs(window);
 
     window->OnUpdate(e);
@@ -186,16 +185,6 @@ void Editor::RenderGui(UpdateEventArgs& e)
     }
 }
 
-void Editor::PollGlobalInputs()
-{
-    POINT p;
-    if (GetCursorPos(&p))
-    {
-        m_GlobalInputs.mouseX = p.x;
-        m_GlobalInputs.mouseY = p.y;
-    }
-}
-
 void Editor::PollWindowInputs(std::shared_ptr<Window> window)
 {
     ViewportData& data = m_ViewportDataMap[window->GetWindowName()];
@@ -206,14 +195,65 @@ void Editor::PollWindowInputs(std::shared_ptr<Window> window)
 
     ImGui::Begin(title.c_str(), 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav);
 
+    POINT p;
+    if (GetCursorPos(&p))
+    {
+        m_GlobalInputs.mouseX = p.x;
+        m_GlobalInputs.mouseY = p.y;
+    }
+
     ResizeEventArgs e(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
     if (data.width != e.Width || data.height != e.Height)
     { 
+        data.width = e.Width; 
+        data.height = e.Height;
+
         window->m_DeferredRenderer.OnResize(e);
         if (auto pGame = window->m_pGame.lock())
         {
             pGame->OnResize(e);
         }
+    }
+
+    data.bFocused = ImGui::IsWindowFocused();
+    data.bHovered = ImGui::IsWindowHovered();
+
+    data.mousePosX = m_GlobalInputs.mouseX - ImGui::GetCursorScreenPos().x;
+    data.mousePosY = m_GlobalInputs.mouseY - ImGui::GetCursorScreenPos().y;
+
+    if (data.bHovered)
+    { 
+        data.bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
+        data.bControl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+        data.bAlt = (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+
+        for (int i = 0; i < KeyCode::Size; i++)
+        {
+            KeyCode::Key keyCode = KeyCode::Key(i);
+            if (GetAsyncKeyState(keyCode))
+            {
+                if (!m_GlobalInputs.keys[keyCode])
+                { 
+                    KeyEventArgs keyEventArgs(keyCode, 0, KeyEventArgs::Pressed, data.bControl, data.bShift, data.bAlt);
+                    window->OnKeyPressed(keyEventArgs);
+                }
+
+                m_GlobalInputs.keys[keyCode] = true;
+            }
+            else
+            {
+                if (m_GlobalInputs.keys[keyCode])
+                {
+                    KeyEventArgs keyEventArgs(keyCode, 0, KeyEventArgs::Released, data.bControl, data.bShift, data.bAlt);
+                    window->OnKeyReleased(keyEventArgs);
+                }
+
+                m_GlobalInputs.keys[keyCode] = false;
+            }
+        }
+
+        MouseMotionEventArgs mouseMotion(m_GlobalInputs.keys[KeyCode::LButton], m_GlobalInputs.keys[KeyCode::MButton], m_GlobalInputs.keys[KeyCode::RButton], data.bControl, data.bShift, data.mousePosX, data.mousePosY);
+        window->OnMouseMoved(mouseMotion);
     }
 
     ImGui::End();

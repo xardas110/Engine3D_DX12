@@ -15,8 +15,8 @@ struct GlobalInputs
 	float mouseX{ 0.f };
 	float mouseY{ 0.f };
 
-	float previousMouseX{ 0.f };
-	float previousMouseY{ 0.f };
+	//keymap for global key input
+	std::map<KeyCode::Key, bool> keys;
 };
 
 class Editor
@@ -36,8 +36,6 @@ class Editor
 
 	void OnResize(ResizeEventArgs& e, std::shared_ptr<Window>& window);
 
-	//Global mouse pos, keys etc.
-	void PollGlobalInputs();
 	//viewport window inputs
 	void PollWindowInputs(std::shared_ptr<Window> window);
 
@@ -74,6 +72,10 @@ class Editor
 
 		bool bHovered{ false };
 		bool bFocused{ false };
+
+		bool bShift{ false };
+		bool bControl{ false };
+		bool bAlt{ false };
 	};
 
 	//Viewport data pr. window.
