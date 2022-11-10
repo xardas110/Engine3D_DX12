@@ -216,6 +216,7 @@ MouseButtonEventArgs::MouseButton DecodeMouseButton(KeyCode::Key key)
 void Editor::PollWindowInputs(std::shared_ptr<Window> window)
 {
     ViewportData& data = m_ViewportDataMap[window->GetWindowName()];
+    ViewportData& previousData = m_PreviousViewportDataMap[window->GetWindowName()];
 
     std::string title = 
         std::string(std::string(window->GetWindowName().begin(),      
@@ -306,12 +307,40 @@ void Editor::PollWindowInputs(std::shared_ptr<Window> window)
             }
         }
 
-        MouseMotionEventArgs mouseMotion(data.keys[KeyCode::LButton], data.keys[KeyCode::MButton], data.keys[KeyCode::RButton], data.bControl, data.bShift, data.mousePosX, data.mousePosY);
-        window->OnMouseMoved(mouseMotion);
-
+        if (!Cmp(previousData.mousePosX, data.mousePosX) || !Cmp(previousData.mousePosY, data.mousePosY))
+        { 
+            MouseMotionEventArgs mouseMotion(data.keys[KeyCode::LButton], 
+                data.keys[KeyCode::MButton], data.keys[KeyCode::RButton], 
+                data.bControl, data.bShift, data.mousePosX, data.mousePosY);
+            window->OnMouseMoved(mouseMotion);
+        }     
     }
+    
+    //Release all buttons if the mouse is outside the window
+    if (!Cmp(data.bHovered, previousData.bHovered))
+    {
+        for (int i = 0; i < KeyCode::Size; i++)
+        {
+            KeyCode::Key keyCode = KeyCode::Key(i);
 
+            if (data.keys[keyCode])
+            {           
+                MouseButtonEventArgs mouseEventArgs(
+                    DecodeMouseButton(keyCode),
+                    MouseButtonEventArgs::Released, data.keys[KeyCode::Left],
+                    data.keys[KeyCode::MButton],
+                    data.keys[KeyCode::Right],
+                    data.bControl, data.bShift, data.mousePosX, data.mousePosY);
+                window->OnMouseButtonReleased(mouseEventArgs);
+
+                KeyEventArgs keyEventArgs(keyCode, 0, KeyEventArgs::Released, data.bControl, data.bShift, data.bAlt);
+                window->OnKeyReleased(keyEventArgs);
+            }
+        }
+    }   
     ImGui::End();
+
+    previousData = data;
 }
 
 void Editor::UpdateGameMenuBar()

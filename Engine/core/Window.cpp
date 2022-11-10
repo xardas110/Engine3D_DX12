@@ -220,6 +220,8 @@ void Window::OnRender(RenderEventArgs& e)
 
 void Window::OnKeyPressed(KeyEventArgs& e)
 {
+    std::cout << "Key pressed" << std::endl;
+
     if (auto pGame = m_pGame.lock())
     {
         pGame->OnKeyPressed(e);
@@ -237,6 +239,8 @@ void Window::OnKeyReleased(KeyEventArgs& e)
 // The mouse was moved
 void Window::OnMouseMoved(MouseMotionEventArgs& e)
 {
+    std::cout << "mouse moved" << std::endl;
+
     e.RelX = e.X - m_PreviousMouseX;
     e.RelY = e.Y - m_PreviousMouseY;
 
@@ -254,8 +258,6 @@ void Window::OnMouseButtonPressed(MouseButtonEventArgs& e)
 {
     m_PreviousMouseX = e.X;
     m_PreviousMouseY = e.Y;
-
-    std::cout << "mouse button pressed " << std::endl;
 
     if (auto pGame = m_pGame.lock())
     {

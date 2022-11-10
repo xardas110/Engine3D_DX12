@@ -26,7 +26,7 @@ class Editor
 
 	void OnResize(ResizeEventArgs& e, std::shared_ptr<Window>& window);
 
-	//viewport window inputs
+	//Must write my own input polling since imgui viewport is used
 	void PollWindowInputs(std::shared_ptr<Window> window);
 
 	void UpdateGameMenuBar();
@@ -76,6 +76,8 @@ class Editor
 
 	//Viewport data pr. window.
 	std::map<std::wstring, ViewportData> m_ViewportDataMap;
+	//Last frame viewport data pr. window.
+	std::map<std::wstring, ViewportData> m_PreviousViewportDataMap;
 
 	//Imgui system
 	GUI m_Gui;
