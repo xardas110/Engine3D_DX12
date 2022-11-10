@@ -76,14 +76,11 @@ void Texture::Resize(uint32_t width, uint32_t height, uint32_t depthOrArraySize 
         resDesc.Height = std::max( height, 1u );
         resDesc.DepthOrArraySize = depthOrArraySize;
 
-        if (width < 200 || height < 200)
+        if (width < 500 || height < 500)
         {
             resDesc.MipLevels = 1;
         }
-        else
-        {
-            resDesc.MipLevels = 8;
-        }
+
         auto device = Application::Get().GetDevice();
 
         ThrowIfFailed( device->CreateCommittedResource(
