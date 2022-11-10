@@ -18,8 +18,10 @@ class Editor
 	Editor(World* world);
 	void Destroy(); //Destructor has to be public, Application will clean.
 
-	void OnUpdate(UpdateEventArgs& e, std::shared_ptr<Window> window);
-	void OnRender(RenderEventArgs& e, std::shared_ptr<Window> window);
+	//Invoked once per frame
+	void OnUpdate(UpdateEventArgs& e);
+	void OnRender(RenderEventArgs& e);
+	//--
 
 	void RenderGui(UpdateEventArgs& e);
 	void OnViewportRender(std::shared_ptr<Window> window);
@@ -78,6 +80,9 @@ class Editor
 	std::map<std::wstring, ViewportData> m_ViewportDataMap;
 	//Last frame viewport data pr. window.
 	std::map<std::wstring, ViewportData> m_PreviousViewportDataMap;
+
+	HighResolutionClock m_UpdateClock;
+	HighResolutionClock m_RenderClock;
 
 	//Imgui system
 	GUI m_Gui;
