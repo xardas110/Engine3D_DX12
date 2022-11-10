@@ -220,8 +220,6 @@ void Window::OnRender(RenderEventArgs& e)
 
 void Window::OnKeyPressed(KeyEventArgs& e)
 {
-    std::cout << "Key pressed" << std::endl;
-
     if (auto pGame = m_pGame.lock())
     {
         pGame->OnKeyPressed(e);

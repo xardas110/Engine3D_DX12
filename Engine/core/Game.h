@@ -173,16 +173,23 @@ private:
     //Window Render camera. Weak Ref.
     Camera* m_RenderCamera{ &m_Camera };
 
-    // Camera controller
-    float m_Forward{ 0.f };
-    float m_Backward{ 0.f };
-    float m_Left{ 0.f };
-    float m_Right{ 0.f };
-    float m_Up{ 0.f };
-    float m_Down{ 0.f };
+    struct CameraController
+    {
+        float forward{ 0.f };
+        float backward{ 0.f };
+        float left{ 0.f };
+        float right{ 0.f };
+        float up{ 0.f };
+        float down{ 0.f };
 
-    float m_Pitch{ 0.f };
-    float m_Yaw{ 0.f };
+        float pitch{ 0.f };
+        float yaw{ 0.f };
 
-    bool m_Shift{ 0.f };
+        bool shift{ 0.f };
+
+        POINT globalMousePos;
+        POINT previousGlobalMousePos;
+
+    } m_CameraController;
+   
 };
