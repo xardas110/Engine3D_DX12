@@ -6,6 +6,7 @@
 #include <Window.h>
 #include <GUI.h>
 
+#ifdef DEBUG_EDITOR
 class World;
 
 //This struct is only used for the editor layer
@@ -92,3 +93,5 @@ class Editor
 
 	entt::entity selectedEntity{ entt::null };
 };
+#endif // DEBUG_EDITOR
+

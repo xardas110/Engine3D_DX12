@@ -8,6 +8,7 @@
 #include <Entity.h>
 #include <imgui_impl_dx12.h>
 
+#ifdef DEBUG_EDITOR
 static ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow
 | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
@@ -162,6 +163,8 @@ void Editor::OnViewportRender(std::shared_ptr<Window> window)
 void Editor::OnResize(ResizeEventArgs& e, std::shared_ptr<Window>& window)
 {
     //resizes swapchain relative to the window
+    //This will only resize the swapchain and the renderwindow
+    //The game will be resized by the imgui viewport
     window->OnResize(e);
 }
 
@@ -445,3 +448,5 @@ void Editor::SelectEntity(entt::entity entity)
 {
     selectedEntity = entity;
 }
+
+#endif // DEBUG_EDITOR

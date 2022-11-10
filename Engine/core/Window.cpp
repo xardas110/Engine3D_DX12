@@ -284,6 +284,7 @@ void Window::OnResize(ResizeEventArgs& e)
     // Update the client size.
     if (m_ClientWidth != e.Width || m_ClientHeight != e.Height)
     {
+
         m_ClientWidth = std::max(1, e.Width);
         m_ClientHeight = std::max(1, e.Height);
 
@@ -305,16 +306,16 @@ void Window::OnResize(ResizeEventArgs& e)
         m_CurrentBackBufferIndex = m_dxgiSwapChain->GetCurrentBackBufferIndex();
 
         UpdateRenderTargetViews();     
-    }
 
 #ifndef DEBUG_EDITOR
-    m_DeferredRenderer.OnResize(e);
+        m_DeferredRenderer.OnResize(e);
 
-    if (auto pGame = m_pGame.lock())
-    {
-        pGame->OnResize(e);
-    }
+        if (auto pGame = m_pGame.lock())
+        {
+            pGame->OnResize(e);
+        }
 #endif // DEBUG_EDITOR
+    }
 }
 
 Microsoft::WRL::ComPtr<IDXGISwapChain4> Window::CreateSwapChain()

@@ -148,10 +148,12 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
 {
     if (m_Width == e.Width && m_Height == e.Height) return;
 
+#ifdef DEBUG_EDITOR
     Application::Get().Flush();
+#endif
 
-    m_Width = std::max(1, e.Width);
-    m_Height = std::max(1, e.Height);
+    m_Width = e.Width;
+    m_Height = e.Height;
 
     m_GBufferRenderTarget.Resize(m_Width, m_Height);
 }
