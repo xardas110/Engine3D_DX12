@@ -86,14 +86,14 @@ Entity Game::CreateEntity(const std::string& tag)
 void Game::OnUpdate(UpdateEventArgs& e)
 {
     // Update the camera.
-    float speedMultipler = (m_Shift ? 16.0f : 4.0f);
+    float speedMultipler = (m_CameraController.shift ? 16.0f : 4.0f);
 
-    XMVECTOR cameraTranslate = XMVectorSet(m_Right - m_Left, 0.0f, m_Forward - m_Backward, 1.0f) * speedMultipler * static_cast<float>(e.ElapsedTime);
-    XMVECTOR cameraPan = XMVectorSet(0.0f, m_Up - m_Down, 0.0f, 1.0f) * speedMultipler * static_cast<float>(e.ElapsedTime);
+    XMVECTOR cameraTranslate = XMVectorSet(m_CameraController.right - m_CameraController.left, 0.0f, m_CameraController.forward - m_CameraController.backward, 1.0f) * speedMultipler * static_cast<float>(e.ElapsedTime);
+    XMVECTOR cameraPan = XMVectorSet(0.0f, m_CameraController.up - m_CameraController.down, 0.0f, 1.0f) * speedMultipler * static_cast<float>(e.ElapsedTime);
     m_Camera.Translate(cameraTranslate, Space::Local);
     m_Camera.Translate(cameraPan, Space::Local);
 
-    XMVECTOR cameraRotation = XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_Pitch), XMConvertToRadians(m_Yaw), 0.0f);
+    XMVECTOR cameraRotation = XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_CameraController.pitch), XMConvertToRadians(m_CameraController.yaw), 0.0f);
     m_Camera.set_Rotation(cameraRotation);
 
     XMMATRIX viewMatrix = m_Camera.get_ViewMatrix();
@@ -106,116 +106,117 @@ void Game::OnRender(RenderEventArgs& e)
 
 void Game::OnKeyPressed(KeyEventArgs& e)
 {
-    if (!ImGui::GetIO().WantCaptureKeyboard)
+    switch (e.Key)
     {
-        switch (e.Key)
+    case KeyCode::Escape:
+        Application::Get().Quit(0);
+        break;
+    case KeyCode::F11:
+        m_pWindow->ToggleFullscreen();
+        break;
+    case KeyCode::Enter:
+        if (e.Alt)
         {
-        case KeyCode::Escape:
-            Application::Get().Quit(0);
-            break;
-        case KeyCode::F11:
-            m_pWindow->ToggleFullscreen();
-            break;
-        case KeyCode::Enter:
-            if (e.Alt)
-            {
-        case KeyCode::V:
-            m_pWindow->ToggleVSync();
-            break;
-        case KeyCode::Up:
-        case KeyCode::W:
-            m_Forward = 1.0f;
-            break;
-        case KeyCode::Left:
-        case KeyCode::A:
-            m_Left = 1.0f;
-            break;
-        case KeyCode::Down:
-        case KeyCode::S:
-            m_Backward = 1.0f;
-            break;
-        case KeyCode::Right:
-        case KeyCode::D:
-            m_Right = 1.0f;
-            break;
-        case KeyCode::Q:
-            m_Down = 1.0f;
-            break;
-        case KeyCode::E:
-            m_Up = 1.0f;
-            break;
-        case KeyCode::ShiftKey:
-            m_Shift = true;
-            break;
-            }
+    case KeyCode::V:
+        m_pWindow->ToggleVSync();
+        break;
+    case KeyCode::Up:
+    case KeyCode::W:
+        m_CameraController.forward = 1.0f;
+        break;
+    case KeyCode::Left:
+    case KeyCode::A:
+        m_CameraController.left = 1.0f;
+        break;
+    case KeyCode::Down:
+    case KeyCode::S:
+        m_CameraController.backward = 1.0f;
+        break;
+    case KeyCode::Right:
+    case KeyCode::D:
+        m_CameraController.right = 1.0f;
+        break;
+    case KeyCode::Q:
+        m_CameraController.down = 1.0f;
+        break;
+    case KeyCode::E:
+        m_CameraController.up = 1.0f;
+        break;
+    case KeyCode::ShiftKey:
+        m_CameraController.shift = true;
+        break;
         }
-    }
+    }   
 }
 
 void Game::OnKeyReleased(KeyEventArgs& e)
 {
-   // if (!ImGui::GetIO().WantCaptureKeyboard)
-   // {
-        switch (e.Key)
+    switch (e.Key)
+    {
+    case KeyCode::Enter:
+        if (e.Alt)
         {
-        case KeyCode::Enter:
-            if (e.Alt)
-            {
-        case KeyCode::Up:
-        case KeyCode::W:
-            m_Forward = 0.0f;
-            break;
-        case KeyCode::Left:
-        case KeyCode::A:
-            m_Left = 0.0f;
-            break;
-        case KeyCode::Down:
-        case KeyCode::S:
-            m_Backward = 0.0f;
-            break;
-        case KeyCode::Right:
-        case KeyCode::D:
-            m_Right = 0.0f;
-            break;
-        case KeyCode::Q:
-            m_Down = 0.0f;
-            break;
-        case KeyCode::E:
-            m_Up = 0.0f;
-            break;
-        case KeyCode::ShiftKey:
-            m_Shift = false;
-            break;
-            }
+    case KeyCode::Up:
+    case KeyCode::W:
+        m_CameraController.forward = 0.0f;
+        break;
+    case KeyCode::Left:
+    case KeyCode::A:
+        m_CameraController.left = 0.0f;
+        break;
+    case KeyCode::Down:
+    case KeyCode::S:
+        m_CameraController.backward = 0.0f;
+        break;
+    case KeyCode::Right:
+    case KeyCode::D:
+        m_CameraController.right = 0.0f;
+        break;
+    case KeyCode::Q:
+        m_CameraController.down = 0.0f;
+        break;
+    case KeyCode::E:
+        m_CameraController.up = 0.0f;
+        break;
+    case KeyCode::ShiftKey:
+        m_CameraController.shift = false;
+        break;
         }
-  //  }
+    }
 }
 
 void Game::OnMouseMoved(class MouseMotionEventArgs& e)
 {
-    // By default, do nothing.
-    const float mouseSpeed = 0.1f;
-   // if (!ImGui::GetIO().WantCaptureMouse)
-  //  {
-        if (e.RightButton)
-        {
-            m_Pitch += e.RelY * mouseSpeed;
+    GetCursorPos(&m_CameraController.globalMousePos);
 
-            m_Pitch = clamp(m_Pitch, -90.0f, 90.0f);
+    if (e.RightButton)
+    {        
+        int relX = m_CameraController.globalMousePos.x - m_CameraController.previousGlobalMousePos.x;
+        int relY = m_CameraController.globalMousePos.y - m_CameraController.previousGlobalMousePos.y;
 
-            m_Yaw += e.RelX * mouseSpeed;
-        }
-   // }
+        const float mouseSpeed = 0.1f;
+        m_CameraController.pitch += relY * mouseSpeed;
+        m_CameraController.pitch = clamp(m_CameraController.pitch, -90.0f, 90.0f);
+        m_CameraController.yaw += relX * mouseSpeed;
+        SetCursorPos(m_CameraController.previousGlobalMousePos.x, m_CameraController.previousGlobalMousePos.y);
+    }
 }
 
 void Game::OnMouseButtonPressed(MouseButtonEventArgs& e)
 {
-    // By default, do nothing.
+    if (e.Button == MouseButtonEventArgs::Right)
+    {
+        ShowCursor(false);
+        m_CameraController.previousGlobalMousePos = m_CameraController.globalMousePos;
+    }
 }
 
 void Game::OnMouseButtonReleased(MouseButtonEventArgs& e)
 {
-    // By default, do nothing.
+    if (e.Button == MouseButtonEventArgs::Right)
+    {
+        ShowCursor(true);
+    }
 }
 
 void Game::OnMouseWheel(MouseWheelEventArgs& e)

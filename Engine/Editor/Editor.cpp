@@ -335,6 +335,8 @@ void Editor::PollWindowInputs(std::shared_ptr<Window> window)
 
                 KeyEventArgs keyEventArgs(keyCode, 0, KeyEventArgs::Released, data.bControl, data.bShift, data.bAlt);
                 window->OnKeyReleased(keyEventArgs);
+
+                data.keys[keyCode] = false;
             }
         }
     }   
