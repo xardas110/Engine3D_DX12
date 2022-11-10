@@ -316,7 +316,7 @@ void Editor::PollWindowInputs(std::shared_ptr<Window> window)
         }     
     }
     
-    //Release all buttons if the mouse is outside the window
+    //Release all buttons if mouse is outside viewport
     if (!Cmp(data.bHovered, previousData.bHovered))
     {
         for (int i = 0; i < KeyCode::Size; i++)
