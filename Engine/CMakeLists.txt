@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.20.0 ) # Latest version of CMake when this file was created.
+cmake_minimum_required( VERSION 3.23.2 ) # Latest version of CMake when this file was created.
 
 add_compile_definitions(DEBUG_CMD)
 
@@ -131,6 +131,7 @@ set( SHADER_FILES
     Resources/Shaders/ImGUI_PS.hlsl
     Resources/Shaders/GeometryMesh_VS.hlsl
     Resources/Shaders/GeometryMesh_PS.hlsl
+    Resources/Shaders/RaytracingShader.hlsl
 )
 
 set( RESOURCE_FILES 
@@ -214,7 +215,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Shaders)
 add_custom_target(shaders)
 set_source_files_properties( ${SHADER_FILES}
     PROPERTIES
-        VS_SHADER_MODEL 5_1
+        VS_SHADER_MODEL 6_3
         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/Shaders/%(Filename).h"
         VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
         VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
@@ -262,13 +263,24 @@ set_source_files_properties( Resources/Shaders/GeometryMesh_PS.hlsl
         ShaderType "ps"
 )
 
+set_source_files_properties( Resources/Shaders/RaytracingShader.hlsl
+    PROPERTIES
+        VS_SHADER_MODEL 6_3
+        VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/Shaders/%(Filename).h"
+        VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
+        VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
+        VS_SHADER_TYPE lib
+        VS_SHADER_VARIABLE_NAME g_RaytracingShader
+        ShaderType "lib"
+)
+
 foreach(FILE ${SHADER_FILES})
   get_filename_component(FILE_WE ${FILE} NAME_WE)
   get_source_file_property(shadertype ${FILE} ShaderType)
   get_source_file_property(shadermodel ${FILE} VS_SHADER_MODEL)
   get_source_file_property(var ${FILE} VS_SHADER_VARIABLE_NAME)
   add_custom_command(TARGET shaders
-                     COMMAND fxc.exe /nologo /Emain /T ${shadertype}_${shadermodel} $<IF:$<CONFIG:DEBUG>,/Od,/O1> /Zi /Fh ${CMAKE_CURRENT_BINARY_DIR}/Shaders/${FILE_WE}.h /Vn ${var} ${FILE}
+                     COMMAND dxc.exe /nologo /Emain /T ${shadertype}_${shadermodel} $<IF:$<CONFIG:DEBUG>,/Od,/O1> /Zi /Fh ${CMAKE_CURRENT_BINARY_DIR}/Shaders/${FILE_WE}.h /Vn ${var} ${FILE}
                      MAIN_DEPENDENCY ${FILE}
                      COMMENT "HLSL ${FILE}"
                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

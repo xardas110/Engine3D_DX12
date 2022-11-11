@@ -4,6 +4,7 @@
 #include <CommandList.h>
 #include <CommandQueue.h>
 #include <d3dx12.h>
+#include <RaytracingShader.h>
 
 void Raytracing::Init()
 {
