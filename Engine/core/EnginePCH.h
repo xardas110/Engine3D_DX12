@@ -79,6 +79,7 @@ using namespace DirectX;
 #include <vector>
 #include <array>
 #include <iostream>
+#include <sstream>
 
 //Assimp
 #include <assimp/Importer.hpp>

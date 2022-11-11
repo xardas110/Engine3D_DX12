@@ -270,7 +270,7 @@ set_source_files_properties( Resources/Shaders/RaytracingShader.hlsl
         VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
         VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
         VS_SHADER_TYPE lib
-        VS_SHADER_VARIABLE_NAME g_RaytracingShader
+        VS_SHADER_VARIABLE_NAME g_pRaytracing
         ShaderType "lib"
 )
 

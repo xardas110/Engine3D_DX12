@@ -34,8 +34,13 @@ class Raytracing
 	void CreateRootSignature();
     void CreateRaytracingPipelineStateObject();
 
+
+    void CreateLocalRootSignatureSubobjects(CD3DX12_STATE_OBJECT_DESC* raytracingPipeline);
+    void SerializeAndCreateRaytracingRootSignature(D3D12_ROOT_SIGNATURE_DESC& desc, Microsoft::WRL::ComPtr<ID3D12RootSignature>* rootSig);
+
 	Microsoft::WRL::ComPtr<ID3D12Device5> m_DxrDevice;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList5> m_DxrCommandlist;
+    Microsoft::WRL::ComPtr<ID3D12StateObject> m_DxrStateObject;
 
     Microsoft::WRL::ComPtr<ID3D12RootSignature> m_raytracingLocalRootSignature;
     Microsoft::WRL::ComPtr<ID3D12RootSignature> m_raytracingGlobalRootSignature;
