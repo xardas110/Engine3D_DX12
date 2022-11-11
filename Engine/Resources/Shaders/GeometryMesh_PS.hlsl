@@ -15,6 +15,7 @@ struct Material
 };
 
 Texture2D DiffuseTexture : register(t0);
+RaytracingAccelerationStructure Scene : register(t1, space0);
 SamplerState LinearRepeatSampler : register(s0);
 ConstantBuffer<Material> MaterialCB : register(b0, space1);
 

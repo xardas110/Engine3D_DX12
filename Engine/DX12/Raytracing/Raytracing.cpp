@@ -534,4 +534,15 @@ void Raytracing::BuildAccelerationStructures()
 
     auto fenceVal = commandQueue->ExecuteCommandList(commandList);
     commandQueue->WaitForFenceValue(fenceVal);
+
+    /*
+    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_TopLevelAccelerationStructure.Get(), D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+    auto cl2 = commandQueue->GetCommandList();
+    cl2->GetGraphicsCommandList()->ResourceBarrier(1, &barrier);
+
+    auto fenceVal2 = commandQueue->ExecuteCommandList(cl2);
+    commandQueue->WaitForFenceValue(fenceVal2);
+    */
 }

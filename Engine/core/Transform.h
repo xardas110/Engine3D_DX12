@@ -18,5 +18,6 @@ struct Transform
 
 	DirectX::XMVECTOR pos{0.f, 0.f, 0.f, 0.f};
 	DirectX::XMVECTOR scale{ 1.f, 1.f, 1.f, 0.f };
+	//plz this is a quat dont use it otherwise
 	DirectX::XMVECTOR rot{DirectX::XMQuaternionIdentity()};
 };
