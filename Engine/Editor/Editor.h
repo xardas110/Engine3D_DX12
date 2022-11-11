@@ -18,7 +18,7 @@ class Editor
 	Editor(World* world);
 	void Destroy(); //Destructor has to be public, Application will clean.
 
-	//Invoked once per frame
+	//Invoked per frame
 	void OnUpdate(UpdateEventArgs& e);
 	void OnRender(RenderEventArgs& e);
 	//--

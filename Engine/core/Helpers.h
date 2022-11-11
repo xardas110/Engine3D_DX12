@@ -37,6 +37,23 @@
 #include <Windows.h> // For HRESULT
 #include <comdef.h> // For _com_error class (used to decode HR result codes).
 
+ // From DXSampleHelper.h 
+ // Source: https://github.com/Microsoft/DirectX-Graphics-Samples
+class HrException : public std::runtime_error
+{
+    inline std::string HrToString(HRESULT hr)
+    {
+        char s_str[64] = {};
+        sprintf_s(s_str, "HRESULT of 0x%08X", static_cast<UINT>(hr));
+        return std::string(s_str);
+    }
+public:
+    HrException(HRESULT hr) : std::runtime_error(HrToString(hr)), m_hr(hr) {}
+    HRESULT Error() const { return m_hr; }
+private:
+    const HRESULT m_hr;
+};
+
 
 // From DXSampleHelper.h 
 // Source: https://github.com/Microsoft/DirectX-Graphics-Samples
@@ -48,6 +65,15 @@ inline void ThrowIfFailed(HRESULT hr)
         OutputDebugString(err.ErrorMessage());
 
         throw std::exception(err.ErrorMessage());
+    }
+}
+
+inline void ThrowIfFailed(HRESULT hr, const wchar_t* msg)
+{
+    if (FAILED(hr))
+    {
+        OutputDebugStringW(msg);
+        throw HrException(hr);
     }
 }
 

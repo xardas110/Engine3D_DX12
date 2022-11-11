@@ -402,7 +402,7 @@ void Editor::UpdateRuntimeGame(UpdateEventArgs& e)
 {
     if (!m_UI.bShowGameLoader) return;
 
-    static bool bHotReload = true;
+    static bool bHotReload = false;
     static float reloadTimer = 0.f;
     static float changesDetectedTimer = 0.f;
     static bool bShowReloadOverlay = false;

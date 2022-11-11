@@ -51,6 +51,7 @@ class Editor;
 
 class Application
 {
+    friend class DeferredRenderer;
 public:
 
     /**

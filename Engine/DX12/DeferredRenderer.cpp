@@ -11,6 +11,19 @@
 #include <entt/entt.hpp>
 #include <Entity.h>
 #include <Helpers.h>
+#include <Entity.h>
+#include <Components.h>
+
+bool IsDirectXRaytracingSupported(IDXGIAdapter4* adapter)
+{
+    ComPtr<ID3D12Device> testDevice;
+    D3D12_FEATURE_DATA_D3D12_OPTIONS5 featureSupportData = {};
+
+    return SUCCEEDED(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&testDevice)))
+        && SUCCEEDED(testDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &featureSupportData, sizeof(featureSupportData)))
+        && featureSupportData.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
+}
+
 
 using namespace DirectX;
 
@@ -31,7 +44,28 @@ struct Mat
 DeferredRenderer::DeferredRenderer(int width, int height)
     :m_Width(width), m_Height(height)
 {
+
+    auto adapter = Application::Get().GetAdapter(false);  
+    assert(IsDirectXRaytracingSupported(adapter.Get()));
+    std::cout << "DeferredRenderer: Raytracing is supported on the device" << std::endl;
+
+    m_Raytracer = std::unique_ptr<Raytracing>(new Raytracing);
+    m_Raytracer->Init();
+
 	CreateGBuffer();
+
+    /*
+ StaticMesh temp;
+
+ auto* smm = Application::Get().GetAssetManager();
+ smm->LoadStaticMesh("Assets/Models/crytek-sponza-noflag/sponza.dae", temp);
+ */
+
+/*
+    auto ent = CreateEntity("Sponza");
+    auto& sm = ent.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.dae");
+    auto& trans = ent.GetComponent<TransformComponent>().scale = { 0.01f, 0.01f, 0.01f };
+*/
 }
 
 DeferredRenderer::~DeferredRenderer()

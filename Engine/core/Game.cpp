@@ -45,16 +45,6 @@ bool Game::Initialize()
     m_pWindow->RegisterCallbacks(shared_from_this());
     m_pWindow->Show();
 
-   /*
-    StaticMesh temp;
-
-    auto* smm = Application::Get().GetAssetManager();
-    smm->LoadStaticMesh("Assets/Models/crytek-sponza-noflag/sponza.dae", temp);
-    */
-
-    auto ent = CreateEntity("Sponza");
-    auto& sm = ent.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.dae");
-    auto& trans = ent.GetComponent<TransformComponent>().scale = { 0.01f, 0.01f, 0.01f };
     return true;
 }
 
