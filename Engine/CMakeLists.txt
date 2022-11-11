@@ -54,6 +54,7 @@ set( HEADER_FILES
     "core/Entity.h" 
     "core/AssimpLoader.h"
     "core/Material.h"
+    "DX12/Raytracing/Raytracing.h"
 )
 
 set( SOURCE_FILES
@@ -95,6 +96,7 @@ set( SOURCE_FILES
     "core/World.cpp"   
     "core/Entity.cpp" 
     "core/AssimpLoader.cpp"
+    "DX12/Raytracing/Raytracing.cpp"
 )
 
 set( IMGUI_HEADERS
@@ -149,6 +151,9 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Libs/assimp/include
     PUBLIC core
     PUBLIC Editor
+    Public Physics
+    PUBLIC Libs/physx/include
+    PUBLIC DX12/Raytracing
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
 

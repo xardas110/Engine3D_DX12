@@ -2,6 +2,7 @@
 #include <Application.h>
 #include <RenderTarget.h>
 #include <Events.h>
+#include <Raytracing.h>
 
 class Game;
 
@@ -22,5 +23,7 @@ class DeferredRenderer
 	int m_Width, m_Height;
 	RenderTarget m_GBufferRenderTarget;
 	D3D12_RECT m_ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
+
+	std::unique_ptr<Raytracing> m_Raytracer{nullptr};
 };
 
