@@ -155,6 +155,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     Public Physics
     PUBLIC Libs/physx/include
     PUBLIC DX12/Raytracing
+    PUBLIC Resources/Shaders
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
 
