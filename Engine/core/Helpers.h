@@ -77,6 +77,12 @@ inline void ThrowIfFailed(HRESULT hr, const wchar_t* msg)
     }
 }
 
+inline void ThrowIfFalse(bool value, const wchar_t* msg)
+{
+    ThrowIfFailed(value ? S_OK : E_FAIL, msg);
+}
+
+
 // Hashers for view descriptions.
 namespace std
 {

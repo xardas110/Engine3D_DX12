@@ -6,7 +6,49 @@
 #include <d3dx12.h>
 #include <RaytracingShader.h>
 
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#endif
+
 #define DEBUG_DXR
+
+void AllocateUAVBuffer(ID3D12Device* pDevice, UINT64 bufferSize, ID3D12Resource** ppResource, D3D12_RESOURCE_STATES initialResourceState = D3D12_RESOURCE_STATE_COMMON, const wchar_t* resourceName = nullptr)
+{
+    auto uploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+    auto bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+    ThrowIfFailed(pDevice->CreateCommittedResource(
+        &uploadHeapProperties,
+        D3D12_HEAP_FLAG_NONE,
+        &bufferDesc,
+        initialResourceState,
+        nullptr,
+        IID_PPV_ARGS(ppResource)));
+    if (resourceName)
+    {
+        (*ppResource)->SetName(resourceName);
+    }
+}
+
+void AllocateUploadBuffer(ID3D12Device* pDevice, void* pData, UINT64 datasize, ID3D12Resource** ppResource, const wchar_t* resourceName = nullptr)
+{
+    auto uploadHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+    auto bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(datasize);
+    ThrowIfFailed(pDevice->CreateCommittedResource(
+        &uploadHeapProperties,
+        D3D12_HEAP_FLAG_NONE,
+        &bufferDesc,
+        D3D12_RESOURCE_STATE_GENERIC_READ,
+        nullptr,
+        IID_PPV_ARGS(ppResource)));
+    if (resourceName)
+    {
+        (*ppResource)->SetName(resourceName);
+    }
+    void* pMappedData;
+    (*ppResource)->Map(0, nullptr, &pMappedData);
+    memcpy(pMappedData, pData, datasize);
+    (*ppResource)->Unmap(0, nullptr);
+}
 
 const wchar_t* g_HitGroupName = L"MyHitGroup";
 const wchar_t* g_RaygenShaderName = L"MyRaygenShader";
@@ -18,6 +60,9 @@ void Raytracing::Init()
 	CreateRaytracingInterfaces();
     CreateRootSignature();
     CreateRaytracingPipelineStateObject();
+    CreateDescriptorHeap();
+    BuildGeometry();
+    BuildAccelerationStructures();
 }
 
 void Raytracing::CreateRaytracingInterfaces()
@@ -259,4 +304,234 @@ void Raytracing::CreateRaytracingPipelineStateObject()
 
     // Create the state object.
     ThrowIfFailed(m_DxrDevice->CreateStateObject(raytracingPipeline, IID_PPV_ARGS(&m_DxrStateObject)), L"Couldn't create DirectX Raytracing state object.\n");
+}
+
+void Raytracing::CreateDescriptorHeap()
+{
+    auto device = Application::Get().GetDevice();
+
+    D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc = {};
+    // Allocate a heap for 3 descriptors:
+    // 2 - vertex and index buffer SRVs
+    // 1 - raytracing output texture SRV
+    descriptorHeapDesc.NumDescriptors = 3;
+    descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    descriptorHeapDesc.NodeMask = 0;
+    ThrowIfFailed(device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&m_DescriptorHeap)), L"Failed to create descriptor heap");
+    NAME_D3D12_OBJECT(m_DescriptorHeap);
+
+    m_DescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+}
+
+// Allocate a descriptor and return its index. 
+// If the passed descriptorIndexToUse is valid, it will be used instead of allocating a new one.
+UINT Raytracing::AllocateDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE* cpuDescriptor, UINT descriptorIndexToUse)
+{
+    auto descriptorHeapCpuBase = m_DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    if (descriptorIndexToUse >= m_DescriptorHeap->GetDesc().NumDescriptors)
+    {
+        descriptorIndexToUse = m_DescriptorsAllocated++;
+    }
+    *cpuDescriptor = CD3DX12_CPU_DESCRIPTOR_HANDLE(descriptorHeapCpuBase, descriptorIndexToUse, m_DescriptorSize);
+    return descriptorIndexToUse;
+}
+
+// Create SRV for a buffer.
+UINT Raytracing::CreateBufferSRV(D3DBuffer* buffer, UINT numElements, UINT elementSize)
+{
+    auto device = Application::Get().GetDevice();
+
+    // SRV
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.Buffer.NumElements = numElements;
+    if (elementSize == 0)
+    {
+        srvDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+        srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
+        srvDesc.Buffer.StructureByteStride = 0;
+    }
+    else
+    {
+        srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+        srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+        srvDesc.Buffer.StructureByteStride = elementSize;
+    }
+    UINT descriptorIndex = AllocateDescriptor(&buffer->cpuDescriptorHandle);
+    device->CreateShaderResourceView(buffer->resource.Get(), &srvDesc, buffer->cpuDescriptorHandle);
+    buffer->gpuDescriptorHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(m_DescriptorHeap->GetGPUDescriptorHandleForHeapStart(), descriptorIndex, m_DescriptorSize);
+    return descriptorIndex;
+}
+
+void Raytracing::BuildGeometry()
+{
+    auto device = Application::Get().GetDevice();
+
+    // Cube indices.
+    Index indices[] =
+    {
+        3,1,0,
+        2,1,3,
+
+        6,4,5,
+        7,4,6,
+
+        11,9,8,
+        10,9,11,
+
+        14,12,13,
+        15,12,14,
+
+        19,17,16,
+        18,17,19,
+
+        22,20,21,
+        23,20,22
+    };
+
+    // Cube vertices positions and corresponding triangle normals.
+    Vertex vertices[] =
+    {
+        { XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
+        { XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
+        { XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
+        { XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
+
+        { XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f) },
+        { XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f) },
+        { XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f) },
+        { XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f) },
+
+        { XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f) },
+        { XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f) },
+        { XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f) },
+        { XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f) },
+
+        { XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f) },
+        { XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f) },
+        { XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f) },
+        { XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f) },
+
+        { XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f) },
+        { XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f) },
+        { XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f) },
+        { XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f) },
+
+        { XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f) },
+        { XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f) },
+        { XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f) },
+        { XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f) },
+    };
+
+    AllocateUploadBuffer(device.Get(), indices, sizeof(indices), &m_IndexBuffer.resource);
+    AllocateUploadBuffer(device.Get(), vertices, sizeof(vertices), &m_VertexBuffer.resource);
+
+    // Vertex buffer is passed to the shader along with index buffer as a descriptor table.
+    // Vertex buffer descriptor must follow index buffer descriptor in the descriptor heap.
+    UINT descriptorIndexIB = CreateBufferSRV(&m_IndexBuffer, sizeof(indices) / 4, 0);
+    UINT descriptorIndexVB = CreateBufferSRV(&m_VertexBuffer, ARRAYSIZE(vertices), sizeof(vertices[0]));
+    ThrowIfFalse(descriptorIndexVB == descriptorIndexIB + 1, L"Vertex Buffer descriptor index must follow that of Index Buffer descriptor index!");
+}
+
+void Raytracing::BuildAccelerationStructures()
+{
+    auto device = Application::Get().GetDevice();
+    auto commandQueue = Application::Get().GetCommandQueue();
+    auto commandList = commandQueue->GetCommandList();
+
+    D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
+    geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+    geometryDesc.Triangles.IndexBuffer = m_IndexBuffer.resource->GetGPUVirtualAddress();
+    geometryDesc.Triangles.IndexCount = static_cast<UINT>(m_IndexBuffer.resource->GetDesc().Width) / sizeof(Index);
+    geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
+    geometryDesc.Triangles.Transform3x4 = 0;
+    geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+    geometryDesc.Triangles.VertexCount = static_cast<UINT>(m_VertexBuffer.resource->GetDesc().Width) / sizeof(Vertex);
+    geometryDesc.Triangles.VertexBuffer.StartAddress = m_VertexBuffer.resource->GetGPUVirtualAddress();
+    geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex);
+
+    // Mark the geometry as opaque. 
+    // PERFORMANCE TIP: mark geometry as opaque whenever applicable as it can enable important ray processing optimizations.
+    // Note: When rays encounter opaque geometry an any hit shader will not be executed whether it is present or not.
+    geometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+
+    // Get required sizes for an acceleration structure.
+    D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS buildFlags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC bottomLevelBuildDesc = {};
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& bottomLevelInputs = bottomLevelBuildDesc.Inputs;
+    bottomLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+    bottomLevelInputs.Flags = buildFlags;
+    bottomLevelInputs.NumDescs = 1;
+    bottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+    bottomLevelInputs.pGeometryDescs = &geometryDesc;
+
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC topLevelBuildDesc = {};
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& topLevelInputs = topLevelBuildDesc.Inputs;
+    topLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+    topLevelInputs.Flags = buildFlags;
+    topLevelInputs.NumDescs = 1;
+    topLevelInputs.pGeometryDescs = nullptr;
+    topLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+
+    D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO topLevelPrebuildInfo = {};
+    m_DxrDevice->GetRaytracingAccelerationStructurePrebuildInfo(&topLevelInputs, &topLevelPrebuildInfo);
+    ThrowIfFalse(topLevelPrebuildInfo.ResultDataMaxSizeInBytes > 0, L" ");
+
+    D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO bottomLevelPrebuildInfo = {};
+    m_DxrDevice->GetRaytracingAccelerationStructurePrebuildInfo(&bottomLevelInputs, &bottomLevelPrebuildInfo);
+    ThrowIfFalse(bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes > 0, L"L");
+
+    ComPtr<ID3D12Resource> scratchResource;
+    AllocateUAVBuffer(device.Get(), max(topLevelPrebuildInfo.ScratchDataSizeInBytes, bottomLevelPrebuildInfo.ScratchDataSizeInBytes), &scratchResource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, L"ScratchResource");
+
+    // Allocate resources for acceleration structures.
+    // Acceleration structures can only be placed in resources that are created in the default heap (or custom heap equivalent). 
+    // Default heap is OK since the application doesn’t need CPU read/write access to them. 
+    // The resources that will contain acceleration structures must be created in the state D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, 
+    // and must have resource flag D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS. The ALLOW_UNORDERED_ACCESS requirement simply acknowledges both: 
+    //  - the system will be doing this type of access in its implementation of acceleration structure builds behind the scenes.
+    //  - from the app point of view, synchronization of writes/reads to acceleration structures is accomplished using UAV barriers.
+    {
+        D3D12_RESOURCE_STATES initialResourceState = D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
+
+        AllocateUAVBuffer(device.Get(), bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes, &m_BottomLevelAccelerationStructure, initialResourceState, L"BottomLevelAccelerationStructure");
+        AllocateUAVBuffer(device.Get(), topLevelPrebuildInfo.ResultDataMaxSizeInBytes, &m_TopLevelAccelerationStructure, initialResourceState, L"TopLevelAccelerationStructure");
+    }
+
+    // Create an instance desc for the bottom-level acceleration structure.
+    ComPtr<ID3D12Resource> instanceDescs;
+    D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
+    instanceDesc.Transform[0][0] = instanceDesc.Transform[1][1] = instanceDesc.Transform[2][2] = 1;
+    instanceDesc.InstanceMask = 1;
+    instanceDesc.AccelerationStructure = m_BottomLevelAccelerationStructure->GetGPUVirtualAddress();
+    AllocateUploadBuffer(device.Get(), &instanceDesc, sizeof(instanceDesc), &instanceDescs, L"InstanceDescs");
+
+    // Bottom Level Acceleration Structure desc
+    {
+        bottomLevelBuildDesc.ScratchAccelerationStructureData = scratchResource->GetGPUVirtualAddress();
+        bottomLevelBuildDesc.DestAccelerationStructureData = m_BottomLevelAccelerationStructure->GetGPUVirtualAddress();
+    }
+
+    // Top Level Acceleration Structure desc
+    {
+        topLevelBuildDesc.DestAccelerationStructureData = m_TopLevelAccelerationStructure->GetGPUVirtualAddress();
+        topLevelBuildDesc.ScratchAccelerationStructureData = scratchResource->GetGPUVirtualAddress();
+        topLevelBuildDesc.Inputs.InstanceDescs = instanceDescs->GetGPUVirtualAddress();
+    }
+
+    auto BuildAccelerationStructure = [&](auto* raytracingCommandList)
+    {
+        raytracingCommandList->BuildRaytracingAccelerationStructure(&bottomLevelBuildDesc, 0, nullptr);
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::UAV(m_BottomLevelAccelerationStructure.Get()));
+        raytracingCommandList->BuildRaytracingAccelerationStructure(&topLevelBuildDesc, 0, nullptr);
+    };
+
+    // Build acceleration structure.
+    BuildAccelerationStructure(m_DxrCommandlist.Get());
+
+    auto fenceVal = commandQueue->ExecuteCommandList(commandList);
+    commandQueue->WaitForFenceValue(fenceVal);
 }
