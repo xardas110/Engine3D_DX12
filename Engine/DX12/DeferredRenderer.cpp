@@ -146,8 +146,12 @@ void DeferredRenderer::Render(Window& window)
     commandList->SetPipelineState(pipelines[Pipeline::GeometryMesh].pipelineRef);
     commandList->SetGraphicsRootSignature(pipelines[Pipeline::GeometryMesh].rootSignature);
 
-    auto& view = game->registry.view<TransformComponent, StaticMeshComponent>();
+    /*
+    commandList->GetGraphicsCommandList()->SetGraphicsRootShaderResourceView(
+        GeometryMeshRootParam::AccelerationStructure, m_Raytracer->m_TopLevelAccelerationStructure->GetGPUVirtualAddress());
+        */
 
+    auto& view = game->registry.view<TransformComponent, StaticMeshComponent>();
     for (auto [entity, transform, sm] : view.each())
     {
         mat.model = transform.GetTransform();
@@ -155,7 +159,7 @@ void DeferredRenderer::Render(Window& window)
         mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));
 
         commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, mat);
-        
+               
         for (int i = sm.startOffset; i < sm.startOffset + sm.count; i++)
         {
             auto& mesh = meshes[i];
@@ -169,7 +173,7 @@ void DeferredRenderer::Render(Window& window)
                 commandList->SetShaderResourceView(
                     GeometryMeshRootParam::Textures, 0, 
                     textures[MaterialType::Diffuse],
-                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);                   
+                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);                              
             }
             mesh.Draw(*commandList);
         } 

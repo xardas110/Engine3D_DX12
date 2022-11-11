@@ -19,6 +19,7 @@ namespace GeometryMeshRootParam
 		MatCB,
 		MaterialCB,
 		Textures,
+		AccelerationStructure,
 		Size
 	};
 }
