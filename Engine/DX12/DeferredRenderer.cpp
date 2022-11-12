@@ -18,6 +18,7 @@ bool IsDirectXRaytracingSupported(IDXGIAdapter4* adapter)
 {
     ComPtr<ID3D12Device> testDevice;
     D3D12_FEATURE_DATA_D3D12_OPTIONS5 featureSupportData = {};
+    featureSupportData.RaytracingTier = D3D12_RAYTRACING_TIER_1_1;
 
     return SUCCEEDED(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&testDevice)))
         && SUCCEEDED(testDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &featureSupportData, sizeof(featureSupportData)))
@@ -146,14 +147,32 @@ void DeferredRenderer::Render(Window& window)
     commandList->SetPipelineState(pipelines[Pipeline::GeometryMesh].pipelineRef);
     commandList->SetGraphicsRootSignature(pipelines[Pipeline::GeometryMesh].rootSignature);
 
-    /*
+    
     commandList->GetGraphicsCommandList()->SetGraphicsRootShaderResourceView(
-        GeometryMeshRootParam::AccelerationStructure, m_Raytracer->m_TopLevelAccelerationStructure->GetGPUVirtualAddress());
-        */
+        GeometryMeshRootParam::AccelerationStructure, 
+        m_Raytracer->m_TopLevelAccelerationStructure->GetGPUVirtualAddress());
+     
 
+    Transform f;
+    f.pos = { 0.f, -20.f, 0.f };
+    f.scale = { 10.f, 10.f, 10.f };
+    mat.model = f.GetTransform();
+    mat.mvp = mat.model * mat.view * mat.proj;
+    mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));   
+    commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, mat);
+    m_Raytracer->m_Cube->Draw(*commandList);
+
+    f.pos = { 0.f, 0.f, 0.f };
+    f.scale = { 1.f, 1.f, 1.f };
+    mat.model = f.GetTransform();
+    mat.mvp = mat.model * mat.view * mat.proj;
+    mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));
+    commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, mat);
+    m_Raytracer->m_Cube->Draw(*commandList);
+    /*
     auto& view = game->registry.view<TransformComponent, StaticMeshComponent>();
     for (auto [entity, transform, sm] : view.each())
-    {
+    {D
         mat.model = transform.GetTransform();
         mat.mvp = mat.model * mat.view * mat.proj;
         mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));
@@ -168,16 +187,18 @@ void DeferredRenderer::Render(Window& window)
 
             if (material.HasTexture(MaterialType::Diffuse))
             {    
-                auto& g = commandList->GetGraphicsCommandList();
-
                 commandList->SetShaderResourceView(
                     GeometryMeshRootParam::Textures, 0, 
                     textures[MaterialType::Diffuse],
                     D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);                              
             }
+            
             mesh.Draw(*commandList);
+
+           
         } 
     }
+    */
 
     commandQueue->ExecuteCommandList(commandList);
 }

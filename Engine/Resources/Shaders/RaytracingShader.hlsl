@@ -9,6 +9,8 @@
 //
 //*********************************************************
 
+/*
+
 #ifndef RAYTRACING_HLSL
 #define RAYTRACING_HLSL
 
@@ -22,6 +24,7 @@ StructuredBuffer<Vertex> Vertices : register(t2, space0);
 
 ConstantBuffer<SceneConstantBuffer> g_sceneCB : register(b0);
 ConstantBuffer<CubeConstantBuffer> g_cubeCB : register(b1);
+
 
 // Load three 16 bit indices from a byte addressed buffer.
 uint3 Load3x16BitIndices(uint offsetBytes)
@@ -108,7 +111,7 @@ void MyRaygenShader()
 {
     float3 rayDir;
     float3 origin;
-    
+
     // Generate a ray for a camera pixel corresponding to an index from the dispatched 2D grid.
     GenerateCameraRay(DispatchRaysIndex().xy, origin, rayDir);
 
@@ -168,3 +171,5 @@ void MyMissShader(inout RayPayload payload)
 }
 
 #endif // RAYTRACING_HLSL
+
+*/

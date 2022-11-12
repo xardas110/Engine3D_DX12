@@ -131,7 +131,7 @@ set( SHADER_FILES
     Resources/Shaders/ImGUI_PS.hlsl
     Resources/Shaders/GeometryMesh_VS.hlsl
     Resources/Shaders/GeometryMesh_PS.hlsl
-    Resources/Shaders/RaytracingShader.hlsl
+    #Resources/Shaders/RaytracingShader.hlsl
 )
 
 set( RESOURCE_FILES 
@@ -216,7 +216,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Shaders)
 add_custom_target(shaders)
 set_source_files_properties( ${SHADER_FILES}
     PROPERTIES
-        VS_SHADER_MODEL 6_3
+        VS_SHADER_MODEL 6_5
         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/Shaders/%(Filename).h"
         VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
         VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
@@ -264,16 +264,16 @@ set_source_files_properties( Resources/Shaders/GeometryMesh_PS.hlsl
         ShaderType "ps"
 )
 
-set_source_files_properties( Resources/Shaders/RaytracingShader.hlsl
-    PROPERTIES
-        VS_SHADER_MODEL 6_3
-        VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/Shaders/%(Filename).h"
-        VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
-        VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
-        VS_SHADER_TYPE lib
-        VS_SHADER_VARIABLE_NAME g_pRaytracing
-        ShaderType "lib"
-)
+#set_source_files_properties( Resources/Shaders/RaytracingShader.hlsl
+#    PROPERTIES
+#        VS_SHADER_MODEL 6_5
+#        VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/Shaders/%(Filename).h"
+#        VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
+#        VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
+#        VS_SHADER_TYPE lib
+#        VS_SHADER_VARIABLE_NAME g_pRaytracing
+#        ShaderType "lib"
+#)
 
 foreach(FILE ${SHADER_FILES})
   get_filename_component(FILE_WE ${FILE} NAME_WE)
