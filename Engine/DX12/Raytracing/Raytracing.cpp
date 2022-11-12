@@ -236,7 +236,7 @@ void Raytracing::BuildAccelerationStructures()
     geometryDesc.Triangles.VertexCount = static_cast<UINT>(m_Cube->m_VertexBuffer.GetD3D12Resource()->GetDesc().Width) / sizeof(VertexPositionNormalTexture);
     geometryDesc.Triangles.VertexBuffer.StartAddress = m_Cube->m_VertexBuffer.GetD3D12Resource()->GetGPUVirtualAddress();
     geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(VertexPositionNormalTexture);
-
+    
     // Mark the geometry as opaque. 
     // PERFORMANCE TIP: mark geometry as opaque whenever applicable as it can enable important ray processing optimizations.
     // Note: When rays encounter opaque geometry an any hit shader will not be executed whether it is present or not.
@@ -254,12 +254,14 @@ void Raytracing::BuildAccelerationStructures()
     bottomLevelInputs.pGeometryDescs = &geometryDesc;
 
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC topLevelBuildDesc = {};
+
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& topLevelInputs = topLevelBuildDesc.Inputs;
     topLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
     topLevelInputs.Flags = buildFlags;
     topLevelInputs.NumDescs = 1;
     topLevelInputs.pGeometryDescs = nullptr;
     topLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+
 
     D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO topLevelPrebuildInfo = {};
     device->GetRaytracingAccelerationStructurePrebuildInfo(&topLevelInputs, &topLevelPrebuildInfo);
@@ -289,6 +291,7 @@ void Raytracing::BuildAccelerationStructures()
     // Create an instance desc for the bottom-level acceleration structure.
     ComPtr<ID3D12Resource> instanceDescs;
     D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
+    instanceDesc.InstanceID = 1;
     instanceDesc.Transform[0][0] = instanceDesc.Transform[1][1] = instanceDesc.Transform[2][2] = 1;
     instanceDesc.InstanceMask = 1;
     instanceDesc.AccelerationStructure = bottomLevelAccelerationStructure->GetGPUVirtualAddress();
