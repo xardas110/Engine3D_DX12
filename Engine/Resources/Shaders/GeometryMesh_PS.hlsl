@@ -54,7 +54,10 @@ float4 main(PixelShaderInput IN) : SV_Target
       
     if (query.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
     {
-        texColor = float4(0.f, 0.f, 0.f, 1.f);
+        int instanceIndex = query.CommittedInstanceIndex();
+        int primitiveIndex = query.CommittedPrimitiveIndex();
+        int geometryIndex = query.CommittedGeometryIndex();
+        texColor = float4(instanceIndex, primitiveIndex, geometryIndex, 1.f);
 
     }
 
