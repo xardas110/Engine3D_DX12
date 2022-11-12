@@ -74,7 +74,7 @@ public:
     /**
      * Get direct access to the ID3D12GraphicsCommandList2 interface.
      */
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> GetGraphicsCommandList() const
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList5> GetGraphicsCommandList() const
     {
         return m_d3d12CommandList;
     }
@@ -409,7 +409,7 @@ private:
     using TrackedObjects = std::vector < Microsoft::WRL::ComPtr<ID3D12Object> >;
 
     D3D12_COMMAND_LIST_TYPE m_d3d12CommandListType;
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> m_d3d12CommandList;
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList5> m_d3d12CommandList;
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_d3d12CommandAllocator;
 
     // For copy queues, it may be necessary to generate mips while loading textures.

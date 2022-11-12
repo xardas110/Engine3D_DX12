@@ -52,7 +52,8 @@ bool Sponza::LoadContent()
     
     auto ent = game->CreateEntity("Sponza");
     auto& sm = ent.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.dae");
-    auto& trans = ent.GetComponent<TransformComponent>().scale = { 0.015f, 0.015f, 0.015f };
+    auto& trans = ent.GetComponent<TransformComponent>().scale = { 0.020f, 0.020f, 0.020f };
+    auto& trans1 = ent.GetComponent<TransformComponent>().pos = { 0.015f, -5.f, 0.015f };
  
     auto ent2 = game->CreateEntity("ent2");
     auto ent3 = game->CreateEntity("ent3");

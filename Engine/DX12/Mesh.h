@@ -111,6 +111,7 @@ using IndexCollection32 = std::vector<uint32_t>;
 class Mesh
 {
     friend class DeferredRenderer;
+    friend class Raytracing;
 public:
 
     void Draw(CommandList& commandList);
