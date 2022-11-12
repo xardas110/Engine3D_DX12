@@ -39,13 +39,18 @@ struct RTX : public Resource
     D3D12_CPU_DESCRIPTOR_HANDLE m_UavView;
 };
 
+struct RaytracingAccelerationStructure
+{
+    // Acceleration structure
+    Microsoft::WRL::ComPtr<ID3D12Resource> bottomLevelAccelerationStructure;
+    Microsoft::WRL::ComPtr<ID3D12Resource> topLevelAccelerationStructure;
+};
+
 class Raytracing
 {
 	friend class DeferredRenderer;
 
 	void Init();
-
-	void CreateRaytracingInterfaces();
 
     // Create a heap for descriptors.
     void CreateDescriptorHeap();
@@ -58,14 +63,8 @@ class Raytracing
 
     std::unique_ptr<Mesh> m_Cube;
 
-    // Acceleration structure
-    Microsoft::WRL::ComPtr<ID3D12Resource> m_BottomLevelAccelerationStructure;
-    Microsoft::WRL::ComPtr<ID3D12Resource> m_TopLevelAccelerationStructure;
-
-    // Allocate a descriptor and return its index. 
-// If the passed descriptorIndexToUse is valid, it will be used instead of allocating a new one.
-    //UINT AllocateDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE* cpuDescriptor, UINT descriptorIndexToUse = UINT_MAX);
-
+    RaytracingAccelerationStructure m_RaytracingAccelerationStructure;
+        
     // Descriptors
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DescriptorHeap;
     UINT m_DescriptorsAllocated{0U};

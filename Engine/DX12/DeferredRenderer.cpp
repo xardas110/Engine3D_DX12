@@ -146,13 +146,11 @@ void DeferredRenderer::Render(Window& window)
     commandList->SetScissorRect(m_ScissorRect);
     commandList->SetPipelineState(pipelines[Pipeline::GeometryMesh].pipelineRef);
     commandList->SetGraphicsRootSignature(pipelines[Pipeline::GeometryMesh].rootSignature);
-
-    
+ 
     commandList->GetGraphicsCommandList()->SetGraphicsRootShaderResourceView(
         GeometryMeshRootParam::AccelerationStructure, 
-        m_Raytracer->m_TopLevelAccelerationStructure->GetGPUVirtualAddress());
+        m_Raytracer->m_RaytracingAccelerationStructure.topLevelAccelerationStructure->GetGPUVirtualAddress());
      
-
     Transform f;
     f.pos = { 0.f, -20.f, 0.f };
     f.scale = { 10.f, 10.f, 10.f };
