@@ -22,6 +22,9 @@ private:
 
 	StaticMeshMap staticMeshMap;
 
+	//Max number of descriptors in the heap is set to 1024
+	//Make sure to increase it if more than 1024 textures are used
+	//The value is hardcoded during testing phase
 	struct TextureData
 	{
 		friend class AssetManager;
@@ -34,8 +37,10 @@ private:
 
 	private:
 		TextureMap textureMap;
-		Texture m_Textures[5000];
+		Texture m_Textures[1024];		
 		std::uint32_t lastIndex = 0;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
+		int increment = 0;
 	} m_TextureData;
 
 	Mesh m_Primitives[Primitives::Size];

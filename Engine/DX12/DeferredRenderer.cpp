@@ -25,7 +25,6 @@ bool IsDirectXRaytracingSupported(IDXGIAdapter4* adapter)
         && featureSupportData.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
 }
 
-
 using namespace DirectX;
 
 struct Mat
@@ -125,7 +124,7 @@ void DeferredRenderer::Render(Window& window)
     auto& pipelines = Application::Get().GetPipelineManager()->m_Pipelines;
     auto& primitves = Application::Get().GetAssetManager()->m_Primitives;
     auto& meshes = Application::Get().GetAssetManager()->m_Meshes;
-    auto& textures = Application::Get().GetAssetManager()->m_TextureData.m_Textures;
+    auto& textureHeap = Application::Get().GetAssetManager()->m_TextureData.heap;
 
     auto* camera = game->GetRenderCamera();
 
@@ -178,18 +177,16 @@ void DeferredRenderer::Render(Window& window)
         */
     //m_Raytracer->m_Cube->Draw(*commandList);
 
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, textureHeap.Get());
+    commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(GeometryMeshRootParam::Textures, textureHeap->GetGPUDescriptorHandleForHeapStart());
+
     auto& view = game->registry.view<TransformComponent, MeshComponent, TextureComponent>();
     for (auto [entity, transform, mesh, texture] : view.each())
     {
         mat.model = transform.GetTransform();
         mat.mvp = mat.model * mat.view * mat.proj;
         mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));
-
         commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, mat);
-        commandList->SetShaderResourceView(
-            GeometryMeshRootParam::Textures, 0,
-            textures[texture.textureID],
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         primitves[mesh].Draw(*commandList);
     }
 
