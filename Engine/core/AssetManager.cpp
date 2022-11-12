@@ -27,6 +27,26 @@ AssetManager::AssetManager()
 
 	device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_TextureData.heap));
 	m_TextureData.increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	{
+		auto cpuHandle = m_TextureData.heap->GetCPUDescriptorHandleForHeapStart();
+		cpuHandle.ptr += (m_TextureData.increment * 3);
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC desc1{};
+
+		D3D12_BUFFER_SRV bufferSRV;
+		bufferSRV.FirstElement = 0;
+		bufferSRV.NumElements = m_Primitives[Primitives::Cube].m_VertexBuffer.GetNumVertices();
+		bufferSRV.StructureByteStride = sizeof(VertexPositionNormalTexture);
+		bufferSRV.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+
+		desc1.Buffer = bufferSRV;
+		desc1.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+		desc1.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+		device->CreateShaderResourceView(m_Primitives[Primitives::Cube].m_VertexBuffer.GetD3D12Resource().Get(), &desc1, cpuHandle);
+	}
+	
 }
 
 AssetManager::~AssetManager()

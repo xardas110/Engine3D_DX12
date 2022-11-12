@@ -8,7 +8,8 @@
 ConstantBuffer<ObjectCB> g_ObjectCB : register(b0);
 
 RaytracingAccelerationStructure Scene : register(t0);
-Texture2D GlobalTextureArray[] : register(t1);
+Texture2D GlobalTextureArray[] : register(t1, space0);
+StructuredBuffer<MeshVertex> GlobalMeshVertexData[] : register(t1, space1);
 
 SamplerState LinearRepeatSampler : register(s0);
 
@@ -46,10 +47,14 @@ float4 main(PixelShaderInput IN) : SV_Target
       
     if (query.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
     {
-        int instanceIndex = query.CommittedInstanceIndex();
+        int instanceIndex = query.CommittedInstanceID();
         int primitiveIndex = query.CommittedPrimitiveIndex();
         int geometryIndex = query.CommittedGeometryIndex();
-        texColor = float4(instanceIndex, primitiveIndex, geometryIndex, 1.f);
+        
+        StructuredBuffer<MeshVertex> meshVertex = GlobalMeshVertexData[3];
+        
+        
+        texColor = float4(meshVertex[0].position.x, meshVertex[0].position.y, meshVertex[0].position.z, 1.f); //GlobalTextureArray[instanceIndex].Sample(LinearRepeatSampler, IN.TexCoord);
 
     }
 

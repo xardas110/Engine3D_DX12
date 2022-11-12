@@ -59,4 +59,11 @@ struct ObjectCB
     int pad2;
 };
 
+struct MeshVertex
+{
+    XMFLOAT3 position;
+    XMFLOAT3 normal;
+    XMFLOAT2 textureCoordinate;
+};
+
 #endif // RAYTRACINGHLSLCOMPAT_H

@@ -138,32 +138,6 @@ void DeferredRenderer::Render(Window& window)
         GeometryMeshRootParam::AccelerationStructure, 
         m_Raytracer->m_RaytracingAccelerationStructure.topLevelAccelerationStructure->GetGPUVirtualAddress());
   
-
-    /*
-    Transform f;
-    f.pos = { 0.f, -20.f, 0.f };
-    f.scale = { 10.f, 10.f, 10.f };
-    mat.model = f.GetTransform();
-    mat.mvp = mat.model * mat.view * mat.proj;
-    mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));   
-    commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, mat);
-    m_Raytracer->m_Cube->Draw(*commandList);
-
-    f.pos = { 1.f, -5.f, 0.f };
-    f.scale = { 1.f, 1.f, 1.f };
-    mat.model = f.GetTransform();
-    mat.mvp = mat.model * mat.view * mat.proj;
-    mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));
-    commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, mat);
-    */
-    /*
-    commandList->SetShaderResourceView(
-        GeometryMeshRootParam::Textures, 0,
-        m_DXTexture,
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        */
-    //m_Raytracer->m_Cube->Draw(*commandList);
-
     commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, textureHeap.Get());
     commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(GeometryMeshRootParam::Textures, textureHeap->GetGPUDescriptorHandleForHeapStart());
 
