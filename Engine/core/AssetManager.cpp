@@ -12,13 +12,21 @@ std::wstring StringToWString(const std::string& s)
 
 AssetManager::AssetManager()
 {
+	auto device = Application::Get().GetDevice();
 	auto cq = Application::Get().GetCommandQueue();
 	auto cl = cq->GetCommandList();
 
 	m_Primitives[Primitives::Cube] = *Mesh::CreateCube(*cl);
-
 	auto fenceVal = cq->ExecuteCommandList(cl);
 	cq->WaitForFenceValue(fenceVal);
+
+	D3D12_DESCRIPTOR_HEAP_DESC desc{};
+	desc.NumDescriptors = 1024;
+	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+
+	device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_TextureData.heap));
+	m_TextureData.increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
 AssetManager::~AssetManager()
@@ -84,13 +92,24 @@ bool AssetManager::LoadTexture(const std::wstring& path, TextureID& outTextureID
 		return m_TextureData.textureMap[path];
 	}
 
+	auto device = Application::Get().GetDevice();
 	auto cq = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
 	auto cl = cq->GetCommandList();
 
 	outTextureID = lastIndex;
 	m_TextureData.textureMap[path] = lastIndex;
-	cl->LoadTextureFromFile(m_TextureData.m_Textures[lastIndex++], path);
+	auto& texture = m_TextureData.m_Textures[lastIndex];
+	cl->LoadTextureFromFile(texture, path);
+
+	auto cpuHandle = m_TextureData.heap->GetCPUDescriptorHandleForHeapStart();
+	cpuHandle.ptr += (m_TextureData.increment * lastIndex);
+
+	device->CreateShaderResourceView(texture.GetD3D12Resource().Get(), nullptr, cpuHandle);
 
 	auto fenceVal = cq->ExecuteCommandList(cl);
 	cq->WaitForFenceValue(fenceVal);
+
+	lastIndex++;
+
+	return true;
 }
