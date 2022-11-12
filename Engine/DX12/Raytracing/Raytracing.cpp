@@ -56,22 +56,9 @@ const wchar_t* g_MissShaderName = L"MyMissShader";
 
 void Raytracing::Init()
 {
-	CreateRaytracingInterfaces();
     CreateDescriptorHeap();
     BuildGeometry();
     BuildAccelerationStructures();
-}
-
-void Raytracing::CreateRaytracingInterfaces()
-{
-    auto device = Application::Get().GetDevice();
-    auto cq = Application::Get().GetCommandQueue();
-    auto cl = cq->GetCommandList();
-
-    /*
-    ThrowIfFailed(device->QueryInterface(IID_PPV_ARGS(&m_DxrDevice)), L"Couldn't get DirectX Raytracing interface for the device.\n");
-    ThrowIfFailed(cl->GetGraphicsCommandList()->QueryInterface(IID_PPV_ARGS(&m_DxrCommandlist)), L"Couldn't get DirectX Raytracing interface for the command list.\n");
-    */
 }
 
 // Pretty-print a state object tree.
@@ -236,6 +223,9 @@ void Raytracing::BuildAccelerationStructures()
     auto commandQueue = Application::Get().GetCommandQueue();
     auto commandList = commandQueue->GetCommandList();
 
+    auto& bottomLevelAccelerationStructure = m_RaytracingAccelerationStructure.bottomLevelAccelerationStructure;
+    auto& topLevelAccelerationStructure = m_RaytracingAccelerationStructure.topLevelAccelerationStructure;
+
     D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
     geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
     geometryDesc.Triangles.IndexBuffer = m_Cube->m_IndexBuffer.GetD3D12Resource()->GetGPUVirtualAddress();
@@ -292,8 +282,8 @@ void Raytracing::BuildAccelerationStructures()
     {
         D3D12_RESOURCE_STATES initialResourceState = D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
 
-        AllocateUAVBuffer(device.Get(), bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes, &m_BottomLevelAccelerationStructure, initialResourceState, L"BottomLevelAccelerationStructure");
-        AllocateUAVBuffer(device.Get(), topLevelPrebuildInfo.ResultDataMaxSizeInBytes, &m_TopLevelAccelerationStructure, initialResourceState, L"TopLevelAccelerationStructure");
+        AllocateUAVBuffer(device.Get(), bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes, &bottomLevelAccelerationStructure, initialResourceState, L"BottomLevelAccelerationStructure");
+        AllocateUAVBuffer(device.Get(), topLevelPrebuildInfo.ResultDataMaxSizeInBytes, &topLevelAccelerationStructure, initialResourceState, L"TopLevelAccelerationStructure");
     }
 
     // Create an instance desc for the bottom-level acceleration structure.
@@ -301,18 +291,18 @@ void Raytracing::BuildAccelerationStructures()
     D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
     instanceDesc.Transform[0][0] = instanceDesc.Transform[1][1] = instanceDesc.Transform[2][2] = 1;
     instanceDesc.InstanceMask = 1;
-    instanceDesc.AccelerationStructure = m_BottomLevelAccelerationStructure->GetGPUVirtualAddress();
+    instanceDesc.AccelerationStructure = bottomLevelAccelerationStructure->GetGPUVirtualAddress();
     AllocateUploadBuffer(device.Get(), &instanceDesc, sizeof(instanceDesc), &instanceDescs, L"InstanceDescs");
 
     // Bottom Level Acceleration Structure desc
     {
         bottomLevelBuildDesc.ScratchAccelerationStructureData = scratchResource->GetGPUVirtualAddress();
-        bottomLevelBuildDesc.DestAccelerationStructureData = m_BottomLevelAccelerationStructure->GetGPUVirtualAddress();
+        bottomLevelBuildDesc.DestAccelerationStructureData = bottomLevelAccelerationStructure->GetGPUVirtualAddress();
     }
 
     // Top Level Acceleration Structure desc
     {
-        topLevelBuildDesc.DestAccelerationStructureData = m_TopLevelAccelerationStructure->GetGPUVirtualAddress();
+        topLevelBuildDesc.DestAccelerationStructureData = topLevelAccelerationStructure->GetGPUVirtualAddress();
         topLevelBuildDesc.ScratchAccelerationStructureData = scratchResource->GetGPUVirtualAddress();
         topLevelBuildDesc.Inputs.InstanceDescs = instanceDescs->GetGPUVirtualAddress();
     }
@@ -320,7 +310,7 @@ void Raytracing::BuildAccelerationStructures()
     auto BuildAccelerationStructure = [&](auto* raytracingCommandList)
     {
         raytracingCommandList->BuildRaytracingAccelerationStructure(&bottomLevelBuildDesc, 0, nullptr);
-        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::UAV(m_BottomLevelAccelerationStructure.Get()));
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::UAV(bottomLevelAccelerationStructure.Get()));
         raytracingCommandList->BuildRaytracingAccelerationStructure(&topLevelBuildDesc, 0, nullptr);
     };
 
@@ -330,16 +320,4 @@ void Raytracing::BuildAccelerationStructures()
     auto fenceVal = commandQueue->ExecuteCommandList(commandList);
     commandQueue->WaitForFenceValue(fenceVal);
 
-/*
-    auto cl2 = commandQueue->GetCommandList();
-    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        m_TopLevelAccelerationStructure.Get(), 
-        D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-    cl2->GetGraphicsCommandList()->ResourceBarrier(1, &barrier);
-    
-    auto fenceVal2 = commandQueue->ExecuteCommandList(cl2);
-    commandQueue->WaitForFenceValue(fenceVal2);
-  */  
 }
