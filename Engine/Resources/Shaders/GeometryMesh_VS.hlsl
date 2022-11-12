@@ -1,17 +1,7 @@
-struct Mat
-{
-    matrix model; // Updates pr. object
-    matrix mvp; // Updates pr. object
-    matrix invTransposeMvp; // Updates pr. object
-    
-    matrix view; // Updates pr. frame
-    matrix proj; // Updates pr. frame
-    
-    matrix invView; // Updates pr. frame
-    matrix invProj; // Updates pr. frame
-};
+#define HLSL
+#include "RaytracingHlslCompat.h"
 
-ConstantBuffer<Mat> MatCB : register(b0);
+ConstantBuffer<ObjectCB> g_ObjectCB : register(b0);
 
 struct VertexPositionNormalTexture
 {
@@ -31,9 +21,9 @@ struct VertexShaderOutput
 VertexShaderOutput main(VertexPositionNormalTexture IN)
 {
     VertexShaderOutput OUT;
-    OUT.Position = mul(MatCB.mvp, float4(IN.Position, 1.0f));
-    OUT.PositionWS = mul(MatCB.model, float4(IN.Position, 1.f));
-    OUT.NormalWS = mul((float3x3)MatCB.invTransposeMvp, IN.Normal);
+    OUT.Position = mul(g_ObjectCB.mvp, float4(IN.Position, 1.0f));
+    OUT.PositionWS = mul(g_ObjectCB.model, float4(IN.Position, 1.f));
+    OUT.NormalWS = mul((float3x3) g_ObjectCB.invTransposeMvp, IN.Normal);
     OUT.TexCoord = IN.TexCoord;
     
     return OUT;
