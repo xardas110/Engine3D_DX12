@@ -167,10 +167,11 @@ void DeferredRenderer::Render(Window& window)
     mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));
     commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, mat);
     m_Raytracer->m_Cube->Draw(*commandList);
+
     /*
     auto& view = game->registry.view<TransformComponent, StaticMeshComponent>();
     for (auto [entity, transform, sm] : view.each())
-    {D
+    {
         mat.model = transform.GetTransform();
         mat.mvp = mat.model * mat.view * mat.proj;
         mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));
