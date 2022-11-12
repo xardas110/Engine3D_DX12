@@ -2,6 +2,25 @@
 #include "Mesh.h"
 #include <Texture.h>
 
+//Every Textures and Meshes will be in the same heap
+//Due to global shader access for inline DXR
+struct SRVHeapData
+{
+private:
+	std::uint32_t lastIndex = 0;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
+	const int increment = 0;
+	const int heapSize = 1024;
+public:
+	SRVHeapData();
+
+	D3D12_CPU_DESCRIPTOR_HANDLE IncrementHandle(UINT& outCurrentHandleIndex)
+	{
+		D3D12_CPU_DESCRIPTOR_HANDLE handle = heap->GetCPUDescriptorHandleForHeapStart();
+		handle.ptr += lastIndex++ * increment;
+	}
+};
+
 class AssetManager
 {
 	friend class Application;
@@ -30,19 +49,16 @@ private:
 		friend class AssetManager;
 		friend class DeferredRenderer;
 	
-		std::uint32_t Size() const
-		{
-			return lastIndex;
-		}
-
 	private:
 		TextureMap textureMap;
-		Texture m_Textures[1024];		
-		std::uint32_t lastIndex = 0;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
-		int increment = 0;
+		Texture textures[512];
+		UINT lastIndex = 0;
 	} m_TextureData;
 
-	Mesh m_Primitives[Primitives::Size];
-	Mesh m_Meshes[50000]; std::uint32_t lastIndex = 0;
+	struct MeshData
+	{
+	private:
+		Mesh meshes[512];
+		std::uint32_t lastIndex = 0;
+	} m_MeshData;
 };

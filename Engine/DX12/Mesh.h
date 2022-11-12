@@ -117,6 +117,17 @@ namespace Primitives
     };
 }
 
+using MeshID = std::uint32_t;
+using SRVHeapID = std::uint32_t;
+
+struct MeshWrapper
+{
+
+private:
+    MeshID meshID = UINT_MAX;
+    SRVHeapID srvHeapID = UINT_MAX;
+};
+
 class Mesh
 {
     friend class DeferredRenderer;

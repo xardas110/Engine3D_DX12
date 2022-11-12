@@ -5,6 +5,12 @@
 #include <CommandList.h>
 #include <AssimpLoader.h>
 
+SRVHeapData::SRVHeapData(int incVal)
+	: increment(incVal)
+{
+	
+}
+
 std::wstring StringToWString(const std::string& s)
 {
 	return std::wstring(s.begin(), s.end());
@@ -33,6 +39,8 @@ AssetManager::AssetManager()
 		cpuHandle.ptr += (m_TextureData.increment * 3);
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC desc1{};
+
+		m_Primitives[Primitives::Cube].m_VertexBuffer.SetName(L"CUBE");
 
 		D3D12_BUFFER_SRV bufferSRV;
 		bufferSRV.FirstElement = 0;

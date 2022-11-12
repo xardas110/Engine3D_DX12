@@ -45,7 +45,9 @@ Window::~Window()
 void Window::Initialize()
 {
 #ifndef DEBUG_EDITOR
+#ifdef DEBUG_IMGUI
     m_GUI.Initialize( shared_from_this() );
+#endif
 #endif // !DEBUG_EDITOR
 }
 
@@ -76,7 +78,9 @@ void Window::Hide()
 void Window::Destroy()
 {
 #ifndef DEBUG_EDITOR
+#ifdef DEBUG_IMGUI
     m_GUI.Destroy();
+#endif
 #endif // !DEBUG_EDITOR
 
     if (auto pGame = m_pGame.lock())
@@ -190,7 +194,9 @@ void Window::RegisterCallbacks(std::shared_ptr<Game> pGame)
 void Window::OnUpdate(UpdateEventArgs& e)
 {
 #ifndef DEBUG_EDITOR
+#ifdef DEBUG_IMGUI
     m_GUI.NewFrame();
+#endif
 #endif // !DEBUG_EDITOR
 
     m_UpdateClock.Tick();
@@ -415,7 +421,9 @@ UINT Window::Present(const Texture & texture, GUI& m_GUI)
     RenderTarget renderTarget;
     renderTarget.AttachTexture( AttachmentPoint::Color0, backBuffer );
 
+#ifdef DEBUG_IMGUI
     m_GUI.Render( commandList, renderTarget );
+#endif
 
     commandList->TransitionBarrier( backBuffer, D3D12_RESOURCE_STATE_PRESENT );
     commandQueue->ExecuteCommandList( commandList );

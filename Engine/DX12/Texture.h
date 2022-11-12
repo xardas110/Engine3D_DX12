@@ -41,12 +41,22 @@
 #include <unordered_map>
 
 using TextureID = std::uint32_t;
+using SRVHeapID = std::uint32_t;
 
 struct TextureWrapper
 {
+    friend class DeferredRenderer;
+
     TextureWrapper(const std::wstring& path);
 
+    bool IsValid() const
+    {
+        return textureID != UINT_MAX && srvHeapID != UINT_MAX;
+    }
+
+private:
     TextureID textureID = UINT_MAX;
+    SRVHeapID srvHeapID = UINT_MAX;
 };
 
 class Texture : public Resource

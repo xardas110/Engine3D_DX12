@@ -54,7 +54,7 @@ float4 main(PixelShaderInput IN) : SV_Target
         StructuredBuffer<MeshVertex> meshVertex = GlobalMeshVertexData[3];
         
         
-        texColor = float4(meshVertex[0].position.x, meshVertex[0].position.y, meshVertex[0].position.z, 1.f); //GlobalTextureArray[instanceIndex].Sample(LinearRepeatSampler, IN.TexCoord);
+        texColor = float4(meshVertex[8].normal.x, meshVertex[8].normal.y, meshVertex[8].normal.z, 1.f); //GlobalTextureArray[instanceIndex].Sample(LinearRepeatSampler, IN.TexCoord);
 
     }
 
