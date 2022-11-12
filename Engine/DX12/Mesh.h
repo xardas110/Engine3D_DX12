@@ -41,6 +41,7 @@
 #include <memory> // For std::unique_ptr
 #include <vector>
 #include <Material.h>
+#include <RayTracingHlslCompat.h>
 
  // Vertex struct holding position, normal vector, and texture mapping information.
 struct VertexPositionNormalTexture
@@ -118,16 +119,22 @@ namespace Primitives
 }
 
 using MeshID = std::uint32_t;
-using SRVHeapID = std::uint32_t;
 
-struct MeshWrapper
+struct MeshInstance
 {
+    friend class DeferredRenderer;
+    friend class AssetManager;
 
+    //Path or name
+    MeshInstance(const std::wstring& path);
+    void SetMaterialInstance(const MaterialInstance& materialInstance);
 private:
-    MeshID meshID = UINT_MAX;
-    SRVHeapID srvHeapID = UINT_MAX;
+    MeshInstance() = default;
+    MeshID meshID = UINT_MAX; //Id to internal mesh data in assetmanager
+    MeshInfo meshInfo{}; //GPU data for DXR and hybrid rendering(bindless resources)
 };
 
+//Internal mesh
 class Mesh
 {
     friend class DeferredRenderer;
@@ -156,10 +163,9 @@ private:
     Mesh(const Mesh& copy) = delete;
     
     void Initialize(CommandList& commandList, VertexCollection& vertices, IndexCollection& indices, bool rhcoords);
-
     void Initialize(CommandList& commandList, const VertexCollection32& vertices, const IndexCollection32& indices, bool rhcoords);
 
-    Material m_Material;
+    MaterialInfo materialInfo; //ID to textures inside assetmanager
 
     VertexBuffer m_VertexBuffer;
     IndexBuffer m_IndexBuffer;

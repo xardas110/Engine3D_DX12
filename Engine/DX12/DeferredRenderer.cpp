@@ -109,9 +109,8 @@ void DeferredRenderer::Render(Window& window)
     auto commandList = commandQueue->GetCommandList();
 
     auto& pipelines = Application::Get().GetPipelineManager()->m_Pipelines;
-    auto& primitves = Application::Get().GetAssetManager()->m_Primitives;
-    auto& meshes = Application::Get().GetAssetManager()->m_Meshes;
-    auto& textureHeap = Application::Get().GetAssetManager()->m_TextureData.heap;
+    auto& meshes = Application::Get().GetAssetManager()->m_MeshData.meshes;
+    auto& srvHeap = Application::Get().GetAssetManager()->m_SrvHeapData.heap;
 
     auto* camera = game->GetRenderCamera();
 
@@ -138,12 +137,13 @@ void DeferredRenderer::Render(Window& window)
         GeometryMeshRootParam::AccelerationStructure, 
         m_Raytracer->m_RaytracingAccelerationStructure.topLevelAccelerationStructure->GetGPUVirtualAddress());
   
-    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, textureHeap.Get());
-    commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(GeometryMeshRootParam::Textures, textureHeap->GetGPUDescriptorHandleForHeapStart());
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.Get());
+    commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(GeometryMeshRootParam::Textures, srvHeap->GetGPUDescriptorHandleForHeapStart());
 
     auto& view = game->registry.view<TransformComponent, MeshComponent, TextureComponent>();
     for (auto [entity, transform, mesh, texture] : view.each())
     {
+        /*
         objectCB.model = transform.GetTransform();
         objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
         objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
@@ -152,6 +152,7 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, objectCB);
         primitves[mesh].Draw(*commandList);
+        */
     }
 
     /*

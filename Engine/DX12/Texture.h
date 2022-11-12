@@ -26,7 +26,7 @@
  *  @file Texture.h
  *  @date October 24, 2018
  *  @author Jeremiah van Oosten
- *
+ *  @Modified by AAA - Added TextureInstance
  *  @brief A wrapper for a DX12 Texture object.
  */
 
@@ -43,15 +43,21 @@
 using TextureID = std::uint32_t;
 using SRVHeapID = std::uint32_t;
 
-struct TextureWrapper
+struct TextureInstance
 {
     friend class DeferredRenderer;
+    friend class AssetManager;
 
-    TextureWrapper(const std::wstring& path);
+    TextureInstance(const std::wstring& path);
 
     bool IsValid() const
     {
         return textureID != UINT_MAX && srvHeapID != UINT_MAX;
+    }
+
+    TextureID GetTextureID() const
+    {
+        return textureID;
     }
 
 private:

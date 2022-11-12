@@ -23,6 +23,17 @@ const D3D12_INPUT_ELEMENT_DESC VertexPositionNormalTextureTangentBitangent::Inpu
     { "BITTANGENT",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 };
 
+MeshInstance::MeshInstance(const std::wstring& path)
+{
+    auto assetManager = Application::Get().GetAssetManager();
+    assert(assetManager->GetMeshInstance(path, *this));
+}
+
+void MeshInstance::SetMaterialInstance(const MaterialInstance& materialInstance)
+{
+    this->meshInfo.materialIndex = materialInstance.materialID;
+}
+
 Mesh::Mesh()
     : m_IndexCount(0)
 {}

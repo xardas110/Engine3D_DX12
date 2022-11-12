@@ -58,13 +58,21 @@ smm->LoadStaticMesh("Assets/Models/crytek-sponza-noflag/sponza.dae", temp);
     auto& trans = ent.GetComponent<TransformComponent>().scale = { 0.01f, 0.01f, 0.01f };
     */
     {
+        MaterialInfo materialInfo;
+        TextureInstance textureInstance(L"Assets/Textures/Directx9.png");      
+        materialInfo.albedo = textureInstance.GetTextureID();
+
+        Application::Get().GetAssetManager()->CreateMaterialInstance(L"DirectXMaterial", materialInfo);
+        
+
         auto ent = CreateEntity("DxCube");
-        auto& sm = ent.AddComponent<MeshComponent>() = Primitives::Cube;
-        auto& tex = ent.AddComponent<TextureComponent>(L"Assets/Textures/Directx9.png");
+        auto& sm = ent.AddComponent<MeshComponent>(L"AssetManagerDefaultCube");     
+        
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 10.f, 10.f, 10.f };
         trans.pos = { 0.f, -10.f, 0.f };
     }
+    /*
     {
         auto ent = CreateEntity("monaCube");
         auto& sm = ent.AddComponent<MeshComponent>() = Primitives::Cube;
@@ -73,6 +81,7 @@ smm->LoadStaticMesh("Assets/Models/crytek-sponza-noflag/sponza.dae", temp);
         trans.scale = { 2.f, 2.f, 2.f };
         trans.pos = { 0.f, 10.f, 0.f };
     }
+    */
 
     return true;
 }
