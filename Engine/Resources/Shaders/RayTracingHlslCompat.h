@@ -43,24 +43,22 @@ struct Vertex
 
 struct MaterialInfo
 {
-    UINT ao = 0xffffffff;
-    UINT albedo = 0xffffffff;
-    UINT normal = 0xffffffff;
-    UINT roughness = 0xffffffff;
-    UINT metallic = 0xffffffff;
-    UINT opacity = 0xffffffff;
-    UINT emissive = 0xffffffff;
-    UINT lightmap = 0xffffffff;
+    UINT ao =           0xffffffff;
+    UINT albedo =       0xffffffff;
+    UINT normal =       0xffffffff;
+    UINT roughness =    0xffffffff;
+    UINT metallic =     0xffffffff;
+    UINT opacity =      0xffffffff;
+    UINT emissive =     0xffffffff;
+    UINT lightmap =     0xffffffff;
 };
 
 struct MeshInfo
 {
     UINT vertexOffset;
     UINT indexOffset;
+    UINT materialIndex; //Cpu material index == Gpu material index
     UINT flags;
-    UINT pad;
-
-    MaterialInfo materialInfo;
 };
 
 struct ObjectCB
@@ -76,7 +74,7 @@ struct ObjectCB
     XMMATRIX invProj; // Updates pr. frame
 
     UINT entId;
-    UINT textureId;
+    UINT meshId;
     int pad1;
     int pad2;
 };

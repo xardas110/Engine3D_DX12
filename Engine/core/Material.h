@@ -1,34 +1,24 @@
 #pragma once
 #include <Texture.h>
 
-namespace MaterialType
+using MaterialID = std::uint32_t;
+
+struct MaterialInstance
 {
-	enum Type
-	{
-		Ambient,
-		Albedo,
-		Diffuse = Albedo,
-		Specular,
-		Height,
-		Normal = Height,
-		Roughness,
-		Metallic,
-		Opacity,
-		Emissive,
-		Size
-	};
-}
+	friend class AssetManager;
+	friend class MeshInstance;
+	friend class DeferredRenderer;
+
+	MaterialInstance(const std::wstring& name);
+private:
+	MaterialID materialID{};
+};
 
 class Material
 {
 	friend class AssetManager;
 	friend class DeferredRenderer;
 
-public:
-	bool HasTexture(MaterialType::Type type) const
-	{
-		return textures[type].IsValid();
-	}
 private:
-	Texture textures[MaterialType::Size];
+	MaterialInfo textureIDs;
 };

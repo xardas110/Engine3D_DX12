@@ -7,10 +7,10 @@
 #include <ResourceStateTracker.h>
 #include <AssetManager.h>
 
-TextureWrapper::TextureWrapper(const std::wstring& path)
+TextureInstance::TextureInstance(const std::wstring& path)
 {
     auto assetManager = Application::Get().GetAssetManager();
-    assetManager->LoadTexture(path, textureID);
+    assetManager->LoadTexture(path, *this);
 }
 
 Texture::Texture( TextureUsage textureUsage, const std::wstring& name )

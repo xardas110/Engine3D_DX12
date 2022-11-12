@@ -1,11 +1,11 @@
 #pragma once
 #include <Transform.h>
 #include <Mesh.h>
+#include <Material.h>
 
 using TransformComponent = Transform;
 using StaticMeshComponent = StaticMesh;
-using MeshComponent = Primitives::Type;
-using TextureComponent = TextureWrapper;
+using MeshComponent = MeshInstance;
 
 struct TagComponent
 {

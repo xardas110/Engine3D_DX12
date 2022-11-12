@@ -8,8 +8,12 @@
 ConstantBuffer<ObjectCB> g_ObjectCB : register(b0);
 
 RaytracingAccelerationStructure Scene : register(t0);
+
 Texture2D GlobalTextureArray[] : register(t1, space0);
 StructuredBuffer<MeshVertex> GlobalMeshVertexData[] : register(t1, space1);
+Buffer<uint> GlobalIndexData[] : register(t1, space2);
+StructuredBuffer<MeshInfo> GlobalMeshInfo[] : register(t2);
+StructuredBuffer<MaterialInfo> GlobalMaterialInfo[] : register(t3);
 
 SamplerState LinearRepeatSampler : register(s0);
 
