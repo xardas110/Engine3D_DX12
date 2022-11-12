@@ -5,6 +5,13 @@
 #include <Application.h>
 #include <Helpers.h>
 #include <ResourceStateTracker.h>
+#include <AssetManager.h>
+
+TextureWrapper::TextureWrapper(const std::wstring& path)
+{
+    auto assetManager = Application::Get().GetAssetManager();
+    assetManager->LoadTexture(path, textureID);
+}
 
 Texture::Texture( TextureUsage textureUsage, const std::wstring& name )
     : Resource(name)

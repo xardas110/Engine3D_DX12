@@ -108,6 +108,15 @@ using IndexCollection = std::vector<uint16_t>;
 using VertexCollection32 = std::vector<VertexPositionNormalTextureTangentBitangent>;
 using IndexCollection32 = std::vector<uint32_t>;
 
+namespace Primitives
+{
+    enum Type
+    {
+        Cube,
+        Size
+    };
+}
+
 class Mesh
 {
     friend class DeferredRenderer;

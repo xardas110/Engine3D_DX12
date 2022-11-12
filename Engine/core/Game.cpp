@@ -51,12 +51,28 @@ StaticMesh temp;
 auto* smm = Application::Get().GetAssetManager();
 smm->LoadStaticMesh("Assets/Models/crytek-sponza-noflag/sponza.dae", temp);
 */
+    /*
 
-/*
     auto ent = CreateEntity("Sponza");
     auto& sm = ent.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.dae");
     auto& trans = ent.GetComponent<TransformComponent>().scale = { 0.01f, 0.01f, 0.01f };
-*/
+    */
+    {
+        auto ent = CreateEntity("DxCube");
+        auto& sm = ent.AddComponent<MeshComponent>() = Primitives::Cube;
+        auto& tex = ent.AddComponent<TextureComponent>(L"Assets/Textures/Directx9.png");
+        auto& trans = ent.GetComponent<TransformComponent>();
+        trans.scale = { 10.f, 10.f, 10.f };
+        trans.pos = { 0.f, -10.f, 0.f };
+    }
+    {
+        auto ent = CreateEntity("monaCube");
+        auto& sm = ent.AddComponent<MeshComponent>() = Primitives::Cube;
+        auto& tex = ent.AddComponent<TextureComponent>(L"Assets/Textures/Mona_Lisa.jpg");
+        auto& trans = ent.GetComponent<TransformComponent>();
+        trans.scale = { 2.f, 2.f, 2.f };
+        trans.pos = { 0.f, 10.f, 0.f };
+    }
 
     return true;
 }

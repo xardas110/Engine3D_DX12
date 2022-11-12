@@ -25,5 +25,6 @@ class DeferredRenderer
 	D3D12_RECT m_ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
 
 	std::unique_ptr<Raytracing> m_Raytracer{nullptr};
+	Texture m_DXTexture;
 };
 

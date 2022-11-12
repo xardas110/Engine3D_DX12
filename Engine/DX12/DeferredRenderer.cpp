@@ -45,15 +45,16 @@ struct Mat
 DeferredRenderer::DeferredRenderer(int width, int height)
     :m_Width(width), m_Height(height)
 {
-
-    auto adapter = Application::Get().GetAdapter(false);  
-    assert(IsDirectXRaytracingSupported(adapter.Get()));
+    //auto adapter = Application::Get().GetAdapter(false);  
+    //assert(IsDirectXRaytracingSupported(adapter.Get()));
     std::cout << "DeferredRenderer: Raytracing is supported on the device" << std::endl;
 
     m_Raytracer = std::unique_ptr<Raytracing>(new Raytracing);
     m_Raytracer->Init();
 
 	CreateGBuffer();
+
+     
 
     /*
  StaticMesh temp;
@@ -124,6 +125,7 @@ void DeferredRenderer::Render(Window& window)
     auto& pipelines = Application::Get().GetPipelineManager()->m_Pipelines;
     auto& primitves = Application::Get().GetAssetManager()->m_Primitives;
     auto& meshes = Application::Get().GetAssetManager()->m_Meshes;
+    auto& textures = Application::Get().GetAssetManager()->m_TextureData.m_Textures;
 
     auto* camera = game->GetRenderCamera();
 
@@ -145,12 +147,13 @@ void DeferredRenderer::Render(Window& window)
     commandList->SetViewport(m_GBufferRenderTarget.GetViewport());
     commandList->SetScissorRect(m_ScissorRect);
     commandList->SetPipelineState(pipelines[Pipeline::GeometryMesh].pipelineRef);
-    commandList->SetGraphicsRootSignature(pipelines[Pipeline::GeometryMesh].rootSignature);
- 
+    commandList->SetGraphicsRootSignature(pipelines[Pipeline::GeometryMesh].rootSignature);  
     commandList->GetGraphicsCommandList()->SetGraphicsRootShaderResourceView(
         GeometryMeshRootParam::AccelerationStructure, 
         m_Raytracer->m_RaytracingAccelerationStructure.topLevelAccelerationStructure->GetGPUVirtualAddress());
-     
+  
+
+    /*
     Transform f;
     f.pos = { 0.f, -20.f, 0.f };
     f.scale = { 10.f, 10.f, 10.f };
@@ -166,7 +169,29 @@ void DeferredRenderer::Render(Window& window)
     mat.mvp = mat.model * mat.view * mat.proj;
     mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));
     commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, mat);
-    m_Raytracer->m_Cube->Draw(*commandList);
+    */
+    /*
+    commandList->SetShaderResourceView(
+        GeometryMeshRootParam::Textures, 0,
+        m_DXTexture,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        */
+    //m_Raytracer->m_Cube->Draw(*commandList);
+
+    auto& view = game->registry.view<TransformComponent, MeshComponent, TextureComponent>();
+    for (auto [entity, transform, mesh, texture] : view.each())
+    {
+        mat.model = transform.GetTransform();
+        mat.mvp = mat.model * mat.view * mat.proj;
+        mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));
+
+        commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, mat);
+        commandList->SetShaderResourceView(
+            GeometryMeshRootParam::Textures, 0,
+            textures[texture.textureID],
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        primitves[mesh].Draw(*commandList);
+    }
 
     /*
     auto& view = game->registry.view<TransformComponent, StaticMeshComponent>();
@@ -192,9 +217,7 @@ void DeferredRenderer::Render(Window& window)
                     D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);                              
             }
             
-            mesh.Draw(*commandList);
-
-           
+            mesh.Draw(*commandList);          
         } 
     }
     */
