@@ -41,4 +41,22 @@ struct Vertex
     XMFLOAT3 normal;
 };
 
+struct ObjectCB
+{
+    XMMATRIX model; // Updates pr. object
+    XMMATRIX mvp; // Updates pr. object
+    XMMATRIX invTransposeMvp; // Updates pr. object
+
+    XMMATRIX view; // Updates pr. frame
+    XMMATRIX proj; // Updates pr. frame
+
+    XMMATRIX invView; // Updates pr. frame
+    XMMATRIX invProj; // Updates pr. frame
+
+    UINT entId;
+    UINT textureId;
+    int pad1;
+    int pad2;
+};
+
 #endif // RAYTRACINGHLSLCOMPAT_H

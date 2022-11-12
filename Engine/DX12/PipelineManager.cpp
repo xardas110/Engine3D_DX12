@@ -51,8 +51,8 @@ void PipelineManager::CreateGeometryMeshPSO()
     srvRanges[0].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     CD3DX12_ROOT_PARAMETER1 rootParameters[GeometryMeshRootParam::Size];
-    rootParameters[GeometryMeshRootParam::MatCB].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_VERTEX);
-    rootParameters[GeometryMeshRootParam::MaterialCB].InitAsConstantBufferView(0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_VERTEX);
+    rootParameters[GeometryMeshRootParam::MatCB].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_ALL);
+    rootParameters[GeometryMeshRootParam::MaterialCB].InitAsConstantBufferView(0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_ALL);
     rootParameters[GeometryMeshRootParam::Textures].InitAsDescriptorTable(1, &srvRanges[0]);
     rootParameters[GeometryMeshRootParam::AccelerationStructure].InitAsShaderResourceView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
 

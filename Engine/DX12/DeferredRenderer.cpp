@@ -13,6 +13,7 @@
 #include <Helpers.h>
 #include <Entity.h>
 #include <Components.h>
+#include <RayTracingHlslCompat.h>
 
 bool IsDirectXRaytracingSupported(IDXGIAdapter4* adapter)
 {
@@ -26,20 +27,6 @@ bool IsDirectXRaytracingSupported(IDXGIAdapter4* adapter)
 }
 
 using namespace DirectX;
-
-struct Mat
-{
-    DirectX::XMMATRIX model; // Updates pr. object
-    DirectX::XMMATRIX mvp; // Updates pr. object
-    DirectX::XMMATRIX invTransposeMvp; // Updates pr. object
-
-    DirectX::XMMATRIX view; // Updates pr. frame
-    DirectX::XMMATRIX proj; // Updates pr. frame
-
-    DirectX::XMMATRIX invView; // Updates pr. frame
-    DirectX::XMMATRIX invProj; // Updates pr. frame
-};
-
 
 DeferredRenderer::DeferredRenderer(int width, int height)
     :m_Width(width), m_Height(height)
@@ -128,11 +115,11 @@ void DeferredRenderer::Render(Window& window)
 
     auto* camera = game->GetRenderCamera();
 
-    Mat mat;
-    mat.view = camera->get_ViewMatrix();
-    mat.proj = camera->get_ProjectionMatrix();
-    mat.invView = XMMatrixInverse(nullptr, mat.view);
-    mat.invProj = XMMatrixInverse(nullptr, mat.proj);
+    ObjectCB objectCB;
+    objectCB.view = camera->get_ViewMatrix();
+    objectCB.proj = camera->get_ProjectionMatrix();
+    objectCB.invView = XMMatrixInverse(nullptr, objectCB.view);
+    objectCB.invProj = XMMatrixInverse(nullptr, objectCB.proj);
 
     // Clear the render targets.
     {
@@ -183,10 +170,13 @@ void DeferredRenderer::Render(Window& window)
     auto& view = game->registry.view<TransformComponent, MeshComponent, TextureComponent>();
     for (auto [entity, transform, mesh, texture] : view.each())
     {
-        mat.model = transform.GetTransform();
-        mat.mvp = mat.model * mat.view * mat.proj;
-        mat.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(mat.mvp));
-        commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, mat);
+        objectCB.model = transform.GetTransform();
+        objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
+        objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
+        objectCB.entId = (UINT)entity;
+        objectCB.textureId = texture.textureID;
+
+        commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, objectCB);
         primitves[mesh].Draw(*commandList);
     }
 
