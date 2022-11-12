@@ -43,6 +43,7 @@ class RenderTarget;
 class RootSignature;
 class Window;
 
+#define DEBUG_IMGUI
 
 class GUI
 {

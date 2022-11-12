@@ -41,6 +41,28 @@ struct Vertex
     XMFLOAT3 normal;
 };
 
+struct MaterialInfo
+{
+    UINT ao = 0xffffffff;
+    UINT albedo = 0xffffffff;
+    UINT normal = 0xffffffff;
+    UINT roughness = 0xffffffff;
+    UINT metallic = 0xffffffff;
+    UINT opacity = 0xffffffff;
+    UINT emissive = 0xffffffff;
+    UINT lightmap = 0xffffffff;
+};
+
+struct MeshInfo
+{
+    UINT vertexOffset;
+    UINT indexOffset;
+    UINT flags;
+    UINT pad;
+
+    MaterialInfo materialInfo;
+};
+
 struct ObjectCB
 {
     XMMATRIX model; // Updates pr. object

@@ -44,14 +44,14 @@ void PipelineManager::CreateGeometryMeshPSO()
 
     CD3DX12_DESCRIPTOR_RANGE1 srvRanges[2] = {};
     srvRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvRanges[0].NumDescriptors = 1024;
+    srvRanges[0].NumDescriptors = 512;
     srvRanges[0].BaseShaderRegister = 1;
     srvRanges[0].RegisterSpace = 0;
     srvRanges[0].OffsetInDescriptorsFromTableStart = 0;
     srvRanges[0].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     srvRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvRanges[1].NumDescriptors = 1024;
+    srvRanges[1].NumDescriptors = 512;
     srvRanges[1].BaseShaderRegister = 1;
     srvRanges[1].RegisterSpace = 1;
     srvRanges[1].OffsetInDescriptorsFromTableStart = 0;
@@ -65,11 +65,10 @@ void PipelineManager::CreateGeometryMeshPSO()
 
     CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
 
-    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc(
-        GeometryMeshRootParam::Size,
+    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
+    rootSignatureDesc.Init_1_1(GeometryMeshRootParam::Size,
         rootParameters, 1, &linearRepeatSampler,
-        rootSignatureFlags
-    );
+        rootSignatureFlags);
 
     auto& rootSignature = m_Pipelines[Pipeline::GeometryMesh].rootSignature;
 

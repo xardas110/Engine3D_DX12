@@ -210,6 +210,8 @@ private:
     int m_PreviousMouseY;
 
 #ifndef DEBUG_EDITOR
+#ifdef DEBUG_IMGUI
     GUI m_GUI;
+#endif // DEBUG_IMGUI  
 #endif // !DEBUG_EDITOR
 };
