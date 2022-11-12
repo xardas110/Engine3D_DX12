@@ -4,6 +4,8 @@
 
 using TransformComponent = Transform;
 using StaticMeshComponent = StaticMesh;
+using MeshComponent = Primitives::Type;
+using TextureComponent = TextureWrapper;
 
 struct TagComponent
 {

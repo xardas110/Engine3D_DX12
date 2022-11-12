@@ -14,8 +14,8 @@ struct Material
     // Total:                              16 * 5 = 80 bytes
 };
 
-Texture2D DiffuseTexture : register(t0);
-RaytracingAccelerationStructure Scene : register(t1);
+RaytracingAccelerationStructure Scene : register(t0);
+Texture2D GlobalTextureArray : register(t1);
 
 SamplerState LinearRepeatSampler : register(s0);
 ConstantBuffer<Material> MaterialCB : register(b0, space1);
@@ -50,7 +50,7 @@ float4 main(PixelShaderInput IN) : SV_Target
     // Based on the template specialization above, traversal completion is guaranteed.
     
     query.Proceed();
-    float4 texColor = float4(1.f, 0.f, 0.f, 1.f); //DiffuseTexture.Sample(LinearRepeatSampler, IN.TexCoord);
+    float4 texColor = GlobalTextureArray.Sample(LinearRepeatSampler, IN.TexCoord); //DiffuseTexture.Sample(LinearRepeatSampler, IN.TexCoord);
       
     if (query.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
     {

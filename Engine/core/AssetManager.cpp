@@ -75,3 +75,22 @@ bool AssetManager::LoadStaticMesh(const std::string& path, StaticMesh& outStatic
 
 	return true;
 }
+
+
+bool AssetManager::LoadTexture(const std::wstring& path, TextureID& outTextureID)
+{
+	if (m_TextureData.textureMap.find(path) != m_TextureData.textureMap.end())
+	{
+		return m_TextureData.textureMap[path];
+	}
+
+	auto cq = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
+	auto cl = cq->GetCommandList();
+
+	outTextureID = lastIndex;
+	m_TextureData.textureMap[path] = lastIndex;
+	cl->LoadTextureFromFile(m_TextureData.m_Textures[lastIndex++], path);
+
+	auto fenceVal = cq->ExecuteCommandList(cl);
+	cq->WaitForFenceValue(fenceVal);
+}

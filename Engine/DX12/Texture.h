@@ -40,6 +40,15 @@
 #include <mutex>
 #include <unordered_map>
 
+using TextureID = std::uint32_t;
+
+struct TextureWrapper
+{
+    TextureWrapper(const std::wstring& path);
+
+    TextureID textureID = UINT_MAX;
+};
+
 class Texture : public Resource
 {
 public:
