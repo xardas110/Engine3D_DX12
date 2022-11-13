@@ -109,7 +109,14 @@ void DeferredRenderer::Render(Window& window)
     auto commandList = commandQueue->GetCommandList();
 
     auto& pipelines = Application::Get().GetPipelineManager()->m_Pipelines;
-    auto& srvHeap = Application::Get().GetAssetManager()->m_SrvHeapData.heap;
+
+    auto assetManager = Application::Get().GetAssetManager();
+
+    auto& srvHeap = assetManager->m_SrvHeapData.heap;
+    auto& globalMeshInfo = assetManager->m_MeshManager.instanceData.meshInfo;
+    auto& globalMaterialInfo = assetManager->m_MaterialManager.instanceData.gpuInfo;
+    auto& meshes = assetManager->m_MeshManager.meshData.meshes;
+    auto& meshInstance = assetManager->m_MeshManager.instanceData;
 
     auto* camera = game->GetRenderCamera();
 
@@ -128,34 +135,40 @@ void DeferredRenderer::Render(Window& window)
     }
 
 
-/*
+
     commandList->SetRenderTarget(m_GBufferRenderTarget);
     commandList->SetViewport(m_GBufferRenderTarget.GetViewport());
     commandList->SetScissorRect(m_ScissorRect);
     commandList->SetPipelineState(pipelines[Pipeline::GeometryMesh].pipelineRef);
     commandList->SetGraphicsRootSignature(pipelines[Pipeline::GeometryMesh].rootSignature);  
     commandList->GetGraphicsCommandList()->SetGraphicsRootShaderResourceView(
-        GeometryMeshRootParam::AccelerationStructure, 
+        GlobalRootParam::AccelerationStructure, 
         m_Raytracer->m_RaytracingAccelerationStructure.topLevelAccelerationStructure->GetGPUVirtualAddress());
   
     commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.Get());
-    commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(GeometryMeshRootParam::Textures, srvHeap->GetGPUDescriptorHandleForHeapStart());
+    commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(GlobalRootParam::GlobalHeapData, srvHeap->GetGPUDescriptorHandleForHeapStart());
 
-    auto& view = game->registry.view<TransformComponent, MeshComponent, TextureComponent>();
-    for (auto [entity, transform, mesh, texture] : view.each())
+    commandList->SetGraphicsDynamicStructuredBuffer(GlobalRootParam::GlobalMeshInfo, globalMeshInfo);
+
+    commandList->SetGraphicsDynamicStructuredBuffer(GlobalRootParam::GlobalMaterialInfo, globalMaterialInfo);
+  
+
+    auto& view = game->registry.view<TransformComponent, MeshComponent>();
+    for (auto [entity, transform, mesh] : view.each())
     {
         
         objectCB.model = transform.GetTransform();
         objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
         objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
         objectCB.entId = (UINT)entity;
-        objectCB.textureId = texture.textureID;
+        objectCB.meshId = mesh.id;
+        
+        commandList->SetGraphicsDynamicConstantBuffer(GlobalRootParam::ObjectCB, objectCB);
 
-        commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, objectCB);
-        primitves[mesh].Draw(*commandList);
+        meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
         
     }
-*/
+
     /*
     auto& view = game->registry.view<TransformComponent, StaticMeshComponent>();
     for (auto [entity, transform, sm] : view.each())

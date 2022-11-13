@@ -12,10 +12,10 @@ MaterialManager::MaterialManager(const TextureManager& textureManager)
 {
 }
 
-bool MaterialManager::CreateMaterialInstance(const std::wstring& name, const MaterialInfo& textureIDs)
+MaterialInstanceID MaterialManager::CreateMaterialInstance(const std::wstring& name, const MaterialInfo& textureIDs)
 {
 	assert(instanceData.map.find(name) == instanceData.map.end() && "Material instance exists!");
-	if (instanceData.map.find(name) != instanceData.map.end()) return false;
+	if (instanceData.map.find(name) != instanceData.map.end()) return UINT_MAX;
 
 	const auto currentIndex = instanceData.cpuInfo.size();
 	instanceData.cpuInfo.emplace_back(textureIDs);
@@ -40,7 +40,7 @@ bool MaterialManager::CreateMaterialInstance(const std::wstring& name, const Mat
 
 	instanceData.map[name] = currentIndex;
 
-	return true;
+	return currentIndex;
 }
 
 bool MaterialManager::GetMaterialInstance(const std::wstring& name, MaterialInstance& outMaterialInstance)

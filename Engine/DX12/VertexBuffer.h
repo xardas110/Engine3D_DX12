@@ -37,7 +37,9 @@ class VertexBuffer : public Buffer
 {  
 public:
     VertexBuffer(const std::wstring& name = L"");
+
     VertexBuffer(VertexBuffer&&) = default;
+    VertexBuffer& operator=(VertexBuffer&&) = default;
 
     virtual ~VertexBuffer();
 

@@ -46,7 +46,7 @@ public:
     explicit Resource(Microsoft::WRL::ComPtr<ID3D12Resource> resource, const std::wstring& name = L"");
 
     Resource(const Resource& copy);
-    Resource(Resource&& copy);
+    Resource(Resource&& copy) noexcept;
 
     Resource& operator=( const Resource& other);
     Resource& operator=(Resource&& other) noexcept;

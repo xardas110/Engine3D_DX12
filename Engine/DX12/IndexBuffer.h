@@ -36,7 +36,10 @@ class IndexBuffer : public Buffer
 {
 public:
     IndexBuffer( const std::wstring& name = L"");
+
     IndexBuffer(IndexBuffer&&) = default;
+    IndexBuffer& operator=(IndexBuffer&&) = default;
+
     virtual ~IndexBuffer();
 
     // Inherited from Buffer

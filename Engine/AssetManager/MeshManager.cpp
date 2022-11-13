@@ -10,6 +10,7 @@ MeshManager::MeshManager(const SRVHeapData& srvHeapData)
 {
 	std::cout << "MeshManager running" << std::endl;
 	CreateCube();
+	CreateSphere();
 }
 
 void MeshManager::CreateCube(const std::wstring& cubeName)
@@ -18,11 +19,24 @@ void MeshManager::CreateCube(const std::wstring& cubeName)
 	auto commandList = commandQueue->GetCommandList();
 
 	MeshTuple tuple;
-	tuple.mesh;
+	tuple.mesh = std::move(*Mesh::CreateCube(*commandList));
 
-	//commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
+	commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
 
 	meshData.CreateMesh(cubeName, tuple, m_SrvHeapData);
+}
+
+void MeshManager::CreateSphere(const std::wstring& sphereName)
+{
+	auto commandQueue = Application::Get().GetCommandQueue();
+	auto commandList = commandQueue->GetCommandList();
+
+	MeshTuple tuple;
+	tuple.mesh = std::move(*Mesh::CreateSphere(*commandList));
+
+	commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
+
+	meshData.CreateMesh(sphereName, tuple, m_SrvHeapData);
 }
 
 bool MeshManager::CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID)

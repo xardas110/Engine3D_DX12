@@ -10,7 +10,6 @@
 TextureInstance::TextureInstance(const std::wstring& path)
 {
     auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
-
     textureManager.LoadTexture(path, *this);
 }
 
@@ -50,8 +49,8 @@ Texture::Texture(const Texture& copy)
     CreateViews();
 }
 
-Texture::Texture(Texture&& copy)
-    : Resource(copy)
+Texture::Texture(Texture&& copy) noexcept
+    : Resource(std::move(copy))
 {
     CreateViews();
 }
@@ -64,7 +63,7 @@ Texture& Texture::operator=(const Texture& other)
 
     return *this;
 }
-Texture& Texture::operator=(Texture&& other)
+Texture& Texture::operator=(Texture&& other) noexcept
 {
     Resource::operator=(other);
 

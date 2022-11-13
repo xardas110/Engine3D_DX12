@@ -78,10 +78,10 @@ public:
                       const std::wstring& name = L"");
 
     Texture(const Texture& copy);
-    Texture( Texture&& copy );
+    Texture( Texture&& copy ) noexcept;
 
     Texture& operator=(const Texture& other);
-    Texture& operator=(Texture&& other);
+    Texture& operator=(Texture&& other) noexcept;
 
     virtual ~Texture();
 
