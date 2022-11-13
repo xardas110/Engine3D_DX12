@@ -26,6 +26,9 @@ public:
 	}
 };
 
+using GlobalMeshInfo = std::vector<MeshInfo>;
+using GlobalMaterialInfo = std::vector<MaterialInfo>;
+
 class AssetManager
 {
 	friend class Application;
@@ -71,6 +74,7 @@ private:
 	private:
 		MeshMap meshMap;
 		Mesh meshes[512];
+		std::vector<MeshInstance> meshInstances; //gpu required data
 		std::uint32_t lastIndex = 0;
 	} m_MeshData;
 
@@ -83,6 +87,8 @@ private:
 		Material materials[256];
 		std::uint32_t lastIndex = 0;
 	} m_MaterialData;
+
+
 
 	SRVHeapData m_SrvHeapData;
 };

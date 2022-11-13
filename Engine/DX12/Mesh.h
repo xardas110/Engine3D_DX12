@@ -42,6 +42,7 @@
 #include <vector>
 #include <Material.h>
 #include <RayTracingHlslCompat.h>
+#include <Helpers.h>
 
  // Vertex struct holding position, normal vector, and texture mapping information.
 struct VertexPositionNormalTexture
@@ -120,18 +121,28 @@ namespace Primitives
 
 using MeshID = std::uint32_t;
 
-struct MeshInstance
+ALIGN16 struct MeshInstance
 {
     friend class DeferredRenderer;
     friend class AssetManager;
 
     //Path or name
     MeshInstance(const std::wstring& path);
+    MeshInstance(const std::wstring& modelName, const std::wstring& materialName);
     void SetMaterialInstance(const MaterialInstance& materialInstance);
 private:
     MeshInstance() = default;
-    MeshID meshID = UINT_MAX; //Id to internal mesh data in assetmanager
-    MeshInfo meshInfo{}; //GPU data for DXR and hybrid rendering(bindless resources)
+    //MeshID cpuMeshID = UINT_MAX;   //Id to internal mesh data in assetmanager   
+    //MeshID gpuMeshID = UINT_MAX; // DXR instanceID == gpuMeshID and the globalmeshinfo id matches
+    MeshInfo meshInfo{};        //GPU data for DXR and hybrid rendering(bindless resources)
+};
+
+struct MeshInstanceID
+{
+    MeshInstanceID(const std::wstring& path);
+
+private:
+    std::uint32_t id{ UINT_MAX }; //Id to assetmanager MeshInstanceArray
 };
 
 //Internal mesh

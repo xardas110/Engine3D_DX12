@@ -37,6 +37,9 @@
 #include <Windows.h> // For HRESULT
 #include <comdef.h> // For _com_error class (used to decode HR result codes).
 
+
+#define ALIGN16 __declspec(align(16))
+
  // From DXSampleHelper.h 
  // Source: https://github.com/Microsoft/DirectX-Graphics-Samples
 class HrException : public std::runtime_error

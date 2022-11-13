@@ -29,6 +29,15 @@ MeshInstance::MeshInstance(const std::wstring& path)
     assert(assetManager->GetMeshInstance(path, *this));
 }
 
+MeshInstance::MeshInstance(const std::wstring& modelName, const std::wstring& materialName)
+{
+    auto assetManager = Application::Get().GetAssetManager();
+    assert(assetManager->GetMeshInstance(modelName, *this));
+
+    MaterialInstance materialInstance(materialName);
+    SetMaterialInstance(materialInstance);
+}
+
 void MeshInstance::SetMaterialInstance(const MaterialInstance& materialInstance)
 {
     this->meshInfo.materialIndex = materialInstance.materialID;
