@@ -66,8 +66,7 @@ smm->LoadStaticMesh("Assets/Models/crytek-sponza-noflag/sponza.dae", temp);
         
 
         auto ent = CreateEntity("DxCube");
-        auto& sm = ent.AddComponent<MeshComponent>(L"AssetManagerDefaultCube");     
-        
+        auto& sm = ent.AddComponent<MeshComponent>(L"AssetManagerDefaultCube", L"DirectXMaterial");
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 10.f, 10.f, 10.f };
         trans.pos = { 0.f, -10.f, 0.f };

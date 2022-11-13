@@ -12,13 +12,17 @@ namespace Pipeline
 	};
 }
 
-namespace GeometryMeshRootParam
+namespace GlobalRootParam
 {
 	enum
 	{
-		MatCB,
-		MaterialCB,
-		Textures,
+		ObjectCB,
+
+		GlobalHeapData, //Heap contains textures, vertices and indices
+
+		GlobalMeshInfo, //Vertex, index offsets in the heap and Material index to global material info
+		GlobalMaterialInfo, // Contains texture offsets in the heap
+
 		AccelerationStructure,
 		Size
 	};

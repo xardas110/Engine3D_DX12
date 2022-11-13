@@ -5,17 +5,17 @@
 #define HLSL
 #include "RaytracingHlslCompat.h"
 
-ConstantBuffer<ObjectCB> g_ObjectCB : register(b0);
+ConstantBuffer<ObjectCB>        g_ObjectCB                  : register(b0);
 
-RaytracingAccelerationStructure Scene : register(t0);
+RaytracingAccelerationStructure Scene                       : register(t0);
 
-Texture2D GlobalTextureArray[] : register(t1, space0);
-StructuredBuffer<MeshVertex> GlobalMeshVertexData[] : register(t1, space1);
-Buffer<uint> GlobalIndexData[] : register(t1, space2);
-StructuredBuffer<MeshInfo> GlobalMeshInfo[] : register(t2);
-StructuredBuffer<MaterialInfo> GlobalMaterialInfo[] : register(t3);
+Texture2D                       GlobalTextureData[]         : register(t1, space0);
+StructuredBuffer<MeshVertex>    GlobalMeshVertexData[]      : register(t1, space1);
 
-SamplerState LinearRepeatSampler : register(s0);
+StructuredBuffer<MeshInfo>      GlobalMeshInfo              : register(t2);
+StructuredBuffer<MaterialInfo>  GlobalMaterialInfo          : register(t3);
+
+SamplerState                    LinearRepeatSampler         : register(s0);
 
 struct PixelShaderInput
 {
@@ -46,22 +46,36 @@ float4 main(PixelShaderInput IN) : SV_Target
     // In this simplest of scenarios, Proceed() only needs to be called once rather than a loop.
     // Based on the template specialization above, traversal completion is guaranteed.
     
-    query.Proceed();
-    float4 texColor = GlobalTextureArray[g_ObjectCB.textureId].Sample(LinearRepeatSampler, IN.TexCoord); //DiffuseTexture.Sample(LinearRepeatSampler, IN.TexCoord);
+   // query.Proceed();
+    
+    MeshInfo currentMesh = GlobalMeshInfo[g_ObjectCB.meshId];
+    MaterialInfo currentMaterial = GlobalMaterialInfo[currentMesh.materialIndex];
+    
+    float4 texColor = GlobalTextureData[currentMaterial.albedo].Sample(LinearRepeatSampler, IN.TexCoord); //DiffuseTexture.Sample(LinearRepeatSampler, IN.TexCoord);
       
+    /*
     if (query.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
     {
         int instanceIndex = query.CommittedInstanceID();
         int primitiveIndex = query.CommittedPrimitiveIndex();
         int geometryIndex = query.CommittedGeometryIndex();
         
-        StructuredBuffer<MeshVertex> meshVertex = GlobalMeshVertexData[3];
+        MeshInfo meshInfo = GlobalMeshInfo[instanceIndex];
+        MaterialInfo materialInfo = GlobalMaterialInfo[meshInfo.materialIndex];
         
+        float4 albedo = float4(0.f, 0.f, 1.f, 1.f);
         
-        texColor = float4(meshVertex[8].normal.x, meshVertex[8].normal.y, meshVertex[8].normal.z, 1.f); //GlobalTextureArray[instanceIndex].Sample(LinearRepeatSampler, IN.TexCoord);
+        if (materialInfo.albedo =! 0xffffffff)
+        {
+            albedo = GlobalTextureData[materialInfo.albedo].Sample(LinearRepeatSampler, IN.TexCoord);
+        }
+                
+        //StructuredBuffer<MeshVertex> meshVertex = GlobalMeshVertexData[3];
+                
+        texColor = float4(albedo); //GlobalTextureArray[instanceIndex].Sample(LinearRepeatSampler, IN.TexCoord);
 
     }
-
+*/
    // float4 texColor = DiffuseTexture.Sample(LinearRepeatSampler, IN.TexCoord);
     return texColor;
 }

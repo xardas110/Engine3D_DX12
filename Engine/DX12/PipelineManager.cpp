@@ -57,16 +57,17 @@ void PipelineManager::CreateGeometryMeshPSO()
     srvRanges[1].OffsetInDescriptorsFromTableStart = 0;
     srvRanges[1].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
-    CD3DX12_ROOT_PARAMETER1 rootParameters[GeometryMeshRootParam::Size];
-    rootParameters[GeometryMeshRootParam::MatCB].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_ALL);
-    rootParameters[GeometryMeshRootParam::MaterialCB].InitAsConstantBufferView(0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_ALL);
-    rootParameters[GeometryMeshRootParam::Textures].InitAsDescriptorTable(2, srvRanges);
-    rootParameters[GeometryMeshRootParam::AccelerationStructure].InitAsShaderResourceView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
+    CD3DX12_ROOT_PARAMETER1 rootParameters[GlobalRootParam::Size];
+    rootParameters[GlobalRootParam::ObjectCB].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_ALL);
+    rootParameters[GlobalRootParam::AccelerationStructure].InitAsShaderResourceView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
+    rootParameters[GlobalRootParam::GlobalHeapData].InitAsDescriptorTable(2, srvRanges);
+    rootParameters[GlobalRootParam::GlobalMeshInfo].InitAsShaderResourceView(2, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
+    rootParameters[GlobalRootParam::GlobalMaterialInfo].InitAsShaderResourceView(3, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
 
     CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
 
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
-    rootSignatureDesc.Init_1_1(GeometryMeshRootParam::Size,
+    rootSignatureDesc.Init_1_1(GlobalRootParam::Size,
         rootParameters, 1, &linearRepeatSampler,
         rootSignatureFlags);
 
