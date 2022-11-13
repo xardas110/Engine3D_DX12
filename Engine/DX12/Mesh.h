@@ -44,6 +44,9 @@
 #include <RayTracingHlslCompat.h>
 #include <Helpers.h>
 
+using MeshID = UINT;
+using MeshInstanceID = UINT;
+
  // Vertex struct holding position, normal vector, and texture mapping information.
 struct VertexPositionNormalTexture
 {
@@ -119,9 +122,7 @@ namespace Primitives
     };
 }
 
-using MeshID = std::uint32_t;
-
-ALIGN16 struct MeshInstance
+struct MeshInstance
 {
     friend class DeferredRenderer;
     friend class AssetManager;
@@ -132,15 +133,14 @@ ALIGN16 struct MeshInstance
     void SetMaterialInstance(const MaterialInstance& materialInstance);
 private:
     MeshInstance() = default;
-    //MeshID cpuMeshID = UINT_MAX;   //Id to internal mesh data in assetmanager   
-    //MeshID gpuMeshID = UINT_MAX; // DXR instanceID == gpuMeshID and the globalmeshinfo id matches
-    MeshInfo meshInfo{};        //GPU data for DXR and hybrid rendering(bindless resources)
+    MeshInstanceID id;
 };
 
 //Internal mesh
 class Mesh
 {
     friend class DeferredRenderer;
+    friend class MeshManager;
     friend class Raytracing;
 public:
 
