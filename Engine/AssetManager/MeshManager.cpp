@@ -2,10 +2,27 @@
 #include <MeshManager.h>
 #include <AssetManager.h>
 #include <Application.h>
+#include <CommandList.h>
+#include <CommandQueue.h>
 
 MeshManager::MeshManager(const SRVHeapData& srvHeapData)
 	:m_SrvHeapData(srvHeapData)
 {
+	std::cout << "MeshManager running" << std::endl;
+	CreateCube();
+}
+
+void MeshManager::CreateCube(const std::wstring& cubeName)
+{
+	auto commandQueue = Application::Get().GetCommandQueue();
+	auto commandList = commandQueue->GetCommandList();
+
+	MeshTuple tuple;
+	tuple.mesh;
+
+	//commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
+
+	meshData.CreateMesh(cubeName, tuple, m_SrvHeapData);
 }
 
 bool MeshManager::CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID)
@@ -44,15 +61,15 @@ void MeshManager::MeshData::DecrementRef(const MeshID meshID)
 	refCounter[meshID]--;
 }
 
-void MeshManager::MeshData::AddMesh(const std::wstring& name, MeshTuple&& tuple)
+void MeshManager::MeshData::AddMesh(const std::wstring& name, MeshTuple& tuple)
 {
 	const auto currentIndex = meshes.size();
 	map[name] = currentIndex;
-	meshes.emplace_back(std::move(tuple));
+	meshes.push_back(std::move(tuple));
 	refCounter.emplace_back(UINT(1U));
 }
 
-void MeshManager::MeshData::CreateMesh(const std::wstring& name, MeshTuple&& tuple, SRVHeapData& heap)
+void MeshManager::MeshData::CreateMesh(const std::wstring& name, MeshTuple& tuple, const SRVHeapData& heap)
 {
 	auto device = Application::Get().GetDevice();
 	auto& mesh = tuple.mesh;
@@ -89,7 +106,7 @@ void MeshManager::MeshData::CreateMesh(const std::wstring& name, MeshTuple&& tup
 		device->CreateShaderResourceView(mesh.m_IndexBuffer.GetD3D12Resource().Get(), &desc, cpuHandle);
 	}
 
-	AddMesh(name, std::move(tuple));
+	AddMesh(name, tuple);
 }
 
 MeshInstanceID MeshManager::InstanceData::CreateInstance(MeshID meshID, const MeshInfo& meshInfo)

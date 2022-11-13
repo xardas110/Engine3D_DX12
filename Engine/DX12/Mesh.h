@@ -144,6 +144,7 @@ class Mesh
 public:
 
     Mesh(Mesh&& move) = default;
+    Mesh& operator=(Mesh&&) = default;
 
     void Draw(CommandList& commandList);
 

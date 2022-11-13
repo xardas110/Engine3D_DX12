@@ -9,6 +9,7 @@
 SRVHeapData::SRVHeapData()
 	: increment(Application::Get().GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV))
 {
+	std::cout << "srv heap running " << std::endl;
 	auto device = Application::Get().GetDevice();
 	D3D12_DESCRIPTOR_HEAP_DESC desc{};
 	desc.NumDescriptors = 1024;
