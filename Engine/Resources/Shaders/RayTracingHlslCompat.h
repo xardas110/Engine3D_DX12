@@ -43,14 +43,14 @@ struct Vertex
 
 struct MaterialInfo
 {
-    UINT ao =           0xffffffff;
-    UINT albedo =       0xffffffff;
-    UINT normal =       0xffffffff;
-    UINT roughness =    0xffffffff;
-    UINT metallic =     0xffffffff;
-    UINT opacity =      0xffffffff;
-    UINT emissive =     0xffffffff;
-    UINT lightmap =     0xffffffff;
+    UINT ao;
+    UINT albedo;
+    UINT normal;
+    UINT roughness;
+    UINT metallic;
+    UINT opacity;
+    UINT emissive;
+    UINT lightmap;
 };
 
 struct MeshInfo

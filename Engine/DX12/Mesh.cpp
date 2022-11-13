@@ -429,6 +429,6 @@ void Mesh::Initialize(CommandList& commandList, const VertexCollection32& vertic
 
 StaticMesh::StaticMesh(const std::string& path)
 {
-    auto* smm = Application::Get().GetAssetManager();
-    smm->LoadStaticMesh(path, *this);
+   // auto* smm = Application::Get().GetAssetManager();
+    //smm->LoadStaticMesh(path, *this);
 }
