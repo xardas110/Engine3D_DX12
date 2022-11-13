@@ -61,8 +61,8 @@ void PipelineManager::CreateGeometryMeshPSO()
     rootParameters[GlobalRootParam::ObjectCB].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_ALL);
     rootParameters[GlobalRootParam::AccelerationStructure].InitAsShaderResourceView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
     rootParameters[GlobalRootParam::GlobalHeapData].InitAsDescriptorTable(2, srvRanges);
-    rootParameters[GlobalRootParam::GlobalMeshInfo].InitAsShaderResourceView(2, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
-    rootParameters[GlobalRootParam::GlobalMaterialInfo].InitAsShaderResourceView(3, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
+    rootParameters[GlobalRootParam::GlobalMeshInfo].InitAsShaderResourceView(2, 2, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
+    rootParameters[GlobalRootParam::GlobalMaterialInfo].InitAsShaderResourceView(3, 3, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
 
     CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
 

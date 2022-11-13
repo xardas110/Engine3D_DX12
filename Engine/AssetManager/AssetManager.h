@@ -31,6 +31,7 @@ public:
 		outCurrentHandleIndex = lastIndex;
 		D3D12_CPU_DESCRIPTOR_HANDLE handle = heap->GetCPUDescriptorHandleForHeapStart();
 		handle.ptr += lastIndex++ * increment;
+		return handle;
 	}
 };
 

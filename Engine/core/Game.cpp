@@ -57,6 +57,7 @@ smm->LoadStaticMesh("Assets/Models/crytek-sponza-noflag/sponza.dae", temp);
     auto& sm = ent.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.dae");
     auto& trans = ent.GetComponent<TransformComponent>().scale = { 0.01f, 0.01f, 0.01f };
     */
+    /*
     {
         MaterialInfo materialInfo;
         TextureInstance textureInstance(L"Assets/Textures/Directx9.png");      
@@ -71,6 +72,7 @@ smm->LoadStaticMesh("Assets/Models/crytek-sponza-noflag/sponza.dae", temp);
         trans.scale = { 10.f, 10.f, 10.f };
         trans.pos = { 0.f, -10.f, 0.f };
     }
+    */
     /*
     {
         auto ent = CreateEntity("monaCube");

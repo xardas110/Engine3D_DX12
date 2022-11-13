@@ -12,8 +12,8 @@ RaytracingAccelerationStructure Scene                       : register(t0);
 Texture2D                       GlobalTextureData[]         : register(t1, space0);
 StructuredBuffer<MeshVertex>    GlobalMeshVertexData[]      : register(t1, space1);
 
-StructuredBuffer<MeshInfo>      GlobalMeshInfo              : register(t2);
-StructuredBuffer<MaterialInfo>  GlobalMaterialInfo          : register(t3);
+StructuredBuffer<MeshInfo>      GlobalMeshInfo              : register(t2, space2);
+StructuredBuffer<MaterialInfo>  GlobalMaterialInfo          : register(t3, space3);
 
 SamplerState                    LinearRepeatSampler         : register(s0);
 

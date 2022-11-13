@@ -143,6 +143,8 @@ class Mesh
     friend class Raytracing;
 public:
 
+    Mesh(Mesh&& move) = default;
+
     void Draw(CommandList& commandList);
 
     static std::unique_ptr<Mesh> CreateCube(CommandList& commandList, float size = 1, bool rhcoords = false);
