@@ -2,6 +2,9 @@
 #include "Mesh.h"
 #include <Texture.h>
 #include <Material.h>
+#include <entt/entt.hpp>
+
+using SRVHeapID = std::uint32_t;
 
 //Every Textures and Meshes will be in the same heap
 //Due to global shader access for inline DXR
@@ -57,26 +60,60 @@ private:
 	//Max number of descriptors in the heap is set to 1024
 	//Make sure to increase it if more than 512 textures are used
 	//The value is hardcoded during testing phase
-	struct TextureData
+	struct TextureManager
 	{
 		friend class AssetManager;
 		friend class DeferredRenderer;	
-	private:
-		TextureMap textureMap;
-		Texture textures[512];
-		std::uint32_t lastIndex = 0;
-	} m_TextureData;
 
-	struct MeshData
+		using TextureID = UINT;
+	private:
+		
+		struct TextureTuple
+		{
+			Texture texture;
+			SRVHeapID heapID{UINT_MAX};
+		};
+
+		struct TextureData
+		{
+			std::map<std::wstring, TextureID> textureMap;
+			std::vector<TextureTuple> textures;
+		} textureData;
+
+	} m_TextureManager;
+
+	struct MeshManager
 	{
 		friend class AssetManager;
 		friend class DeferredRenderer;
+
+		using MeshID = UINT;
+		using InstanceID = UINT;
+
 	private:
-		MeshMap meshMap;
-		Mesh meshes[512];
-		std::vector<MeshInstance> meshInstances; //gpu required data
-		std::uint32_t lastIndex = 0;
-	} m_MeshData;
+		//Per component data
+		struct InstanceData
+		{
+			std::vector<MeshID> meshIds;
+			std::vector<MeshInfo> meshInfo; //flags and material can change per instance
+		} instanceData; //instance id
+
+		struct MeshTuple
+		{
+			Mesh mesh;
+			MeshInfo meshInfo; // default mesh info
+			MaterialID materialId; // default material id, (i.e Assimp loading can populate this)
+		};
+
+		struct MeshData
+		{
+			const UINT globalFlags = UINT_MAX;
+			std::map<std::wstring, MeshID> meshMap;
+			std::vector<MeshTuple> meshes;
+		}meshData;
+
+		
+	} m_MeshManager;
 
 	struct MaterialData
 	{

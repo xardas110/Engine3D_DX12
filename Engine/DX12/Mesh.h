@@ -137,14 +137,6 @@ private:
     MeshInfo meshInfo{};        //GPU data for DXR and hybrid rendering(bindless resources)
 };
 
-struct MeshInstanceID
-{
-    MeshInstanceID(const std::wstring& path);
-
-private:
-    std::uint32_t id{ UINT_MAX }; //Id to assetmanager MeshInstanceArray
-};
-
 //Internal mesh
 class Mesh
 {
@@ -175,8 +167,6 @@ private:
     
     void Initialize(CommandList& commandList, VertexCollection& vertices, IndexCollection& indices, bool rhcoords);
     void Initialize(CommandList& commandList, const VertexCollection32& vertices, const IndexCollection32& indices, bool rhcoords);
-
-    MaterialInfo materialInfo; //ID to textures inside assetmanager
 
     VertexBuffer m_VertexBuffer;
     IndexBuffer m_IndexBuffer;
