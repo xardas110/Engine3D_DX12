@@ -6,13 +6,29 @@
 MeshManager::MeshManager(const SRVHeapData& srvHeapData)
 	:m_SrvHeapData(srvHeapData)
 {
+}
 
+bool MeshManager::CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID)
+{
+	assert(meshData.map.find(path) != meshData.map.end());
+
+	if (meshData.map.find(path) != meshData.map.end())
+	{
+		const auto meshID = meshData.GetMeshID(path);
+		const auto& meshInfo = meshData.meshes[meshID].meshInfo;
+		
+		outMeshInstanceID.id = instanceData.CreateInstance(meshID, meshInfo);
+
+		return true;
+	}
+
+	return false;
 }
 
 MeshID MeshManager::MeshData::GetMeshID(const std::wstring& name)
 {
 	assert(map.find(name) != map.end() && "AssetManager::MeshManager::MeshData::GetMeshID name or path not found!");
-	auto id = map[name];
+	const auto id = map[name];
 	IncrementRef(id);
 	return id;
 }
@@ -24,13 +40,13 @@ void MeshManager::MeshData::IncrementRef(const MeshID meshID)
 
 void MeshManager::MeshData::DecrementRef(const MeshID meshID)
 {
-	assert(refCounter[meshID] > 0 && "AssetManager::MeshManager::MeshData::DeReferenceMesh unable to de-refernce a mesh with no references");
+	assert(refCounter[meshID] > 0U && "AssetManager::MeshManager::MeshData::DeReferenceMesh unable to de-refernce a mesh with no references");
 	refCounter[meshID]--;
 }
 
 void MeshManager::MeshData::AddMesh(const std::wstring& name, MeshTuple&& tuple)
 {
-	auto currentIndex = meshes.size();
+	const auto currentIndex = meshes.size();
 	map[name] = currentIndex;
 	meshes.emplace_back(std::move(tuple));
 	refCounter.emplace_back(UINT(1U));
@@ -74,4 +90,12 @@ void MeshManager::MeshData::CreateMesh(const std::wstring& name, MeshTuple&& tup
 	}
 
 	AddMesh(name, std::move(tuple));
+}
+
+MeshInstanceID MeshManager::InstanceData::CreateInstance(MeshID meshID, const MeshInfo& meshInfo)
+{
+	const auto currentIndex = meshIds.size();
+	meshIds.emplace_back(meshID);
+	this->meshInfo.emplace_back(meshInfo);
+	return (MeshInstanceID)currentIndex;
 }

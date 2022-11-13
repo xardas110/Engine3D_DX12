@@ -53,7 +53,7 @@ set( HEADER_FILES
     "core/World.h"
     "core/Entity.h" 
     "core/AssimpLoader.h"
-    "core/Material.h"
+    "DX12/Material.h"
     "DX12/Raytracing/Raytracing.h"
     "AssetManager/MeshManager.h"
     "AssetManager/TextureManager.h"
@@ -103,6 +103,7 @@ set( SOURCE_FILES
     "AssetManager/MeshManager.cpp"
     "AssetManager/TextureManager.cpp"
     "AssetManager/MaterialManager.cpp"
+    "DX12/Material.cpp"
 )
 
 set( IMGUI_HEADERS

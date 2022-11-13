@@ -37,6 +37,9 @@ public:
 class AssetManager
 {
 	friend class Application;
+	friend class TextureInstance;
+	friend class MaterialInstance;
+	friend class MeshInstance;
 	friend class DeferredRenderer;
 	friend class std::default_delete<AssetManager>;
 

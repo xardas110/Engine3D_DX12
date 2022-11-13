@@ -109,7 +109,6 @@ void DeferredRenderer::Render(Window& window)
     auto commandList = commandQueue->GetCommandList();
 
     auto& pipelines = Application::Get().GetPipelineManager()->m_Pipelines;
-    auto& meshes = Application::Get().GetAssetManager()->m_MeshData.meshes;
     auto& srvHeap = Application::Get().GetAssetManager()->m_SrvHeapData.heap;
 
     auto* camera = game->GetRenderCamera();
@@ -128,6 +127,8 @@ void DeferredRenderer::Render(Window& window)
         commandList->ClearDepthStencilTexture(m_GBufferRenderTarget.GetTexture(AttachmentPoint::DepthStencil), D3D12_CLEAR_FLAG_DEPTH);
     }
 
+
+/*
     commandList->SetRenderTarget(m_GBufferRenderTarget);
     commandList->SetViewport(m_GBufferRenderTarget.GetViewport());
     commandList->SetScissorRect(m_ScissorRect);
@@ -143,7 +144,7 @@ void DeferredRenderer::Render(Window& window)
     auto& view = game->registry.view<TransformComponent, MeshComponent, TextureComponent>();
     for (auto [entity, transform, mesh, texture] : view.each())
     {
-        /*
+        
         objectCB.model = transform.GetTransform();
         objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
         objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
@@ -152,9 +153,9 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->SetGraphicsDynamicConstantBuffer(GeometryMeshRootParam::MatCB, objectCB);
         primitves[mesh].Draw(*commandList);
-        */
+        
     }
-
+*/
     /*
     auto& view = game->registry.view<TransformComponent, StaticMeshComponent>();
     for (auto [entity, transform, sm] : view.each())

@@ -6,7 +6,7 @@
 #include <AssetManager.h>
 
 
-TextureManager::TextureManager(SRVHeapData& srvHeapData)
+TextureManager::TextureManager(const SRVHeapData& srvHeapData)
 	:m_SrvHeapData(srvHeapData)
 {
 

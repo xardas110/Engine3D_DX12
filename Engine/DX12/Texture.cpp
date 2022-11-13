@@ -9,8 +9,9 @@
 
 TextureInstance::TextureInstance(const std::wstring& path)
 {
-    auto assetManager = Application::Get().GetAssetManager();
-    assetManager->LoadTexture(path, *this);
+    auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
+
+    textureManager.LoadTexture(path, *this);
 }
 
 TextureInstance::~TextureInstance()

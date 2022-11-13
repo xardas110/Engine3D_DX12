@@ -7,16 +7,20 @@ struct MeshManager
 {
 	friend class AssetManager;
 	friend class DeferredRenderer;
-private:
 
+	bool CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID);
+
+private:
 	MeshManager(const SRVHeapData& srvHeapData);
 
 	//Per component data
 	struct InstanceData
 	{
-		friend class AssetManager;
+		friend class MeshManager;
 		friend class DeferredRenderer;
 	private:
+
+		MeshInstanceID CreateInstance(MeshID meshID, const MeshInfo& meshInfo);
 
 		std::vector<MeshID> meshIds;
 		std::vector<MeshInfo> meshInfo; //flags and material can change per instance
@@ -26,14 +30,14 @@ private:
 	{
 		Mesh mesh;
 		MeshInfo meshInfo; // default mesh info
-		MaterialID materialId; // default material id, (i.e Assimp loading can populate this)
 	};
 
 	struct MeshData
 	{
-		friend class AssetManager;
+		friend class MeshManager;
 		friend class DeferredRenderer;
 	private:
+
 		//Warning: Using this function will increment ref counter
 		MeshID GetMeshID(const std::wstring& name);
 

@@ -15,7 +15,7 @@ struct TextureManager
 
 private:
 
-	TextureManager(SRVHeapData& srvHeapData);
+	TextureManager(const SRVHeapData& srvHeapData);
 
 	struct TextureTuple
 	{
@@ -36,5 +36,5 @@ private:
 	void IncrementRef(TextureID id) const;
 	void DecrementRef(TextureID id) const;
 
-	SRVHeapData& m_SrvHeapData;
+	const SRVHeapData& m_SrvHeapData;
 };
