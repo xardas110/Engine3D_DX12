@@ -1,0 +1,77 @@
+#include <EnginePCH.h>
+#include <MeshManager.h>
+#include <AssetManager.h>
+#include <Application.h>
+
+MeshManager::MeshManager(const SRVHeapData& srvHeapData)
+	:m_SrvHeapData(srvHeapData)
+{
+
+}
+
+MeshID MeshManager::MeshData::GetMeshID(const std::wstring& name)
+{
+	assert(map.find(name) != map.end() && "AssetManager::MeshManager::MeshData::GetMeshID name or path not found!");
+	auto id = map[name];
+	IncrementRef(id);
+	return id;
+}
+
+void MeshManager::MeshData::IncrementRef(const MeshID meshID)
+{
+	refCounter[meshID]++;
+}
+
+void MeshManager::MeshData::DecrementRef(const MeshID meshID)
+{
+	assert(refCounter[meshID] > 0 && "AssetManager::MeshManager::MeshData::DeReferenceMesh unable to de-refernce a mesh with no references");
+	refCounter[meshID]--;
+}
+
+void MeshManager::MeshData::AddMesh(const std::wstring& name, MeshTuple&& tuple)
+{
+	auto currentIndex = meshes.size();
+	map[name] = currentIndex;
+	meshes.emplace_back(std::move(tuple));
+	refCounter.emplace_back(UINT(1U));
+}
+
+void MeshManager::MeshData::CreateMesh(const std::wstring& name, MeshTuple&& tuple, SRVHeapData& heap)
+{
+	auto device = Application::Get().GetDevice();
+	auto& mesh = tuple.mesh;
+	auto& meshInfo = tuple.meshInfo;
+
+	{
+		auto cpuHandle = heap.IncrementHandle(meshInfo.vertexOffset);
+		D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
+		D3D12_BUFFER_SRV bufferSRV;
+		bufferSRV.FirstElement = 0;
+		bufferSRV.NumElements = mesh.m_VertexBuffer.GetNumVertices();
+		bufferSRV.StructureByteStride = sizeof(VertexPositionNormalTexture);
+		bufferSRV.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+
+		desc.Buffer = bufferSRV;
+		desc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+		desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+		device->CreateShaderResourceView(mesh.m_VertexBuffer.GetD3D12Resource().Get(), &desc, cpuHandle);
+	}
+	{
+		auto cpuHandle = heap.IncrementHandle(meshInfo.indexOffset);
+		D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
+		D3D12_BUFFER_SRV bufferSRV;
+		bufferSRV.FirstElement = 0;
+		bufferSRV.NumElements = mesh.m_IndexBuffer.GetNumIndicies();
+		bufferSRV.StructureByteStride = sizeof(Index);
+		bufferSRV.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+
+		desc.Buffer = bufferSRV;
+		desc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+		desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+		device->CreateShaderResourceView(mesh.m_IndexBuffer.GetD3D12Resource().Get(), &desc, cpuHandle);
+	}
+
+	AddMesh(name, std::move(tuple));
+}

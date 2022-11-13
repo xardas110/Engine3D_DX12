@@ -2,23 +2,14 @@
 #include <Texture.h>
 
 using MaterialID = std::uint32_t;
+using MaterialInstanceID = UINT;
 
 struct MaterialInstance
 {
-	friend class AssetManager;
-	friend class MeshInstance;
+	friend class MaterialManager;
 	friend class DeferredRenderer;
 
-	MaterialInstance(const std::wstring& name);
 private:
 	MaterialID materialID{};
 };
 
-class Material
-{
-	friend class AssetManager;
-	friend class DeferredRenderer;
-
-private:
-	MaterialInfo textureIDs;
-};

@@ -43,7 +43,7 @@ set( HEADER_FILES
     "DX12/d3dx12.h"
     "core/Camera.h"
     "DX12/DeferredRenderer.h"
-    "core/AssetManager.h"
+    "AssetManager/AssetManager.h"
     "DX12/PipelineManager.h"
     "core/Components.h"
     "core/Transform.h"
@@ -55,6 +55,9 @@ set( HEADER_FILES
     "core/AssimpLoader.h"
     "core/Material.h"
     "DX12/Raytracing/Raytracing.h"
+    "AssetManager/MeshManager.h"
+    "AssetManager/TextureManager.h"
+    "AssetManager/MaterialManager.h"
 )
 
 set( SOURCE_FILES
@@ -87,7 +90,7 @@ set( SOURCE_FILES
     "core/Window.cpp"
     "core/Camera.cpp"
     "DX12/DeferredRenderer.cpp"
-    "core/AssetManager.cpp"
+    "AssetManager/AssetManager.cpp"
     "DX12/PipelineManager.cpp"
     "Physics/PhysicsSystem.cpp"
     "core/GameMode.cpp"
@@ -97,6 +100,9 @@ set( SOURCE_FILES
     "core/Entity.cpp" 
     "core/AssimpLoader.cpp"
     "DX12/Raytracing/Raytracing.cpp"
+    "AssetManager/MeshManager.cpp"
+    "AssetManager/TextureManager.cpp"
+    "AssetManager/MaterialManager.cpp"
 )
 
 set( IMGUI_HEADERS
@@ -155,6 +161,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     Public Physics
     PUBLIC Libs/physx/include
     PUBLIC DX12/Raytracing
+    PUBLIC AssetManager
     PUBLIC Resources/Shaders
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
@@ -178,7 +185,7 @@ add_library( Engine STATIC
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
     ${IMGUI_HEADERS} ${IMGUI_SOURCE}
-)
+ )
 
 target_link_libraries( Engine
 	${TARGET_LINK_LIBS}   

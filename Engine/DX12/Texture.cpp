@@ -13,6 +13,11 @@ TextureInstance::TextureInstance(const std::wstring& path)
     assetManager->LoadTexture(path, *this);
 }
 
+TextureInstance::~TextureInstance()
+{
+
+}
+
 Texture::Texture( TextureUsage textureUsage, const std::wstring& name )
     : Resource(name)
     , m_TextureUsage(textureUsage)
