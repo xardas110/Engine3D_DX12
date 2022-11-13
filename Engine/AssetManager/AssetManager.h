@@ -53,6 +53,7 @@ private:
 
 	static std::unique_ptr<AssetManager> CreateInstance();
 
+public:
 	//Do not change order! SRVHeapData must be created first -> texturemanager
 	SRVHeapData m_SrvHeapData;
 	TextureManager m_TextureManager;

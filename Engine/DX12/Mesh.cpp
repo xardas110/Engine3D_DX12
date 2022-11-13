@@ -29,6 +29,12 @@ MeshInstance::MeshInstance(const std::wstring& path)
     meshManager.CreateMeshInstance(path, *this);
 }
 
+void MeshInstance::SetMaterialInstance(const MaterialInstance& matInstance)
+{
+    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
+    meshManager.instanceData.meshInfo[id].materialIndex = matInstance.GetMaterialInstanceID();
+}
+
 Mesh::Mesh()
     : m_IndexCount(0)
 {}

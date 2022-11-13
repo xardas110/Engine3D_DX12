@@ -6,6 +6,7 @@ class SRVHeapData;
 struct MeshManager
 {
 	friend class AssetManager;
+	friend class MeshInstance;
 	friend class DeferredRenderer;
 
 	bool CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID);
@@ -14,11 +15,13 @@ private:
 	MeshManager(const SRVHeapData& srvHeapData);
 
 	void CreateCube(const std::wstring& cubeName = L"DefaultCube");
+	void CreateSphere(const std::wstring& sphereName = L"DefaultSphere");
 
 	//Per component data
 	struct InstanceData
 	{
 		friend class MeshManager;
+		friend class MeshInstance;
 		friend class DeferredRenderer;
 	private:
 

@@ -129,10 +129,10 @@ struct MeshInstance
 
     //Path or name
     MeshInstance(const std::wstring& path);
-
+    void SetMaterialInstance(const MaterialInstance& matInstance);
 private:
     MeshInstance() = default;
-    MeshInstanceID id;
+    MeshInstanceID id{UINT_MAX};
 };
 
 //Internal mesh
