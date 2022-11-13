@@ -53,9 +53,9 @@ private:
 
 	static std::unique_ptr<AssetManager> CreateInstance();
 
-	MeshManager m_MeshManager;
-	MaterialManager m_MaterialManager;
-	TextureManager m_TextureManager;
-	
+	//Do not change order! SRVHeapData must be created first -> texturemanager
 	SRVHeapData m_SrvHeapData;
+	TextureManager m_TextureManager;
+	MaterialManager m_MaterialManager;
+	MeshManager m_MeshManager;	
 };

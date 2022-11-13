@@ -34,9 +34,11 @@
 #include "Buffer.h"
 
 class VertexBuffer : public Buffer
-{
+{  
 public:
     VertexBuffer(const std::wstring& name = L"");
+    VertexBuffer(VertexBuffer&&) = default;
+
     virtual ~VertexBuffer();
 
     // Inherited from Buffer

@@ -13,6 +13,8 @@ struct MeshManager
 private:
 	MeshManager(const SRVHeapData& srvHeapData);
 
+	void CreateCube(const std::wstring& cubeName = L"DefaultCube");
+
 	//Per component data
 	struct InstanceData
 	{
@@ -44,9 +46,9 @@ private:
 		void IncrementRef(const MeshID meshID);
 		void DecrementRef(const MeshID meshID);
 
-		void AddMesh(const std::wstring& name, MeshTuple&& tuple);
+		void AddMesh(const std::wstring& name, MeshTuple& tuple);
 
-		void CreateMesh(const std::wstring& name, MeshTuple&& tuple, SRVHeapData& heap);
+		void CreateMesh(const std::wstring& name, MeshTuple& tuple, const SRVHeapData& heap);
 
 		std::map<std::wstring, MeshID> map;
 		std::vector<MeshTuple> meshes;
