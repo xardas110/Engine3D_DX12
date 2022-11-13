@@ -125,12 +125,11 @@ namespace Primitives
 struct MeshInstance
 {
     friend class DeferredRenderer;
-    friend class AssetManager;
+    friend class MeshManager;
 
     //Path or name
     MeshInstance(const std::wstring& path);
-    MeshInstance(const std::wstring& modelName, const std::wstring& materialName);
-    void SetMaterialInstance(const MaterialInstance& materialInstance);
+
 private:
     MeshInstance() = default;
     MeshInstanceID id;
