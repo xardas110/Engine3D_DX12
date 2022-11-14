@@ -37,6 +37,7 @@ float4 main(PixelShaderInput IN) : SV_Target
     ray.TMin = 1e-5f;
     ray.TMax = 1e10f;
     ray.Origin = IN.PositionWS.xyz;
+    ray.Origin.y += 0.1f;
     ray.Direction = float3(0, 1, 0);
     query.TraceRayInline(Scene, ray_flags, ray_instance_mask, ray);
     
@@ -46,36 +47,36 @@ float4 main(PixelShaderInput IN) : SV_Target
     // In this simplest of scenarios, Proceed() only needs to be called once rather than a loop.
     // Based on the template specialization above, traversal completion is guaranteed.
     
-   // query.Proceed();
+    query.Proceed();
     
     MeshInfo currentMesh = GlobalMeshInfo[g_ObjectCB.meshId];
     MaterialInfo currentMaterial = GlobalMaterialInfo[currentMesh.materialIndex];
     
     float4 texColor = GlobalTextureData[currentMaterial.albedo].Sample(LinearRepeatSampler, IN.TexCoord); //DiffuseTexture.Sample(LinearRepeatSampler, IN.TexCoord);
       
-    /*
     if (query.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
     {
         int instanceIndex = query.CommittedInstanceID();
         int primitiveIndex = query.CommittedPrimitiveIndex();
         int geometryIndex = query.CommittedGeometryIndex();
         
-        MeshInfo meshInfo = GlobalMeshInfo[instanceIndex];
-        MaterialInfo materialInfo = GlobalMaterialInfo[meshInfo.materialIndex];
+       // MeshInfo meshInfo = GlobalMeshInfo[instanceIndex];
+       // MaterialInfo materialInfo = GlobalMaterialInfo[meshInfo.materialIndex];
         
-        float4 albedo = float4(0.f, 0.f, 1.f, 1.f);
-        
+        float4 albedo = float4(0.f, 0.f, 0.f, 1.f);
+        /*
         if (materialInfo.albedo =! 0xffffffff)
         {
             albedo = GlobalTextureData[materialInfo.albedo].Sample(LinearRepeatSampler, IN.TexCoord);
         }
+*/
                 
         //StructuredBuffer<MeshVertex> meshVertex = GlobalMeshVertexData[3];
                 
-        texColor = float4(albedo); //GlobalTextureArray[instanceIndex].Sample(LinearRepeatSampler, IN.TexCoord);
+        texColor = albedo; //GlobalTextureArray[instanceIndex].Sample(LinearRepeatSampler, IN.TexCoord);
 
     }
-*/
+
    // float4 texColor = DiffuseTexture.Sample(LinearRepeatSampler, IN.TexCoord);
     return texColor;
 }
