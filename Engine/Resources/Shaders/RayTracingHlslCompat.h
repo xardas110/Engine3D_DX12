@@ -59,6 +59,7 @@ struct MeshInfo
     UINT indexOffset;
     UINT materialIndex; //Cpu material index == Gpu material index
     UINT flags;
+    XMVECTOR objRot;
 };
 
 struct ObjectCB
