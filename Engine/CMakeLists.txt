@@ -7,6 +7,8 @@ add_compile_definitions(ImTextureID=ImU64)
 set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(Libs/assimp)
 
+set(BUILD_SHARED_LIBS ON)
+
 set( HEADER_FILES 
     "core/EnginePCH.h"
     "DX12/Application.h"
@@ -165,6 +167,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC AssetManager
     PUBLIC Resources/Shaders
     PUBLIC external/eventcpp
+    PUBLIC Libs/WinPixEventRuntime/include
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
 
@@ -174,6 +177,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
     PUBLIC dxguid.lib
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Libs/WinPixEventRuntime/Lib/WinPixEventRuntime.lib
  )
 
 add_library( Engine STATIC
@@ -310,4 +314,16 @@ add_custom_command(TARGET EngineBin POST_BUILD COMMAND
     ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/Assets
     ${CMAKE_BINARY_DIR}/bin/Assets
+)
+
+add_custom_command(TARGET Engine POST_BUILD COMMAND
+    ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/Libs/WinPixEventRuntime/Bin
+    ${CMAKE_BINARY_DIR}/bin
+)
+
+add_custom_command(TARGET EngineBin POST_BUILD COMMAND
+    ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/Libs/WinPixEventRuntime/Bin
+    ${CMAKE_BINARY_DIR}/bin
 )
