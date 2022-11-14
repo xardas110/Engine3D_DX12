@@ -58,7 +58,7 @@ bool SponzaExe::LoadContent()
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 2.f, 2.f, 2.f };
         trans.pos = { 0.f, 10.f, 0.f };
-        trans.rot = DirectX::XMQuaternionRotationAxis({ 1.f, 1.f, 1.f }, 45.f);
+        //trans.rot = DirectX::XMQuaternionRotationAxis({ 1.f, 1.f, 1.f }, 45.f);
     }
     {
         auto ent = CreateEntity("testSphere");

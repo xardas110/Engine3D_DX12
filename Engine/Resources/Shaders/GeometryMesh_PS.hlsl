@@ -11,7 +11,7 @@ RaytracingAccelerationStructure Scene                       : register(t0);
 
 Texture2D                       GlobalTextureData[]         : register(t1, space0);
 StructuredBuffer<MeshVertex>    GlobalMeshVertexData[]      : register(t1, space1);
-Buffer<uint>                    GlobalMeshIndexData[]       : register(t1, space2);
+StructuredBuffer<uint> GlobalMeshIndexData[] : register(t1, space2);
 
 StructuredBuffer<MeshInfo>      GlobalMeshInfo              : register(t2, space3);
 StructuredBuffer<MaterialInfo>  GlobalMaterialInfo          : register(t3, space4);
@@ -30,7 +30,56 @@ struct HitAttributes
     float2 barycentrics;
     int primitiveIndex;
     int geometryIndex;
+    bool bFrontFaced;
 };
+
+float2 BaryInterp2(in float2 v0, in float2 v1, in float2 v2, in float3 bary)
+{
+    float2 r;
+    
+    float u = bary.z;
+    float v = bary.y;
+    float w = bary.x;
+    
+    r.x = u * v0.x + v * v1.x + w * v2.x;
+    r.y = u * v0.y + v * v1.y + w * v2.y;
+    
+    return r;
+}
+
+float3 BaryInterp3(in float3 v0, in float3 v1, in float3 v2, in float3 bary)
+{
+    //X = (u * p0.x + v * p1.x + w * p2.x)
+    //Y = (u * p0.y + v * p1.y + w * p2.y)
+    //Z = (u * p0.z + v * p1.z + w * p2.z)
+    
+    float3 r;
+    float u = bary.x;
+    float v = bary.y;
+    float w = bary.z;
+    
+    r.x = bary.x * v0.x + bary.y * v1.x + bary.z * v2.x;
+    r.y = bary.x * v0.y + bary.y * v1.y + bary.z * v2.y;
+    r.z = bary.x * v0.z + bary.y * v1.z + bary.z * v2.z;
+    return r;
+}
+
+MeshVertex BarycentricLerp(in MeshVertex v0, in MeshVertex v1, in MeshVertex v2, in float3 bary)
+{
+    MeshVertex r;
+    r.position = BaryInterp3(v0.position, v1.position, v2.position, bary);
+    r.normal = BaryInterp3(v0.normal, v1.normal, v2.normal, bary);
+    r.textureCoordinate = BaryInterp2(v0.textureCoordinate, v1.textureCoordinate, v2.textureCoordinate, bary);
+    return r;
+}
+
+MeshVertex HitLerp(in MeshVertex v0, in MeshVertex v1, in MeshVertex v2, in float2 bary)
+{
+    MeshVertex r;
+    r.textureCoordinate = v0.textureCoordinate + bary.x * (v1.textureCoordinate - v0.textureCoordinate) +
+    bary.y * (v2.textureCoordinate - v0.textureCoordinate);
+    return r;
+}
 
 MeshVertex GetHitSurface(in HitAttributes attr, in MeshInfo meshInfo)
 {
@@ -39,8 +88,17 @@ MeshVertex GetHitSurface(in HitAttributes attr, in MeshInfo meshInfo)
     bary.y = attr.barycentrics.x;
     bary.z = attr.barycentrics.y;
     
-    MeshVertex v;
-    return v;
+    StructuredBuffer<MeshVertex> vertexBuffer = GlobalMeshVertexData[meshInfo.vertexOffset];
+    StructuredBuffer<uint> indexBuffer = GlobalMeshIndexData[meshInfo.indexOffset];
+
+    const uint primId = attr.primitiveIndex;
+    const uint i0 = indexBuffer[primId * 3];
+    const uint i1 = indexBuffer[primId * 3];
+    const uint i2 = indexBuffer[primId * 3];
+   
+    const MeshVertex v0 = vertexBuffer[i0];
+    
+    return v0;
 }
 
 float4 main(PixelShaderInput IN) : SV_Target
@@ -53,10 +111,10 @@ float4 main(PixelShaderInput IN) : SV_Target
 
     // b. Initialize  - hardwired here to deliver minimal sample code.
     RayDesc ray;
-    ray.TMin = 1e-5f;
+    ray.TMin = 0.001f;
     ray.TMax = 1e10f;
     ray.Origin = IN.PositionWS.xyz;
-    ray.Origin += IN.NormalWS * 0.01f;
+    //ray.Origin += IN.NormalWS * 0.01f;
     ray.Direction = float3(0, 1, 0);
     query.TraceRayInline(Scene, ray_flags, ray_instance_mask, ray);
     
@@ -80,23 +138,27 @@ float4 main(PixelShaderInput IN) : SV_Target
         int instanceIndex = query.CommittedInstanceID();
         hit.primitiveIndex = query.CommittedPrimitiveIndex();
         hit.geometryIndex = query.CommittedGeometryIndex();
-        
+        hit.bFrontFaced = query.CommittedTriangleFrontFace();
         hit.barycentrics = query.CommittedTriangleBarycentrics();
         
         MeshInfo meshInfo = GlobalMeshInfo[instanceIndex];
         MaterialInfo materialInfo = GlobalMaterialInfo[meshInfo.materialIndex];
         
-        StructuredBuffer<MeshVertex> meshVertices = GlobalMeshVertexData[meshInfo.vertexOffset];
-        MeshVertex meshVertex = meshVertices[hit.primitiveIndex];
+        //StructuredBuffer<MeshVertex> meshVertices = GlobalMeshVertexData[meshInfo.vertexOffset];
+        //MeshVertex meshVertex = meshVertices[hit.primitiveIndex];
        
-        float4 albedo = float4(hit.barycentrics.x, hit.barycentrics.y, 0.f, 1.f);
+        if (hit.bFrontFaced == true)
+        {       
+            float4 albedo = float4(hit.barycentrics.x, hit.barycentrics.y, 0.f, 1.f);
         
-        albedo = GlobalTextureData[materialInfo.albedo].Sample(LinearRepeatSampler, hit.barycentrics);
+            MeshVertex hitSurface = GetHitSurface(hit, meshInfo);
+            albedo = float4(hitSurface.normal.x, hitSurface.normal.y, hitSurface.normal.z, 1.f);
+            //albedo = GlobalTextureData[materialInfo.albedo].Sample(LinearRepeatSampler, hitSurface.textureCoordinate);
                        
-        //StructuredBuffer<MeshVertex> meshVertex = GlobalMeshVertexData[3];
+            //StructuredBuffer<MeshVertex> meshVertex = GlobalMeshVertexData[3];
                 
-        texColor = albedo; //GlobalTextureArray[instanceIndex].Sample(LinearRepeatSampler, IN.TexCoord);
-
+            texColor = albedo; //GlobalTextureArray[instanceIndex].Sample(LinearRepeatSampler, IN.TexCoord);
+        }
     }
 
     //texColor = float4(IN.NormalWS, 1.f);
