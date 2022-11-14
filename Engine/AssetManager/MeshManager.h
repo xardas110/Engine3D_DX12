@@ -24,6 +24,7 @@ private:
 	{
 		friend class MeshManager;
 		friend class MeshInstance;
+		friend class Raytracing;
 		friend class DeferredRenderer;
 	private:
 
@@ -42,6 +43,7 @@ private:
 	struct MeshData
 	{
 		friend class MeshManager;
+		friend class Raytracing;
 		friend class DeferredRenderer;
 
 		//Subscripe to this event to know about event creation

@@ -35,7 +35,7 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     //assert(IsDirectXRaytracingSupported(adapter.Get()));
     std::cout << "DeferredRenderer: Raytracing is supported on the device" << std::endl;
 
-    m_Raytracer = std::unique_ptr<Raytracing>(new Raytracing);
+    m_Raytracer = std::unique_ptr<Raytracing>(new Raytracing());
     m_Raytracer->Init();
 
 	CreateGBuffer();
@@ -107,9 +107,9 @@ void DeferredRenderer::Render(Window& window)
 
     auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
     auto commandList = commandQueue->GetCommandList();
+    auto dxrCommandList = commandQueue->GetCommandList();
 
     auto& pipelines = Application::Get().GetPipelineManager()->m_Pipelines;
-
     auto assetManager = Application::Get().GetAssetManager();
 
     auto& srvHeap = assetManager->m_SrvHeapData.heap;
@@ -134,7 +134,10 @@ void DeferredRenderer::Render(Window& window)
         commandList->ClearDepthStencilTexture(m_GBufferRenderTarget.GetTexture(AttachmentPoint::DepthStencil), D3D12_CLEAR_FLAG_DEPTH);
     }
 
+    m_Raytracer->BuildAccelerationStructure(*dxrCommandList, game->registry, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);
 
+    auto fence = commandQueue->ExecuteCommandList(dxrCommandList);
+    commandQueue->WaitForFenceValue(fence);
 
     commandList->SetRenderTarget(m_GBufferRenderTarget);
     commandList->SetViewport(m_GBufferRenderTarget.GetViewport());
@@ -143,7 +146,7 @@ void DeferredRenderer::Render(Window& window)
     commandList->SetGraphicsRootSignature(pipelines[Pipeline::GeometryMesh].rootSignature);  
     commandList->GetGraphicsCommandList()->SetGraphicsRootShaderResourceView(
         GlobalRootParam::AccelerationStructure, 
-        m_Raytracer->m_RaytracingAccelerationStructure.topLevelAccelerationStructure->GetGPUVirtualAddress());
+        m_Raytracer->GetCurrentTLAS()->GetGPUVirtualAddress());
   
     commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.Get());
     commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(GlobalRootParam::GlobalHeapData, srvHeap->GetGPUDescriptorHandleForHeapStart());
@@ -152,7 +155,6 @@ void DeferredRenderer::Render(Window& window)
 
     commandList->SetGraphicsDynamicStructuredBuffer(GlobalRootParam::GlobalMaterialInfo, globalMaterialInfo);
   
-
     auto& view = game->registry.view<TransformComponent, MeshComponent>();
     for (auto [entity, transform, mesh] : view.each())
     {

@@ -3,8 +3,11 @@
 #include <RenderTarget.h>
 #include <Events.h>
 #include <Raytracing.h>
+#include <entt/entt.hpp>
 
 class Game;
+class MeshTuple;
+class CommandList;
 
 class DeferredRenderer
 {

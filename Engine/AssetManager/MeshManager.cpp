@@ -14,11 +14,17 @@ void MeshManager::CreateCube(const std::wstring& cubeName)
 {
 	auto commandQueue = Application::Get().GetCommandQueue();
 	auto commandList = commandQueue->GetCommandList();
+	auto rtCommandList = commandQueue->GetCommandList();
 
 	MeshTuple tuple;
 	tuple.mesh = std::move(*Mesh::CreateCube(*commandList));
+	tuple.mesh.InitializeBlas(*rtCommandList);
 
-	commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
+	auto fenceVal1 = commandQueue->ExecuteCommandList(commandList);
+	auto fenceVal2 = commandQueue->ExecuteCommandList(rtCommandList);
+
+	commandQueue->WaitForFenceValue(fenceVal1);
+	commandQueue->WaitForFenceValue(fenceVal2);
 
 	meshData.CreateMesh(cubeName, tuple, m_SrvHeapData);
 }
@@ -27,11 +33,17 @@ void MeshManager::CreateSphere(const std::wstring& sphereName)
 {
 	auto commandQueue = Application::Get().GetCommandQueue();
 	auto commandList = commandQueue->GetCommandList();
+	auto rtCommandList = commandQueue->GetCommandList();
 
 	MeshTuple tuple;
 	tuple.mesh = std::move(*Mesh::CreateSphere(*commandList));
+	tuple.mesh.InitializeBlas(*rtCommandList);
 
-	commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
+	auto fenceVal1 = commandQueue->ExecuteCommandList(commandList);
+	auto fenceVal2 = commandQueue->ExecuteCommandList(rtCommandList);
+
+	commandQueue->WaitForFenceValue(fenceVal1);
+	commandQueue->WaitForFenceValue(fenceVal2);
 
 	meshData.CreateMesh(sphereName, tuple, m_SrvHeapData);
 }

@@ -2,7 +2,9 @@
 #include <Mesh.h>
 
 #include <Application.h>
-
+#include <ResourceStateTracker.h>
+#include <CommandList.h>
+#include <CommandQueue.h>
 
 using namespace DirectX;
 using namespace Microsoft::WRL;
@@ -431,6 +433,65 @@ void Mesh::Initialize(CommandList& commandList, const VertexCollection32& vertic
     commandList.CopyIndexBuffer(m_IndexBuffer, indices);
 
     m_IndexCount = static_cast<UINT>(indices.size());
+}
+
+void Mesh::InitializeBlas(CommandList& commandList)
+{
+    auto device = Application::Get().GetDevice();
+
+    const D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS buildFlag = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+
+    D3D12_RAYTRACING_GEOMETRY_DESC desc = {};
+    desc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+    desc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+
+    D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
+    geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+    geometryDesc.Triangles.IndexBuffer = m_IndexBuffer.GetD3D12Resource()->GetGPUVirtualAddress();
+    geometryDesc.Triangles.IndexCount = m_IndexCount;
+    geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
+    geometryDesc.Triangles.Transform3x4 = 0;
+    geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+    geometryDesc.Triangles.VertexCount = static_cast<UINT>(m_VertexBuffer.GetD3D12Resource()->GetDesc().Width) / sizeof(VertexPositionNormalTexture);
+    geometryDesc.Triangles.VertexBuffer.StartAddress = m_VertexBuffer.GetD3D12Resource()->GetGPUVirtualAddress();
+    geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(VertexPositionNormalTexture);
+
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC blasDesc = {};
+    blasDesc.Inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+    blasDesc.Inputs.NumDescs = 1;
+    blasDesc.Inputs.pGeometryDescs = &geometryDesc;
+    blasDesc.Inputs.Flags = buildFlag;
+    blasDesc.Inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+
+    D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO bottomLevelPrebuildInfo;
+    device->GetRaytracingAccelerationStructurePrebuildInfo(&blasDesc.Inputs, &bottomLevelPrebuildInfo);
+
+    auto blasBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+
+    device->CreateCommittedResource(
+        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+        D3D12_HEAP_FLAG_NONE,
+        &blasBufferDesc,
+        D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+        nullptr,
+        IID_PPV_ARGS(&scratchResource));
+
+    scratchResource->SetName(L"Scratch resource");
+
+    device->CreateCommittedResource(
+        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+        D3D12_HEAP_FLAG_NONE,
+        &blasBufferDesc,
+        D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+        nullptr,
+        IID_PPV_ARGS(&blas));
+
+    blasDesc.DestAccelerationStructureData = blas->GetGPUVirtualAddress();
+    blasDesc.ScratchAccelerationStructureData = scratchResource->GetGPUVirtualAddress();
+
+    blas->SetName(L"Blas");
+
+    commandList.GetGraphicsCommandList()->BuildRaytracingAccelerationStructure(&blasDesc, 0, nullptr);
 }
 
 StaticMesh::StaticMesh(const std::string& path)

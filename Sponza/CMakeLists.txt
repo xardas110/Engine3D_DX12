@@ -50,7 +50,7 @@ target_link_libraries( SponzaBin
 #    PRIVATE $<$<CONFIG:Debug>:/ZI>
 #)
 
-target_link_options(Engine PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/DEBUG:NONE>)
+#target_link_options(Engine PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/DEBUG:NONE>)
 
 # Set Local Debugger Settings (Command Arguments and Environment Variables)
 set( COMMAND_ARGUMENTS "-wd \"${CMAKE_SOURCE_DIR}\"" )
