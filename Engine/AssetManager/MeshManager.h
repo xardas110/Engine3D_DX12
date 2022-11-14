@@ -1,5 +1,6 @@
 #pragma once
 #include <Mesh.h>
+#include <eventcpp/event.hpp>
 
 class SRVHeapData;
 
@@ -7,15 +8,16 @@ struct MeshManager
 {
 	friend class AssetManager;
 	friend class MeshInstance;
+	friend class Raytracing;
 	friend class DeferredRenderer;
 
 	bool CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID);
 
-private:
-	MeshManager(const SRVHeapData& srvHeapData);
-
 	void CreateCube(const std::wstring& cubeName = L"DefaultCube");
 	void CreateSphere(const std::wstring& sphereName = L"DefaultSphere");
+
+private:
+	MeshManager(const SRVHeapData& srvHeapData);
 
 	//Per component data
 	struct InstanceData
@@ -41,6 +43,9 @@ private:
 	{
 		friend class MeshManager;
 		friend class DeferredRenderer;
+
+		//Subscripe to this event to know about event creation
+		event::event<void(const Mesh&)> meshCreationEvent;
 	private:
 
 		//Warning: Using this function will increment ref counter

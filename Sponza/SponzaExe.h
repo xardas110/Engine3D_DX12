@@ -6,12 +6,12 @@
 #include <GameMode.h>
 #include <Events.h>
 
-class Sponza : public GameMode
+class SponzaExe : public Game
 {
 public:
 
-    Sponza(Game* game);
-    virtual ~Sponza();
+    SponzaExe(const std::wstring& name, int width, int height, bool vSync);
+    virtual ~SponzaExe();
 
     /**
      *  Load content required for the demo.
@@ -23,7 +23,6 @@ public:
      */
     virtual void UnloadContent() override;
 
-    virtual void OnGui(RenderEventArgs& e) override;
 protected:
     /**
      *  Update the game logic.

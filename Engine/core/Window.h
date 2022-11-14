@@ -193,9 +193,9 @@ private:
     UINT64 m_FenceValues[BufferCount];
     uint64_t m_FrameValues[BufferCount];
 
-    std::weak_ptr<Game> m_pGame;
     DeferredRenderer m_DeferredRenderer;
-
+    std::weak_ptr<Game> m_pGame;
+    
     Microsoft::WRL::ComPtr<IDXGISwapChain4> m_dxgiSwapChain;
     Texture m_BackBufferTextures[BufferCount];
     // Marked mutable to allow modification in a const function.

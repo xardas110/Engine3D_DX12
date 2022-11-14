@@ -58,7 +58,7 @@ set( HEADER_FILES
     "AssetManager/MeshManager.h"
     "AssetManager/TextureManager.h"
     "AssetManager/MaterialManager.h"
-)
+"external/eventcpp/event.hpp")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
@@ -164,6 +164,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC DX12/Raytracing
     PUBLIC AssetManager
     PUBLIC Resources/Shaders
+    PUBLIC external/eventcpp
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
 
