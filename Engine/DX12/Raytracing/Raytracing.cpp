@@ -60,7 +60,6 @@ void Raytracing::Init()
 
     meshData.meshCreationEvent.attach(&Raytracing::OnMeshCreated, this);
 
-    CreateDescriptorHeap();
     BuildGeometry();
     BuildAccelerationStructures();
 }
@@ -177,23 +176,6 @@ void PrintStateObjectDesc(const D3D12_STATE_OBJECT_DESC* desc)
     OutputDebugStringW(wstr.str().c_str());
 }
 
-void Raytracing::CreateDescriptorHeap()
-{
-    auto device = Application::Get().GetDevice();
-
-    D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc = {};
-    // Allocate a heap for 3 descriptors:
-    // 2 - vertex and index buffer SRVs
-    // 1 - raytracing output texture SRV
-    descriptorHeapDesc.NumDescriptors = 3;
-    descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    descriptorHeapDesc.NodeMask = 0;
-    ThrowIfFailed(device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&m_DescriptorHeap)), L"Failed to create descriptor heap");
-    NAME_D3D12_OBJECT(m_DescriptorHeap);
-
-    m_DescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-}
 /*
 // Allocate a descriptor and return its index. 
 // If the passed descriptorIndexToUse is valid, it will be used instead of allocating a new one.
@@ -256,9 +238,8 @@ void Raytracing::BuildAccelerationStructures()
     bottomLevelInputs.NumDescs = 1;
     bottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
     bottomLevelInputs.pGeometryDescs = &geometryDesc;
-
+    
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC topLevelBuildDesc = {};
-
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& topLevelInputs = topLevelBuildDesc.Inputs;
     topLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
     topLevelInputs.Flags = buildFlags;

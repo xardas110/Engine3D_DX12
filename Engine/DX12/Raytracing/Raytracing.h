@@ -52,9 +52,6 @@ class Raytracing
 
 	void Init();
 
-    // Create a heap for descriptors.
-    void CreateDescriptorHeap();
-
     // Build geometry to be used in the sample.
     void BuildGeometry();
 
@@ -68,10 +65,5 @@ class Raytracing
 
     RaytracingAccelerationStructure m_RaytracingAccelerationStructure;
         
-    // Descriptors
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DescriptorHeap;
-    UINT m_DescriptorsAllocated{0U};
-    UINT m_DescriptorSize{ 0U };
-
     CubeConstantBuffer m_CubeCB;
 };

@@ -170,6 +170,8 @@ private:
     void Initialize(CommandList& commandList, VertexCollection& vertices, IndexCollection& indices, bool rhcoords);
     void Initialize(CommandList& commandList, const VertexCollection32& vertices, const IndexCollection32& indices, bool rhcoords);
 
+
+
     VertexBuffer m_VertexBuffer;
     IndexBuffer m_IndexBuffer;
 
