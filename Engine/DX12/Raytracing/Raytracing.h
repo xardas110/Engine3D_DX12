@@ -44,8 +44,8 @@ class Raytracing
     std::unique_ptr<Mesh> m_Cube;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> m_TopLevelAccelerationStructure[3];
-    Microsoft::WRL::ComPtr<ID3D12Resource> m_TopLevelScratch;
-    Microsoft::WRL::ComPtr<ID3D12Resource> m_InstanceResource;
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_TopLevelScratch[3];
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_InstanceResource[3];
 
     auto GetCurrentTLAS()
     {

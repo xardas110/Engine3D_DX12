@@ -359,7 +359,7 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, entt::r
     }
 
     auto byteSize = instanceDescs.size() * sizeof(D3D12_RAYTRACING_INSTANCE_DESC);
-    AllocateUploadBuffer(device.Get(), instanceDescs.data(), byteSize, &m_InstanceResource, L"InstanceDescs");
+    AllocateUploadBuffer(device.Get(), instanceDescs.data(), byteSize, &m_InstanceResource[m_CurrentBufferIndex], L"InstanceDescs");
 
     D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS buildFlags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC topLevelBuildDesc = {};
@@ -377,11 +377,11 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, entt::r
 
     AllocateUAVBuffer(device.Get(), topLevelPrebuildInfo.ResultDataMaxSizeInBytes, &m_TopLevelAccelerationStructure[m_CurrentBufferIndex], D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, L"TopLevelAccelerationStructure");
    
-    AllocateUAVBuffer(device.Get(), topLevelPrebuildInfo.ScratchDataSizeInBytes, &m_TopLevelScratch, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, L"ScratchResource");
+    AllocateUAVBuffer(device.Get(), topLevelPrebuildInfo.ScratchDataSizeInBytes, &m_TopLevelScratch[m_CurrentBufferIndex], D3D12_RESOURCE_STATE_UNORDERED_ACCESS, L"ScratchResource");
 
     topLevelBuildDesc.DestAccelerationStructureData = m_TopLevelAccelerationStructure[m_CurrentBufferIndex]->GetGPUVirtualAddress();
-    topLevelBuildDesc.ScratchAccelerationStructureData = m_TopLevelScratch->GetGPUVirtualAddress();
-    topLevelBuildDesc.Inputs.InstanceDescs = m_InstanceResource->GetGPUVirtualAddress();
+    topLevelBuildDesc.ScratchAccelerationStructureData = m_TopLevelScratch[m_CurrentBufferIndex]->GetGPUVirtualAddress();
+    topLevelBuildDesc.Inputs.InstanceDescs = m_InstanceResource[m_CurrentBufferIndex]->GetGPUVirtualAddress();
    
     dxrCommandList.GetGraphicsCommandList()->BuildRaytracingAccelerationStructure(&topLevelBuildDesc, 0, nullptr);
 }
