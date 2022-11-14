@@ -8,9 +8,6 @@
 MeshManager::MeshManager(const SRVHeapData& srvHeapData)
 	:m_SrvHeapData(srvHeapData)
 {
-	std::cout << "MeshManager running" << std::endl;
-	CreateCube();
-	CreateSphere();
 }
 
 void MeshManager::CreateCube(const std::wstring& cubeName)
@@ -119,6 +116,8 @@ void MeshManager::MeshData::CreateMesh(const std::wstring& name, MeshTuple& tupl
 
 		device->CreateShaderResourceView(mesh.m_IndexBuffer.GetD3D12Resource().Get(), &desc, cpuHandle);
 	}
+
+	meshCreationEvent(tuple.mesh);
 
 	AddMesh(name, tuple);
 }

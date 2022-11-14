@@ -45,61 +45,6 @@ bool Game::Initialize()
     m_pWindow->RegisterCallbacks(shared_from_this());
     m_pWindow->Show();
 
-    /*
-StaticMesh temp;
-
-auto* smm = Application::Get().GetAssetManager();
-smm->LoadStaticMesh("Assets/Models/crytek-sponza-noflag/sponza.dae", temp);
-*/
-    /*
-
-    auto ent = CreateEntity("Sponza");
-    auto& sm = ent.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.dae");
-    auto& trans = ent.GetComponent<TransformComponent>().scale = { 0.01f, 0.01f, 0.01f };
-    */   
-
-    TextureInstance monaLisa(L"Assets/Textures/Mona_Lisa.jpg");
-    TextureInstance directX(L"Assets/Textures/DirectX9.png");
-    
-    MaterialInfo matInfo;
-    matInfo.albedo = monaLisa.GetTextureID();
-    matInfo.normal = directX.GetTextureID();
-
-    MaterialInstance material;
-    material.CreateMaterialInstance(L"DefaultMaterial", matInfo);
-
-    MaterialInstance material1;
-    matInfo.albedo = directX.GetTextureID();
-    matInfo.normal = monaLisa.GetTextureID();
-
-    material1.CreateMaterialInstance(L"Material1", matInfo);
-
-    {
-        auto ent = CreateEntity("DxCube");
-        auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
-        sm.SetMaterialInstance(material1);
-        auto& trans = ent.GetComponent<TransformComponent>();
-        trans.scale = { 10.f, 10.f, 10.f };
-        trans.pos = { 0.f, -10.f, 0.f };
-    }
-    {
-        auto ent = CreateEntity("DxCube");
-        auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
-        sm.SetMaterialInstance(material);
-        auto& trans = ent.GetComponent<TransformComponent>();
-        trans.scale = { 2.f, 2.f, 2.f };
-        trans.pos = { 0.f, 10.f, 0.f };
-    }
-
-    {
-        auto ent = CreateEntity("testSphere");
-        auto& sm = ent.AddComponent<MeshComponent>(L"DefaultSphere");
-        sm.SetMaterialInstance(material);
-        auto& trans = ent.GetComponent<TransformComponent>();
-        trans.scale = { 2.f, 2.f, 2.f };
-        trans.pos = { 0.f, 10.f, 0.f };
-    }
-
     return true;
 }
 

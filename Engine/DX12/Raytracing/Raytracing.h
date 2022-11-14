@@ -61,6 +61,9 @@ class Raytracing
     // Build raytracing acceleration structures from the generated geometry.
     void BuildAccelerationStructures();
 
+    //Called when a new mesh is created, to insert into BLAS
+    void OnMeshCreated(const Mesh& mesh);
+
     std::unique_ptr<Mesh> m_Cube;
 
     RaytracingAccelerationStructure m_RaytracingAccelerationStructure;

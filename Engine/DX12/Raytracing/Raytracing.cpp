@@ -56,6 +56,10 @@ const wchar_t* g_MissShaderName = L"MyMissShader";
 
 void Raytracing::Init()
 {
+    auto& meshData = Application::Get().GetAssetManager()->m_MeshManager.meshData;
+
+    meshData.meshCreationEvent.attach(&Raytracing::OnMeshCreated, this);
+
     CreateDescriptorHeap();
     BuildGeometry();
     BuildAccelerationStructures();
@@ -323,4 +327,9 @@ void Raytracing::BuildAccelerationStructures()
     auto fenceVal = commandQueue->ExecuteCommandList(commandList);
     commandQueue->WaitForFenceValue(fenceVal);
 
+}
+
+void Raytracing::OnMeshCreated(const Mesh& mesh)
+{
+    std::cout << "Mesh created " << std::endl;
 }
