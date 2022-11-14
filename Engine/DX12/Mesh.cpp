@@ -57,7 +57,7 @@ void Mesh::Draw(CommandList& commandList)
 std::unique_ptr<Mesh> Mesh::CreateSphere(CommandList& commandList, float diameter, size_t tessellation, bool rhcoords)
 {
     VertexCollection vertices;
-    IndexCollection indices;
+    IndexCollection32 indices;
 
     if (tessellation < 3)
         throw std::out_of_range("tessellation parameter out of range");
@@ -148,7 +148,7 @@ std::unique_ptr<Mesh> Mesh::CreateCube(CommandList& commandList, float size, boo
     };
 
     VertexCollection vertices;
-    IndexCollection indices;
+    IndexCollection32 indices;
 
     size /= 2;
 
@@ -212,7 +212,7 @@ static inline XMVECTOR GetCircleTangent(size_t i, size_t tessellation)
 }
 
 // Helper creates a triangle fan to close the end of a cylinder / cone
-static void CreateCylinderCap(VertexCollection& vertices, IndexCollection& indices, size_t tessellation, float height, float radius, bool isTop)
+static void CreateCylinderCap(VertexCollection& vertices, IndexCollection32& indices, size_t tessellation, float height, float radius, bool isTop)
 {
     // Create cap indices.
     for (size_t i = 0; i < tessellation - 2; i++)
@@ -257,7 +257,7 @@ static void CreateCylinderCap(VertexCollection& vertices, IndexCollection& indic
 std::unique_ptr<Mesh> Mesh::CreateCone(CommandList& commandList, float diameter, float height, size_t tessellation, bool rhcoords)
 {
     VertexCollection vertices;
-    IndexCollection indices;
+    IndexCollection32 indices;
 
     if (tessellation < 3)
         throw std::out_of_range("tessellation parameter out of range");
@@ -308,7 +308,7 @@ std::unique_ptr<Mesh> Mesh::CreateCone(CommandList& commandList, float diameter,
 std::unique_ptr<Mesh> Mesh::CreateTorus(CommandList& commandList, float diameter, float thickness, size_t tessellation, bool rhcoords)
 {
     VertexCollection vertices;
-    IndexCollection indices;
+    IndexCollection32 indices;
 
     if (tessellation < 3)
         throw std::out_of_range("tessellation parameter out of range");
@@ -378,7 +378,7 @@ std::unique_ptr<Mesh> Mesh::CreatePlane(CommandList& commandList, float width, f
         { XMFLOAT3(-0.5f * width, 0.0f, -0.5f * height), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) }  // 3
     };
     
-    IndexCollection indices = 
+    IndexCollection32 indices =
     {
         0, 3, 1, 1, 3, 2
     };
@@ -398,7 +398,7 @@ std::unique_ptr<Mesh> Mesh::CreateMesh(CommandList& commandList, const VertexCol
 }
 
 // Helper for flipping winding of geometric primitives for LH vs. RH coords
-static void ReverseWinding(IndexCollection& indices, VertexCollection& vertices)
+static void ReverseWinding(IndexCollection32& indices, VertexCollection& vertices)
 {
     assert((indices.size() % 3) == 0);
     for (auto it = indices.begin(); it != indices.end(); it += 3)
@@ -412,7 +412,7 @@ static void ReverseWinding(IndexCollection& indices, VertexCollection& vertices)
     }
 }
 
-void Mesh::Initialize(CommandList& commandList, VertexCollection& vertices, IndexCollection& indices, bool rhcoords)
+void Mesh::Initialize(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords)
 {
     if (vertices.size() >= USHRT_MAX)
         throw std::exception("Too many vertices for 16-bit index buffer");
@@ -449,7 +449,7 @@ void Mesh::InitializeBlas(CommandList& commandList)
     geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
     geometryDesc.Triangles.IndexBuffer = m_IndexBuffer.GetD3D12Resource()->GetGPUVirtualAddress();
     geometryDesc.Triangles.IndexCount = m_IndexCount;
-    geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
+    geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
     geometryDesc.Triangles.Transform3x4 = 0;
     geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
     geometryDesc.Triangles.VertexCount = static_cast<UINT>(m_VertexBuffer.GetD3D12Resource()->GetDesc().Width) / sizeof(VertexPositionNormalTexture);

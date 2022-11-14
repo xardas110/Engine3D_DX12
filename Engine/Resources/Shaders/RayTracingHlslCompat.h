@@ -77,6 +77,8 @@ struct ObjectCB
     UINT meshId;
     int pad1;
     int pad2;
+
+    XMMATRIX transposeInverseModel;
 };
 
 struct MeshVertex

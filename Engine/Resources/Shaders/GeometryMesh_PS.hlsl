@@ -11,9 +11,10 @@ RaytracingAccelerationStructure Scene                       : register(t0);
 
 Texture2D                       GlobalTextureData[]         : register(t1, space0);
 StructuredBuffer<MeshVertex>    GlobalMeshVertexData[]      : register(t1, space1);
+Buffer<uint>                    GlobalMeshIndexData[]       : register(t1, space2);
 
-StructuredBuffer<MeshInfo>      GlobalMeshInfo              : register(t2, space2);
-StructuredBuffer<MaterialInfo>  GlobalMaterialInfo          : register(t3, space3);
+StructuredBuffer<MeshInfo>      GlobalMeshInfo              : register(t2, space3);
+StructuredBuffer<MaterialInfo>  GlobalMaterialInfo          : register(t3, space4);
 
 SamplerState                    LinearRepeatSampler         : register(s0);
 
@@ -23,6 +24,24 @@ struct PixelShaderInput
     float3 NormalWS : NORMAL;
     float2 TexCoord : TEXCOORD;
 };
+
+struct HitAttributes
+{
+    float2 barycentrics;
+    int primitiveIndex;
+    int geometryIndex;
+};
+
+MeshVertex GetHitSurface(in HitAttributes attr, in MeshInfo meshInfo)
+{
+    float3 bary;
+    bary.x = 1 - attr.barycentrics.x - attr.barycentrics.y;
+    bary.y = attr.barycentrics.x;
+    bary.z = attr.barycentrics.y;
+    
+    MeshVertex v;
+    return v;
+}
 
 float4 main(PixelShaderInput IN) : SV_Target
 {
@@ -37,7 +56,7 @@ float4 main(PixelShaderInput IN) : SV_Target
     ray.TMin = 1e-5f;
     ray.TMax = 1e10f;
     ray.Origin = IN.PositionWS.xyz;
-    ray.Origin.y += 0.1f;
+    ray.Origin += IN.NormalWS * 0.01f;
     ray.Direction = float3(0, 1, 0);
     query.TraceRayInline(Scene, ray_flags, ray_instance_mask, ray);
     
@@ -56,27 +75,32 @@ float4 main(PixelShaderInput IN) : SV_Target
       
     if (query.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
     {
+        HitAttributes hit;
+        
         int instanceIndex = query.CommittedInstanceID();
-        int primitiveIndex = query.CommittedPrimitiveIndex();
-        int geometryIndex = query.CommittedGeometryIndex();
+        hit.primitiveIndex = query.CommittedPrimitiveIndex();
+        hit.geometryIndex = query.CommittedGeometryIndex();
         
-       // MeshInfo meshInfo = GlobalMeshInfo[instanceIndex];
-       // MaterialInfo materialInfo = GlobalMaterialInfo[meshInfo.materialIndex];
+        hit.barycentrics = query.CommittedTriangleBarycentrics();
         
-        float4 albedo = float4(0.f, 0.f, 0.f, 1.f);
-        /*
-        if (materialInfo.albedo =! 0xffffffff)
-        {
-            albedo = GlobalTextureData[materialInfo.albedo].Sample(LinearRepeatSampler, IN.TexCoord);
-        }
-*/
-                
+        MeshInfo meshInfo = GlobalMeshInfo[instanceIndex];
+        MaterialInfo materialInfo = GlobalMaterialInfo[meshInfo.materialIndex];
+        
+        StructuredBuffer<MeshVertex> meshVertices = GlobalMeshVertexData[meshInfo.vertexOffset];
+        MeshVertex meshVertex = meshVertices[hit.primitiveIndex];
+       
+        float4 albedo = float4(hit.barycentrics.x, hit.barycentrics.y, 0.f, 1.f);
+        
+        albedo = GlobalTextureData[materialInfo.albedo].Sample(LinearRepeatSampler, hit.barycentrics);
+                       
         //StructuredBuffer<MeshVertex> meshVertex = GlobalMeshVertexData[3];
                 
         texColor = albedo; //GlobalTextureArray[instanceIndex].Sample(LinearRepeatSampler, IN.TexCoord);
 
     }
 
+    //texColor = float4(IN.NormalWS, 1.f);
+    
    // float4 texColor = DiffuseTexture.Sample(LinearRepeatSampler, IN.TexCoord);
     return texColor;
 }

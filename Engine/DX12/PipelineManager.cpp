@@ -42,7 +42,7 @@ void PipelineManager::CreateGeometryMeshPSO()
         D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-    CD3DX12_DESCRIPTOR_RANGE1 srvRanges[2] = {};
+    CD3DX12_DESCRIPTOR_RANGE1 srvRanges[3] = {};
     srvRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
     srvRanges[0].NumDescriptors = 512;
     srvRanges[0].BaseShaderRegister = 1;
@@ -51,18 +51,25 @@ void PipelineManager::CreateGeometryMeshPSO()
     srvRanges[0].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     srvRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvRanges[1].NumDescriptors = 512;
+    srvRanges[1].NumDescriptors = 256;
     srvRanges[1].BaseShaderRegister = 1;
     srvRanges[1].RegisterSpace = 1;
     srvRanges[1].OffsetInDescriptorsFromTableStart = 0;
     srvRanges[1].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
+    srvRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    srvRanges[2].NumDescriptors = 256;
+    srvRanges[2].BaseShaderRegister = 1;
+    srvRanges[2].RegisterSpace = 2;
+    srvRanges[2].OffsetInDescriptorsFromTableStart = 0;
+    srvRanges[2].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+
     CD3DX12_ROOT_PARAMETER1 rootParameters[GlobalRootParam::Size];
     rootParameters[GlobalRootParam::ObjectCB].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_ALL);
     rootParameters[GlobalRootParam::AccelerationStructure].InitAsShaderResourceView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
-    rootParameters[GlobalRootParam::GlobalHeapData].InitAsDescriptorTable(2, srvRanges);
-    rootParameters[GlobalRootParam::GlobalMeshInfo].InitAsShaderResourceView(2, 2, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
-    rootParameters[GlobalRootParam::GlobalMaterialInfo].InitAsShaderResourceView(3, 3, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
+    rootParameters[GlobalRootParam::GlobalHeapData].InitAsDescriptorTable(3, srvRanges);
+    rootParameters[GlobalRootParam::GlobalMeshInfo].InitAsShaderResourceView(2, 3, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
+    rootParameters[GlobalRootParam::GlobalMaterialInfo].InitAsShaderResourceView(3, 4, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
 
     CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
 
