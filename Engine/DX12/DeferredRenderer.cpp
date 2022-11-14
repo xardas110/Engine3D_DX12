@@ -142,6 +142,9 @@ void DeferredRenderer::Render(Window& window)
 
     PIXEndEvent(dxrCommandList->GetGraphicsCommandList().Get());
 
+    auto fence = commandQueue->ExecuteCommandList(dxrCommandList);
+    commandQueue->WaitForFenceValue(fence);
+
     commandList->SetRenderTarget(m_GBufferRenderTarget);
     commandList->SetViewport(m_GBufferRenderTarget.GetViewport());
     commandList->SetScissorRect(m_ScissorRect);
@@ -206,7 +209,7 @@ void DeferredRenderer::Render(Window& window)
     PIXEndEvent(commandList->GetGraphicsCommandList().Get());
 
     std::vector<std::shared_ptr<CommandList>> commandLists;
-    commandLists.emplace_back(dxrCommandList);
+    //commandLists.emplace_back(dxrCommandList);
     commandLists.emplace_back(commandList);
     
     commandQueue->ExecuteCommandLists(commandLists);

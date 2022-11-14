@@ -455,6 +455,7 @@ void Mesh::InitializeBlas(CommandList& commandList)
     geometryDesc.Triangles.VertexCount = static_cast<UINT>(m_VertexBuffer.GetD3D12Resource()->GetDesc().Width) / sizeof(VertexPositionNormalTexture);
     geometryDesc.Triangles.VertexBuffer.StartAddress = m_VertexBuffer.GetD3D12Resource()->GetGPUVirtualAddress();
     geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(VertexPositionNormalTexture);
+    geometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
 
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC blasDesc = {};
     blasDesc.Inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
