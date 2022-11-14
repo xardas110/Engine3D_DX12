@@ -190,15 +190,15 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, entt::r
         D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
         instanceDesc.InstanceID = mesh.id;
         instanceDesc.Transform[0][0] = transform.r[0].m128_f32[0];
-        instanceDesc.Transform[1][0] = transform.r[1].m128_f32[0];
-        instanceDesc.Transform[2][0] = transform.r[2].m128_f32[0];
+        instanceDesc.Transform[1][0] = transform.r[0].m128_f32[1];
+        instanceDesc.Transform[2][0] = transform.r[0].m128_f32[2];
 
-        instanceDesc.Transform[0][1] = transform.r[0].m128_f32[1];
+        instanceDesc.Transform[0][1] = transform.r[1].m128_f32[0];
         instanceDesc.Transform[1][1] = transform.r[1].m128_f32[1];
-        instanceDesc.Transform[2][1] = transform.r[2].m128_f32[1];
+        instanceDesc.Transform[2][1] = transform.r[1].m128_f32[2];
 
-        instanceDesc.Transform[0][2] = transform.r[0].m128_f32[2];
-        instanceDesc.Transform[1][2] = transform.r[1].m128_f32[2];
+        instanceDesc.Transform[0][2] = transform.r[2].m128_f32[0];
+        instanceDesc.Transform[1][2] = transform.r[2].m128_f32[1];
         instanceDesc.Transform[2][2] = transform.r[2].m128_f32[2];
 
         instanceDesc.Transform[0][3] = transform.r[3].m128_f32[0];

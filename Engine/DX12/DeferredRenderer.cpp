@@ -155,7 +155,6 @@ void DeferredRenderer::Render(Window& window)
     commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(GlobalRootParam::GlobalHeapData, srvHeap->GetGPUDescriptorHandleForHeapStart());
 
     commandList->SetGraphicsDynamicStructuredBuffer(GlobalRootParam::GlobalMeshInfo, globalMeshInfo);
-
     commandList->SetGraphicsDynamicStructuredBuffer(GlobalRootParam::GlobalMaterialInfo, globalMaterialInfo);
   
     auto& view = game->registry.view<TransformComponent, MeshComponent>();
@@ -169,6 +168,7 @@ void DeferredRenderer::Render(Window& window)
         objectCB.meshId = mesh.id;
         
         objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
+        globalMeshInfo[mesh.id].objRot = transform.rot;
 
         commandList->SetGraphicsDynamicConstantBuffer(GlobalRootParam::ObjectCB, objectCB);
 

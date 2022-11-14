@@ -49,7 +49,7 @@ bool SponzaExe::LoadContent()
         sm.SetMaterialInstance(material1);
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 10.f, 10.f, 10.f };
-        trans.pos = { 0.f, -10.f, 0.f };
+        trans.pos = { 0.f, 0.f, 0.f };
     }
     {
         auto ent = CreateEntity("DxCube");
@@ -57,8 +57,8 @@ bool SponzaExe::LoadContent()
         sm.SetMaterialInstance(material);
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 2.f, 2.f, 2.f };
-        trans.pos = { 0.f, 10.f, 0.f };
-        //trans.rot = DirectX::XMQuaternionRotationAxis({ 1.f, 1.f, 1.f }, 45.f);
+        trans.pos = { -10.f, 0.f, -10.f };
+        trans.rot = DirectX::XMQuaternionRotationAxis({ 1.f, 0.f, 0.f }, 90.f);
     }
     {
         auto ent = CreateEntity("testSphere");
@@ -66,7 +66,7 @@ bool SponzaExe::LoadContent()
         sm.SetMaterialInstance(material2);
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 2.f, 2.f, 2.f };
-        trans.pos = { 10.f, 10.f, 0.f };       
+        trans.pos = { 3.f, 10.f, 0.f };       
     }
     
 	return true;

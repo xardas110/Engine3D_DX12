@@ -4,6 +4,7 @@
 
 #define HLSL
 #include "RaytracingHlslCompat.h"
+#include "Quaternion.hlsl"
 
 ConstantBuffer<ObjectCB>        g_ObjectCB                  : register(b0);
 
@@ -30,6 +31,7 @@ struct HitAttributes
     float2 barycentrics;
     int primitiveIndex;
     int geometryIndex;
+    float3x4 objToWorld;
     bool bFrontFaced;
 };
 
@@ -37,9 +39,9 @@ float2 BaryInterp2(in float2 v0, in float2 v1, in float2 v2, in float3 bary)
 {
     float2 r;
     
-    float u = bary.z;
+    float u = bary.x;
     float v = bary.y;
-    float w = bary.x;
+    float w = bary.z;
     
     r.x = u * v0.x + v * v1.x + w * v2.x;
     r.y = u * v0.y + v * v1.y + w * v2.y;
@@ -73,14 +75,6 @@ MeshVertex BarycentricLerp(in MeshVertex v0, in MeshVertex v1, in MeshVertex v2,
     return r;
 }
 
-MeshVertex HitLerp(in MeshVertex v0, in MeshVertex v1, in MeshVertex v2, in float2 bary)
-{
-    MeshVertex r;
-    r.textureCoordinate = v0.textureCoordinate + bary.x * (v1.textureCoordinate - v0.textureCoordinate) +
-    bary.y * (v2.textureCoordinate - v0.textureCoordinate);
-    return r;
-}
-
 MeshVertex GetHitSurface(in HitAttributes attr, in MeshInfo meshInfo)
 {
     float3 bary;
@@ -92,13 +86,18 @@ MeshVertex GetHitSurface(in HitAttributes attr, in MeshInfo meshInfo)
     StructuredBuffer<uint> indexBuffer = GlobalMeshIndexData[meshInfo.indexOffset];
 
     const uint primId = attr.primitiveIndex;
-    const uint i0 = indexBuffer[primId * 3];
-    const uint i1 = indexBuffer[primId * 3];
-    const uint i2 = indexBuffer[primId * 3];
+    const uint i0 = indexBuffer[primId * 3 + 0];
+    const uint i1 = indexBuffer[primId * 3 + 1];
+    const uint i2 = indexBuffer[primId * 3 + 2];
    
-    const MeshVertex v0 = vertexBuffer[i0];
+    MeshVertex v0 = vertexBuffer[i0];
+    MeshVertex v1 = vertexBuffer[i1];
+    MeshVertex v2 = vertexBuffer[i2];
     
-    return v0;
+    MeshVertex result = BarycentricLerp(v0, v1, v2, bary);
+    result.normal = rotate_vector(result.normal, meshInfo.objRot);
+
+    return result;
 }
 
 float4 main(PixelShaderInput IN) : SV_Target
@@ -111,11 +110,11 @@ float4 main(PixelShaderInput IN) : SV_Target
 
     // b. Initialize  - hardwired here to deliver minimal sample code.
     RayDesc ray;
-    ray.TMin = 0.001f;
+    ray.TMin = 0.01f;
     ray.TMax = 1e10f;
     ray.Origin = IN.PositionWS.xyz;
-    //ray.Origin += IN.NormalWS * 0.01f;
-    ray.Direction = float3(0, 1, 0);
+    //ray.Origin += IN.NormalWS * 0.2f;
+    ray.Direction = normalize(float3(-1, 0, -1));
     query.TraceRayInline(Scene, ray_flags, ray_instance_mask, ray);
     
     // c. Cast 
@@ -140,6 +139,7 @@ float4 main(PixelShaderInput IN) : SV_Target
         hit.geometryIndex = query.CommittedGeometryIndex();
         hit.bFrontFaced = query.CommittedTriangleFrontFace();
         hit.barycentrics = query.CommittedTriangleBarycentrics();
+        hit.objToWorld = query.CommittedObjectToWorld3x4();
         
         MeshInfo meshInfo = GlobalMeshInfo[instanceIndex];
         MaterialInfo materialInfo = GlobalMaterialInfo[meshInfo.materialIndex];
