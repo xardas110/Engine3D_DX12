@@ -4,6 +4,8 @@
 #include <CommandList.h>
 #include <CommandQueue.h>
 #include <d3dx12.h>
+#include <MeshManager.h>
+#include <Components.h>
 
 #ifndef max
 #define max(a,b)            (((a) > (b)) ? (a) : (b))
@@ -193,6 +195,7 @@ UINT Raytracing::AllocateDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE* cpuDescriptor, 
 
 void Raytracing::BuildGeometry()
 {
+    /*
     auto device = Application::Get().GetDevice();
     auto cq = Application::Get().GetCommandQueue();
     auto cl = cq->GetCommandList();
@@ -201,10 +204,12 @@ void Raytracing::BuildGeometry()
 
     auto fenceVal = cq->ExecuteCommandList(cl);
     cq->WaitForFenceValue(fenceVal);
+    */
 }
 
 void Raytracing::BuildAccelerationStructures()
 {
+    /*
     auto device = Application::Get().GetDevice();
     auto commandQueue = Application::Get().GetCommandQueue();
     auto commandList = commandQueue->GetCommandList();
@@ -307,7 +312,78 @@ void Raytracing::BuildAccelerationStructures()
 
     auto fenceVal = commandQueue->ExecuteCommandList(commandList);
     commandQueue->WaitForFenceValue(fenceVal);
+    */
+}
 
+void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, entt::registry& registry, MeshManager& meshManager, UINT backbufferIndex)
+{
+    m_CurrentBufferIndex = backbufferIndex;
+
+    auto device = Application::Get().GetDevice();
+  
+    std::vector<D3D12_RAYTRACING_INSTANCE_DESC> instanceDescs;
+
+    auto& meshes = meshManager.meshData.meshes;
+    auto& meshInstances = meshManager.instanceData;
+
+    auto view = registry.view<TransformComponent, MeshComponent>();
+    for (auto[entity, trans, mesh] : view.each())
+    {
+        const auto& internalMesh = meshes[meshInstances.meshIds[mesh.id]];
+
+        if (!internalMesh.mesh.blas) continue;
+
+        auto transform = trans.GetTransform();
+
+        D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
+        instanceDesc.InstanceID = mesh.id;
+        instanceDesc.Transform[0][0] = transform.r[0].m128_f32[0];
+        instanceDesc.Transform[1][0] = transform.r[1].m128_f32[0];
+        instanceDesc.Transform[2][0] = transform.r[2].m128_f32[0];
+
+        instanceDesc.Transform[0][1] = transform.r[0].m128_f32[1];
+        instanceDesc.Transform[1][1] = transform.r[1].m128_f32[1];
+        instanceDesc.Transform[2][1] = transform.r[2].m128_f32[1];
+
+        instanceDesc.Transform[0][2] = transform.r[0].m128_f32[2];
+        instanceDesc.Transform[1][2] = transform.r[1].m128_f32[2];
+        instanceDesc.Transform[2][2] = transform.r[2].m128_f32[2];
+
+        instanceDesc.Transform[0][3] = transform.r[3].m128_f32[0];
+        instanceDesc.Transform[1][3] = transform.r[3].m128_f32[1];
+        instanceDesc.Transform[2][3] = transform.r[3].m128_f32[2];
+
+        instanceDesc.InstanceMask = 1;
+        instanceDesc.AccelerationStructure = internalMesh.mesh.blas->GetGPUVirtualAddress();
+        instanceDescs.emplace_back(instanceDesc);
+    }
+
+    auto byteSize = instanceDescs.size() * sizeof(D3D12_RAYTRACING_INSTANCE_DESC);
+    AllocateUploadBuffer(device.Get(), instanceDescs.data(), byteSize, &m_InstanceResource, L"InstanceDescs");
+
+    D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS buildFlags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC topLevelBuildDesc = {};
+
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& topLevelInputs = topLevelBuildDesc.Inputs;
+    topLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+    topLevelInputs.Flags = buildFlags;
+    topLevelInputs.NumDescs = instanceDescs.size();
+    topLevelInputs.pGeometryDescs = nullptr;
+    topLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+
+    D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO topLevelPrebuildInfo = {};
+    device->GetRaytracingAccelerationStructurePrebuildInfo(&topLevelInputs, &topLevelPrebuildInfo);
+    ThrowIfFalse(topLevelPrebuildInfo.ResultDataMaxSizeInBytes > 0, L" ");
+
+    AllocateUAVBuffer(device.Get(), topLevelPrebuildInfo.ResultDataMaxSizeInBytes, &m_TopLevelAccelerationStructure[m_CurrentBufferIndex], D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, L"TopLevelAccelerationStructure");
+   
+    AllocateUAVBuffer(device.Get(), topLevelPrebuildInfo.ScratchDataSizeInBytes, &m_TopLevelScratch, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, L"ScratchResource");
+
+    topLevelBuildDesc.DestAccelerationStructureData = m_TopLevelAccelerationStructure[m_CurrentBufferIndex]->GetGPUVirtualAddress();
+    topLevelBuildDesc.ScratchAccelerationStructureData = m_TopLevelScratch->GetGPUVirtualAddress();
+    topLevelBuildDesc.Inputs.InstanceDescs = m_InstanceResource->GetGPUVirtualAddress();
+   
+    dxrCommandList.GetGraphicsCommandList()->BuildRaytracingAccelerationStructure(&topLevelBuildDesc, 0, nullptr);
 }
 
 void Raytracing::OnMeshCreated(const Mesh& mesh)

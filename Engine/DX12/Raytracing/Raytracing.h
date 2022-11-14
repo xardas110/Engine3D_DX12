@@ -3,6 +3,7 @@
 #include <RayTracingHlslCompat.h>
 #include <Resource.h>
 #include <Mesh.h>
+#include <entt/entt.hpp>
 
 #define SizeOfInUint32(obj) ((sizeof(obj) - 1) / sizeof(UINT32) + 1)
 
@@ -23,29 +24,6 @@ namespace LocalRootSignatureParams {
     };
 }
 
-struct RTX : public Resource
-{
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetShaderResourceView(const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc = nullptr) const override
-    {
-        return m_ShaderResourceView;
-    }
-
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView(const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr) const override
-    {
-        return m_UavView;
-    }
-
-    D3D12_CPU_DESCRIPTOR_HANDLE m_ShaderResourceView;
-    D3D12_CPU_DESCRIPTOR_HANDLE m_UavView;
-};
-
-struct RaytracingAccelerationStructure
-{
-    // Acceleration structure
-    Microsoft::WRL::ComPtr<ID3D12Resource> bottomLevelAccelerationStructure;
-    Microsoft::WRL::ComPtr<ID3D12Resource> topLevelAccelerationStructure;
-};
-
 class Raytracing
 {
 	friend class DeferredRenderer;
@@ -58,12 +36,23 @@ class Raytracing
     // Build raytracing acceleration structures from the generated geometry.
     void BuildAccelerationStructures();
 
+    void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, entt::registry& registry, MeshManager& meshManager, UINT backbufferIndex);
+
     //Called when a new mesh is created, to insert into BLAS
     void OnMeshCreated(const Mesh& mesh);
 
     std::unique_ptr<Mesh> m_Cube;
 
-    RaytracingAccelerationStructure m_RaytracingAccelerationStructure;
-        
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_TopLevelAccelerationStructure[3];
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_TopLevelScratch;
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_InstanceResource;
+
+    auto GetCurrentTLAS()
+    {
+        return m_TopLevelAccelerationStructure[m_CurrentBufferIndex];
+    }
+
+    UINT m_CurrentBufferIndex = 0;
+
     CubeConstantBuffer m_CubeCB;
 };

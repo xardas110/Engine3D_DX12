@@ -126,6 +126,7 @@ struct MeshInstance
 {
     friend class DeferredRenderer;
     friend class MeshManager;
+    friend class Raytracing;
 
     //Path or name
     MeshInstance(const std::wstring& path);
@@ -169,11 +170,14 @@ private:
     
     void Initialize(CommandList& commandList, VertexCollection& vertices, IndexCollection& indices, bool rhcoords);
     void Initialize(CommandList& commandList, const VertexCollection32& vertices, const IndexCollection32& indices, bool rhcoords);
-
-
+  
+    void InitializeBlas(CommandList& commandList);
 
     VertexBuffer m_VertexBuffer;
     IndexBuffer m_IndexBuffer;
+
+    Microsoft::WRL::ComPtr<ID3D12Resource> blas;
+    Microsoft::WRL::ComPtr<ID3D12Resource> scratchResource;
 
     UINT m_IndexCount;
 };
