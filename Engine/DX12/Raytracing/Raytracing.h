@@ -30,9 +30,6 @@ class Raytracing
 
 	void Init();
 
-    // Build geometry to be used in the sample.
-    void BuildGeometry();
-
     // Build raytracing acceleration structures from the generated geometry.
     void BuildAccelerationStructures();
 
@@ -53,6 +50,4 @@ class Raytracing
     }
 
     UINT m_CurrentBufferIndex = 0;
-
-    CubeConstantBuffer m_CubeCB;
 };
