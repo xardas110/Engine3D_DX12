@@ -136,8 +136,8 @@ void DeferredRenderer::Render(Window& window)
 
     m_Raytracer->BuildAccelerationStructure(*dxrCommandList, game->registry, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);
 
-    auto fence = commandQueue->ExecuteCommandList(dxrCommandList);
-    commandQueue->WaitForFenceValue(fence);
+    //auto fence = commandQueue->ExecuteCommandList(commandList);
+    //commandQueue->WaitForFenceValue(fence);
 
     commandList->SetRenderTarget(m_GBufferRenderTarget);
     commandList->SetViewport(m_GBufferRenderTarget.GetViewport());
@@ -200,7 +200,11 @@ void DeferredRenderer::Render(Window& window)
     }
     */
 
-    commandQueue->ExecuteCommandList(commandList);
+    std::vector<std::shared_ptr<CommandList>> commandLists;
+    commandLists.emplace_back(dxrCommandList);
+    commandLists.emplace_back(commandList);
+    
+    commandQueue->ExecuteCommandLists(commandLists);
 }
 
 void DeferredRenderer::OnResize(ResizeEventArgs& e)
