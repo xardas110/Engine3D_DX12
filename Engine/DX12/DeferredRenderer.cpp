@@ -14,6 +14,7 @@
 #include <Entity.h>
 #include <Components.h>
 #include <RayTracingHlslCompat.h>
+#include <WinPixEventRuntime/pix3.h>
 
 bool IsDirectXRaytracingSupported(IDXGIAdapter4* adapter)
 {
@@ -109,6 +110,8 @@ void DeferredRenderer::Render(Window& window)
     auto commandList = commandQueue->GetCommandList();
     auto dxrCommandList = commandQueue->GetCommandList();
 
+    PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"Starting RenderingLoop");
+
     auto& pipelines = Application::Get().GetPipelineManager()->m_Pipelines;
     auto assetManager = Application::Get().GetAssetManager();
 
@@ -133,11 +136,11 @@ void DeferredRenderer::Render(Window& window)
         commandList->ClearTexture(m_GBufferRenderTarget.GetTexture(AttachmentPoint::Color0), clearColor);
         commandList->ClearDepthStencilTexture(m_GBufferRenderTarget.GetTexture(AttachmentPoint::DepthStencil), D3D12_CLEAR_FLAG_DEPTH);
     }
+    PIXBeginEvent(dxrCommandList->GetGraphicsCommandList().Get(), 0, L"Building DXR structure");
 
     m_Raytracer->BuildAccelerationStructure(*dxrCommandList, game->registry, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);
 
-    //auto fence = commandQueue->ExecuteCommandList(commandList);
-    //commandQueue->WaitForFenceValue(fence);
+    PIXEndEvent(dxrCommandList->GetGraphicsCommandList().Get());
 
     commandList->SetRenderTarget(m_GBufferRenderTarget);
     commandList->SetViewport(m_GBufferRenderTarget.GetViewport());
@@ -147,7 +150,7 @@ void DeferredRenderer::Render(Window& window)
     commandList->GetGraphicsCommandList()->SetGraphicsRootShaderResourceView(
         GlobalRootParam::AccelerationStructure, 
         m_Raytracer->GetCurrentTLAS()->GetGPUVirtualAddress());
-  
+    
     commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.Get());
     commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(GlobalRootParam::GlobalHeapData, srvHeap->GetGPUDescriptorHandleForHeapStart());
 
@@ -199,6 +202,8 @@ void DeferredRenderer::Render(Window& window)
         } 
     }
     */
+
+    PIXEndEvent(commandList->GetGraphicsCommandList().Get());
 
     std::vector<std::shared_ptr<CommandList>> commandLists;
     commandLists.emplace_back(dxrCommandList);
