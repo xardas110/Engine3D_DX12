@@ -108,20 +108,13 @@ float4 main(PixelShaderInput IN) : SV_Target
     uint ray_flags = 0; // Any this ray requires in addition those above.
     uint ray_instance_mask = 0xffffffff;
 
-    // b. Initialize  - hardwired here to deliver minimal sample code.
     RayDesc ray;
     ray.TMin = 0.01f;
     ray.TMax = 1e10f;
     ray.Origin = IN.PositionWS.xyz;
     //ray.Origin += IN.NormalWS * 0.2f;
-    ray.Direction = normalize(float3(-1, 0, -1));
+    ray.Direction = normalize(float3(-1, 0, 0));
     query.TraceRayInline(Scene, ray_flags, ray_instance_mask, ray);
-    
-    // c. Cast 
-    
-    // Proceed() is where behind-the-scenes traversal happens, including the heaviest of any driver inlined code.
-    // In this simplest of scenarios, Proceed() only needs to be called once rather than a loop.
-    // Based on the template specialization above, traversal completion is guaranteed.
     
     query.Proceed();
     
@@ -133,22 +126,24 @@ float4 main(PixelShaderInput IN) : SV_Target
     if (query.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
     {
         HitAttributes hit;
-        
-        int instanceIndex = query.CommittedInstanceID();
-        hit.primitiveIndex = query.CommittedPrimitiveIndex();
-        hit.geometryIndex = query.CommittedGeometryIndex();
         hit.bFrontFaced = query.CommittedTriangleFrontFace();
-        hit.barycentrics = query.CommittedTriangleBarycentrics();
-        hit.objToWorld = query.CommittedObjectToWorld3x4();
         
-        MeshInfo meshInfo = GlobalMeshInfo[instanceIndex];
-        MaterialInfo materialInfo = GlobalMaterialInfo[meshInfo.materialIndex];
-        
-        //StructuredBuffer<MeshVertex> meshVertices = GlobalMeshVertexData[meshInfo.vertexOffset];
-        //MeshVertex meshVertex = meshVertices[hit.primitiveIndex];
-       
         if (hit.bFrontFaced == true)
-        {       
+        {
+            int instanceIndex = query.CommittedInstanceID();
+            hit.primitiveIndex = query.CommittedPrimitiveIndex();
+            hit.geometryIndex = query.CommittedGeometryIndex();
+        
+            hit.barycentrics = query.CommittedTriangleBarycentrics();
+            hit.objToWorld = query.CommittedObjectToWorld3x4();
+        
+            MeshInfo meshInfo = GlobalMeshInfo[instanceIndex];
+            MaterialInfo materialInfo = GlobalMaterialInfo[meshInfo.materialIndex];
+        
+            //StructuredBuffer<MeshVertex> meshVertices = GlobalMeshVertexData[meshInfo.vertexOffset];
+            //MeshVertex meshVertex = meshVertices[hit.primitiveIndex];
+       
+        
             float4 albedo = float4(hit.barycentrics.x, hit.barycentrics.y, 0.f, 1.f);
         
             MeshVertex hitSurface = GetHitSurface(hit, meshInfo);

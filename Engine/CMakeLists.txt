@@ -44,7 +44,7 @@ set( HEADER_FILES
     "core/Window.h"
     "DX12/d3dx12.h"
     "core/Camera.h"
-    "DX12/DeferredRenderer.h"
+    "DX12/Renderer/DeferredRenderer.h"
     "AssetManager/AssetManager.h"
     "DX12/PipelineManager.h"
     "core/Components.h"
@@ -91,7 +91,7 @@ set( SOURCE_FILES
     "DX12/VertexBuffer.cpp"
     "core/Window.cpp"
     "core/Camera.cpp"
-    "DX12/DeferredRenderer.cpp"
+    "DX12/Renderer/DeferredRenderer.cpp"
     "AssetManager/AssetManager.cpp"
     "DX12/PipelineManager.cpp"
     "Physics/PhysicsSystem.cpp"
@@ -168,6 +168,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC Resources/Shaders
     PUBLIC external/eventcpp
     PUBLIC Libs/WinPixEventRuntime/include
+    PUBLIC DX12/Renderer
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
 
