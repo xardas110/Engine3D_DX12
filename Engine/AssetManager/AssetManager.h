@@ -9,7 +9,7 @@
 
 using RefCounter = UINT;
 
-//Every Textures and Meshes will be in the same heap
+//Textures and Meshes will be in the same heap
 //Due to global shader access for inline DXR
 struct SRVHeapData
 {
