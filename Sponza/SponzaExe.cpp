@@ -6,6 +6,7 @@
 SponzaExe::SponzaExe(const std::wstring& name, int width, int height, bool vSync)
 	:Game(name, width, height, vSync)
 {
+    srand(time(nullptr));
 }
 
 SponzaExe::~SponzaExe()
@@ -51,14 +52,18 @@ bool SponzaExe::LoadContent()
         trans.scale = { 10.f, 10.f, 10.f };
         trans.pos = { 0.f, 0.f, 0.f };
     }
+
+    for (size_t i = 0; i < 5000; i++)
+    {
     {
         auto ent = CreateEntity("DxCube");
         auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
         sm.SetMaterialInstance(material);
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 2.f, 2.f, 2.f };
-        trans.pos = { -10.f, 0.f, 0.f };
+        trans.pos = {  -50.f + float(rand() % 100),float(rand() % 10), -50.f + float(rand() % 100) };
         trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(45.f));
+    }
     }
     {
         auto ent = CreateEntity("testSphere");

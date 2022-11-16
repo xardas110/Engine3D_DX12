@@ -52,11 +52,10 @@ void DeferredRenderer::Render(Window& window)
     
     auto game = window.m_pGame.lock();
 
-    auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
-    auto commandList = commandQueue->GetCommandList();
-    auto dxrCommandList = commandQueue->GetCommandList();
-
-    //PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"Starting RenderingLoop");
+    auto graphicsQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+    auto computeQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
+    auto commandList = graphicsQueue->GetCommandList();
+    auto dxrCommandList = computeQueue->GetCommandList();
 
     auto assetManager = Application::Get().GetAssetManager();
 
@@ -78,16 +77,20 @@ void DeferredRenderer::Render(Window& window)
 
     // Clear the render targets.
     {
+        PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"ClearGBuffer");
         FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
         m_GBuffer.ClearRendetTarget(*commandList, clearColor);
+        PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
-    /*
-    PIXBeginEvent(dxrCommandList->GetGraphicsCommandList().Get(), 0, L"Building DXR structure");
 
-    m_Raytracer->BuildAccelerationStructure(*dxrCommandList, game->registry, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);
+    {// BUILD DXR STRUCTURE
+        PIXBeginEvent(dxrCommandList->GetGraphicsCommandList().Get(), 0, L"Building DXR structure");
 
-    PIXEndEvent(dxrCommandList->GetGraphicsCommandList().Get());
-    */
+        m_Raytracer->BuildAccelerationStructure(*dxrCommandList, game->registry, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);
+
+        PIXEndEvent(dxrCommandList->GetGraphicsCommandList().Get());       
+    }
+
     //DEPTH PREPASS
     {
         PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"zPrePass");
@@ -168,14 +171,20 @@ void DeferredRenderer::Render(Window& window)
         }
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
-    /*
-    PIXEndEvent(commandList->GetGraphicsCommandList().Get());
-     */
-
-    std::vector<std::shared_ptr<CommandList>> commandLists;
-   // commandLists.emplace_back(dxrCommandList);
-    commandLists.emplace_back(commandList);   
-    commandQueue->ExecuteCommandLists(commandLists);  
+    {//Compute execute
+        PIXBeginEvent(computeQueue->GetD3D12CommandQueue().Get(), 0, L"ComputeQue DXR execute");
+        //EXECUTING RTX STRUCTURE BUILDING
+        computeQueue->ExecuteCommandList(dxrCommandList);
+        PIXEndEvent(computeQueue->GetD3D12CommandQueue().Get());
+    }
+    {//Graphics execute
+        PIXBeginEvent(graphicsQueue->GetD3D12CommandQueue().Get(), 0, L"Graphics execute");
+        std::vector<std::shared_ptr<CommandList>> commandLists;
+        //commandLists.emplace_back(dxrCommandList);
+        commandLists.emplace_back(commandList);   
+        graphicsQueue->ExecuteCommandLists(commandLists); 
+        PIXEndEvent(graphicsQueue->GetD3D12CommandQueue().Get());
+    }  
 }
 
 void DeferredRenderer::OnResize(ResizeEventArgs& e)
