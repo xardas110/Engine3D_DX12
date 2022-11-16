@@ -6,13 +6,12 @@
 #include <GeometryPass_PS.h>
 
 GBuffer::GBuffer(const int& width, const int& height)
-    :width(width), height(height)
 {
-    CreateRenderTarget();
+    CreateRenderTarget(width, height);
     CreatePipeline();
 }
 
-void GBuffer::CreateRenderTarget()
+void GBuffer::CreateRenderTarget(int width, int height)
 {
     // Create an HDR intermediate render target.
     DXGI_FORMAT albedoFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -153,7 +152,7 @@ void GBuffer::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
     commandlist.ClearDepthStencilTexture(renderTarget.GetTexture(AttachmentPoint::DepthStencil), D3D12_CLEAR_FLAG_DEPTH);
 }
 
-void GBuffer::OnResize()
+void GBuffer::OnResize(int width, int height)
 {
     renderTarget.Resize(width, height);
 }

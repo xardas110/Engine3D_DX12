@@ -154,5 +154,5 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     m_Width = e.Width;
     m_Height = e.Height;
 
-    
+    m_GBuffer.OnResize(m_Width, m_Height);
 }
