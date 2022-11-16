@@ -20,14 +20,13 @@ private:
 	friend class Window;
 
 	GBuffer(const int& width, const int& height);
-	void CreateRenderTarget();
+	void CreateRenderTarget(int width, int height);
 	void CreatePipeline();
 
 	void ClearRendetTarget(CommandList& commandlist, float clearColor[4]);
 
-	void OnResize();
+	void OnResize(int width, int height);
 
-	const int& width, height;
 	RenderTarget renderTarget;
 	RootSignature rootSignature;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipeline;
