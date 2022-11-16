@@ -13,6 +13,15 @@ namespace GBufferParam
 	};
 }
 
+namespace DepthPrePassParam
+{
+	enum
+	{
+		ObjectCB,
+		Size
+	};
+}
+
 struct GBuffer
 {
 private:
@@ -22,6 +31,7 @@ private:
 	GBuffer(const int& width, const int& height);
 	void CreateRenderTarget(int width, int height);
 	void CreatePipeline();
+	void CreateDepthPrePassPipeline();
 
 	void ClearRendetTarget(CommandList& commandlist, float clearColor[4]);
 
@@ -30,4 +40,7 @@ private:
 	RenderTarget renderTarget;
 	RootSignature rootSignature;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipeline;
+
+	RootSignature zPrePassRS;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> zPrePassPipeline;
 };

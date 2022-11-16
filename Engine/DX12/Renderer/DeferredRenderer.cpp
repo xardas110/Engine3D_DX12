@@ -88,12 +88,38 @@ void DeferredRenderer::Render(Window& window)
 
     PIXEndEvent(dxrCommandList->GetGraphicsCommandList().Get());
     */
+    //DEPTH PREPASS
+    {
+        PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"zPrePass");
 
-    commandList->SetRenderTarget(m_GBuffer.renderTarget);
-    commandList->SetViewport(m_GBuffer.renderTarget.GetViewport());
-    commandList->SetScissorRect(m_ScissorRect);
-    commandList->SetPipelineState(m_GBuffer.pipeline);
-    commandList->SetGraphicsRootSignature(m_GBuffer.rootSignature);
+        commandList->SetRenderTarget(m_GBuffer.renderTarget);
+        commandList->SetViewport(m_GBuffer.renderTarget.GetViewport());
+        commandList->SetScissorRect(m_ScissorRect);
+        commandList->SetPipelineState(m_GBuffer.zPrePassPipeline);
+        commandList->SetGraphicsRootSignature(m_GBuffer.zPrePassRS);
+
+        auto& view = game->registry.view<TransformComponent, MeshComponent>();
+        for (auto [entity, transform, mesh] : view.each())
+        {
+
+            objectCB.model = transform.GetTransform();
+            objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
+            objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
+            objectCB.entId = (UINT)entity;
+            objectCB.meshId = mesh.id;
+
+            objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
+            globalMeshInfo[mesh.id].objRot = transform.rot;
+
+            auto matIndex = globalMeshInfo[mesh.id].materialIndex;
+            auto albedoIndex = globalMaterialInfoCPU[matIndex].albedo;
+
+            commandList->SetGraphicsDynamicConstantBuffer(DepthPrePassParam::ObjectCB, objectCB);
+
+            meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
+        }
+        PIXEndEvent(commandList->GetGraphicsCommandList().Get());
+    }
 
     /*
     commandList->GetGraphicsCommandList()->SetGraphicsRootShaderResourceView(
@@ -106,33 +132,42 @@ void DeferredRenderer::Render(Window& window)
     commandList->SetGraphicsDynamicStructuredBuffer(GlobalRootParam::GlobalMeshInfo, globalMeshInfo);
     commandList->SetGraphicsDynamicStructuredBuffer(GlobalRootParam::GlobalMaterialInfo, globalMaterialInfo);
   */
-    auto& view = game->registry.view<TransformComponent, MeshComponent>();
-    for (auto [entity, transform, mesh] : view.each())
-    {
+    {//GBuffer Pass
+        PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"GBufferPass");
+        commandList->SetRenderTarget(m_GBuffer.renderTarget);
+        commandList->SetViewport(m_GBuffer.renderTarget.GetViewport());
+        commandList->SetScissorRect(m_ScissorRect);
+        commandList->SetPipelineState(m_GBuffer.pipeline);
+        commandList->SetGraphicsRootSignature(m_GBuffer.rootSignature);
+
+        auto& view = game->registry.view<TransformComponent, MeshComponent>();
+        for (auto [entity, transform, mesh] : view.each())
+        {
         
-        objectCB.model = transform.GetTransform();
-        objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
-        objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
-        objectCB.entId = (UINT)entity;
-        objectCB.meshId = mesh.id;
+            objectCB.model = transform.GetTransform();
+            objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
+            objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
+            objectCB.entId = (UINT)entity;
+            objectCB.meshId = mesh.id;
         
-        objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
-        globalMeshInfo[mesh.id].objRot = transform.rot;
+            objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
+            globalMeshInfo[mesh.id].objRot = transform.rot;
 
-        auto matIndex = globalMeshInfo[mesh.id].materialIndex;
-        auto albedoIndex = globalMaterialInfoCPU[matIndex].albedo;
+            auto matIndex = globalMeshInfo[mesh.id].materialIndex;
+            auto albedoIndex = globalMaterialInfoCPU[matIndex].albedo;
 
-        commandList->SetShaderResourceView(
-        GBufferParam::Textures,
-            0,
-            textures[albedoIndex].texture,
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+            commandList->SetShaderResourceView(
+            GBufferParam::Textures,
+                0,
+                textures[albedoIndex].texture,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-        commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
+            commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
 
-        meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);   
+            meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);   
+        }
+        PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
-    
     /*
     PIXEndEvent(commandList->GetGraphicsCommandList().Get());
      */

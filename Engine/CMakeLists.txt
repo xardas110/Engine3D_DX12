@@ -140,6 +140,7 @@ set( SHADER_FILES
     Resources/Shaders/ImGUI_PS.hlsl
     Resources/Shaders/GBuffer/GeometryPass_VS.hlsl
     Resources/Shaders/GBuffer/GeometryPass_PS.hlsl
+    Resources/Shaders/GBuffer/DepthPrePass_VS.hlsl
     #Resources/Shaders/RaytracingShader.hlsl
 )
 
@@ -276,6 +277,13 @@ set_source_files_properties( Resources/Shaders/GBuffer/GeometryPass_PS.hlsl
         VS_SHADER_TYPE Pixel
         VS_SHADER_VARIABLE_NAME g_GeometryPass_PS
         ShaderType "ps"
+)
+
+set_source_files_properties( Resources/Shaders/GBuffer/DepthPrePass_VS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Vertex
+        VS_SHADER_VARIABLE_NAME g_DepthPrePass_VS
+        ShaderType "vs"
 )
 
 foreach(FILE ${SHADER_FILES})

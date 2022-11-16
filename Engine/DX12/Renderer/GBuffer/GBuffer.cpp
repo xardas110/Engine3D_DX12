@@ -5,10 +5,13 @@
 #include <GeometryPass_VS.h>
 #include <GeometryPass_PS.h>
 
+#include <DepthPrePass_VS.h>
+
 GBuffer::GBuffer(const int& width, const int& height)
 {
     CreateRenderTarget(width, height);
     CreatePipeline();
+    CreateDepthPrePassPipeline();
 }
 
 void GBuffer::CreateRenderTarget(int width, int height)
@@ -97,7 +100,6 @@ void GBuffer::CreatePipeline()
 
     CD3DX12_DESCRIPTOR_RANGE1 textureTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 
-
     CD3DX12_ROOT_PARAMETER1 rootParameters[GBufferParam::Size];
     rootParameters[GBufferParam::ObjectCB].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_ALL);
     rootParameters[GBufferParam::Textures].InitAsDescriptorTable(1, &textureTable, D3D12_SHADER_VISIBILITY_PIXEL);
@@ -121,9 +123,14 @@ void GBuffer::CreatePipeline()
         CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
         CD3DX12_PIPELINE_STATE_STREAM_VS VS;
         CD3DX12_PIPELINE_STATE_STREAM_PS PS;
-        CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormat;
         CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
+        CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormats;
+        CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL DS;
     } pipelineStateStream;
+
+    CD3DX12_DEPTH_STENCIL_DESC dsDesc{};
+    dsDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+    pipelineStateStream.DS = dsDesc;
 
     pipelineStateStream.pRootSignature = rootSignature.GetRootSignature().Get();
 
@@ -134,14 +141,70 @@ void GBuffer::CreatePipeline()
     pipelineStateStream.VS = { g_GeometryPass_VS, sizeof(g_GeometryPass_VS) };
     pipelineStateStream.PS = { g_GeometryPass_PS, sizeof(g_GeometryPass_PS) };
 
-    pipelineStateStream.DSVFormat = renderTarget.GetDepthStencilFormat();
     pipelineStateStream.RTVFormats = renderTarget.GetRenderTargetFormats();
-
+    pipelineStateStream.DSVFormats = renderTarget.GetDepthStencilFormat();
+    
     D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
         sizeof(PipelineStateStream), &pipelineStateStream
     };
 
     ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&pipeline)));
+}
+
+void GBuffer::CreateDepthPrePassPipeline()
+{
+    auto device = Application::Get().GetDevice();
+
+    D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
+    featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
+    if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
+    {
+        featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
+    }
+
+    D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
+        D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
+        D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+        D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+        D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
+
+    CD3DX12_ROOT_PARAMETER1 rootParameters[DepthPrePassParam::Size];
+    rootParameters[DepthPrePassParam::ObjectCB].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_VERTEX);
+
+
+    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
+    rootSignatureDesc.Init_1_1(DepthPrePassParam::Size,
+        rootParameters, 0, nullptr,
+        rootSignatureFlags);
+
+    zPrePassRS.SetRootSignatureDesc(
+        rootSignatureDesc.Desc_1_1,
+        featureData.HighestVersion
+    );
+
+    struct PipelineStateStream
+    {
+        CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT InputLayout;
+        CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;
+        CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
+        CD3DX12_PIPELINE_STATE_STREAM_VS VS;
+        CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormat;
+    } pipelineStateStream;
+
+    pipelineStateStream.pRootSignature = zPrePassRS.GetRootSignature().Get();
+
+    pipelineStateStream.InputLayout = { VertexPositionNormalTexture::InputElements ,VertexPositionNormalTexture::InputElementCount };
+
+    pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE::D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
+    pipelineStateStream.VS = { g_DepthPrePass_VS, sizeof(g_DepthPrePass_VS) };
+    pipelineStateStream.DSVFormat = renderTarget.GetDepthStencilFormat();
+
+    D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
+        sizeof(PipelineStateStream), &pipelineStateStream
+    };
+
+    ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&zPrePassPipeline)));
 }
 
 void GBuffer::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
