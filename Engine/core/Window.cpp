@@ -220,7 +220,7 @@ void Window::OnRender(RenderEventArgs& e)
     }
 
 #ifndef DEBUG_EDITOR
-    Present(m_DeferredRenderer.m_GBufferRenderTarget.GetTexture(AttachmentPoint::Color0));
+    Present(m_DeferredRenderer.m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0));
 #endif // !DEBUG_EDITOR
 }
 
@@ -446,6 +446,6 @@ UINT Window::Present(const Texture & texture, GUI& m_GUI)
 
 const Texture& Window::GetDeferredRendererFinalTexture()
 {
-    return m_DeferredRenderer.m_GBufferRenderTarget.GetTexture(AttachmentPoint::Color0);
+    return m_DeferredRenderer.m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0);
 }
 
