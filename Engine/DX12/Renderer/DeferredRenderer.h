@@ -4,6 +4,8 @@
 #include <Events.h>
 #include <Raytracing.h>
 #include <entt/entt.hpp>
+#include <GBuffer/GBuffer.h>
+#include <RootSignature.h>
 
 class Game;
 class MeshTuple;
@@ -18,16 +20,15 @@ class DeferredRenderer
 	DeferredRenderer(int width, int height);
 	~DeferredRenderer();
 
-	void CreateGBuffer();
 	void Render(class Window& window);
 
 	void OnResize(ResizeEventArgs& e);
 
-	int m_Width, m_Height;
-	RenderTarget m_GBufferRenderTarget;
-	D3D12_RECT m_ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
+	int m_Width, m_Height; //shold be above the rest, cuz of initializing
 
+	D3D12_RECT m_ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
 	std::unique_ptr<Raytracing> m_Raytracer{nullptr};
-	Texture m_DXTexture;
+
+	GBuffer m_GBuffer;
 };
 

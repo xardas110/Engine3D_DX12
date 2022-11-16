@@ -1,0 +1,13 @@
+set_source_files_properties( Resources/Shaders/GeometryMesh_VS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Vertex
+        VS_SHADER_VARIABLE_NAME g_GeometryMesh_VS
+        ShaderType "vs"
+)
+
+set_source_files_properties( Resources/Shaders/GeometryMesh_PS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Pixel
+        VS_SHADER_VARIABLE_NAME g_GeometryMesh_PS
+        ShaderType "ps"
+)

@@ -12,7 +12,7 @@ RaytracingAccelerationStructure Scene                       : register(t0);
 
 Texture2D                       GlobalTextureData[]         : register(t1, space0);
 StructuredBuffer<MeshVertex>    GlobalMeshVertexData[]      : register(t1, space1);
-StructuredBuffer<uint> GlobalMeshIndexData[] : register(t1, space2);
+StructuredBuffer<uint>          GlobalMeshIndexData[] : register(t1, space2);
 
 StructuredBuffer<MeshInfo>      GlobalMeshInfo              : register(t2, space3);
 StructuredBuffer<MaterialInfo>  GlobalMaterialInfo          : register(t3, space4);

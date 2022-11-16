@@ -46,7 +46,7 @@ set( HEADER_FILES
     "core/Camera.h"
     "DX12/Renderer/DeferredRenderer.h"
     "AssetManager/AssetManager.h"
-    "DX12/PipelineManager.h"
+    
     "core/Components.h"
     "core/Transform.h"
     "Physics/PhysicsSystem.h"
@@ -60,7 +60,7 @@ set( HEADER_FILES
     "AssetManager/MeshManager.h"
     "AssetManager/TextureManager.h"
     "AssetManager/MaterialManager.h"
-"external/eventcpp/event.hpp")
+    "external/eventcpp/event.hpp"  "DX12/Renderer/GBuffer/GBuffer.h")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
@@ -93,7 +93,7 @@ set( SOURCE_FILES
     "core/Camera.cpp"
     "DX12/Renderer/DeferredRenderer.cpp"
     "AssetManager/AssetManager.cpp"
-    "DX12/PipelineManager.cpp"
+    
     "Physics/PhysicsSystem.cpp"
     "core/GameMode.cpp"
     "main.cpp"
@@ -106,7 +106,7 @@ set( SOURCE_FILES
     "AssetManager/TextureManager.cpp"
     "AssetManager/MaterialManager.cpp"
     "DX12/Material.cpp"
-)
+ "DX12/Renderer/GBuffer/GBuffer.cpp")
 
 set( IMGUI_HEADERS
     external/ImGui/imgui.h
@@ -138,8 +138,8 @@ set( SHADER_FILES
     Resources/Shaders/PanoToCubemap_CS.hlsl
     Resources/Shaders/ImGUI_VS.hlsl
     Resources/Shaders/ImGUI_PS.hlsl
-    Resources/Shaders/GeometryMesh_VS.hlsl
-    Resources/Shaders/GeometryMesh_PS.hlsl
+    Resources/Shaders/GBuffer/GeometryPass_VS.hlsl
+    Resources/Shaders/GBuffer/GeometryPass_PS.hlsl
     #Resources/Shaders/RaytracingShader.hlsl
 )
 
@@ -264,30 +264,19 @@ set_source_files_properties( Resources/Shaders/ImGUI_PS.hlsl
         ShaderType "ps"
 )
 
-set_source_files_properties( Resources/Shaders/GeometryMesh_VS.hlsl
+set_source_files_properties( Resources/Shaders/GBuffer/GeometryPass_VS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Vertex
-        VS_SHADER_VARIABLE_NAME g_GeometryMesh_VS
+        VS_SHADER_VARIABLE_NAME g_GeometryPass_VS
         ShaderType "vs"
 )
 
-set_source_files_properties( Resources/Shaders/GeometryMesh_PS.hlsl
+set_source_files_properties( Resources/Shaders/GBuffer/GeometryPass_PS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Pixel
-        VS_SHADER_VARIABLE_NAME g_GeometryMesh_PS
+        VS_SHADER_VARIABLE_NAME g_GeometryPass_PS
         ShaderType "ps"
 )
-
-#set_source_files_properties( Resources/Shaders/RaytracingShader.hlsl
-#    PROPERTIES
-#        VS_SHADER_MODEL 6_5
-#        VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/Shaders/%(Filename).h"
-#        VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
-#        VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
-#        VS_SHADER_TYPE lib
-#        VS_SHADER_VARIABLE_NAME g_pRaytracing
-#        ShaderType "lib"
-#)
 
 foreach(FILE ${SHADER_FILES})
   get_filename_component(FILE_WE ${FILE} NAME_WE)

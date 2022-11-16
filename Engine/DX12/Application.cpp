@@ -40,11 +40,6 @@ AssetManager* Application::GetAssetManager()
     return m_AssetManager.get();
 }
 
-PipelineManager* Application::GetPipelineManager()
-{
-    return m_PipelineManager.get();
-}
-
 Application::Application(HINSTANCE hInst)
     : m_hInstance(hInst)
     , m_TearingSupported(false)
@@ -121,8 +116,6 @@ void Application::Initialize()
 
     // Initialize managers
     m_AssetManager = AssetManager::CreateInstance();
-    m_PipelineManager = PipelineManager::CreateInstance();
-
 }
 
 void Application::Create(HINSTANCE hInst)

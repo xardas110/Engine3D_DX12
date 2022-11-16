@@ -1,31 +1,29 @@
-#include <EnginePCH.h>
-#include <PipelineManager.h>
+#pragma once
+#include <RenderTarget.h>
 #include <Application.h>
+#include <RootSignature.h>
 
 #include <GeometryMesh_VS.h>
 #include <GeometryMesh_PS.h>
 
-#include <Camera.h>
 
-PipelineManager::PipelineManager()
+namespace GlobalRootParam
 {
-	CreateGeometryMeshPSO();
+    enum
+    {
+        ObjectCB,
+
+        GlobalHeapData, //Heap contains textures, vertices and indices
+
+        GlobalMeshInfo, //Vertex, index offsets in the heap and Material index to global material info
+        GlobalMaterialInfo, // Contains texture offsets in the heap
+
+        AccelerationStructure,
+        Size
+    };
 }
 
-PipelineManager::~PipelineManager()
-{
-	for (size_t i = 0; i < Pipeline::Size; i++)
-	{
-		m_Pipelines[i].pipelineRef = nullptr;
-	}
-}
-
-std::unique_ptr<PipelineManager> PipelineManager::CreateInstance()
-{
-    return std::unique_ptr<PipelineManager>(new PipelineManager);
-}
-
-void PipelineManager::CreateGeometryMeshPSO()
+inline void CreateCompositionPSO(Microsoft::WRL::ComPtr<ID3D12PipelineState>& outPipelineState, RootSignature& outRootSignature, const RenderTarget& renderTarget)
 {
     auto device = Application::Get().GetDevice();
 
@@ -78,7 +76,7 @@ void PipelineManager::CreateGeometryMeshPSO()
         rootParameters, 1, &linearRepeatSampler,
         rootSignatureFlags);
 
-    auto& rootSignature = m_Pipelines[Pipeline::GeometryMesh].rootSignature;
+    auto& rootSignature = outRootSignature;
 
     rootSignature.SetRootSignatureDesc(
         rootSignatureDesc.Desc_1_1,
@@ -116,5 +114,11 @@ void PipelineManager::CreateGeometryMeshPSO()
         sizeof(PipelineStateStream), &pipelineStateStream
     };
 
-    ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_Pipelines[Pipeline::GeometryMesh].pipelineRef)));
+    ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&outPipelineState)));
+}
+
+
+inline void CreateDepthPrepass()
+{
+
 }

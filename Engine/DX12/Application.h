@@ -39,7 +39,6 @@
 #include <memory>
 #include <string>
 #include <AssetManager.h>
-#include <PipelineManager.h>
 #include <Events.h>
 
 
@@ -156,7 +155,7 @@ public:
     }
 
     AssetManager* GetAssetManager();
-    PipelineManager* GetPipelineManager();
+    //PipelineManager* GetPipelineManager();
 protected:
 
     // Create an application instance.
@@ -192,8 +191,6 @@ private:
 
     //Contains all assets(Meshes, textures, materials) for game objects
     std::unique_ptr<AssetManager> m_AssetManager{nullptr};
-    //Contains all pipelines for the application
-    std::unique_ptr<PipelineManager> m_PipelineManager{ nullptr };
 
 #ifdef DEBUG_EDITOR
     void UpdateEditor(UpdateEventArgs& e);
