@@ -25,8 +25,17 @@ float4 GetAlbedo(in MaterialInfo matInfo, in float2 texCoords)
     return float4(1.f, 0.f, 0.f, 1.f);
 }
 
+void ApplyMaterialProperties(in Material mat, inout float4 albedo, inout float3 emissive, in float3 transparency)
+{
+    albedo *= mat.color;
+    emissive *= mat.emissive;
+    transparency *= mat.transparent;
+}
+
 float4 main(PixelShaderInput IN) : SV_Target
 {
-    MaterialInfo matInfo = g_GlobalMaterialInfo[g_ObjectCB.materialGPUID];
-    return GetAlbedo(matInfo, IN.TexCoord);
+    MaterialInfo matInfo = g_GlobalMaterialInfo[g_ObjectCB.materialGPUID];   
+    float4 albedo = GetAlbedo(matInfo, IN.TexCoord);
+    
+    return albedo;
 }

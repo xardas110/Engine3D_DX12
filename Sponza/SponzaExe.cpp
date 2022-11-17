@@ -27,46 +27,47 @@ bool SponzaExe::LoadContent()
     std::cout << "game init" << std::endl;
 
     Material materialRed;
-    materialRed.color = { 1.f, 0.f, 0.f };
+    materialRed.color = { 1.f, 0.f, 0.f, 1.f };
 
     auto materialID = MaterialInstance::CreateMaterial(L"RED", materialRed);
 
-    TextureInstance monaLisa(L"Assets/Textures/Mona_Lisa.jpg");
-    TextureInstance directX(L"Assets/Textures/DirectX9.png");
+    TextureInstance spaceAlbedo(L"Assets/Textures/SpaceBall/space-cruiser-panels2_albedo.png");
+    TextureInstance spaceNormal(L"Assets/Textures/SpaceBall/space-cruiser-panels2_normal-dx.png");
+    TextureInstance spaceAO(L"Assets/Textures/SpaceBall/space-cruiser-panels2_ao.png");
+    TextureInstance spaceRoughness(L"Assets/Textures/SpaceBall/space-cruiser-panels2_roughness.png");
+    TextureInstance spaceMetallic(L"Assets/Textures/SpaceBall/space-cruiser-panels2_metallic.png");
+
+   // TextureInstance rustMetallic(L"Assets/Textures/RustBall/rustediron2_metallic.png");
+
+   // TextureInstance rustNormal(L"Assets/Textures/RustBall/rustediron2_normal.png");
+
+   // TextureInstance rustRoughness(L"Assets/Textures/RustBall/rustediron2_roughness.png");
+
 
     MaterialInfo matInfo;
-    matInfo.albedo = monaLisa.GetTextureID();
-    matInfo.normal = directX.GetTextureID();
+    matInfo.albedo = spaceMetallic.GetTextureID();
+    //matInfo.normal = rustNormal.GetTextureID();
+    //matInfo.metallic = rustMetallic.GetTextureID();
+    //matInfo.roughness = rustRoughness.GetTextureID();
 
     MaterialInstance material;
     material.CreateMaterialInstance(L"DefaultMaterial", matInfo);
 
-    MaterialInstance material1;
-    matInfo.albedo = directX.GetTextureID();
-    matInfo.normal = monaLisa.GetTextureID();
-
-    material1.CreateMaterialInstance(L"Material1", matInfo);
-
-    MaterialInstance material2;
-    material2.GetMaterialInstance(L"DefaultMaterial");
-
-    material1.SetMaterial(materialID);
-    material.SetMaterial(materialID);
-
+    /*
     {
         auto ent = CreateEntity("DxCube");
         auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
-        sm.SetMaterialInstance(material1);
+        sm.SetMaterialInstance(material);
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 10.f, 10.f, 10.f };
         trans.pos = { 0.f, 0.f, 0.f };
     }
-
+    */
     for (size_t i = 0; i < 100; i++)
     {
     {
         auto ent = CreateEntity("DxCube");
-        auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+        auto& sm = ent.AddComponent<MeshComponent>(L"DefaultSphere");
         sm.SetMaterialInstance(material);
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 2.f, 2.f, 2.f };
@@ -75,12 +76,14 @@ bool SponzaExe::LoadContent()
     }
     }
     {
+    {
         auto ent = CreateEntity("testSphere");
         auto& sm = ent.AddComponent<MeshComponent>(L"DefaultSphere");
-        sm.SetMaterialInstance(material2);
+        sm.SetMaterialInstance(material);
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 2.f, 2.f, 2.f };
         trans.pos = { 3.f, 10.f, 0.f };       
+    }
     }
     
 	return true;
