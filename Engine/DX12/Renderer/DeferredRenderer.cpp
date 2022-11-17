@@ -114,9 +114,6 @@ void DeferredRenderer::Render(Window& window)
             objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
             globalMeshInfo[mesh.id].objRot = transform.rot;
 
-            auto matIndex = globalMeshInfo[mesh.id].materialIndex;
-            auto albedoIndex = globalMaterialInfoCPU[matIndex].albedo;
-
             commandList->SetGraphicsDynamicConstantBuffer(DepthPrePassParam::ObjectCB, objectCB);
 
             meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
@@ -156,8 +153,8 @@ void DeferredRenderer::Render(Window& window)
             objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
             globalMeshInfo[mesh.id].objRot = transform.rot;
 
-            auto matIndex = globalMeshInfo[mesh.id].materialIndex;
-            auto albedoIndex = globalMaterialInfoCPU[matIndex].albedo;
+            auto matInstanceID = globalMeshInfo[mesh.id].materialInstanceID;
+            auto albedoIndex = globalMaterialInfoCPU[matInstanceID].albedo;
 
             commandList->SetShaderResourceView(
             GBufferParam::Textures,

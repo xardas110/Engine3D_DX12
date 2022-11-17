@@ -131,7 +131,8 @@ void GBuffer::CreatePipeline()
     CD3DX12_DEPTH_STENCIL_DESC dsDesc{};
     dsDesc.DepthEnable = true;
     dsDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-    
+    dsDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+
     pipelineStateStream.DS = dsDesc;
 
     pipelineStateStream.pRootSignature = rootSignature.GetRootSignature().Get();
