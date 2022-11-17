@@ -1,6 +1,7 @@
 #pragma once
 #include <Mesh.h>
 #include <eventcpp/event.hpp>
+#include <TypesCompat.h>
 
 class SRVHeapData;
 

@@ -1,6 +1,6 @@
 
 #define HLSL
-#include "../Common/Types.h"
+#include "../Common/TypesCompat.h"
 
 ConstantBuffer<ObjectCB> g_ObjectCB : register(b0);
 

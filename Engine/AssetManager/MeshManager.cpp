@@ -119,7 +119,7 @@ void MeshManager::MeshData::CreateMesh(const std::wstring& name, MeshTuple& tupl
 		D3D12_BUFFER_SRV bufferSRV;
 		bufferSRV.FirstElement = 0;
 		bufferSRV.NumElements = mesh.m_IndexBuffer.GetNumIndicies();
-		bufferSRV.StructureByteStride = sizeof(Index);
+		bufferSRV.StructureByteStride = sizeof(UINT);
 		bufferSRV.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
 		desc.Buffer = bufferSRV;

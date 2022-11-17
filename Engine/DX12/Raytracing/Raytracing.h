@@ -1,6 +1,6 @@
 #pragma once
 
-#include <RayTracingHlslCompat.h>
+#include <TypesCompat.h>
 #include <Resource.h>
 #include <Mesh.h>
 #include <entt/entt.hpp>

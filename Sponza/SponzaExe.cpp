@@ -2,7 +2,6 @@
 #include <iostream>
 #include <Components.h>
 #include <entity.h>
-#include <Flags.h>
 
 SponzaExe::SponzaExe(const std::wstring& name, int width, int height, bool vSync)
 	:Game(name, width, height, vSync)

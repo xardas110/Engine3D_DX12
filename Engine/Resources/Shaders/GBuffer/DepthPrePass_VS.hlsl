@@ -1,5 +1,5 @@
 #define HLSL
-#include "../Common/Types.h"
+#include "../Common/TypesCompat.h"
 
 ConstantBuffer<ObjectCB> g_ObjectCB : register(b0);
 
@@ -21,4 +21,4 @@ VertexShaderOutput main(VertexPositon IN)
     VertexShaderOutput OUT;
     OUT.Position = mul(g_ObjectCB.mvp, float4(IN.Position, 1.0f));
     return OUT;
-}
+};

@@ -41,7 +41,7 @@
 #include <memory> // For std::unique_ptr
 #include <vector>
 #include <Material.h>
-#include <RayTracingHlslCompat.h>
+#include <TypesCompat.h>
 #include <Helpers.h>
 
 using MeshID = UINT;
