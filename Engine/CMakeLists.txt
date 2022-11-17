@@ -60,7 +60,7 @@ set( HEADER_FILES
     "AssetManager/MeshManager.h"
     "AssetManager/TextureManager.h"
     "AssetManager/MaterialManager.h"
-    "external/eventcpp/event.hpp"  "DX12/Renderer/GBuffer/GBuffer.h")
+    "external/eventcpp/event.hpp"  "DX12/Renderer/GBuffer/GBuffer.h" "DX12/Renderer/Lightpass/LightPass.h" "DX12/Renderer/Lightpass/LightPass.cpp")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
@@ -141,6 +141,8 @@ set( SHADER_FILES
     Resources/Shaders/GBuffer/GeometryPass_VS.hlsl
     Resources/Shaders/GBuffer/GeometryPass_PS.hlsl
     Resources/Shaders/GBuffer/DepthPrePass_VS.hlsl
+    Resources/Shaders/LightPass/LightPass_VS.hlsl
+    Resources/Shaders/LightPass/LightPass_PS.hlsl
     #Resources/Shaders/RaytracingShader.hlsl
 )
 
@@ -285,6 +287,20 @@ set_source_files_properties( Resources/Shaders/GBuffer/DepthPrePass_VS.hlsl
         VS_SHADER_TYPE Vertex
         VS_SHADER_VARIABLE_NAME g_DepthPrePass_VS
         ShaderType "vs"
+)
+
+set_source_files_properties( Resources/Shaders/LightPass/LightPass_VS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Vertex
+        VS_SHADER_VARIABLE_NAME g_LightPass_VS
+        ShaderType "vs"
+)
+
+set_source_files_properties( Resources/Shaders/LightPass/LightPass_PS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Pixel
+        VS_SHADER_VARIABLE_NAME g_LightPass_PS
+        ShaderType "ps"
 )
 
 foreach(FILE ${SHADER_FILES})
