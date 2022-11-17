@@ -12,7 +12,6 @@ namespace LightPassParam
 		GlobalMatInfo,
 		GlobalMaterials,
 		GlobalMeshInfo,
-		GBuffer,
 		Size
 	};
 }

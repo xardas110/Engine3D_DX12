@@ -7,6 +7,8 @@
 
 #include <DepthPrePass_VS.h>
 
+#include <Application.h>
+
 GBuffer::GBuffer(const int& width, const int& height)
 {
     CreateRenderTarget(width, height);
@@ -16,6 +18,9 @@ GBuffer::GBuffer(const int& width, const int& height)
 
 void GBuffer::CreateRenderTarget(int width, int height)
 {
+    auto device = Application::Get().GetDevice();
+    auto srvHeap = Application::Get().GetAssetManager()->m_SrvHeapData;
+
     // Create an HDR intermediate render target.
     DXGI_FORMAT albedoFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
     DXGI_FORMAT normalFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -69,6 +74,22 @@ void GBuffer::CreateRenderTarget(int width, int height)
     Texture emissive = Texture(emissiveDesc, &albedoClearValue,
         TextureUsage::RenderTarget,
         L"GBuffer Emissive");
+
+    device->CreateShaderResourceView(
+        albedo.GetD3D12Resource().Get(), nullptr,
+        srvHeap.IncrementHandle(albedoIndex));
+
+    device->CreateShaderResourceView(
+        normal.GetD3D12Resource().Get(), nullptr,
+        srvHeap.IncrementHandle(normalIndex));
+
+    device->CreateShaderResourceView(
+        pbr.GetD3D12Resource().Get(), nullptr,
+        srvHeap.IncrementHandle(pbrIndex));
+
+    device->CreateShaderResourceView(
+        emissive.GetD3D12Resource().Get(), nullptr,
+        srvHeap.IncrementHandle(emissiveIndex));
 
     // Create a depth buffer for the HDR render target.
     auto depthDesc = CD3DX12_RESOURCE_DESC::Tex2D(depthBufferFormat, width, height);

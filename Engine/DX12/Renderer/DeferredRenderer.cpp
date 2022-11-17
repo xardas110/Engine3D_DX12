@@ -16,6 +16,7 @@
 #include <TypesCompat.h>
 #include <WinPixEventRuntime/pix3.h>
 
+using namespace DirectX;
 
 bool IsDirectXRaytracingSupported(IDXGIAdapter4* adapter)
 {
@@ -28,10 +29,9 @@ bool IsDirectXRaytracingSupported(IDXGIAdapter4* adapter)
         && featureSupportData.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
 }
 
-using namespace DirectX;
-
 DeferredRenderer::DeferredRenderer(int width, int height)
-    :m_Width(width), m_Height(height), m_GBuffer(m_Width, m_Height)
+    :   m_Width(width), m_Height(height),      m_GBuffer(m_Width, m_Height),
+        m_LightPass(m_Width, m_Height)
 {
     //auto adapter = Application::Get().GetAdapter(false);  
     //assert(IsDirectXRaytracingSupported(adapter.Get()));
@@ -81,6 +81,7 @@ void DeferredRenderer::Render(Window& window)
         PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"ClearGBuffer");
         FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
         m_GBuffer.ClearRendetTarget(*commandList, clearColor);
+        m_LightPass.ClearRendetTarget(*commandList, clearColor);
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
 
@@ -197,4 +198,5 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     m_Height = e.Height;
 
     m_GBuffer.OnResize(m_Width, m_Height);
+    m_LightPass.OnResize(m_Width, m_Height);
 }
