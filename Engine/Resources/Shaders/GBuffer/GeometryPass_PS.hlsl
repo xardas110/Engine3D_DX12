@@ -21,14 +21,8 @@ struct PixelShaderOutput
     float4 albedo       : SV_TARGET0;
     float4 normalHeight : SV_TARGET1;
     float4 PBR          : SV_TARGET2;
+    float4 emissive     : SV_TARGET3;
 };
-
-void ApplyMaterialProperties(in Material mat, inout float4 albedo, inout float3 emissive, in float3 transparency)
-{
-    albedo *= mat.color;
-    emissive *= mat.emissive;
-    transparency *= mat.transparent;
-}
 
 PixelShaderOutput main(PixelShaderInput IN)
 {
@@ -44,9 +38,21 @@ PixelShaderOutput main(PixelShaderInput IN)
     float metallic = GetMetallic(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
     float height = GetHeight(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
     
+    float3 emissive = GetEmissive(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
+    
+    float opacity = GetOpacity(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
+       
     OUT.albedo = albedo;
     OUT.normalHeight = float4(normal, height);
     OUT.PBR = float4(ao, roughness, metallic, 1.f);
+    OUT.emissive = float4(emissive, 1.f);
+    
+    if (matInfo.materialID != 0xffffffff)
+    {
+        Material mat;
+        mat = g_GlobalMaterials[matInfo.materialID];
+        OUT.albedo.rgb *= mat.color.rgb;
+    }
     
     return OUT;
 }

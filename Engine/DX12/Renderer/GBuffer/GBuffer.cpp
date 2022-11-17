@@ -20,6 +20,7 @@ void GBuffer::CreateRenderTarget(int width, int height)
     DXGI_FORMAT albedoFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
     DXGI_FORMAT normalFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
     DXGI_FORMAT pbrFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
+    DXGI_FORMAT emissiveFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
     DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
 
     // Create an off-screen render target with a single color buffer and a depth buffer.
@@ -34,6 +35,10 @@ void GBuffer::CreateRenderTarget(int width, int height)
     auto pbrDesc = CD3DX12_RESOURCE_DESC::Tex2D(pbrFormat, width, height);
     pbrDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     pbrDesc.MipLevels = 1;
+
+    auto emissiveDesc = CD3DX12_RESOURCE_DESC::Tex2D(emissiveFormat, width, height);
+    emissiveDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    emissiveDesc.MipLevels = 1;
 
     D3D12_CLEAR_VALUE albedoClearValue;
     albedoClearValue.Format = albedoDesc.Format;
@@ -61,6 +66,10 @@ void GBuffer::CreateRenderTarget(int width, int height)
         TextureUsage::RenderTarget,
         L"GBuffer PBR");
 
+    Texture emissive = Texture(emissiveDesc, &albedoClearValue,
+        TextureUsage::RenderTarget,
+        L"GBuffer Emissive");
+
     // Create a depth buffer for the HDR render target.
     auto depthDesc = CD3DX12_RESOURCE_DESC::Tex2D(depthBufferFormat, width, height);
     depthDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
@@ -73,10 +82,11 @@ void GBuffer::CreateRenderTarget(int width, int height)
         TextureUsage::Depth,
         L"GBuffer depth");
 
-    // Attach the HDR texture to the HDR render target.
+    // Packing will eventually be added
     renderTarget.AttachTexture(AttachmentPoint::Color0, albedo);
     renderTarget.AttachTexture(AttachmentPoint::Color1, normal);
     renderTarget.AttachTexture(AttachmentPoint::Color2, pbr);
+    renderTarget.AttachTexture(AttachmentPoint::Color3, emissive);
     renderTarget.AttachTexture(AttachmentPoint::DepthStencil, depthTexture);
 }
 
@@ -96,7 +106,6 @@ void GBuffer::CreatePipeline()
         D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
-
 
     CD3DX12_DESCRIPTOR_RANGE1 textureTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 
@@ -225,6 +234,7 @@ void GBuffer::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color0), clearColor);
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color1), clearColor);
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color2), clearColor);
+    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color3), clearColor);
     commandlist.ClearDepthStencilTexture(renderTarget.GetTexture(AttachmentPoint::DepthStencil), D3D12_CLEAR_FLAG_DEPTH);
 }
 
