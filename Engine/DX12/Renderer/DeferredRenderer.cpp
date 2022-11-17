@@ -63,6 +63,7 @@ void DeferredRenderer::Render(Window& window)
     auto& globalMeshInfo = assetManager->m_MeshManager.instanceData.meshInfo;
     auto& globalMaterialInfo = assetManager->m_MaterialManager.instanceData.gpuInfo;
     auto& globalMaterialInfoCPU = assetManager->m_MaterialManager.instanceData.cpuInfo;
+    auto& materials = assetManager->m_MaterialManager.materialData.materials;
     auto& meshes = assetManager->m_MeshManager.meshData.meshes;
     auto& meshInstance = assetManager->m_MeshManager.instanceData;
     auto& textures = assetManager->m_TextureManager.textureData.textures;
@@ -132,6 +133,7 @@ void DeferredRenderer::Render(Window& window)
     commandList->SetGraphicsDynamicStructuredBuffer(GlobalRootParam::GlobalMeshInfo, globalMeshInfo);
     commandList->SetGraphicsDynamicStructuredBuffer(GlobalRootParam::GlobalMaterialInfo, globalMaterialInfo);
   */
+
     {//GBuffer Pass
         PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"GBufferPass");
         commandList->SetRenderTarget(m_GBuffer.renderTarget);
@@ -139,6 +141,10 @@ void DeferredRenderer::Render(Window& window)
         commandList->SetScissorRect(m_ScissorRect);
         commandList->SetPipelineState(m_GBuffer.pipeline);
         commandList->SetGraphicsRootSignature(m_GBuffer.rootSignature);
+        commandList->SetGraphicsDynamicStructuredBuffer(GBufferParam::GlobalMaterials, materials);
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.Get());
+        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(GBufferParam::GlobalHeapData, srvHeap->GetGPUDescriptorHandleForHeapStart());
+        commandList->SetGraphicsDynamicStructuredBuffer(GBufferParam::GlobalMatInfo, globalMaterialInfo);
 
         auto& view = game->registry.view<TransformComponent, MeshComponent>();
         for (auto [entity, transform, mesh] : view.each())
@@ -154,13 +160,7 @@ void DeferredRenderer::Render(Window& window)
             globalMeshInfo[mesh.id].objRot = transform.rot;
 
             auto matInstanceID = globalMeshInfo[mesh.id].materialInstanceID;
-            auto albedoIndex = globalMaterialInfoCPU[matInstanceID].albedo;
-
-            commandList->SetShaderResourceView(
-            GBufferParam::Textures,
-                0,
-                textures[albedoIndex].texture,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+            objectCB.materialGPUID = matInstanceID;
 
             commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
 

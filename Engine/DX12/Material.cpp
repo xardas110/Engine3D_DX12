@@ -6,9 +6,9 @@ MaterialInstanceID MaterialInstance::CreateMaterialInstance(const std::wstring& 
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
-	materialID = materialManager.CreateMaterialInstance(name, textureIDs);
+	materialInstanceID = materialManager.CreateMaterialInstance(name, textureIDs);
 
-	return materialID;
+	return materialInstanceID;
 }
 
 bool MaterialInstance::GetMaterialInstance(const std::wstring& name)
@@ -16,4 +16,16 @@ bool MaterialInstance::GetMaterialInstance(const std::wstring& name)
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
 	return materialManager.GetMaterialInstance(name, *this);
+}
+
+MaterialID MaterialInstance::CreateMaterial(const std::wstring& name, const Material& material)
+{
+	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
+	return materialManager.CreateMaterial(name, material);
+}
+
+void MaterialInstance::SetMaterial(MaterialID materialId)
+{
+	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
+	materialManager.SetMaterial(materialInstanceID, materialId);
 }

@@ -13,12 +13,15 @@ struct MaterialInstance
 	MaterialInstanceID CreateMaterialInstance(const std::wstring& name, const MaterialInfo& textureIDs);
 	bool GetMaterialInstance(const std::wstring& name);
 
+	static MaterialID CreateMaterial(const std::wstring& name, const Material& material);
+
+	void SetMaterial(MaterialID materialId);
+	
 	MaterialInstanceID GetMaterialInstanceID() const 
 	{
-		return materialID;
+		return materialInstanceID;
 	}
 
 private:
-	MaterialInstanceID materialID{UINT_MAX};
+	MaterialInstanceID materialInstanceID{UINT_MAX};
 };
-

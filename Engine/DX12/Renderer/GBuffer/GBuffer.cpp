@@ -100,9 +100,19 @@ void GBuffer::CreatePipeline()
 
     CD3DX12_DESCRIPTOR_RANGE1 textureTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 
+    CD3DX12_DESCRIPTOR_RANGE1 srvRanges[1] = {};
+    srvRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    srvRanges[0].NumDescriptors = 512;
+    srvRanges[0].BaseShaderRegister = 1;
+    srvRanges[0].RegisterSpace = 0;
+    srvRanges[0].OffsetInDescriptorsFromTableStart = 0;
+    srvRanges[0].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+
     CD3DX12_ROOT_PARAMETER1 rootParameters[GBufferParam::Size];
     rootParameters[GBufferParam::ObjectCB].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_ALL);
-    rootParameters[GBufferParam::Textures].InitAsDescriptorTable(1, &textureTable, D3D12_SHADER_VISIBILITY_PIXEL);
+    rootParameters[GBufferParam::GlobalHeapData].InitAsDescriptorTable(1, srvRanges);
+    rootParameters[GBufferParam::GlobalMatInfo].InitAsShaderResourceView(3, 4);
+    rootParameters[GBufferParam::GlobalMaterials].InitAsShaderResourceView(4, 5);
 
     CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
 

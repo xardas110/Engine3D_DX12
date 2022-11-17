@@ -8,7 +8,9 @@ namespace GBufferParam
 	enum
 	{
 		ObjectCB,		
-		Textures,
+		GlobalHeapData,
+		GlobalMatInfo,
+		GlobalMaterials,
 		Size
 	};
 }

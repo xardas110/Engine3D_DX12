@@ -18,10 +18,32 @@ using namespace DirectX;
 #define DEFAULT_NULL
 #endif // !HLSL
 
+#ifndef HLSL
+#define COMPAT_ONE = 1;
+#define COMPAT_VEC3F_ONE = XMFLOAT3(1.f, 1.f, 1.f)
+#define COMPAT_VEC3F_NULL = XMFLOAT3(0.f, 0.f, 0.f)
+#define COMPAT_FLOAT(val) = val
+#else 
+#define COMPAT_ONE
+#define COMPAT_VEC3F_ONE
+#define COMPAT_VEC3F_NULL
+#define COMPAT_FLOAT(val)
+#endif // !HLSL
+
 #define TEXTURE_NULL UINT_MAX_NULL
 #define MATERIAL_ID_NULL UINT_MAX_NULL
 
+struct Material
+{
+    XMFLOAT3 color COMPAT_VEC3F_ONE;
+    float opacity COMPAT_ONE;
 
+    XMFLOAT3 emissive COMPAT_VEC3F_NULL;
+    float shininess COMPAT_FLOAT(64.f);
+
+    XMFLOAT3 transparent COMPAT_VEC3F_ONE;
+    float pad;
+};
 
 struct MaterialInfo
 {
@@ -65,10 +87,10 @@ struct ObjectCB
     XMMATRIX invView; // Updates pr. frame
     XMMATRIX invProj; // Updates pr. frame
 
-    UINT entId;
-    UINT meshId;
-    int pad1;
-    int pad2;
+    UINT entId UINT_MAX_NULL;
+    UINT meshId UINT_MAX_NULL;
+    UINT materialGPUID UINT_MAX_NULL; //for raster
+    UINT pad2 UINT_MAX_NULL;
 
     XMMATRIX transposeInverseModel;
 };
