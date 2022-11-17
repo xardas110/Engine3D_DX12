@@ -2,6 +2,7 @@
 #include <iostream>
 #include <Components.h>
 #include <entity.h>
+#include <Flags.h>
 
 SponzaExe::SponzaExe(const std::wstring& name, int width, int height, bool vSync)
 	:Game(name, width, height, vSync)
@@ -53,7 +54,7 @@ bool SponzaExe::LoadContent()
         trans.pos = { 0.f, 0.f, 0.f };
     }
 
-    for (size_t i = 0; i < 5000; i++)
+    for (size_t i = 0; i < 100; i++)
     {
     {
         auto ent = CreateEntity("DxCube");

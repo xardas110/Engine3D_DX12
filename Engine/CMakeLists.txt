@@ -167,6 +167,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC DX12/Raytracing
     PUBLIC AssetManager
     PUBLIC Resources/Shaders
+    PUBLIC Resources/Shaders/Common
     PUBLIC external/eventcpp
     PUBLIC Libs/WinPixEventRuntime/include
     PUBLIC DX12/Renderer

@@ -17,6 +17,21 @@
 #else
 using namespace DirectX;
 
+#ifndef HLSL
+#define UINT_MAX_NULL = 0xffffffff;
+#else 
+#define UINT_MAX_NULL
+#endif // !HLSL
+
+#ifndef HLSL
+#define DEFAULT_NULL = 0;
+#else 
+#define DEFAULT_NULL
+#endif // !HLSL
+
+#define TEXTURE_NULL UINT_MAX_NULL
+#define MATERIAL_ID_NULL UINT_MAX_NULL
+
 // Shader will use byte encoding to access indices.
 typedef UINT16 Index;
 #endif
@@ -43,23 +58,32 @@ struct Vertex
 
 struct MaterialInfo
 {
-    UINT ao;
-    UINT albedo;
-    UINT normal;
-    UINT roughness;
-    UINT metallic;
-    UINT opacity;
-    UINT emissive;
-    UINT lightmap;
+    //Don't have space for flags here
+    //Materialflags will be shared with meshflags
+    //See meshinfo for flags
+    UINT ao TEXTURE_NULL;
+    UINT albedo TEXTURE_NULL;
+    UINT normal TEXTURE_NULL;
+    UINT roughness TEXTURE_NULL;
+
+    UINT metallic TEXTURE_NULL;
+    UINT opacity TEXTURE_NULL;
+    UINT emissive TEXTURE_NULL;
+    UINT lightmap TEXTURE_NULL;
+
+    UINT materialID MATERIAL_ID_NULL; //User defined material
+    UINT pad1 TEXTURE_NULL;
+    UINT pad2 TEXTURE_NULL;
+    UINT flags DEFAULT_NULL;
 };
 
 struct MeshInfo
 {
-    UINT vertexOffset;
-    UINT indexOffset;
-    UINT materialIndex; //Cpu material index == Gpu material index
-    UINT flags;
-    XMVECTOR objRot;
+    UINT vertexOffset UINT_MAX_NULL;
+    UINT indexOffset UINT_MAX_NULL;
+    UINT materialInstanceID UINT_MAX_NULL; //Cpu material index == Gpu material index
+    UINT flags DEFAULT_NULL;
+    XMVECTOR objRot; //quat to rotate normal
 };
 
 struct ObjectCB
