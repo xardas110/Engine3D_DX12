@@ -6,6 +6,7 @@
 #include <entt/entt.hpp>
 #include <GBuffer/GBuffer.h>
 #include <RootSignature.h>
+#include <LightPass/LightPass.h>
 
 class Game;
 class MeshTuple;
@@ -30,5 +31,6 @@ class DeferredRenderer
 	std::unique_ptr<Raytracing> m_Raytracer{nullptr};
 
 	GBuffer m_GBuffer;
+	LightPass m_LightPass;
 };
 

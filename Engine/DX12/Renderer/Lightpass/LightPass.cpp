@@ -65,7 +65,6 @@ void LightPass::CreateRenderTarget(int width, int height)
         TextureUsage::RenderTarget,
         L"LightPass IndirectSpecular");
 
-    // Packing will eventually be added
     renderTarget.AttachTexture(AttachmentPoint::Color0, directDiffuse);
     renderTarget.AttachTexture(AttachmentPoint::Color1, indirectDiffuse);
     renderTarget.AttachTexture(AttachmentPoint::Color2, indirectSpecular);
@@ -81,14 +80,6 @@ void LightPass::CreatePipeline()
     {
         featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
     }
-
-    D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
-        D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
-
-    CD3DX12_DESCRIPTOR_RANGE1 textureTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 
     CD3DX12_DESCRIPTOR_RANGE1 srvHeapRanges[3] = {};
     srvHeapRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -114,27 +105,25 @@ void LightPass::CreatePipeline()
 
     CD3DX12_DESCRIPTOR_RANGE1 srvGBuffer[1] = {};
     srvHeapRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvHeapRanges[0].NumDescriptors = 5;
+    srvHeapRanges[0].NumDescriptors = 1;
     srvHeapRanges[0].BaseShaderRegister = 5;
     srvHeapRanges[0].RegisterSpace = 6;
-    srvHeapRanges[0].OffsetInDescriptorsFromTableStart = 0;
+    srvHeapRanges[0].OffsetInDescriptorsFromTableStart = 1024;
     srvHeapRanges[0].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     CD3DX12_ROOT_PARAMETER1 rootParameters[LightPassParam::Size];
     rootParameters[LightPassParam::GlobalHeapData].InitAsDescriptorTable(3, srvHeapRanges);
-    rootParameters[LightPassParam::GlobalMatInfo].InitAsShaderResourceView(3, 4);
-    rootParameters[LightPassParam::GlobalMaterials].InitAsShaderResourceView(4, 5);
     rootParameters[LightPassParam::GlobalMeshInfo].InitAsShaderResourceView(2, 3);
-    rootParameters[LightPassParam::GBuffer].InitAsDescriptorTable(1, srvGBuffer);
+    rootParameters[LightPassParam::GlobalMatInfo].InitAsShaderResourceView(3, 4);
+    rootParameters[LightPassParam::GlobalMaterials].InitAsShaderResourceView(4, 5); 
 
-    CD3DX12_STATIC_SAMPLER_DESC samplers[2] = {};
+    CD3DX12_STATIC_SAMPLER_DESC samplers[2];
     samplers[0] = CD3DX12_STATIC_SAMPLER_DESC(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT);
-    samplers[1] = CD3DX12_STATIC_SAMPLER_DESC(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
+    samplers[1] = CD3DX12_STATIC_SAMPLER_DESC(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
     
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
     rootSignatureDesc.Init_1_1(LightPassParam::Size,
-        rootParameters, 2, samplers,
-        rootSignatureFlags);
+        rootParameters, 2, samplers);
 
     rootSignature.SetRootSignatureDesc(
         rootSignatureDesc.Desc_1_1,
@@ -150,6 +139,10 @@ void LightPass::CreatePipeline()
         CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER Rasterizer;
         CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
     } pipelineStateStream;
+
+    CD3DX12_RASTERIZER_DESC rasterizerDesc(D3D12_DEFAULT);
+    rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+    pipelineStateStream.Rasterizer = rasterizerDesc;
 
     pipelineStateStream.pRootSignature = rootSignature.GetRootSignature().Get();
 
@@ -172,8 +165,6 @@ void LightPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color0), clearColor);
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color1), clearColor);
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color2), clearColor);
-    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color3), clearColor);
-    commandlist.ClearDepthStencilTexture(renderTarget.GetTexture(AttachmentPoint::DepthStencil), D3D12_CLEAR_FLAG_DEPTH);
 }
 
 void LightPass::OnResize(int width, int height)
