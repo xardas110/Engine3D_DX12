@@ -13,7 +13,7 @@
 #include <Helpers.h>
 #include <Entity.h>
 #include <Components.h>
-#include <RayTracingHlslCompat.h>
+#include <TypesCompat.h>
 #include <WinPixEventRuntime/pix3.h>
 
 

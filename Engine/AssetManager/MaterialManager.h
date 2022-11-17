@@ -1,5 +1,5 @@
 #pragma once
-#include <RayTracingHlslCompat.h>
+#include <TypesCompat.h>
 #include <Material.h>
 
 class TextureData;

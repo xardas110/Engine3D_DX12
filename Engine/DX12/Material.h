@@ -1,6 +1,6 @@
 #pragma once
 #include <Texture.h>
-#include <RayTracingHlslCompat.h>
+#include <TypesCompat.h>
 
 using MaterialID = std::uint32_t;
 using MaterialInstanceID = UINT;
