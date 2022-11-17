@@ -47,6 +47,7 @@
 using MeshID = UINT;
 using MeshInstanceID = UINT;
 
+
  // Vertex struct holding position, normal vector, and texture mapping information.
 struct VertexPositionNormalTexture
 {
