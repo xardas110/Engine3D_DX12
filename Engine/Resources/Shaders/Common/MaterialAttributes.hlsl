@@ -64,4 +64,24 @@ float GetHeight(in MaterialInfo matInfo, in float2 texCoords, in SamplerState in
     return 1.f;
 }
 
+float3 GetEmissive(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[])
+{
+    if (matInfo.emissive != 0xffffffff)
+    {
+        Texture2D emissive = globalTextureData[matInfo.emissive];
+        return emissive.Sample(inSampler, texCoords).r;
+    }
+    return float3(1.f, 0.f, 0.f);
+}
+
+float GetOpacity(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[])
+{
+    if (matInfo.opacity != 0xffffffff)
+    {
+        Texture2D opacity = globalTextureData[matInfo.opacity];
+        return opacity.Sample(inSampler, texCoords).r;
+    }
+    return 1.f;
+}
+
 #endif
