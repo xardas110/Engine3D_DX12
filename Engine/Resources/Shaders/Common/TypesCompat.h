@@ -22,12 +22,14 @@ using namespace DirectX;
 #define COMPAT_ONE = 1;
 #define COMPAT_VEC3F_ONE = XMFLOAT3(1.f, 1.f, 1.f)
 #define COMPAT_VEC3F_NULL = XMFLOAT3(0.f, 0.f, 0.f)
+#define COMPAT_VEC4F(v0, v1, v2, v3) = XMFLOAT4(v0, v1, v2, v3)
 #define COMPAT_FLOAT(val) = val
 #else 
 #define COMPAT_ONE
 #define COMPAT_VEC3F_ONE
 #define COMPAT_VEC3F_NULL
 #define COMPAT_FLOAT(val)
+#define COMPAT_VEC4F(v0, v1, v2, v3)
 #endif // !HLSL
 
 #define TEXTURE_NULL UINT_MAX_NULL
@@ -35,12 +37,13 @@ using namespace DirectX;
 
 struct Material
 {
-    XMFLOAT3 color COMPAT_VEC3F_ONE;
-    float opacity COMPAT_ONE;
+    //Color with opacity
+    XMFLOAT4 color COMPAT_VEC4F(1.f, 1.f, 1.f, 1.f);
 
     XMFLOAT3 emissive COMPAT_VEC3F_NULL;
     float shininess COMPAT_FLOAT(64.f);
 
+    //Color for transperent objects
     XMFLOAT3 transparent COMPAT_VEC3F_ONE;
     float pad;
 };

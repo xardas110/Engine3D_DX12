@@ -20,8 +20,7 @@ struct VertexShaderOutput
 };
 
 VertexShaderOutput main(VertexPositionNormalTexture IN)
-{
-    
+{  
 	VertexShaderOutput OUT;
 	OUT.Position = mul(g_ObjectCB.mvp, float4(IN.Position, 1.0f));
 	OUT.PositionWS = mul(g_ObjectCB.model, float4(IN.Position, 1.f));
