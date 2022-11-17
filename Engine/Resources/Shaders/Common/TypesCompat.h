@@ -105,5 +105,4 @@ struct MeshVertex
     XMFLOAT2 textureCoordinate;
 };
 
-
 #endif

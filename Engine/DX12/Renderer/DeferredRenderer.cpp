@@ -175,12 +175,40 @@ void DeferredRenderer::Render(Window& window)
         }
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
+    {
+        PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"LightPass");
+        commandList->SetRenderTarget(m_LightPass.renderTarget);
+        commandList->SetViewport(m_LightPass.renderTarget.GetViewport());
+        commandList->SetScissorRect(m_ScissorRect);
+        commandList->SetPipelineState(m_LightPass.pipeline);
+        commandList->SetGraphicsRootSignature(m_LightPass.rootSignature);
+        commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.Get());
 
+        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(LightPassParam::GlobalHeapData, srvHeap->GetGPUDescriptorHandleForHeapStart());
+
+        commandList->SetGraphicsDynamicStructuredBuffer(LightPassParam::GlobalMaterials, materials);
+
+        commandList->SetGraphicsDynamicStructuredBuffer(LightPassParam::GlobalMatInfo, globalMaterialInfo);
+
+        commandList->SetGraphicsDynamicStructuredBuffer(LightPassParam::GlobalMeshInfo, globalMeshInfo);
+
+        commandList->SetShaderResourceView(
+            LightPassParam::GlobalHeapData, 0,
+            m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0),
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+        commandList->Draw(3);
+
+        PIXEndEvent(commandList->GetGraphicsCommandList().Get());
+    }
     {//Graphics execute
         PIXBeginEvent(graphicsQueue->GetD3D12CommandQueue().Get(), 0, L"Graphics execute");
         std::vector<std::shared_ptr<CommandList>> commandLists;
-        //commandLists.emplace_back(dxrCommandList);
+        //commandLists.emplace_back(dxrCommandList);       
         commandLists.emplace_back(commandList);   
+        //commandLists.emplace_back(commandList1);
         graphicsQueue->ExecuteCommandLists(commandLists); 
         PIXEndEvent(graphicsQueue->GetD3D12CommandQueue().Get());
     }  
