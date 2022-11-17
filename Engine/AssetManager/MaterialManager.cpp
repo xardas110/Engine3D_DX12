@@ -73,6 +73,12 @@ MaterialInstanceID MaterialManager::CreateMaterialInstance(const std::wstring& n
 
 		m_TextureManager.IncrementRef(textureIDs.opacity);
 	}
+	if (IsMaterialValid(textureIDs.height))
+	{
+		instanceData.gpuInfo[currentIndex].height = textureData.textures[textureIDs.height].heapID;
+
+		m_TextureManager.IncrementRef(textureIDs.height);
+	}
 
 	instanceData.map[name] = currentIndex;
 

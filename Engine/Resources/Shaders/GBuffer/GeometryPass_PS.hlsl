@@ -1,5 +1,6 @@
 #define HLSL
 #include "../Common/TypesCompat.h"
+#include "../Common/MaterialAttributes.hlsl"
 
 ConstantBuffer<ObjectCB>            g_ObjectCB                  : register(b0);
 Texture2D                           g_GlobalTextureData[]       : register(t1, space0);
@@ -15,15 +16,12 @@ struct PixelShaderInput
 	float2 TexCoord		:	TEXCOORD;
 };
 
-float4 GetAlbedo(in MaterialInfo matInfo, in float2 texCoords)
+struct PixelShaderOutput
 {
-    if (matInfo.albedo != 0xffffffff)
-    {
-        Texture2D albedo = g_GlobalTextureData[matInfo.albedo];
-        return albedo.Sample(g_LinearRepeatSampler, texCoords);
-    }
-    return float4(1.f, 0.f, 0.f, 1.f);
-}
+    float4 albedo       : SV_TARGET0;
+    float4 normalHeight : SV_TARGET1;
+    float4 PBR          : SV_TARGET2;
+};
 
 void ApplyMaterialProperties(in Material mat, inout float4 albedo, inout float3 emissive, in float3 transparency)
 {
@@ -32,10 +30,23 @@ void ApplyMaterialProperties(in Material mat, inout float4 albedo, inout float3 
     transparency *= mat.transparent;
 }
 
-float4 main(PixelShaderInput IN) : SV_Target
+PixelShaderOutput main(PixelShaderInput IN)
 {
-    MaterialInfo matInfo = g_GlobalMaterialInfo[g_ObjectCB.materialGPUID];   
-    float4 albedo = GetAlbedo(matInfo, IN.TexCoord);
+    PixelShaderOutput OUT;
     
-    return albedo;
+    MaterialInfo matInfo = g_GlobalMaterialInfo[g_ObjectCB.materialGPUID];   
+    
+    float4 albedo = GetAlbedo(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
+    float3 normal = GetNormal(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
+    
+    float ao = GetAO(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
+    float roughness = GetRoughness(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
+    float metallic = GetMetallic(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
+    float height = GetHeight(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
+    
+    OUT.albedo = albedo;
+    OUT.normalHeight = float4(normal, height);
+    OUT.PBR = float4(ao, roughness, metallic, 1.f);
+    
+    return OUT;
 }

@@ -36,19 +36,15 @@ bool SponzaExe::LoadContent()
     TextureInstance spaceAO(L"Assets/Textures/SpaceBall/space-cruiser-panels2_ao.png");
     TextureInstance spaceRoughness(L"Assets/Textures/SpaceBall/space-cruiser-panels2_roughness.png");
     TextureInstance spaceMetallic(L"Assets/Textures/SpaceBall/space-cruiser-panels2_metallic.png");
-
-   // TextureInstance rustMetallic(L"Assets/Textures/RustBall/rustediron2_metallic.png");
-
-   // TextureInstance rustNormal(L"Assets/Textures/RustBall/rustediron2_normal.png");
-
-   // TextureInstance rustRoughness(L"Assets/Textures/RustBall/rustediron2_roughness.png");
-
+    TextureInstance spaceHeight(L"Assets/Textures/SpaceBall/space-cruiser-panels2_height.png");
 
     MaterialInfo matInfo;
-    matInfo.albedo = spaceMetallic.GetTextureID();
-    //matInfo.normal = rustNormal.GetTextureID();
-    //matInfo.metallic = rustMetallic.GetTextureID();
-    //matInfo.roughness = rustRoughness.GetTextureID();
+    matInfo.albedo = spaceAlbedo.GetTextureID();
+    matInfo.normal = spaceNormal.GetTextureID();
+    matInfo.metallic = spaceMetallic.GetTextureID();
+    matInfo.roughness = spaceRoughness.GetTextureID();
+    matInfo.ao = spaceAO.GetTextureID();
+    matInfo.height = spaceHeight.GetTextureID();
 
     MaterialInstance material;
     material.CreateMaterialInstance(L"DefaultMaterial", matInfo);
