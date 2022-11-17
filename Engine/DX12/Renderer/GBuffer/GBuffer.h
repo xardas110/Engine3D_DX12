@@ -45,9 +45,4 @@ private:
 
 	RootSignature zPrePassRS;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> zPrePassPipeline;
-
-	UINT albedoIndex		= 0;
-	UINT normalIndex		= 1;
-	UINT pbrIndex			= 2;
-	UINT emissiveIndex		= 3;
 };

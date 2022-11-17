@@ -10,7 +10,7 @@ StructuredBuffer<MeshInfo>      g_GlobalMeshInfo            : register(t2, space
 StructuredBuffer<MaterialInfo>  g_GlobalMaterialInfo        : register(t3, space4);
 StructuredBuffer<Material>      g_GlobalMaterials           : register(t4, space5);
 
-Texture2D                       g_GBufferData               : register(t5, space6);
+Texture2D                       g_GBufferData             : register(t5, space6);
 
 SamplerState                    g_NearestRepeatSampler      : register(s0);
 SamplerState                    g_LinearRepeatSampler       : register(s1);
@@ -26,7 +26,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
     PixelShaderOutput OUT;
 
-
+    OUT.DirectDiffuse = g_GBufferData.Sample(g_NearestRepeatSampler, TexCoord);
     
     return OUT;
 }
