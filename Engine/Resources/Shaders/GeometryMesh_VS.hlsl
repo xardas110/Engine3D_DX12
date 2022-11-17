@@ -1,3 +1,5 @@
+
+/*
 #define HLSL
 #include "RaytracingHlslCompat.h"
 
@@ -30,3 +32,4 @@ VertexShaderOutput main(VertexPositionNormalTexture IN)
     
     return OUT;
 }
+*/

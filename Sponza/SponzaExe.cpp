@@ -19,11 +19,17 @@ bool SponzaExe::LoadContent()
 
 
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
+    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
     meshManager.CreateCube();
     meshManager.CreateSphere();
 
     std::cout << "game init" << std::endl;
+
+    Material materialRed;
+    materialRed.color = { 1.f, 0.f, 0.f };
+
+    auto materialID = MaterialInstance::CreateMaterial(L"RED", materialRed);
 
     TextureInstance monaLisa(L"Assets/Textures/Mona_Lisa.jpg");
     TextureInstance directX(L"Assets/Textures/DirectX9.png");
@@ -43,6 +49,9 @@ bool SponzaExe::LoadContent()
 
     MaterialInstance material2;
     material2.GetMaterialInstance(L"DefaultMaterial");
+
+    material1.SetMaterial(materialID);
+    material.SetMaterial(materialID);
 
     {
         auto ent = CreateEntity("DxCube");
