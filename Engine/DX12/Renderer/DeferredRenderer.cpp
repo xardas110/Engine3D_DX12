@@ -90,6 +90,13 @@ void DeferredRenderer::Render(Window& window)
         m_Raytracer->BuildAccelerationStructure(*dxrCommandList, game->registry, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);
 
         PIXEndEvent(dxrCommandList->GetGraphicsCommandList().Get());       
+
+        {//Compute execute
+            PIXBeginEvent(computeQueue->GetD3D12CommandQueue().Get(), 0, L"ComputeQue DXR execute");
+            //EXECUTING RTX STRUCTURE BUILDING
+            computeQueue->ExecuteCommandList(dxrCommandList);
+            PIXEndEvent(computeQueue->GetD3D12CommandQueue().Get());
+        }
     }
 
     //DEPTH PREPASS
@@ -148,8 +155,7 @@ void DeferredRenderer::Render(Window& window)
 
         auto& view = game->registry.view<TransformComponent, MeshComponent>();
         for (auto [entity, transform, mesh] : view.each())
-        {
-        
+        {       
             objectCB.model = transform.GetTransform();
             objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
             objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
@@ -168,12 +174,7 @@ void DeferredRenderer::Render(Window& window)
         }
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
-    {//Compute execute
-        PIXBeginEvent(computeQueue->GetD3D12CommandQueue().Get(), 0, L"ComputeQue DXR execute");
-        //EXECUTING RTX STRUCTURE BUILDING
-        computeQueue->ExecuteCommandList(dxrCommandList);
-        PIXEndEvent(computeQueue->GetD3D12CommandQueue().Get());
-    }
+
     {//Graphics execute
         PIXBeginEvent(graphicsQueue->GetD3D12CommandQueue().Get(), 0, L"Graphics execute");
         std::vector<std::shared_ptr<CommandList>> commandLists;

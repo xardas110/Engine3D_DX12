@@ -63,9 +63,9 @@ struct MaterialInfo
     UINT emissive TEXTURE_NULL;
     UINT lightmap TEXTURE_NULL;
 
-    UINT materialID MATERIAL_ID_NULL; //User defined material
-    UINT pad1 TEXTURE_NULL;
+    UINT height TEXTURE_NULL;
     UINT pad2 TEXTURE_NULL;
+    UINT materialID MATERIAL_ID_NULL; //User defined material
     UINT flags DEFAULT_NULL;
 };
 
