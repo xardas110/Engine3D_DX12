@@ -2,6 +2,7 @@
 #include <RenderTarget.h>
 #include <RootSignature.h>
 #include <CommandList.h>
+#include <StaticDescriptorHeap.h>
 
 namespace GBufferParam
 {
@@ -47,5 +48,8 @@ private:
 	RootSignature zPrePassRS;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> zPrePassPipeline;
 
-	UINT albedoIndex, normalIndex, pbrIndex, emissiveIndex;
+	SRVHeapData m_SRVHeap;
+
+	//Returns handle to heap start
+	D3D12_GPU_DESCRIPTOR_HANDLE CreateSRVViews();
 };

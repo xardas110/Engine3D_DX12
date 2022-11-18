@@ -106,7 +106,7 @@ set( SOURCE_FILES
     "AssetManager/TextureManager.cpp"
     "AssetManager/MaterialManager.cpp"
     "DX12/Material.cpp"
- "DX12/Renderer/GBuffer/GBuffer.cpp")
+ "DX12/Renderer/GBuffer/GBuffer.cpp" "DX12/StaticDescriptorHeap.cpp")
 
 set( IMGUI_HEADERS
     external/ImGui/imgui.h

@@ -8,7 +8,7 @@ namespace LightPassParam
 {
 	enum
 	{
-		GBufferSRVIndices,
+		GBufferHeap,
 		GlobalHeapData,
 		GlobalMatInfo,
 		GlobalMaterials,

@@ -10,6 +10,7 @@
 #include <Application.h>
 
 GBuffer::GBuffer(const int& width, const int& height)
+    :m_SRVHeap(5)
 {
     CreateRenderTarget(width, height);
     CreatePipeline();
@@ -74,22 +75,6 @@ void GBuffer::CreateRenderTarget(int width, int height)
     Texture emissive = Texture(emissiveDesc, &albedoClearValue,
         TextureUsage::RenderTarget,
         L"GBuffer Emissive");
-
-    device->CreateShaderResourceView(
-        albedo.GetD3D12Resource().Get(), nullptr,
-        srvHeap.IncrementHandle(albedoIndex));
-
-    device->CreateShaderResourceView(
-        normal.GetD3D12Resource().Get(), nullptr,
-        srvHeap.IncrementHandle(normalIndex));
-
-    device->CreateShaderResourceView(
-        pbr.GetD3D12Resource().Get(), nullptr,
-        srvHeap.IncrementHandle(pbrIndex));
-
-    device->CreateShaderResourceView(
-        emissive.GetD3D12Resource().Get(), nullptr,
-        srvHeap.IncrementHandle(emissiveIndex));
 
     // Create a depth buffer for the HDR render target.
     auto depthDesc = CD3DX12_RESOURCE_DESC::Tex2D(depthBufferFormat, width, height);
@@ -262,4 +247,15 @@ void GBuffer::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
 void GBuffer::OnResize(int width, int height)
 {
     renderTarget.Resize(width, height);
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE GBuffer::CreateSRVViews()
+{
+    auto device = Application::Get().GetDevice();
+
+    device->CreateShaderResourceView(
+        renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(0));
+
+    return m_SRVHeap.GetHandleAtStart();
 }

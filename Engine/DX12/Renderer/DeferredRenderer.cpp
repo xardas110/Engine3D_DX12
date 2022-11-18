@@ -196,21 +196,13 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->SetGraphicsDynamicStructuredBuffer(LightPassParam::GlobalMeshInfo, globalMeshInfo);
 
-        GBufferSRVIndices indices;
-        indices.albedo = m_GBuffer.albedoIndex;
-        indices.normal = m_GBuffer.normalIndex;
-        indices.pbr = m_GBuffer.pbrIndex;
-        indices.emissive = m_GBuffer.emissiveIndex;
-
         commandList->TransitionBarrier(m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-        auto device = Application::Get().GetDevice();
-        
-        device->CreateShaderResourceView(
-            m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(), nullptr,
-            srvHeap.SetHandle(m_GBuffer.albedoIndex));
+        auto gBufferHeap = m_GBuffer.CreateSRVViews();
 
-        commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::GBufferSRVIndices, indices);
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer.m_SRVHeap.heap.Get());
+
+        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(LightPassParam::GBufferHeap, gBufferHeap);
 
         commandList->Draw(3);
 
