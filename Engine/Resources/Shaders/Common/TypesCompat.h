@@ -104,4 +104,22 @@ struct MeshVertex
     XMFLOAT3 bitangent;
 };
 
+struct DirectionalLightCB
+{
+    //Dir and ?
+    XMVECTOR direction;
+    //Color and itensity
+    XMVECTOR color;
+};
+
+struct CameraCB
+{
+    XMMATRIX view;
+    XMMATRIX proj;
+    XMMATRIX invView;
+    XMMATRIX invProj;
+    XMFLOAT3 pos;
+    float pad;
+};
+
 #endif
