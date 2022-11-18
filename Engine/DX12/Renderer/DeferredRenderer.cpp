@@ -188,6 +188,10 @@ void DeferredRenderer::Render(Window& window)
         
         commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.heap.Get());
 
+        commandList->GetGraphicsCommandList()->SetGraphicsRootShaderResourceView(
+            LightPassParam::AccelerationStructure,
+            m_Raytracer->GetCurrentTLAS()->GetGPUVirtualAddress());
+
         commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(LightPassParam::GlobalHeapData, srvHeap.heap->GetGPUDescriptorHandleForHeapStart());
 
         commandList->SetGraphicsDynamicStructuredBuffer(LightPassParam::GlobalMaterials, materials);
@@ -239,6 +243,10 @@ void DeferredRenderer::Render(Window& window)
         auto lightMapHeap = m_LightPass.m_SRVHeap;
 
         commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, lightMapHeap.heap.Get());
+
+        commandList->GetGraphicsCommandList()->SetGraphicsRootShaderResourceView(
+            CompositionPassParam::AccelerationStructure,
+            m_Raytracer->GetCurrentTLAS()->GetGPUVirtualAddress());
 
         commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(CompositionPassParam::LightMapHeap, lightMapView);
 
