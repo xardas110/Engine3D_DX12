@@ -34,7 +34,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float4 pbr = g_GBufferHeap[2].Sample(g_NearestRepeatSampler, TexCoord);
     float4 emissive = g_GBufferHeap[3].Sample(g_NearestRepeatSampler, TexCoord);
     
-    OUT.ColorTexture = albedo;
+    OUT.ColorTexture = albedo * directDiffuse;
 
     return OUT;
 }

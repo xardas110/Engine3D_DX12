@@ -47,7 +47,6 @@ DeferredRenderer::~DeferredRenderer()
 {
 }
 
-
 void DeferredRenderer::Render(Window& window)
 {
     if (!window.m_pGame.lock()) return;
