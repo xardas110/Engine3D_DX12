@@ -220,7 +220,7 @@ void Window::OnRender(RenderEventArgs& e)
     }
 
 #ifndef DEBUG_EDITOR
-    Present(m_DeferredRenderer.m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color0));
+    Present(m_DeferredRenderer.m_CompositionPass.renderTarget.GetTexture(AttachmentPoint::Color0));
 #endif // !DEBUG_EDITOR
 }
 

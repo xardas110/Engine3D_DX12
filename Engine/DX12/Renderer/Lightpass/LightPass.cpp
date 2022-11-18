@@ -112,12 +112,12 @@ void LightPass::CreatePipeline()
     gBufferSRVHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     CD3DX12_ROOT_PARAMETER1 rootParameters[LightPassParam::Size];
+    rootParameters[LightPassParam::AccelerationStructure].InitAsShaderResourceView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
     rootParameters[LightPassParam::GBufferHeap].InitAsDescriptorTable(1, &gBufferSRVHeap);
     rootParameters[LightPassParam::GlobalHeapData].InitAsDescriptorTable(3, srvHeapRanges);
     rootParameters[LightPassParam::GlobalMeshInfo].InitAsShaderResourceView(2, 3);
     rootParameters[LightPassParam::GlobalMatInfo].InitAsShaderResourceView(3, 4);
-    rootParameters[LightPassParam::GlobalMaterials].InitAsShaderResourceView(4, 5); 
-    
+    rootParameters[LightPassParam::GlobalMaterials].InitAsShaderResourceView(4, 5);     
     CD3DX12_STATIC_SAMPLER_DESC samplers[2];
     samplers[0] = CD3DX12_STATIC_SAMPLER_DESC(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT);
     samplers[1] = CD3DX12_STATIC_SAMPLER_DESC(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
@@ -171,4 +171,23 @@ void LightPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
 void LightPass::OnResize(int width, int height)
 {
     renderTarget.Resize(width, height);
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateSRVViews()
+{
+    auto device = Application::Get().GetDevice();
+
+    device->CreateShaderResourceView(
+        renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(0));
+
+    device->CreateShaderResourceView(
+        renderTarget.GetTexture(AttachmentPoint::Color1).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(1));
+
+    device->CreateShaderResourceView(
+        renderTarget.GetTexture(AttachmentPoint::Color2).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(2));
+
+    return m_SRVHeap.GetHandleAtStart();
 }

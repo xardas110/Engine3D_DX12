@@ -257,5 +257,17 @@ D3D12_GPU_DESCRIPTOR_HANDLE GBuffer::CreateSRVViews()
         renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(), nullptr,
         m_SRVHeap.SetHandle(0));
 
+    device->CreateShaderResourceView(
+        renderTarget.GetTexture(AttachmentPoint::Color1).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(1));
+
+    device->CreateShaderResourceView(
+        renderTarget.GetTexture(AttachmentPoint::Color2).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(2));
+
+    device->CreateShaderResourceView(
+        renderTarget.GetTexture(AttachmentPoint::Color3).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(3));
+
     return m_SRVHeap.GetHandleAtStart();
 }

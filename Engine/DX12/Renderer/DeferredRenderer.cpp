@@ -31,7 +31,8 @@ bool IsDirectXRaytracingSupported(IDXGIAdapter4* adapter)
 
 DeferredRenderer::DeferredRenderer(int width, int height)
     :   m_Width(width), m_Height(height),      m_GBuffer(m_Width, m_Height),
-        m_LightPass(m_Width, m_Height)
+        m_LightPass(m_Width, m_Height),
+    m_CompositionPass(m_Width, m_Height)
 {
     //auto adapter = Application::Get().GetAdapter(false);  
     //assert(IsDirectXRaytracingSupported(adapter.Get()));
@@ -129,7 +130,6 @@ void DeferredRenderer::Render(Window& window)
         }
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
-
     /*
     commandList->GetGraphicsCommandList()->SetGraphicsRootShaderResourceView(
         GlobalRootParam::AccelerationStructure, 
@@ -208,6 +208,43 @@ void DeferredRenderer::Render(Window& window)
 
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
+    {//Composition branch
+        PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"CompositionPass");
+        commandList->SetRenderTarget(m_CompositionPass.renderTarget);
+        commandList->SetViewport(m_CompositionPass.renderTarget.GetViewport());
+        commandList->SetScissorRect(m_ScissorRect);
+        commandList->SetPipelineState(m_CompositionPass.pipeline);
+        commandList->SetGraphicsRootSignature(m_CompositionPass.rootSignature);
+        commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.heap.Get());
+
+        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(CompositionPassParam::GlobalHeapData, srvHeap.heap->GetGPUDescriptorHandleForHeapStart());
+
+        commandList->SetGraphicsDynamicStructuredBuffer(CompositionPassParam::GlobalMaterials, materials);
+
+        commandList->SetGraphicsDynamicStructuredBuffer(CompositionPassParam::GlobalMatInfo, globalMaterialInfo);
+
+        commandList->SetGraphicsDynamicStructuredBuffer(CompositionPassParam::GlobalMeshInfo, globalMeshInfo);
+
+        commandList->TransitionBarrier(m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+        auto gBufferHeap = m_GBuffer.CreateSRVViews();
+        
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer.m_SRVHeap.heap.Get());
+
+        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(CompositionPassParam::GBufferHeap, gBufferHeap);
+
+        auto lightMapView = m_LightPass.CreateSRVViews();
+        auto lightMapHeap = m_LightPass.m_SRVHeap;
+
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, lightMapHeap.heap.Get());
+
+        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(CompositionPassParam::LightMapHeap, lightMapView);
+
+        commandList->Draw(3);
+        PIXEndEvent(commandList->GetGraphicsCommandList().Get());
+    }
     {//Graphics execute
         PIXBeginEvent(graphicsQueue->GetD3D12CommandQueue().Get(), 0, L"Graphics execute");
         std::vector<std::shared_ptr<CommandList>> commandLists;
@@ -232,4 +269,5 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
 
     m_GBuffer.OnResize(m_Width, m_Height);
     m_LightPass.OnResize(m_Width, m_Height);
+    m_CompositionPass.OnResize(m_Width, m_Height);
 }

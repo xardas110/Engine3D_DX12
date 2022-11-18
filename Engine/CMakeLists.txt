@@ -60,7 +60,13 @@ set( HEADER_FILES
     "AssetManager/MeshManager.h"
     "AssetManager/TextureManager.h"
     "AssetManager/MaterialManager.h"
-    "external/eventcpp/event.hpp"  "DX12/Renderer/GBuffer/GBuffer.h" "DX12/Renderer/Lightpass/LightPass.h" "DX12/Renderer/Lightpass/LightPass.cpp" "DX12/StaticDescriptorHeap.h")
+    "external/eventcpp/event.hpp"  
+    "DX12/Renderer/GBuffer/GBuffer.h" 
+    "DX12/Renderer/Lightpass/LightPass.h" 
+    "DX12/Renderer/Lightpass/LightPass.cpp" 
+    "DX12/StaticDescriptorHeap.h" 
+    "DX12/Renderer/CompositionPass/CompositionPass.h"
+)
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
@@ -106,7 +112,9 @@ set( SOURCE_FILES
     "AssetManager/TextureManager.cpp"
     "AssetManager/MaterialManager.cpp"
     "DX12/Material.cpp"
- "DX12/Renderer/GBuffer/GBuffer.cpp" "DX12/StaticDescriptorHeap.cpp")
+    "DX12/Renderer/GBuffer/GBuffer.cpp" 
+    "DX12/StaticDescriptorHeap.cpp" 
+    "DX12/Renderer/CompositionPass/CompositionPass.cpp")
 
 set( IMGUI_HEADERS
     external/ImGui/imgui.h
@@ -143,7 +151,8 @@ set( SHADER_FILES
     Resources/Shaders/GBuffer/DepthPrePass_VS.hlsl
     Resources/Shaders/LightPass/LightPass_VS.hlsl
     Resources/Shaders/LightPass/LightPass_PS.hlsl
-    #Resources/Shaders/RaytracingShader.hlsl
+    Resources/Shaders/CompositionPass/CompositionPass_VS.hlsl
+    Resources/Shaders/CompositionPass/CompositionPass_PS.hlsl
 )
 
 set( RESOURCE_FILES 
@@ -173,6 +182,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC external/eventcpp
     PUBLIC Libs/WinPixEventRuntime/include
     PUBLIC DX12/Renderer
+    PUBLIC DX12/Renderer/CompositionPass
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
 
@@ -300,6 +310,20 @@ set_source_files_properties( Resources/Shaders/LightPass/LightPass_PS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Pixel
         VS_SHADER_VARIABLE_NAME g_LightPass_PS
+        ShaderType "ps"
+)
+
+set_source_files_properties( Resources/Shaders/CompositionPass/CompositionPass_VS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Vertex
+        VS_SHADER_VARIABLE_NAME g_CompositionPass_VS
+        ShaderType "vs"
+)
+
+set_source_files_properties( Resources/Shaders/CompositionPass/CompositionPass_PS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Pixel
+        VS_SHADER_VARIABLE_NAME g_CompositionPass_PS
         ShaderType "ps"
 )
 

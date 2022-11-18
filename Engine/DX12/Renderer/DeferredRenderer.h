@@ -7,6 +7,7 @@
 #include <GBuffer/GBuffer.h>
 #include <RootSignature.h>
 #include <LightPass/LightPass.h>
+#include <CompositionPass/CompositionPass.h>
 
 class Game;
 class MeshTuple;
@@ -32,5 +33,6 @@ class DeferredRenderer
 
 	GBuffer m_GBuffer;
 	LightPass m_LightPass;
+	CompositionPass m_CompositionPass;
 };
 
