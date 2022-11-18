@@ -60,7 +60,7 @@ set( HEADER_FILES
     "AssetManager/MeshManager.h"
     "AssetManager/TextureManager.h"
     "AssetManager/MaterialManager.h"
-    "external/eventcpp/event.hpp"  "DX12/Renderer/GBuffer/GBuffer.h" "DX12/Renderer/Lightpass/LightPass.h" "DX12/Renderer/Lightpass/LightPass.cpp")
+    "external/eventcpp/event.hpp"  "DX12/Renderer/GBuffer/GBuffer.h" "DX12/Renderer/Lightpass/LightPass.h" "DX12/Renderer/Lightpass/LightPass.cpp" "DX12/StaticDescriptorHeap.h")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"

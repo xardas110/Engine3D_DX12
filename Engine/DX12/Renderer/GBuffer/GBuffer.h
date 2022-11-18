@@ -40,6 +40,7 @@ private:
 	void OnResize(int width, int height);
 
 	RenderTarget renderTarget;
+
 	RootSignature rootSignature;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipeline;
 

@@ -1,0 +1,37 @@
+#pragma once
+#include <d3d12.h>
+#include <wrl.h>
+
+//Textures and Meshes will be in the same heap
+//Due to global shader access for inline DXR
+struct SRVHeapData
+{
+	friend class TextureManager;
+	friend class MeshManager;
+	friend class DeferredRenderer;
+private:
+	mutable size_t lastIndex = 0;
+	const size_t increment = 0;
+	const int heapSize = 1024;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
+
+public:
+	SRVHeapData();
+
+	//Call this only once per resource!
+	D3D12_CPU_DESCRIPTOR_HANDLE SetHandle(UINT srvIndex)
+	{
+		D3D12_CPU_DESCRIPTOR_HANDLE handle = heap->GetCPUDescriptorHandleForHeapStart();
+		handle.ptr += srvIndex * increment;
+		return handle;
+	}
+
+	//Call this only once per resource!
+	D3D12_CPU_DESCRIPTOR_HANDLE IncrementHandle(UINT& outCurrentHandleIndex) const
+	{
+		outCurrentHandleIndex = lastIndex;
+		D3D12_CPU_DESCRIPTOR_HANDLE handle = heap->GetCPUDescriptorHandleForHeapStart();
+		handle.ptr += lastIndex++ * increment;
+		return handle;
+	}
+};
