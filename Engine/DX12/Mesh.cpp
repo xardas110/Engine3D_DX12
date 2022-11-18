@@ -15,8 +15,47 @@ const D3D12_INPUT_ELEMENT_DESC VertexPositionNormalTexture::InputElements[] =
     { "NORMAL",     0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     { "TEXCOORD",   0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     { "TANGENT",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-    { "BITTANGENT",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "BITANGENT",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 };
+
+void CreateTangentAndBiTangent(VertexCollection& vertices, IndexCollection32& indices)
+{
+    for (size_t j = 0; j < indices.size(); j += 3)
+    {
+        auto i0 = indices[j + 0];
+        auto i1 = indices[j + 1];
+        auto i2 = indices[j + 2];
+
+        auto& v0 = XMLoadFloat3(&vertices[i0].position);
+        auto& v1 = XMLoadFloat3(&vertices[i1].position);
+        auto& v2 = XMLoadFloat3(&vertices[i2].position);
+
+        // Shortcuts for UVs
+        auto& uv0 = XMLoadFloat2(&vertices[i0].textureCoordinate);
+        auto& uv1 = XMLoadFloat2(&vertices[i1].textureCoordinate);
+        auto& uv2 = XMLoadFloat2(&vertices[i2].textureCoordinate);
+
+        // Edges of the triangle : position delta
+        auto deltaPos1 = XMVector3Normalize(v1 - v0);
+        auto deltaPos2 = XMVector3Normalize(v2 - v0);
+
+        // UV delta
+        auto deltaUV1 = XMVector2Normalize(uv1 - uv0);
+        auto deltaUV2 = XMVector2Normalize(uv2 - uv0);
+
+        float r = 1.0f / (deltaUV1.m128_f32[0] * deltaUV2.m128_f32[1] - deltaUV1.m128_f32[1] * deltaUV2.m128_f32[0]);
+        auto tangent = XMVector3Normalize((deltaPos1 * deltaUV2.m128_f32[1] - deltaPos2 * deltaUV1.m128_f32[1]) * r);
+        auto bitangent = XMVector3Normalize((deltaPos2 * deltaUV1.m128_f32[0] - deltaPos1 * deltaUV2.m128_f32[0]) * r);
+
+        XMStoreFloat3(&vertices[i0].tangent, tangent);
+        XMStoreFloat3(&vertices[i1].tangent, tangent);
+        XMStoreFloat3(&vertices[i2].tangent, tangent);
+
+        XMStoreFloat3(&vertices[i0].bitTangent, bitangent);
+        XMStoreFloat3(&vertices[i1].bitTangent, bitangent);
+        XMStoreFloat3(&vertices[i2].bitTangent, bitangent);
+    }
+}
 
 MeshInstance::MeshInstance(const std::wstring& path)
 {
@@ -99,15 +138,17 @@ std::unique_ptr<Mesh> Mesh::CreateSphere(CommandList& commandList, float diamete
             size_t nextI = i + 1;
             size_t nextJ = (j + 1) % stride;
 
-            indices.push_back(static_cast<uint16_t>( i * stride + j ));
-            indices.push_back(static_cast<uint16_t>(nextI * stride + j));
-            indices.push_back(static_cast<uint16_t>(i * stride + nextJ));
+            indices.push_back(( i * stride + j ));
+            indices.push_back((nextI * stride + j));
+            indices.push_back((i * stride + nextJ));
 
-            indices.push_back(static_cast<uint16_t>(i * stride + nextJ));
-            indices.push_back(static_cast<uint16_t>(nextI * stride + j));
-            indices.push_back(static_cast<uint16_t>(nextI * stride + nextJ));
+            indices.push_back((i * stride + nextJ));
+            indices.push_back((nextI * stride + j));
+            indices.push_back((nextI * stride + nextJ));
         }
     }
+
+    CreateTangentAndBiTangent(vertices, indices);
 
     // Create the primitive object.
     std::unique_ptr<Mesh> mesh(new Mesh());
@@ -172,6 +213,8 @@ std::unique_ptr<Mesh> Mesh::CreateCube(CommandList& commandList, float size, boo
         vertices.push_back(VertexPositionNormalTexture((normal + side1 + side2) * size, normal, textureCoordinates[2]));
         vertices.push_back(VertexPositionNormalTexture((normal + side1 - side2) * size, normal, textureCoordinates[3]));
     }
+
+    CreateTangentAndBiTangent(vertices, indices);
 
     // Create the primitive object.
     std::unique_ptr<Mesh> mesh(new Mesh());
@@ -290,6 +333,8 @@ std::unique_ptr<Mesh> Mesh::CreateCone(CommandList& commandList, float diameter,
     // Create flat triangle fan caps to seal the bottom.
     CreateCylinderCap(vertices, indices, tessellation, height, radius, false);
 
+    CreateTangentAndBiTangent(vertices, indices);
+
     // Create the primitive object.
     std::unique_ptr<Mesh> mesh(new Mesh());
 
@@ -353,6 +398,8 @@ std::unique_ptr<Mesh> Mesh::CreateTorus(CommandList& commandList, float diameter
         }
     }
 
+    CreateTangentAndBiTangent(vertices, indices);
+
     // Create the primitive object.
     std::unique_ptr<Mesh> mesh(new Mesh());
 
@@ -375,6 +422,8 @@ std::unique_ptr<Mesh> Mesh::CreatePlane(CommandList& commandList, float width, f
     {
         0, 3, 1, 1, 3, 2
     };
+
+    CreateTangentAndBiTangent(vertices, indices);
 
     std::unique_ptr<Mesh> mesh(new Mesh());
 

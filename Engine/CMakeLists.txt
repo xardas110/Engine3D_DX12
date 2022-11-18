@@ -44,7 +44,7 @@ set( HEADER_FILES
     "core/Window.h"
     "DX12/d3dx12.h"
     "core/Camera.h"
-    "DX12/Renderer/DeferredRenderer.h"
+    "Renderer/DeferredRenderer.h"
     "AssetManager/AssetManager.h"
     
     "core/Components.h"
@@ -56,17 +56,17 @@ set( HEADER_FILES
     "core/Entity.h" 
     "core/AssimpLoader.h"
     "DX12/Material.h"
-    "DX12/Raytracing/Raytracing.h"
+    "Raytracing/Raytracing.h"
     "AssetManager/MeshManager.h"
     "AssetManager/TextureManager.h"
     "AssetManager/MaterialManager.h"
     "external/eventcpp/event.hpp"  
-    "DX12/Renderer/GBuffer/GBuffer.h" 
-    "DX12/Renderer/Lightpass/LightPass.h" 
-    "DX12/Renderer/Lightpass/LightPass.cpp" 
+    "Renderer/GBuffer/GBuffer.h" 
+    "Renderer/Lightpass/LightPass.h" 
+    "Renderer/Lightpass/LightPass.cpp" 
     "DX12/StaticDescriptorHeap.h" 
-    "DX12/Renderer/CompositionPass/CompositionPass.h"
-    "DX12/Renderer/Debug/DebugTexture.h"
+    "Renderer/CompositionPass/CompositionPass.h"
+    "Renderer/Debug/DebugTexture.h"
 )
 
 set( SOURCE_FILES
@@ -98,7 +98,7 @@ set( SOURCE_FILES
     "DX12/VertexBuffer.cpp"
     "core/Window.cpp"
     "core/Camera.cpp"
-    "DX12/Renderer/DeferredRenderer.cpp"
+    "Renderer/DeferredRenderer.cpp"
     "AssetManager/AssetManager.cpp"
     
     "Physics/PhysicsSystem.cpp"
@@ -108,15 +108,15 @@ set( SOURCE_FILES
     "core/World.cpp"   
     "core/Entity.cpp" 
     "core/AssimpLoader.cpp"
-    "DX12/Raytracing/Raytracing.cpp"
+    "Raytracing/Raytracing.cpp"
     "AssetManager/MeshManager.cpp"
     "AssetManager/TextureManager.cpp"
     "AssetManager/MaterialManager.cpp"
     "DX12/Material.cpp"
-    "DX12/Renderer/GBuffer/GBuffer.cpp" 
+    "Renderer/GBuffer/GBuffer.cpp" 
     "DX12/StaticDescriptorHeap.cpp" 
-    "DX12/Renderer/CompositionPass/CompositionPass.cpp"
-    "DX12/Renderer/Debug/DebugTexture.cpp")
+    "Renderer/CompositionPass/CompositionPass.cpp"
+    "Renderer/Debug/DebugTexture.cpp")
 
 set( IMGUI_HEADERS
     external/ImGui/imgui.h
@@ -178,15 +178,18 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC core
     PUBLIC Editor
     Public Physics
-    PUBLIC Libs/physx/include
-    PUBLIC DX12/Raytracing
+    PUBLIC Libs/physx/include 
     PUBLIC AssetManager
     PUBLIC Resources/Shaders
     PUBLIC Resources/Shaders/Common
     PUBLIC external/eventcpp
     PUBLIC Libs/WinPixEventRuntime/include
-    PUBLIC DX12/Renderer
-    PUBLIC DX12/Renderer/CompositionPass
+     PUBLIC Raytracing
+    PUBLIC Renderer
+    PUBLIC Renderer/CompositionPass
+    PUBLIC Renderer/GBuffer
+    PUBLIC Renderer/Debug
+    PUBLIC Renderer/Lightpass
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
 

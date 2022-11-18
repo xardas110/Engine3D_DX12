@@ -23,6 +23,8 @@ bool SponzaExe::LoadContent()
 
     meshManager.CreateCube();
     meshManager.CreateSphere();
+    meshManager.CreateTorus();
+    meshManager.CreateCone();
 
     std::cout << "game init" << std::endl;
 
@@ -71,6 +73,46 @@ bool SponzaExe::LoadContent()
         trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(45.f));
     }
     }
+
+    for (size_t i = 0; i < 50; i++)
+    {
+        {
+            auto ent = CreateEntity("DxCube");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+            sm.SetMaterialInstance(material);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 2.f, 2.f, 2.f };
+            trans.pos = { -50.f + float(rand() % 100),float(rand() % 10), -50.f + float(rand() % 100) };
+            trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(rand() % 360));
+        }
+    }
+
+    for (size_t i = 0; i < 20; i++)
+    {
+        {
+            auto ent = CreateEntity("DxCube");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultTorus");
+            sm.SetMaterialInstance(material);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 2.f, 2.f, 2.f };
+            trans.pos = { -50.f + float(rand() % 100),float(rand() % 10), -50.f + float(rand() % 100) };
+            trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(rand() % 360));
+        }
+    }
+
+    for (size_t i = 0; i < 20; i++)
+    {
+        {
+            auto ent = CreateEntity("DxCube");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCone");
+            sm.SetMaterialInstance(material);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 2.f, 2.f, 2.f };
+            trans.pos = { -50.f + float(rand() % 100),float(rand() % 10), -50.f + float(rand() % 100) };
+            trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(rand() % 360));
+        }
+    }
+
     {
     {
         auto ent = CreateEntity("testSphere");
