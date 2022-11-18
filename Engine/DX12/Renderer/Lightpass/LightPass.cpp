@@ -81,42 +81,35 @@ void LightPass::CreatePipeline()
         featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
     }
 
-    CD3DX12_DESCRIPTOR_RANGE1 srvHeapRanges[4] = {};
-    srvHeapRanges[3].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvHeapRanges[3].NumDescriptors = 512;
-    srvHeapRanges[3].BaseShaderRegister = 1;
-    srvHeapRanges[3].RegisterSpace = 0;
-    srvHeapRanges[3].OffsetInDescriptorsFromTableStart = 0;
-    srvHeapRanges[3].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+    CD3DX12_DESCRIPTOR_RANGE1 srvHeapRanges[3] = {};
+    srvHeapRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    srvHeapRanges[0].NumDescriptors = 512;
+    srvHeapRanges[0].BaseShaderRegister = 1;
+    srvHeapRanges[0].RegisterSpace = 0;
+    srvHeapRanges[0].OffsetInDescriptorsFromTableStart = 0;
+    srvHeapRanges[0].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     srvHeapRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvHeapRanges[1].NumDescriptors = 250;
+    srvHeapRanges[1].NumDescriptors = 256;
     srvHeapRanges[1].BaseShaderRegister = 1;
     srvHeapRanges[1].RegisterSpace = 1;
     srvHeapRanges[1].OffsetInDescriptorsFromTableStart = 0;
     srvHeapRanges[1].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     srvHeapRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvHeapRanges[2].NumDescriptors = 250;
+    srvHeapRanges[2].NumDescriptors = 256;
     srvHeapRanges[2].BaseShaderRegister = 1;
     srvHeapRanges[2].RegisterSpace = 2;
     srvHeapRanges[2].OffsetInDescriptorsFromTableStart = 0;
     srvHeapRanges[2].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
-
-    srvHeapRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvHeapRanges[0].NumDescriptors = 1;
-    srvHeapRanges[0].BaseShaderRegister = 5;
-    srvHeapRanges[0].RegisterSpace = 6;
-    srvHeapRanges[0].OffsetInDescriptorsFromTableStart = 0;
-    srvHeapRanges[0].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
-
+ 
     CD3DX12_ROOT_PARAMETER1 rootParameters[LightPassParam::Size];
-    rootParameters[LightPassParam::GlobalHeapData].InitAsDescriptorTable(4, srvHeapRanges);
+    rootParameters[LightPassParam::GBufferSRVIndices].InitAsConstantBufferView(0);
+    rootParameters[LightPassParam::GlobalHeapData].InitAsDescriptorTable(3, srvHeapRanges);
     rootParameters[LightPassParam::GlobalMeshInfo].InitAsShaderResourceView(2, 3);
     rootParameters[LightPassParam::GlobalMatInfo].InitAsShaderResourceView(3, 4);
     rootParameters[LightPassParam::GlobalMaterials].InitAsShaderResourceView(4, 5); 
     
-
     CD3DX12_STATIC_SAMPLER_DESC samplers[2];
     samplers[0] = CD3DX12_STATIC_SAMPLER_DESC(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT);
     samplers[1] = CD3DX12_STATIC_SAMPLER_DESC(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);

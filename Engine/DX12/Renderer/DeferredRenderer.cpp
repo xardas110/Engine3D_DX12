@@ -59,7 +59,7 @@ void DeferredRenderer::Render(Window& window)
 
     auto assetManager = Application::Get().GetAssetManager();
 
-    auto& srvHeap = assetManager->m_SrvHeapData.heap;
+    auto& srvHeap = assetManager->m_SrvHeapData;
     auto& globalMeshInfo = assetManager->m_MeshManager.instanceData.meshInfo;
     auto& globalMaterialInfo = assetManager->m_MaterialManager.instanceData.gpuInfo;
     auto& globalMaterialInfoCPU = assetManager->m_MaterialManager.instanceData.cpuInfo;
@@ -150,9 +150,11 @@ void DeferredRenderer::Render(Window& window)
         commandList->SetPipelineState(m_GBuffer.pipeline);
         commandList->SetGraphicsRootSignature(m_GBuffer.rootSignature);
         commandList->SetGraphicsDynamicStructuredBuffer(GBufferParam::GlobalMaterials, materials);
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.Get());
-        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(GBufferParam::GlobalHeapData, srvHeap->GetGPUDescriptorHandleForHeapStart());
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.heap.Get());
+        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(GBufferParam::GlobalHeapData, srvHeap.heap->GetGPUDescriptorHandleForHeapStart());
         commandList->SetGraphicsDynamicStructuredBuffer(GBufferParam::GlobalMatInfo, globalMaterialInfo);
+
+        commandList->TransitionBarrier(m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0), D3D12_RESOURCE_STATE_RENDER_TARGET);
 
         auto& view = game->registry.view<TransformComponent, MeshComponent>();
         for (auto [entity, transform, mesh] : view.each())
@@ -184,9 +186,9 @@ void DeferredRenderer::Render(Window& window)
         commandList->SetGraphicsRootSignature(m_LightPass.rootSignature);
         commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.Get());
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.heap.Get());
 
-        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(LightPassParam::GlobalHeapData, srvHeap->GetGPUDescriptorHandleForHeapStart());
+        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(LightPassParam::GlobalHeapData, srvHeap.heap->GetGPUDescriptorHandleForHeapStart());
 
         commandList->SetGraphicsDynamicStructuredBuffer(LightPassParam::GlobalMaterials, materials);
 
@@ -194,10 +196,21 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->SetGraphicsDynamicStructuredBuffer(LightPassParam::GlobalMeshInfo, globalMeshInfo);
 
-        commandList->SetShaderResourceView(
-            LightPassParam::GlobalHeapData, 0,
-            m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0),
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        GBufferSRVIndices indices;
+        indices.albedo = m_GBuffer.albedoIndex;
+        indices.normal = m_GBuffer.normalIndex;
+        indices.pbr = m_GBuffer.pbrIndex;
+        indices.emissive = m_GBuffer.emissiveIndex;
+
+        commandList->TransitionBarrier(m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+        auto device = Application::Get().GetDevice();
+        
+        device->CreateShaderResourceView(
+            m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(), nullptr,
+            srvHeap.SetHandle(m_GBuffer.albedoIndex));
+
+        commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::GBufferSRVIndices, indices);
 
         commandList->Draw(3);
 

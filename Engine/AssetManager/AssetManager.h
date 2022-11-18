@@ -26,6 +26,14 @@ public:
 	SRVHeapData();
 
 	//Call this only once per resource!
+	D3D12_CPU_DESCRIPTOR_HANDLE SetHandle(UINT srvIndex)
+	{
+		D3D12_CPU_DESCRIPTOR_HANDLE handle = heap->GetCPUDescriptorHandleForHeapStart();
+		handle.ptr += srvIndex * increment;
+		return handle;
+	}
+
+	//Call this only once per resource!
 	D3D12_CPU_DESCRIPTOR_HANDLE IncrementHandle(UINT& outCurrentHandleIndex) const
 	{
 		outCurrentHandleIndex = lastIndex;

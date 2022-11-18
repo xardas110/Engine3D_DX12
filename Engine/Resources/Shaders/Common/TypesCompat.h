@@ -105,4 +105,12 @@ struct MeshVertex
     XMFLOAT2 textureCoordinate;
 };
 
+struct GBufferSRVIndices
+{
+    UINT albedo;
+    UINT normal;
+    UINT pbr;
+    UINT emissive;
+};
+
 #endif

@@ -45,4 +45,6 @@ private:
 
 	RootSignature zPrePassRS;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> zPrePassPipeline;
+
+	UINT albedoIndex, normalIndex, pbrIndex, emissiveIndex;
 };
