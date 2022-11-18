@@ -144,10 +144,8 @@ set( ENTT_HEADERS
 source_group( "Source Files\\ImGUI" FILES ${IMGUI_SOURCE} )
 
 set( SHADER_FILES
-    Resources/Shaders/GenerateMips_CS.hlsl
-    Resources/Shaders/PanoToCubemap_CS.hlsl
-    Resources/Shaders/ImGUI_VS.hlsl
-    Resources/Shaders/ImGUI_PS.hlsl
+    Resources/Shaders/Div/GenerateMips_CS.hlsl
+    Resources/Shaders/Div/PanoToCubemap_CS.hlsl
     Resources/Shaders/GBuffer/GeometryPass_VS.hlsl
     Resources/Shaders/GBuffer/GeometryPass_PS.hlsl
     Resources/Shaders/GBuffer/DepthPrePass_VS.hlsl
@@ -184,7 +182,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC Resources/Shaders/Common
     PUBLIC external/eventcpp
     PUBLIC Libs/WinPixEventRuntime/include
-     PUBLIC Raytracing
+    PUBLIC Raytracing
     PUBLIC Renderer
     PUBLIC Renderer/CompositionPass
     PUBLIC Renderer/GBuffer
@@ -257,32 +255,18 @@ set_source_files_properties( ${SHADER_FILES}
         VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
 )
 
-set_source_files_properties( Resources/Shaders/GenerateMips_CS.hlsl
+set_source_files_properties( Resources/Shaders/Div/GenerateMips_CS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Compute
         VS_SHADER_VARIABLE_NAME g_GenerateMips_CS
         ShaderType "cs"
 )
 
-set_source_files_properties( Resources/Shaders/PanoToCubemap_CS.hlsl
+set_source_files_properties( Resources/Shaders/Div/PanoToCubemap_CS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Compute
         VS_SHADER_VARIABLE_NAME g_PanoToCubemap_CS
         ShaderType "cs"
-)
-
-set_source_files_properties( Resources/Shaders/ImGUI_VS.hlsl
-    PROPERTIES
-        VS_SHADER_TYPE Vertex
-        VS_SHADER_VARIABLE_NAME g_ImGUI_VS
-        ShaderType "vs"
-)
-
-set_source_files_properties( Resources/Shaders/ImGUI_PS.hlsl
-    PROPERTIES
-        VS_SHADER_TYPE Pixel
-        VS_SHADER_VARIABLE_NAME g_ImGUI_PS
-        ShaderType "ps"
 )
 
 set_source_files_properties( Resources/Shaders/GBuffer/GeometryPass_VS.hlsl
