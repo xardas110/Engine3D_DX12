@@ -14,9 +14,9 @@ private:
 	const size_t increment = 0;
 	const int heapSize = 1024;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
-
 public:
 	SRVHeapData();
+	SRVHeapData(int heapSize);
 
 	//Call this only once per resource!
 	D3D12_CPU_DESCRIPTOR_HANDLE SetHandle(UINT srvIndex)
@@ -33,5 +33,10 @@ public:
 		D3D12_CPU_DESCRIPTOR_HANDLE handle = heap->GetCPUDescriptorHandleForHeapStart();
 		handle.ptr += lastIndex++ * increment;
 		return handle;
+	}
+
+	D3D12_GPU_DESCRIPTOR_HANDLE GetHandleAtStart()
+	{
+		return heap->GetGPUDescriptorHandleForHeapStart();
 	}
 };

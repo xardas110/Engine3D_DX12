@@ -90,21 +90,29 @@ void LightPass::CreatePipeline()
     srvHeapRanges[0].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     srvHeapRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvHeapRanges[1].NumDescriptors = 256;
+    srvHeapRanges[1].NumDescriptors = 250;
     srvHeapRanges[1].BaseShaderRegister = 1;
     srvHeapRanges[1].RegisterSpace = 1;
     srvHeapRanges[1].OffsetInDescriptorsFromTableStart = 0;
     srvHeapRanges[1].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     srvHeapRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvHeapRanges[2].NumDescriptors = 256;
+    srvHeapRanges[2].NumDescriptors = 250;
     srvHeapRanges[2].BaseShaderRegister = 1;
     srvHeapRanges[2].RegisterSpace = 2;
     srvHeapRanges[2].OffsetInDescriptorsFromTableStart = 0;
     srvHeapRanges[2].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
  
+    CD3DX12_DESCRIPTOR_RANGE1 gBufferSRVHeap = {};
+    gBufferSRVHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    gBufferSRVHeap.NumDescriptors = 5;
+    gBufferSRVHeap.BaseShaderRegister = 5;
+    gBufferSRVHeap.RegisterSpace = 6;
+    gBufferSRVHeap.OffsetInDescriptorsFromTableStart = 0;
+    gBufferSRVHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+
     CD3DX12_ROOT_PARAMETER1 rootParameters[LightPassParam::Size];
-    rootParameters[LightPassParam::GBufferSRVIndices].InitAsConstantBufferView(0);
+    rootParameters[LightPassParam::GBufferHeap].InitAsDescriptorTable(1, &gBufferSRVHeap);
     rootParameters[LightPassParam::GlobalHeapData].InitAsDescriptorTable(3, srvHeapRanges);
     rootParameters[LightPassParam::GlobalMeshInfo].InitAsShaderResourceView(2, 3);
     rootParameters[LightPassParam::GlobalMatInfo].InitAsShaderResourceView(3, 4);
