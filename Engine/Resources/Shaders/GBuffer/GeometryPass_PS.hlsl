@@ -1,6 +1,7 @@
 #define HLSL
 #include "../Common/TypesCompat.h"
 #include "../Common/MaterialAttributes.hlsl"
+#include "../Common/Math.hlsl"
 
 ConstantBuffer<ObjectCB>            g_ObjectCB                  : register(b0);
 Texture2D                           g_GlobalTextureData[]       : register(t1, space0);
@@ -14,6 +15,7 @@ struct PixelShaderInput
 	float4 PositionWS	:	POSITION;
 	float3 NormalWS		:	NORMAL;
 	float2 TexCoord		:	TEXCOORD;
+    float3x3 TBN        :   TBN;
 };
 
 struct PixelShaderOutput
@@ -32,6 +34,8 @@ PixelShaderOutput main(PixelShaderInput IN)
     
     float4 albedo = GetAlbedo(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
     float3 normal = GetNormal(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
+    normal = GetWorldNormal(normal, IN.TBN);
+    normal *= 0.5f + 0.5f;
     
     float ao = GetAO(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
     float roughness = GetRoughness(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);

@@ -17,6 +17,10 @@ struct MeshManager
 	void CreateCube(const std::wstring& cubeName = L"DefaultCube");
 	void CreateSphere(const std::wstring& sphereName = L"DefaultSphere");
 
+	void CreateCone(const std::wstring& name = L"DefaultCone");
+
+	void CreateTorus(const std::wstring& name = L"DefaultTorus");
+
 private:
 	MeshManager(const SRVHeapData& srvHeapData);
 
