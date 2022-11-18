@@ -26,8 +26,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
     PixelShaderOutput OUT;
 
-    OUT.DirectDiffuse = g_GBufferHeap[0].Sample(g_NearestRepeatSampler, TexCoord);
-    OUT.DirectDiffuse *= g_GlobalTextureData[5].Sample(g_LinearRepeatSampler, TexCoord);
+    OUT.DirectDiffuse = float4(1.f, 1.f, 1.f, 1.f);
+    //OUT.DirectDiffuse *= g_GlobalTextureData[5].Sample(g_LinearRepeatSampler, TexCoord);
 
     return OUT;
 }

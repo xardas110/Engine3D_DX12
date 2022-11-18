@@ -25,7 +25,16 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
     PixelShaderOutput OUT;
 
-    OUT.ColorTexture = g_LightMapHeap[0].Sample(g_NearestRepeatSampler, TexCoord);
+    float4 directDiffuse = g_LightMapHeap[0].Sample(g_NearestRepeatSampler, TexCoord);
+    float4 indirectDiffuse = g_LightMapHeap[1].Sample(g_NearestRepeatSampler, TexCoord);
+    float4 indirectSpecular = g_LightMapHeap[2].Sample(g_NearestRepeatSampler, TexCoord);
+    
+    float4 albedo = g_GBufferHeap[0].Sample(g_NearestRepeatSampler, TexCoord);
+    float4 normal = g_GBufferHeap[1].Sample(g_NearestRepeatSampler, TexCoord);
+    float4 pbr = g_GBufferHeap[2].Sample(g_NearestRepeatSampler, TexCoord);
+    float4 emissive = g_GBufferHeap[3].Sample(g_NearestRepeatSampler, TexCoord);
+    
+    OUT.ColorTexture = albedo;
 
     return OUT;
 }

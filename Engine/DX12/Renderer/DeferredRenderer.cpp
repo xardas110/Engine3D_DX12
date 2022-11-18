@@ -30,9 +30,10 @@ bool IsDirectXRaytracingSupported(IDXGIAdapter4* adapter)
 }
 
 DeferredRenderer::DeferredRenderer(int width, int height)
-    :   m_Width(width), m_Height(height),      m_GBuffer(m_Width, m_Height),
-        m_LightPass(m_Width, m_Height),
-    m_CompositionPass(m_Width, m_Height)
+    : m_Width(width), m_Height(height), m_GBuffer(m_Width, m_Height),
+    m_LightPass(m_Width, m_Height),
+    m_CompositionPass(m_Width, m_Height),
+    m_DebugTexturePass(m_Width, m_Height)
 {
     //auto adapter = Application::Get().GetAdapter(false);  
     //assert(IsDirectXRaytracingSupported(adapter.Get()));
@@ -253,6 +254,39 @@ void DeferredRenderer::Render(Window& window)
         commandList->Draw(3);
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
+    { //Debug pass
+        commandList->SetRenderTarget(m_DebugTexturePass.renderTarget);
+        commandList->SetViewport(m_DebugTexturePass.renderTarget.GetViewport());
+        commandList->SetScissorRect(m_ScissorRect);
+        commandList->SetPipelineState(m_DebugTexturePass.pipeline);
+        commandList->SetGraphicsRootSignature(m_DebugTexturePass.rootSignature);
+        commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+        const char* listbox_items[] =
+        { "FinalColor", "GBufferAlbedo", "GBufferNormal",
+            "GBufferPBR", "GBufferEmissive", "DirectDiffuse",
+            "IndirectDiffuse", "IndirectSpecular" };
+
+        const Texture* texArray[] =
+        {
+            &m_CompositionPass.renderTarget.GetTexture(AttachmentPoint::Color0),
+            &m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0),
+            &m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color1),
+            &m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color2),
+            &m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color3),
+            &m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color0),
+            &m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color1),
+            &m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color2),
+        };
+        ImGui::Begin("Select render buffer");
+        static int listbox_item_current = 0;
+        ImGui::ListBox("listbox\n(single select)", &listbox_item_current, listbox_items, IM_ARRAYSIZE(listbox_items));
+        ImGui::End();
+
+        commandList->SetShaderResourceView(DebugTextureParam::texture, 0, *texArray[listbox_item_current]);
+
+        commandList->Draw(3);
+    }
     {//Graphics execute
         PIXBeginEvent(graphicsQueue->GetD3D12CommandQueue().Get(), 0, L"Graphics execute");
         std::vector<std::shared_ptr<CommandList>> commandLists;
@@ -278,4 +312,5 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     m_GBuffer.OnResize(m_Width, m_Height);
     m_LightPass.OnResize(m_Width, m_Height);
     m_CompositionPass.OnResize(m_Width, m_Height);
+    m_DebugTexturePass.OnResize(m_Width, m_Height);
 }
