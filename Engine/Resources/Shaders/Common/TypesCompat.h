@@ -100,6 +100,8 @@ struct MeshVertex
     XMFLOAT3 position;
     XMFLOAT3 normal;
     XMFLOAT2 textureCoordinate;
+    XMFLOAT3 tangent;
+    XMFLOAT3 bitangent;
 };
 
 #endif
