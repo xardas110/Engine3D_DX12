@@ -47,8 +47,7 @@
 using MeshID = UINT;
 using MeshInstanceID = UINT;
 
-
- // Vertex struct holding position, normal vector, and texture mapping information.
+// Vertex struct holding position, normal vector, and texture mapping information.
 struct VertexPositionNormalTexture
 {
     VertexPositionNormalTexture()
@@ -58,6 +57,16 @@ struct VertexPositionNormalTexture
         : position(position),
         normal(normal),
         textureCoordinate(textureCoordinate)
+    { 
+
+    }
+
+    VertexPositionNormalTexture(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& normal, const DirectX::XMFLOAT2& textureCoordinate, const DirectX::XMFLOAT3& tangent, const DirectX::XMFLOAT3& bitTangent)
+        : position(position),
+        normal(normal),
+        textureCoordinate(textureCoordinate),
+        tangent(tangent),
+        bitTangent(bitTangent)
     { }
 
     VertexPositionNormalTexture(DirectX::FXMVECTOR position, DirectX::FXMVECTOR normal, DirectX::FXMVECTOR textureCoordinate)
@@ -67,29 +76,7 @@ struct VertexPositionNormalTexture
         XMStoreFloat2(&this->textureCoordinate, textureCoordinate);
     }
 
-    DirectX::XMFLOAT3 position;
-    DirectX::XMFLOAT3 normal;
-    DirectX::XMFLOAT2 textureCoordinate;
-
-    static const int InputElementCount = 3;
-    static const D3D12_INPUT_ELEMENT_DESC InputElements[InputElementCount];
-};
-
-// Vertex struct holding position, normal vector, and texture mapping information.
-struct VertexPositionNormalTextureTangentBitangent
-{
-    VertexPositionNormalTextureTangentBitangent()
-    { }
-
-    VertexPositionNormalTextureTangentBitangent(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& normal, const DirectX::XMFLOAT2& textureCoordinate, const DirectX::XMFLOAT3& tangent, const DirectX::XMFLOAT3& bitTangent)
-        : position(position),
-        normal(normal),
-        textureCoordinate(textureCoordinate),
-        tangent(tangent),
-        bitTangent(bitTangent)
-    { }
-
-    VertexPositionNormalTextureTangentBitangent(DirectX::FXMVECTOR position, DirectX::FXMVECTOR normal, DirectX::FXMVECTOR textureCoordinate, DirectX::FXMVECTOR tangent, DirectX::FXMVECTOR bitTangent)
+    VertexPositionNormalTexture(DirectX::FXMVECTOR position, DirectX::FXMVECTOR normal, DirectX::FXMVECTOR textureCoordinate, DirectX::FXMVECTOR tangent, DirectX::FXMVECTOR bitTangent)
     {
         XMStoreFloat3(&this->position, position);
         XMStoreFloat3(&this->normal, normal);
@@ -101,16 +88,14 @@ struct VertexPositionNormalTextureTangentBitangent
     DirectX::XMFLOAT3 position;
     DirectX::XMFLOAT3 normal;
     DirectX::XMFLOAT2 textureCoordinate;
-    DirectX::XMFLOAT3 tangent;
-    DirectX::XMFLOAT3 bitTangent;
+    DirectX::XMFLOAT3 tangent{1.f, 0.f, 0.f};
+    DirectX::XMFLOAT3 bitTangent{0.f, 1.f, 0.f};
 
     static const int InputElementCount = 5;
     static const D3D12_INPUT_ELEMENT_DESC InputElements[InputElementCount];
 };
 
 using VertexCollection = std::vector<VertexPositionNormalTexture>;
-
-using VertexCollection32 = std::vector<VertexPositionNormalTextureTangentBitangent>;
 using IndexCollection32 = std::vector<uint32_t>;
 
 namespace Primitives
@@ -155,7 +140,7 @@ public:
     static std::unique_ptr<Mesh> CreateTorus(CommandList& commandList, float diameter = 1, float thickness = 0.333f, size_t tessellation = 32, bool rhcoords = false);
     static std::unique_ptr<Mesh> CreatePlane(CommandList& commandList, float width = 1, float height = 1, bool rhcoords = false);
     //Used to create a mesh from a model
-    static std::unique_ptr<Mesh> CreateMesh(CommandList& commandList, const VertexCollection32& vertices, const IndexCollection32& indices, bool rhcoords);
+    static std::unique_ptr<Mesh> CreateMesh(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords);
 
     virtual ~Mesh();
 
@@ -169,8 +154,7 @@ private:
     Mesh(const Mesh& copy) = delete;
     
     void Initialize(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords);
-    void Initialize(CommandList& commandList, const VertexCollection32& vertices, const IndexCollection32& indices, bool rhcoords);
-  
+
     void InitializeBlas(CommandList& commandList);
 
     VertexBuffer m_VertexBuffer;

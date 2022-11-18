@@ -63,7 +63,7 @@ private:
 	struct AssimpMesh
 	{
 		AssimpMaterial material;
-		VertexCollection32 vertices;
+		VertexCollection vertices;
 		IndexCollection32 indices;
 	};
 

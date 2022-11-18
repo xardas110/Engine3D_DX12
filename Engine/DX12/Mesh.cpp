@@ -14,13 +14,6 @@ const D3D12_INPUT_ELEMENT_DESC VertexPositionNormalTexture::InputElements[] =
     { "POSITION",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     { "NORMAL",     0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     { "TEXCOORD",   0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-};
-
-const D3D12_INPUT_ELEMENT_DESC VertexPositionNormalTextureTangentBitangent::InputElements[] =
-{
-    { "POSITION",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-    { "NORMAL",     0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-    { "TEXCOORD",   0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     { "TANGENT",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     { "BITTANGENT",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 };
@@ -390,7 +383,7 @@ std::unique_ptr<Mesh> Mesh::CreatePlane(CommandList& commandList, float width, f
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreateMesh(CommandList& commandList, const VertexCollection32& vertices, const IndexCollection32& indices, bool rhcoords)
+std::unique_ptr<Mesh> Mesh::CreateMesh(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords)
 {
     std::unique_ptr<Mesh> mesh(new Mesh());
     mesh->Initialize(commandList, vertices, indices, rhcoords);
@@ -426,15 +419,6 @@ void Mesh::Initialize(CommandList& commandList, VertexCollection& vertices, Inde
     m_IndexCount = static_cast<UINT>(indices.size());
 }
 
-
-void Mesh::Initialize(CommandList& commandList, const VertexCollection32& vertices, const IndexCollection32& indices, bool rhcoords)
-{
-    commandList.CopyVertexBuffer(m_VertexBuffer, vertices);
-    commandList.CopyIndexBuffer(m_IndexBuffer, indices);
-
-    m_IndexCount = static_cast<UINT>(indices.size());
-}
-
 void Mesh::InitializeBlas(CommandList& commandList)
 {
     auto device = Application::Get().GetDevice();
@@ -452,7 +436,7 @@ void Mesh::InitializeBlas(CommandList& commandList)
     geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
     geometryDesc.Triangles.Transform3x4 = 0;
     geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
-    geometryDesc.Triangles.VertexCount = static_cast<UINT>(m_VertexBuffer.GetD3D12Resource()->GetDesc().Width) / sizeof(VertexPositionNormalTexture);
+    geometryDesc.Triangles.VertexCount = m_VertexBuffer.GetNumVertices();
     geometryDesc.Triangles.VertexBuffer.StartAddress = m_VertexBuffer.GetD3D12Resource()->GetGPUVirtualAddress();
     geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(VertexPositionNormalTexture);
     geometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;

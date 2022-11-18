@@ -44,7 +44,7 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene)
 
     for (auto i = 0; i < mesh->mNumVertices; i++)
     {
-        VertexPositionNormalTextureTangentBitangent vertex;
+        VertexPositionNormalTexture vertex;
 
         {	//Position and normals
             vertex.position.x = mesh->mVertices[i].x;
