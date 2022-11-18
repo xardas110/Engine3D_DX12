@@ -76,12 +76,13 @@ void DeferredRenderer::Render(Window& window)
     objectCB.proj = camera->get_ProjectionMatrix();
     objectCB.invView = XMMatrixInverse(nullptr, objectCB.view);
     objectCB.invProj = XMMatrixInverse(nullptr, objectCB.proj);
-
+    
     CameraCB cameraCB;
     cameraCB.view = objectCB.view;
     cameraCB.proj = objectCB.proj;
     cameraCB.invView = objectCB.invView;
     cameraCB.invProj = objectCB.invProj;
+    XMStoreFloat3(&cameraCB.pos, camera->get_Translation());
 
     auto& directionalLight = game->m_DirectionalLight;
 
@@ -97,8 +98,9 @@ void DeferredRenderer::Render(Window& window)
     {// BUILD DXR STRUCTURE
         PIXBeginEvent(dxrCommandList->GetGraphicsCommandList().Get(), 0, L"Building DXR structure");
 
+        
         m_Raytracer->BuildAccelerationStructure(*dxrCommandList, game->registry, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);
-
+        
         PIXEndEvent(dxrCommandList->GetGraphicsCommandList().Get());       
 
         {//Compute execute

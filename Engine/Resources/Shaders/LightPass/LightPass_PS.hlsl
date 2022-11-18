@@ -29,7 +29,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
     PixelShaderOutput OUT;
 
-    OUT.DirectDiffuse = float4(1.f, 1.f, 1.f, 1.f);
+    OUT.DirectDiffuse = float4(g_Camera.pos, 1.f) * g_DirectionalLight.color;
     //OUT.DirectDiffuse *= g_GlobalTextureData[5].Sample(g_LinearRepeatSampler, TexCoord);
 
     return OUT;
