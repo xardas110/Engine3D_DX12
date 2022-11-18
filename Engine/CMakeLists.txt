@@ -66,6 +66,7 @@ set( HEADER_FILES
     "DX12/Renderer/Lightpass/LightPass.cpp" 
     "DX12/StaticDescriptorHeap.h" 
     "DX12/Renderer/CompositionPass/CompositionPass.h"
+    "DX12/Renderer/Debug/DebugTexture.h"
 )
 
 set( SOURCE_FILES
@@ -114,7 +115,8 @@ set( SOURCE_FILES
     "DX12/Material.cpp"
     "DX12/Renderer/GBuffer/GBuffer.cpp" 
     "DX12/StaticDescriptorHeap.cpp" 
-    "DX12/Renderer/CompositionPass/CompositionPass.cpp")
+    "DX12/Renderer/CompositionPass/CompositionPass.cpp"
+    "DX12/Renderer/Debug/DebugTexture.cpp")
 
 set( IMGUI_HEADERS
     external/ImGui/imgui.h
@@ -153,6 +155,8 @@ set( SHADER_FILES
     Resources/Shaders/LightPass/LightPass_PS.hlsl
     Resources/Shaders/CompositionPass/CompositionPass_VS.hlsl
     Resources/Shaders/CompositionPass/CompositionPass_PS.hlsl
+    Resources/Shaders/Debug/DebugTexture_VS.hlsl
+    Resources/Shaders/Debug/DebugTexture_PS.hlsl
 )
 
 set( RESOURCE_FILES 
@@ -324,6 +328,20 @@ set_source_files_properties( Resources/Shaders/CompositionPass/CompositionPass_P
     PROPERTIES
         VS_SHADER_TYPE Pixel
         VS_SHADER_VARIABLE_NAME g_CompositionPass_PS
+        ShaderType "ps"
+)
+
+set_source_files_properties( Resources/Shaders/Debug/DebugTexture_VS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Vertex
+        VS_SHADER_VARIABLE_NAME g_DebugTexture_VS
+        ShaderType "vs"
+)
+
+set_source_files_properties( Resources/Shaders/Debug/DebugTexture_PS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Pixel
+        VS_SHADER_VARIABLE_NAME g_DebugTexture_PS
         ShaderType "ps"
 )
 

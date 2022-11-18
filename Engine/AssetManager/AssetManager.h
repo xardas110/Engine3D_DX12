@@ -19,9 +19,6 @@ class AssetManager
 	friend class DeferredRenderer;
 	friend class std::default_delete<AssetManager>;
 
-public:
-
-
 private:
 	AssetManager();
 	~AssetManager();

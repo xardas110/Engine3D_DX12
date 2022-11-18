@@ -29,7 +29,7 @@ private:
 
 	struct InstanceData
 	{
-		//1:1 relations. GPU info will be batched uploaded to gpu
+		//1:1 relations. GPU info will be batched to gpu
 		std::vector<MaterialInfo> cpuInfo;
 		std::vector<MaterialInfo> gpuInfo;	
 

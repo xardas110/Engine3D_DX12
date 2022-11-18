@@ -50,9 +50,6 @@ struct Material
 
 struct MaterialInfo
 {
-    //Don't have space for flags here
-    //Materialflags will be shared with meshflags
-    //See meshinfo for flags
     UINT ao TEXTURE_NULL;
     UINT albedo TEXTURE_NULL;
     UINT normal TEXTURE_NULL;
