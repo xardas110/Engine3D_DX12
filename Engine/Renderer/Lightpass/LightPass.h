@@ -15,6 +15,8 @@ namespace LightPassParam
 		GlobalMatInfo,
 		GlobalMaterials,
 		GlobalMeshInfo,
+		DirectionalLightCB,
+		CameraCB,
 		Size
 	};
 }

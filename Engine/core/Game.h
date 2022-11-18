@@ -40,6 +40,8 @@
 #include <entt/entt.hpp>
 #include <windows.h>
 
+#include <DirectionalLight.h>
+
 class Window;
 class Entity;
 
@@ -158,7 +160,7 @@ protected:
     virtual void OnWindowDestroy();
 
     std::shared_ptr<Window> m_pWindow;
-
+    DirectionalLight m_DirectionalLight;
 private:
 
     std::wstring m_Name;

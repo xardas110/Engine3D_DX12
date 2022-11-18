@@ -14,6 +14,18 @@ class Game;
 class MeshTuple;
 class CommandList;
 
+namespace CameraParam
+{
+	enum
+	{
+		View,
+		Proj,
+		InvView,
+		InvProj,
+		Pos,
+	};
+}
+
 class DeferredRenderer
 {
 	friend class Window;
@@ -35,6 +47,6 @@ class DeferredRenderer
 	GBuffer m_GBuffer;
 	LightPass m_LightPass;
 	CompositionPass m_CompositionPass;
-	DebugTexturePass m_DebugTexturePass;
+	DebugTexturePass m_DebugTexturePass;	
 };
 

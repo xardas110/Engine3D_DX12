@@ -71,11 +71,19 @@ void DeferredRenderer::Render(Window& window)
 
     auto* camera = game->GetRenderCamera();
 
-    ObjectCB objectCB;
+    ObjectCB objectCB; //todo move to cam
     objectCB.view = camera->get_ViewMatrix();
     objectCB.proj = camera->get_ProjectionMatrix();
     objectCB.invView = XMMatrixInverse(nullptr, objectCB.view);
     objectCB.invProj = XMMatrixInverse(nullptr, objectCB.proj);
+
+    CameraCB cameraCB;
+    cameraCB.view = objectCB.view;
+    cameraCB.proj = objectCB.proj;
+    cameraCB.invView = objectCB.invView;
+    cameraCB.invProj = objectCB.invProj;
+
+    auto& directionalLight = game->m_DirectionalLight;
 
     // Clear the render targets.
     {
@@ -207,6 +215,9 @@ void DeferredRenderer::Render(Window& window)
         commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer.m_SRVHeap.heap.Get());
 
         commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(LightPassParam::GBufferHeap, gBufferHeap);
+
+        commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::CameraCB, cameraCB);
+        commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::DirectionalLightCB, directionalLight);
 
         commandList->Draw(3);
 

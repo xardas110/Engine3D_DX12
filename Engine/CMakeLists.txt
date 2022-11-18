@@ -67,7 +67,7 @@ set( HEADER_FILES
     "DX12/StaticDescriptorHeap.h" 
     "Renderer/CompositionPass/CompositionPass.h"
     "Renderer/Debug/DebugTexture.h"
-)
+ "Lights/DirectionalLight.h" )
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
@@ -116,7 +116,7 @@ set( SOURCE_FILES
     "Renderer/GBuffer/GBuffer.cpp" 
     "DX12/StaticDescriptorHeap.cpp" 
     "Renderer/CompositionPass/CompositionPass.cpp"
-    "Renderer/Debug/DebugTexture.cpp")
+    "Renderer/Debug/DebugTexture.cpp" "Lights/DirectionalLight.cpp" )
 
 set( IMGUI_HEADERS
     external/ImGui/imgui.h
@@ -188,6 +188,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC Renderer/GBuffer
     PUBLIC Renderer/Debug
     PUBLIC Renderer/Lightpass
+    PUBLIC Lights
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
 

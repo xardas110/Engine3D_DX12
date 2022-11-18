@@ -117,7 +117,10 @@ void LightPass::CreatePipeline()
     rootParameters[LightPassParam::GlobalHeapData].InitAsDescriptorTable(3, srvHeapRanges);
     rootParameters[LightPassParam::GlobalMeshInfo].InitAsShaderResourceView(2, 3);
     rootParameters[LightPassParam::GlobalMatInfo].InitAsShaderResourceView(3, 4);
-    rootParameters[LightPassParam::GlobalMaterials].InitAsShaderResourceView(4, 5);     
+    rootParameters[LightPassParam::GlobalMaterials].InitAsShaderResourceView(4, 5);
+    rootParameters[LightPassParam::DirectionalLightCB].InitAsConstantBufferView(0);
+    rootParameters[LightPassParam::CameraCB].InitAsConstantBufferView(1);
+
     CD3DX12_STATIC_SAMPLER_DESC samplers[2];
     samplers[0] = CD3DX12_STATIC_SAMPLER_DESC(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT);
     samplers[1] = CD3DX12_STATIC_SAMPLER_DESC(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);

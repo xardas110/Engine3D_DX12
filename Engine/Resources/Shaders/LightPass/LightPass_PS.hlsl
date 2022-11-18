@@ -15,6 +15,9 @@ Texture2D                       g_GBufferHeap[]             : register(t5, space
 SamplerState                    g_NearestRepeatSampler      : register(s0);
 SamplerState                    g_LinearRepeatSampler       : register(s1);
 
+ConstantBuffer<DirectionalLightCB> g_DirectionalLight         : register(b0);
+ConstantBuffer<CameraCB>           g_Camera                   : register(b1);
+
 struct PixelShaderOutput
 {
     float4 DirectDiffuse    : SV_TARGET0;
