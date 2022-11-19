@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MATH_H
+#define MATH_H
 
 float3x3 ConstructTBN(
     in float3x3 model, 
@@ -29,3 +30,5 @@ float3 GetWorldPosFromDepth(in float2 uv, float depth, in float4x4 invViewProj)
     float4 wp = mul(ndc, invViewProj);
     return (wp / wp.w).xyz;
 }
+
+#endif

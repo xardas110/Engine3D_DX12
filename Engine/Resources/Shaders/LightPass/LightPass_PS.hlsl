@@ -82,7 +82,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, g_LinearRepeatSampler, g_GlobalTextureData);
             
            // color = float3(hitSurfaceMaterial.ao, hitSurfaceMaterial.roughness, hitSurfaceMaterial.metallic);
-            color = hitSurfaceMaterial.normal;
+            color = TangentToWorldNormal(hitSurface.tangent, hitSurface.bitangent, hitSurface.normal, hitSurfaceMaterial.normal,
+            hit.objToWorld);
         }
     }
     else
