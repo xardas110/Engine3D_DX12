@@ -78,12 +78,13 @@ void DeferredRenderer::Render(Window& window)
     objectCB.invProj = XMMatrixInverse(nullptr, objectCB.proj);
     
     CameraCB cameraCB;
-    cameraCB.view = objectCB.view;
-    cameraCB.proj = objectCB.proj;
-    cameraCB.invView = objectCB.invView;
-    cameraCB.invProj = objectCB.invProj;
+    cameraCB.view = camera->get_ViewMatrix();
+    cameraCB.proj = camera->get_ProjectionMatrix();
+    cameraCB.invView = XMMatrixInverse(nullptr, cameraCB.view);
+    cameraCB.invProj = XMMatrixInverse(nullptr, cameraCB.proj);
     cameraCB.viewProj = cameraCB.view * cameraCB.proj;
-    cameraCB.invViewProj = cameraCB.invView * cameraCB.invProj;
+    cameraCB.invViewProj = XMMatrixInverse(nullptr, cameraCB.viewProj);
+    cameraCB.resolution = { (float)m_Width, (float)m_Height };
 
     XMStoreFloat3(&cameraCB.pos, camera->get_Translation());
 

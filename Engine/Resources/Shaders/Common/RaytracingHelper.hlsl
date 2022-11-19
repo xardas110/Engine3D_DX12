@@ -56,6 +56,7 @@ MeshVertex BarycentricLerp(in MeshVertex v0, in MeshVertex v1, in MeshVertex v2,
     return r;
 }
 
+//In object space
 MeshVertex GetHitSurface(in HitAttributes attr, in MeshInfo meshInfo, in StructuredBuffer<MeshVertex> globalMeshVertexData[], in StructuredBuffer<uint> globalMeshIndexData[])
 {
     float3 bary;
@@ -78,4 +79,18 @@ MeshVertex GetHitSurface(in HitAttributes attr, in MeshInfo meshInfo, in Structu
     MeshVertex result = BarycentricLerp(v0, v1, v2, bary);
 
     return result;
+}
+
+
+void GetCameraDirectionFromUV(in uint2 index, in float2 resolution, in float3 camPos, in float4x4 invViewProj, out float3 direction)
+{
+    float2 xy = index + 0.5f;
+    float2 screenPos = xy / resolution * 2.f - 1.f;
+    // Invert Y for DirectX-style coordinates
+    screenPos.y = -screenPos.y;
+
+    // Unproject into a ray
+    float4 unprojected = mul(invViewProj, float4(screenPos, 0, 1));
+    float3 world = unprojected.xyz / unprojected.w;
+    direction = normalize(world - camPos);
 }

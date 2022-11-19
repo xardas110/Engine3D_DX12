@@ -122,6 +122,8 @@ struct CameraCB
     XMMATRIX invViewProj;
     XMFLOAT3 pos;
     float pad;
+    XMFLOAT2 resolution; //native res
+    XMINT2 pad1;
 };
 
 #endif

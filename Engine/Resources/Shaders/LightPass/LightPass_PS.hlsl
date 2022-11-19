@@ -3,6 +3,8 @@
 #include "../GBuffer/GBuffer.hlsl" 
 #include "../Common/Math.hlsl"
 #include "../Common/Phong.hlsl"
+#include "../Common/RaytracingHelper.hlsl"
+#include "../Common/MaterialAttributes.hlsl"
 
 RaytracingAccelerationStructure g_Scene                     : register(t0);
 Texture2D                       g_GlobalTextureData[]       : register(t1, space0);
@@ -40,10 +42,55 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         return OUT;
     }
     
-    float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj);
-    
+    float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj); 
     OUT.DirectDiffuse = float4(CalculateDiffuse(g_DirectionalLight.direction.rgb, fi.normal, g_DirectionalLight.color.rgb), 1.f);
     //OUT.DirectDiffuse *= g_GlobalTextureData[5].Sample(g_LinearRepeatSampler, TexCoord);
 
+    RayQuery <RAY_FLAG_CULL_NON_OPAQUE|RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES|RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH> query;
+            
+    uint ray_flags = 0; // Any this ray requires in addition those above.
+    uint ray_instance_mask = 0xffffffff;
+
+    RayDesc ray;
+    ray.TMin = 0.01f;
+    ray.TMax = 1e10f;
+    ray.Origin = g_Camera.pos;
+    GetCameraDirectionFromUV(g_Camera.resolution * TexCoord, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, ray.Direction);
+    
+    query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, ray);
+    query.Proceed();
+    
+    float3 color = float3(1.f, 0.f, 0.f);
+    
+    if (query.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
+    {
+        HitAttributes hit;
+        hit.bFrontFaced = query.CommittedTriangleFrontFace();
+        
+        if (hit.bFrontFaced == true)
+        {
+            int instanceIndex = query.CommittedInstanceID();
+            hit.primitiveIndex = query.CommittedPrimitiveIndex();
+            hit.geometryIndex = query.CommittedGeometryIndex();
+        
+            hit.barycentrics = query.CommittedTriangleBarycentrics();
+            hit.objToWorld = query.CommittedObjectToWorld3x4();
+        
+            MeshInfo meshInfo = g_GlobalMeshInfo[instanceIndex];
+            MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID]; 
+            MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
+            SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, g_LinearRepeatSampler, g_GlobalTextureData);
+            
+           // color = float3(hitSurfaceMaterial.ao, hitSurfaceMaterial.roughness, hitSurfaceMaterial.metallic);
+            color = hitSurfaceMaterial.normal;
+        }
+    }
+    else
+    {
+        color = float3(0.f, 0.f, 1.f);
+    }
+    
+    OUT.IndirectDiffuse = float4(color, 1.f);
+    
     return OUT;
 }
