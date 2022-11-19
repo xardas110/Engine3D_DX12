@@ -40,7 +40,7 @@ PixelShaderOutput main(PixelShaderInput IN)
     OUT.albedo = float4(surface.albedo, 1.f);
     OUT.normalHeight = float4(surface.normal, surface.height);
     OUT.PBR = float4(surface.ao, surface.roughness, surface.metallic, 1.f);
-    OUT.emissive = float4(surface.emissive, 1.f);
+    OUT.emissive = float4(surface.emissive, 0.5f);
     
     if (matInfo.materialID != 0xffffffff)
     {

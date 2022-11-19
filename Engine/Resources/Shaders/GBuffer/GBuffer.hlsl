@@ -32,7 +32,7 @@ GFragment UnpackGBuffer(in Texture2D gBufferHeap[],
     fi.ao = PBRTex.r;
     fi.roughness = PBRTex.g;
     fi.metallic = PBRTex.b;
-    fi.shaderModel = int(PBRTex.w);
+    fi.shaderModel = emissiveTex.w;
     fi.emissive = emissiveTex.rgb;
     fi.depth = depth;
     

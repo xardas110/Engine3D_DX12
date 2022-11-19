@@ -5,6 +5,7 @@
 #include "../Common/Phong.hlsl"
 #include "../Common/RaytracingHelper.hlsl"
 #include "../Common/MaterialAttributes.hlsl"
+#include "../Common/BRDF.hlsl"
 
 RaytracingAccelerationStructure g_Scene                     : register(t0);
 Texture2D                       g_GlobalTextureData[]       : register(t1, space0);
@@ -33,13 +34,15 @@ struct PixelShaderOutput
 
 PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
+    float3 g_SkyColor = float3(0.4f, 0.6f, 0.9f);
+    
     PixelShaderOutput OUT;
 
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);
     
-    if (fi.shaderModel != 1)
+    if (fi.shaderModel < 0.48f || fi.shaderModel > 0.52f)
     {
-        OUT.DirectDiffuse = float4(1.f, 1.f, 1.f, 1.f);
+        OUT.DirectDiffuse = float4(g_SkyColor, 1.f);
         return OUT;
     }
     
@@ -63,6 +66,30 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     
     float3 color = float3(1.f, 0.f, 0.f);
     
+    float3 radiance = float3(0.f, 0.f, 0.f);
+    float3 troughput = float3(1.f, 1.f, 1.f);
+    
+   
+    if (DEBUG_RAYTRACING_FINALCOLOR == g_RaytracingData.debugSettings)
+    {
+        
+        SurfaceMaterial gBufferMat;
+        gBufferMat.albedo = fi.albedo;
+        gBufferMat.ao = fi.ao;
+        gBufferMat.emissive = fi.emissive;
+        gBufferMat.height = fi.height;
+        gBufferMat.metallic = fi.metallic;
+        gBufferMat.roughness = fi.roughness;
+        gBufferMat.normal = fi.normal;
+
+        radiance += troughput * EvaluateBRDF(fi.normal, -g_DirectionalLight.direction.rgb, -ray.Direction, gBufferMat);
+        
+        OUT.DirectDiffuse = float4(radiance, 1.f);
+        
+        return OUT;
+    }
+    
+    
     if (query.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
     {
         HitAttributes hit;
@@ -78,7 +105,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             hit.objToWorld = query.CommittedObjectToWorld3x4();
         
             MeshInfo meshInfo = g_GlobalMeshInfo[instanceIndex];
-            MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID]; 
+            MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
             MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
             SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, g_LinearRepeatSampler, g_GlobalTextureData);
             
@@ -88,12 +115,12 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             }
             else if (DEBUG_RAYTRACING_NORMAL == g_RaytracingData.debugSettings)
             {
-                color = TangentToWorldNormal(hitSurface.tangent, 
-                    hitSurface.bitangent,
-                    hitSurface.normal, 
-                    hitSurfaceMaterial.normal,
-                    hit.objToWorld
-                    );
+                color = TangentToWorldNormal(hitSurface.tangent,
+                hitSurface.bitangent,
+                hitSurface.normal,
+                hitSurfaceMaterial.normal,
+                hit.objToWorld
+                );
             }
             else if (DEBUG_RAYTRACING_PBR == g_RaytracingData.debugSettings)
             {
@@ -103,17 +130,6 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             {
                 color = hitSurfaceMaterial.emissive;
             }
-            else if (DEBUG_RAYTRACING_FINALCOLOR == g_RaytracingData.debugSettings)
-            {        
-                float3 hitNormal = TangentToWorldNormal(hitSurface.tangent,
-                    hitSurface.bitangent,
-                    hitSurface.normal,
-                    hitSurfaceMaterial.normal,
-                    hit.objToWorld
-                    );
-            
-                color = CalculateDiffuse(g_DirectionalLight.direction.rgb, hitNormal, g_DirectionalLight.color.rgb);
-            }
             else if (DEBUG_RAYTRACING_UV == g_RaytracingData.debugSettings)
             {
                 color = float3(hitSurface.textureCoordinate, 0.f);
@@ -122,6 +138,17 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             {
                 color = float3(1.f, 1.f, 1.f);
             }
+            else if (DEBUG_RAYTRACING_FINALCOLOR == g_RaytracingData.debugSettings)
+            {
+                float3 hitNormal = TangentToWorldNormal(hitSurface.tangent,
+                hitSurface.bitangent,
+                hitSurface.normal,
+                hitSurfaceMaterial.normal,
+                hit.objToWorld
+                );        
+                
+            }
+            
         }
     }
     else
