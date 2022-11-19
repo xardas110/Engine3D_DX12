@@ -17,6 +17,7 @@ namespace LightPassParam
 		GlobalMeshInfo,
 		DirectionalLightCB,
 		CameraCB,
+		RaytracingDataCB,
 		Size
 	};
 }

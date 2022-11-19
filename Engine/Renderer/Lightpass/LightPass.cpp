@@ -120,6 +120,7 @@ void LightPass::CreatePipeline()
     rootParameters[LightPassParam::GlobalMaterials].InitAsShaderResourceView(4, 5);
     rootParameters[LightPassParam::DirectionalLightCB].InitAsConstantBufferView(0);
     rootParameters[LightPassParam::CameraCB].InitAsConstantBufferView(1);
+    rootParameters[LightPassParam::RaytracingDataCB].InitAsConstantBufferView(2);
 
     CD3DX12_STATIC_SAMPLER_DESC samplers[2];
     samplers[0] = CD3DX12_STATIC_SAMPLER_DESC(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT);
