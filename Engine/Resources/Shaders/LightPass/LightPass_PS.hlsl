@@ -116,15 +116,13 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 troughput /= (1.0f - brdfProbability);
             }
         }
-        
-        brdfType = BRDF_TYPE_DIFFUSE;
-        
+              
         float3 brdfWeight;
         float2 u = float2(Rand(rngState), Rand(rngState));
         
         ray.Origin = fragPos;
         
-        if (EvaluateIndirectBRDF(u, fi.normal, fi.normal
+        if (EvaluateIndirectBRDF(u, float3(0.f, 1.f, 0.f), fi.normal
         , V, gBufferMat, brdfType, ray.Direction, brdfWeight))
         {            
             troughput *= brdfWeight;
@@ -138,7 +136,6 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             }
             else
             {
-                /*
                 HitAttributes hit;
                 hit.bFrontFaced = query.CommittedTriangleFrontFace();
                 int instanceIndex = query.CommittedInstanceID();
@@ -163,13 +160,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                     hit.objToWorld
                     );
             
-                /*
                 shadowRayDesc.Origin = hit.posWS;            
                 query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
                 query.Proceed();
                        
                 radiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, -g_DirectionalLight.direction.rgb, -ray.Direction, hitSurfaceMaterial) * 2.f;
-                */  
             }
         }
        
