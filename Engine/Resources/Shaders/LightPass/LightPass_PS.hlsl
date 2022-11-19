@@ -61,9 +61,6 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     ray.Origin = g_Camera.pos;
     GetCameraDirectionFromUV(g_Camera.resolution * TexCoord, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, ray.Direction);
 
-    query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, ray);
-    query.Proceed();
-    
     float3 color = float3(1.f, 0.f, 0.f);
     
     float3 radiance = float3(0.f, 0.f, 0.f);
@@ -71,8 +68,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     
    
     if (DEBUG_RAYTRACING_FINALCOLOR == g_RaytracingData.debugSettings)
-    {
-        
+    {     
         SurfaceMaterial gBufferMat;
         gBufferMat.albedo = fi.albedo;
         gBufferMat.ao = fi.ao;
@@ -84,12 +80,30 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
         float3 V = ray.Direction;
         
-        radiance += troughput * EvaluateBRDF(fi.normal, -g_DirectionalLight.direction.rgb, -V, gBufferMat) * 2.f;
+        RayDesc shadowRayDesc;
+        shadowRayDesc.TMin = 0.01f;
+        shadowRayDesc.TMax = 1e10f;
+        shadowRayDesc.Origin = fragPos;
+        shadowRayDesc.Direction = -g_DirectionalLight.direction.rgb;
         
+        query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
+        query.Proceed();
+        
+        if (query.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
+        {
+            
+        }
+        else
+        {
+            radiance += troughput * EvaluateBRDF(fi.normal, -g_DirectionalLight.direction.rgb, -V, gBufferMat) * 2.f;
+        }
+                 
         OUT.DirectDiffuse = float4(radiance, 1.f);
-        
         return OUT;
     }
+      
+    query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, ray);
+    query.Proceed();
     
     
     if (query.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
