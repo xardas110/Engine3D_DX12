@@ -35,6 +35,9 @@ struct PixelShaderOutput
 PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
     float3 g_SkyColor = float3(0.4f, 0.6f, 0.9f);
+    uint2 pixelCoords = g_Camera.resolution * TexCoord;
+    
+    RngStateType rngState = InitRNG(pixelCoords, g_Camera.resolution, g_RaytracingData.frameNumber);
     
     PixelShaderOutput OUT;
 
@@ -59,7 +62,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     ray.TMin = 0.0001f;
     ray.TMax = 1e10f;
     ray.Origin = g_Camera.pos;
-    GetCameraDirectionFromUV(g_Camera.resolution * TexCoord, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, ray.Direction);
+    GetCameraDirectionFromUV(pixelCoords, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, ray.Direction);
 
     float3 color = float3(1.f, 0.f, 0.f);
     
@@ -89,11 +92,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
         query.Proceed();
         
-        if (query.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
-        {
-            
-        }
-        else
+        if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {
             radiance += troughput * EvaluateBRDF(fi.normal, -g_DirectionalLight.direction.rgb, -V, gBufferMat) * 2.f;
         }
