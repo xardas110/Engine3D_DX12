@@ -86,6 +86,9 @@ void DeferredRenderer::Render(Window& window)
     cameraCB.invViewProj = XMMatrixInverse(nullptr, cameraCB.viewProj);
     cameraCB.resolution = { (float)m_Width, (float)m_Height };
 
+    RaytracingDataCB rtData;
+    rtData.frameNumber = Application::GetFrameCount();
+
     XMStoreFloat3(&cameraCB.pos, camera->get_Translation());
 
     auto& directionalLight = game->m_DirectionalLight;
@@ -224,6 +227,18 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::CameraCB, cameraCB);
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::DirectionalLightCB, directionalLight);
+
+        const char* listbox_items[] =
+        { "FinalColor", "albedo", "normal", "pbr", "emissive" };
+
+        ImGui::Begin("Select Raytracing debug color");
+        static int listbox_item_current = 0;
+        ImGui::ListBox("listbox\n(single select)", &listbox_item_current, listbox_items, IM_ARRAYSIZE(listbox_items));
+        ImGui::End();
+
+        rtData.debugSettings = listbox_item_current;
+
+        commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::RaytracingDataCB, rtData);
 
         commandList->Draw(3);
 

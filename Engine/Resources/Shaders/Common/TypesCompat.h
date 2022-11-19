@@ -24,16 +24,24 @@ using namespace DirectX;
 #define COMPAT_VEC3F_NULL = XMFLOAT3(0.f, 0.f, 0.f)
 #define COMPAT_VEC4F(v0, v1, v2, v3) = XMFLOAT4(v0, v1, v2, v3)
 #define COMPAT_FLOAT(val) = val
+#define COMPAT_INT(val) = val
 #else 
 #define COMPAT_ONE
 #define COMPAT_VEC3F_ONE
 #define COMPAT_VEC3F_NULL
 #define COMPAT_FLOAT(val)
 #define COMPAT_VEC4F(v0, v1, v2, v3)
+#define COMPAT_INT(val)
 #endif // !HLSL
 
 #define TEXTURE_NULL UINT_MAX_NULL
 #define MATERIAL_ID_NULL UINT_MAX_NULL
+
+#define DEBUG_RAYTRACING_FINALCOLOR 0
+#define DEBUG_RAYTRACING_ALBEDO 1
+#define DEBUG_RAYTRACING_NORMAL 2
+#define DEBUG_RAYTRACING_PBR    3
+#define DEBUG_RAYTRACING_EMISSIVE 4
 
 struct Material
 {
@@ -124,6 +132,14 @@ struct CameraCB
     float pad;
     XMFLOAT2 resolution; //native res
     XMINT2 pad1;
+};
+
+struct RaytracingDataCB
+{
+    int debugSettings COMPAT_INT(-1); //-1 means nodebugging
+    int frameNumber COMPAT_INT(0);
+    int pad1; 
+    int pad2;
 };
 
 #endif

@@ -22,6 +22,7 @@ SamplerState                    g_LinearRepeatSampler       : register(s1);
 
 ConstantBuffer<DirectionalLightCB> g_DirectionalLight       : register(b0);
 ConstantBuffer<CameraCB>           g_Camera                 : register(b1);
+ConstantBuffer<RaytracingDataCB>   g_RaytracingData         : register(b2);
 
 struct PixelShaderOutput
 {
@@ -81,9 +82,38 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
             SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, g_LinearRepeatSampler, g_GlobalTextureData);
             
-           // color = float3(hitSurfaceMaterial.ao, hitSurfaceMaterial.roughness, hitSurfaceMaterial.metallic);
-            color = TangentToWorldNormal(hitSurface.tangent, hitSurface.bitangent, hitSurface.normal, hitSurfaceMaterial.normal,
-            hit.objToWorld);
+            if (DEBUG_RAYTRACING_ALBEDO == g_RaytracingData.debugSettings)
+            {
+                color = hitSurfaceMaterial.albedo;
+            }
+            else if (DEBUG_RAYTRACING_NORMAL == g_RaytracingData.debugSettings)
+            {
+                color = TangentToWorldNormal(hitSurface.tangent, 
+                    hitSurface.bitangent,
+                    hitSurface.normal, 
+                    hitSurfaceMaterial.normal,
+                    hit.objToWorld
+                    );
+            }
+            else if (DEBUG_RAYTRACING_PBR == g_RaytracingData.debugSettings)
+            {
+                color = float3(hitSurfaceMaterial.ao, hitSurfaceMaterial.roughness, hitSurfaceMaterial.metallic);
+            }
+            else if (DEBUG_RAYTRACING_EMISSIVE == g_RaytracingData.debugSettings)
+            {
+                color = hitSurfaceMaterial.emissive;
+            }
+            else if (DEBUG_RAYTRACING_FINALCOLOR == g_RaytracingData.debugSettings)
+            {        
+                float3 hitNormal = TangentToWorldNormal(hitSurface.tangent,
+                    hitSurface.bitangent,
+                    hitSurface.normal,
+                    hitSurfaceMaterial.normal,
+                    hit.objToWorld
+                    );
+            
+                color = CalculateDiffuse(g_DirectionalLight.direction.rgb, hitNormal, g_DirectionalLight.color.rgb);
+            }
         }
     }
     else
