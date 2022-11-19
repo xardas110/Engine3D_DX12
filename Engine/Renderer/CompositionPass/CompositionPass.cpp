@@ -60,14 +60,14 @@ void CompositionPass::CreatePipeline()
     srvHeapRanges[0].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     srvHeapRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvHeapRanges[1].NumDescriptors = 250;
+    srvHeapRanges[1].NumDescriptors = 240;
     srvHeapRanges[1].BaseShaderRegister = 1;
     srvHeapRanges[1].RegisterSpace = 1;
     srvHeapRanges[1].OffsetInDescriptorsFromTableStart = 0;
     srvHeapRanges[1].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     srvHeapRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvHeapRanges[2].NumDescriptors = 250;
+    srvHeapRanges[2].NumDescriptors = 240;
     srvHeapRanges[2].BaseShaderRegister = 1;
     srvHeapRanges[2].RegisterSpace = 2;
     srvHeapRanges[2].OffsetInDescriptorsFromTableStart = 0;

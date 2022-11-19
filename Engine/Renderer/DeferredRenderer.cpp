@@ -82,6 +82,9 @@ void DeferredRenderer::Render(Window& window)
     cameraCB.proj = objectCB.proj;
     cameraCB.invView = objectCB.invView;
     cameraCB.invProj = objectCB.invProj;
+    cameraCB.viewProj = cameraCB.view * cameraCB.proj;
+    cameraCB.invViewProj = cameraCB.invView * cameraCB.invProj;
+
     XMStoreFloat3(&cameraCB.pos, camera->get_Translation());
 
     auto& directionalLight = game->m_DirectionalLight;

@@ -35,8 +35,7 @@ PixelShaderOutput main(PixelShaderInput IN)
     float4 albedo = GetAlbedo(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
     float3 normal = GetNormal(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
     normal = GetWorldNormal(normal, IN.TBN);
-    normal *= 0.5f + 0.5f;
-    
+
     float ao = GetAO(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
     float roughness = GetRoughness(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
     float metallic = GetMetallic(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);

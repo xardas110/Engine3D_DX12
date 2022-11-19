@@ -21,3 +21,11 @@ float3 GetWorldNormal(in float3 tangentNormal, in float3x3 TBN)
     normal = normalize(mul(TBN, normal));
     return normal;
 }
+
+float3 GetWorldPosFromDepth(in float2 uv, float depth, in float4x4 invViewProj)
+{
+    float4 ndc = float4(uv * 2.0f - 1.0f, depth, 1.0f);
+    ndc.y *= -1.0f;
+    float4 wp = mul(ndc, invViewProj);
+    return (wp / wp.w).xyz;
+}
