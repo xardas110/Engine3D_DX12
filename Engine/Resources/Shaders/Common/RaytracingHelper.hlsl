@@ -1,9 +1,8 @@
+#ifndef RAYTRACING_HELPER_H
+#define RAYTRACING_HELPER_H
 
 #define hlsl 
 #include "TypesCompat.h"
-
-#pragma once
-
 
 struct HitAttributes
 {
@@ -94,3 +93,5 @@ void GetCameraDirectionFromUV(in uint2 index, in float2 resolution, in float3 ca
     float3 world = unprojected.xyz / unprojected.w;
     direction = normalize(world - camPos);
 }
+
+#endif

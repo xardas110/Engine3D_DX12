@@ -1,8 +1,9 @@
+#ifndef MATERIAL_ATTRIBUTES_H
+#define MATERIAL_ATTRIBUTES_H
+
 #define hlsl 
 #include "TypesCompat.h"
-
-#ifndef MATERIAL_ATTRIBUTES_HLSL
-#define MATERIAL_ATTRIBUTES_HLSL
+#include "../Common/Math.hlsl"
 
 struct SurfaceMaterial
 {
@@ -113,6 +114,13 @@ SurfaceMaterial GetSurfaceMaterial(
     surface.opacity = GetOpacity(matInfo, texCoords, inSampler, globalTextureData);
     surface.normal = GetNormal(matInfo, texCoords, inSampler, globalTextureData);
     return surface;
+}
+
+//Returns tangentNormal -> worldNormal
+float3 TangentToWorldNormal(in float3 localTangent, in float3 localBiTangent, in float3 localNormal, in float3 tangentNormal, in float3x4 model)
+{
+    float3x3 TBN = ConstructTBN(model, localTangent, localBiTangent, normalize(localNormal));
+    return GetWorldNormal(tangentNormal, TBN);
 }
 
 #endif
