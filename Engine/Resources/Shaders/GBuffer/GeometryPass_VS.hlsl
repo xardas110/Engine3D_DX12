@@ -19,7 +19,9 @@ struct VertexShaderOutput
 	float4 PositionWS	: POSITION;
 	float3 NormalWS		: NORMAL;
 	float2 TexCoord		: TEXCOORD;
-    float3x3 TBN		: TBN;
+    float3 Tangent_N	: TANGENT_N;
+    float3 BiTangent_N	: BiTangent_N;
+    float3 NormalLS_N	: NORMALLS_N;
 	float4 Position		: SV_Position;
 };
 
@@ -30,7 +32,10 @@ VertexShaderOutput main(VertexPositionNormalTexture IN)
 	OUT.PositionWS = mul(g_ObjectCB.model, float4(IN.Position, 1.f));
 	OUT.NormalWS = mul((float3x3)g_ObjectCB.transposeInverseModel, IN.Normal);
 	OUT.NormalWS = normalize(OUT.NormalWS);
-	OUT.TexCoord = IN.TexCoord; 
-    OUT.TBN = ConstructTBN(g_ObjectCB.model, IN.Tangent, IN.BiTangent, normalize(IN.Normal));
+	OUT.TexCoord = IN.TexCoord;
+    OUT.Tangent_N = IN.Tangent;
+    OUT.BiTangent_N = IN.BiTangent;
+    OUT.NormalLS_N = IN.Normal;
+
 	return OUT;
 }

@@ -15,16 +15,7 @@ struct HitAttributes
 
 float2 BaryInterp2(in float2 v0, in float2 v1, in float2 v2, in float3 bary)
 {
-    float2 r;
-    
-    float u = bary.x;
-    float v = bary.y;
-    float w = bary.z;
-    
-    r.x = u * v0.x + v * v1.x + w * v2.x;
-    r.y = u * v0.y + v * v1.y + w * v2.y;
-    
-    return r;
+    return bary.x * v0 + bary.y * v1 + bary.z * v2;;
 }
 
 float3 BaryInterp3(in float3 v0, in float3 v1, in float3 v2, in float3 bary)
@@ -33,15 +24,7 @@ float3 BaryInterp3(in float3 v0, in float3 v1, in float3 v2, in float3 bary)
     //Y = (u * p0.y + v * p1.y + w * p2.y)
     //Z = (u * p0.z + v * p1.z + w * p2.z)
     
-    float3 r;
-    float u = bary.x;
-    float v = bary.y;
-    float w = bary.z;
-    
-    r.x = bary.x * v0.x + bary.y * v1.x + bary.z * v2.x;
-    r.y = bary.x * v0.y + bary.y * v1.y + bary.z * v2.y;
-    r.z = bary.x * v0.z + bary.y * v1.z + bary.z * v2.z;
-    return r;
+    return bary.x * v0 + bary.y * v1 + bary.z * v2;
 }
 
 MeshVertex BarycentricLerp(in MeshVertex v0, in MeshVertex v1, in MeshVertex v2, in float3 bary)
@@ -76,7 +59,6 @@ MeshVertex GetHitSurface(in HitAttributes attr, in MeshInfo meshInfo, in Structu
     MeshVertex v2 = vertexBuffer[i2];
     
     MeshVertex result = BarycentricLerp(v0, v1, v2, bary);
-
     return result;
 }
 

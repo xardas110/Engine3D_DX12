@@ -15,7 +15,9 @@ struct PixelShaderInput
 	float4 PositionWS	:	POSITION;
 	float3 NormalWS		:	NORMAL;
 	float2 TexCoord		:	TEXCOORD;
-    float3x3 TBN        :   TBN;
+    float3 Tangent_N    : TANGENT_N;
+    float3 BiTangent_N  : BiTangent_N;
+    float3 NormalLS_N   : NORMALLS_N;
 };
 
 struct PixelShaderOutput
@@ -32,23 +34,13 @@ PixelShaderOutput main(PixelShaderInput IN)
     
     MaterialInfo matInfo = g_GlobalMaterialInfo[g_ObjectCB.materialGPUID];   
     
-    float4 albedo = GetAlbedo(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
-    float3 normal = GetNormal(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
-    normal = GetWorldNormal(normal, IN.TBN);
+    SurfaceMaterial surface = GetSurfaceMaterial(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
+    surface.normal = TangentToWorldNormal(IN.Tangent_N, IN.BiTangent_N, IN.NormalLS_N, surface.normal, g_ObjectCB.model);
 
-    float ao = GetAO(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
-    float roughness = GetRoughness(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
-    float metallic = GetMetallic(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
-    float height = GetHeight(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
-    
-    float3 emissive = GetEmissive(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
-    
-    float opacity = GetOpacity(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
-       
-    OUT.albedo = albedo;
-    OUT.normalHeight = float4(normal, height);
-    OUT.PBR = float4(ao, roughness, metallic, 1.f);
-    OUT.emissive = float4(emissive, 1.f);
+    OUT.albedo = float4(surface.albedo, 1.f);
+    OUT.normalHeight = float4(surface.normal, surface.height);
+    OUT.PBR = float4(surface.ao, surface.roughness, surface.metallic, 1.f);
+    OUT.emissive = float4(surface.emissive, 1.f);
     
     if (matInfo.materialID != 0xffffffff)
     {
