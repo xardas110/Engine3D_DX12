@@ -118,6 +118,8 @@ struct CameraCB
     XMMATRIX proj;
     XMMATRIX invView;
     XMMATRIX invProj;
+    XMMATRIX viewProj;
+    XMMATRIX invViewProj;
     XMFLOAT3 pos;
     float pad;
 };

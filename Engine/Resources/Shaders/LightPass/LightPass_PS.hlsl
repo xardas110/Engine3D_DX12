@@ -1,5 +1,8 @@
 #define HLSL
 #include "../Common/TypesCompat.h"
+#include "../GBuffer/GBuffer.hlsl" 
+#include "../Common/Math.hlsl"
+#include "../Common/Phong.hlsl"
 
 RaytracingAccelerationStructure g_Scene                     : register(t0);
 Texture2D                       g_GlobalTextureData[]       : register(t1, space0);
@@ -15,8 +18,8 @@ Texture2D                       g_GBufferHeap[]             : register(t5, space
 SamplerState                    g_NearestRepeatSampler      : register(s0);
 SamplerState                    g_LinearRepeatSampler       : register(s1);
 
-ConstantBuffer<DirectionalLightCB> g_DirectionalLight         : register(b0);
-ConstantBuffer<CameraCB>           g_Camera                   : register(b1);
+ConstantBuffer<DirectionalLightCB> g_DirectionalLight       : register(b0);
+ConstantBuffer<CameraCB>           g_Camera                 : register(b1);
 
 struct PixelShaderOutput
 {
@@ -29,7 +32,17 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
     PixelShaderOutput OUT;
 
-    OUT.DirectDiffuse = float4(g_Camera.pos, 1.f) * g_DirectionalLight.color;
+    GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);
+    
+    if (fi.shaderModel != 1)
+    {
+        OUT.DirectDiffuse = float4(1.f, 1.f, 1.f, 1.f);
+        return OUT;
+    }
+    
+    float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj);
+    
+    OUT.DirectDiffuse = float4(CalculateDiffuse(g_DirectionalLight.direction.rgb, fi.normal, g_DirectionalLight.color.rgb), 1.f);
     //OUT.DirectDiffuse *= g_GlobalTextureData[5].Sample(g_LinearRepeatSampler, TexCoord);
 
     return OUT;

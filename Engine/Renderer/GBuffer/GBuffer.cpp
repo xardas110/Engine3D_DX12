@@ -269,5 +269,16 @@ D3D12_GPU_DESCRIPTOR_HANDLE GBuffer::CreateSRVViews()
         renderTarget.GetTexture(AttachmentPoint::Color3).GetD3D12Resource().Get(), nullptr,
         m_SRVHeap.SetHandle(3));
 
+    D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
+    desc.Format = DXGI_FORMAT_R32_FLOAT;
+    desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    desc.Texture2D.MipLevels = 1;
+    desc.Texture2D.MostDetailedMip = 0;
+
+    device->CreateShaderResourceView(
+        renderTarget.GetTexture(AttachmentPoint::DepthStencil).GetD3D12Resource().Get(), &desc,
+        m_SRVHeap.SetHandle(4));
+
     return m_SRVHeap.GetHandleAtStart();
 }
