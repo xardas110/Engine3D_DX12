@@ -4,6 +4,21 @@
 #ifndef MATERIAL_ATTRIBUTES_HLSL
 #define MATERIAL_ATTRIBUTES_HLSL
 
+struct SurfaceMaterial
+{
+    float3 albedo;
+    float ao;
+    
+    float3 normal;
+    float height;
+      
+    float3 emissive;
+    float opacity;
+    
+    float roughness;
+    float metallic;
+};
+
 float4 GetAlbedo(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[])
 {
     if (matInfo.albedo != 0xffffffff)
@@ -82,6 +97,22 @@ float GetOpacity(in MaterialInfo matInfo, in float2 texCoords, in SamplerState i
         return opacity.Sample(inSampler, texCoords).r;
     }
     return 1.f;
+}
+
+SurfaceMaterial GetSurfaceMaterial(
+    in MaterialInfo matInfo, in float2 texCoords, 
+    in SamplerState inSampler, in Texture2D globalTextureData[])
+{
+    SurfaceMaterial surface;
+    surface.albedo = GetAlbedo(matInfo, texCoords, inSampler, globalTextureData);
+    surface.ao = GetAO(matInfo, texCoords, inSampler, globalTextureData);
+    surface.emissive = GetEmissive(matInfo, texCoords, inSampler, globalTextureData);
+    surface.height = GetHeight(matInfo, texCoords, inSampler, globalTextureData);
+    surface.roughness = GetRoughness(matInfo, texCoords, inSampler, globalTextureData);
+    surface.metallic = GetMetallic(matInfo, texCoords, inSampler, globalTextureData);
+    surface.opacity = GetOpacity(matInfo, texCoords, inSampler, globalTextureData);
+    surface.normal = GetNormal(matInfo, texCoords, inSampler, globalTextureData);
+    return surface;
 }
 
 #endif
