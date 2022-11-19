@@ -60,7 +60,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     ray.TMax = 1e10f;
     ray.Origin = g_Camera.pos;
     GetCameraDirectionFromUV(g_Camera.resolution * TexCoord, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, ray.Direction);
-    
+
     query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, ray);
     query.Proceed();
     
@@ -82,7 +82,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         gBufferMat.roughness = fi.roughness;
         gBufferMat.normal = fi.normal;
 
-        radiance += troughput * EvaluateBRDF(fi.normal, -g_DirectionalLight.direction.rgb, -ray.Direction, gBufferMat);
+        float3 V = ray.Direction;
+        
+        radiance += troughput * EvaluateBRDF(fi.normal, -g_DirectionalLight.direction.rgb, -V, gBufferMat) * 2.f;
         
         OUT.DirectDiffuse = float4(radiance, 1.f);
         
