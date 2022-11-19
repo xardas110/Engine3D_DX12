@@ -132,7 +132,7 @@ float3 EvaluateMicrofacet(const in BRDFData data)
 {
     float D = GGX_D(max(0.00001f, data.alphaSquared), data.NdotH);
     float G2 = Smith_G2(data.alpha, data.alphaSquared, data.NdotL, data.NdotV);
-    return ((data.F * G2 * D) / (4.0f * data.NdotL * data.NdotV)) * data.NdotL;
+    return data.F * (G2 * D * data.NdotL);
 }
 
 float3 EvaluateLambertian(const in BRDFData data)
