@@ -87,6 +87,15 @@ bool SponzaExe::LoadContent()
         }
     }
 
+    {
+        auto ent = CreateEntity("DxCube");
+        auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+        sm.SetMaterialInstance(material);
+        auto& trans = ent.GetComponent<TransformComponent>();
+        trans.scale = { 50.f, 2.f, 50.f };
+        trans.pos = { 0.f, 0.f, 0.f};
+    }
+
     for (size_t i = 0; i < 20; i++)
     {
         {
@@ -94,7 +103,7 @@ bool SponzaExe::LoadContent()
             auto& sm = ent.AddComponent<MeshComponent>(L"DefaultTorus");
             sm.SetMaterialInstance(material);
             auto& trans = ent.GetComponent<TransformComponent>();
-            trans.scale = { 2.f, 2.f, 2.f };
+            trans.scale = { 5.f, 5.f, 5.f };
             trans.pos = { -50.f + float(rand() % 100),float(rand() % 10), -50.f + float(rand() % 100) };
             trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(rand() % 360));
         }
