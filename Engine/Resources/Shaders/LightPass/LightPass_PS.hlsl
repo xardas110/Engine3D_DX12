@@ -53,7 +53,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     uint ray_instance_mask = 0xffffffff;
 
     RayDesc ray;
-    ray.TMin = 0.01f;
+    ray.TMin = 0.0001f;
     ray.TMax = 1e10f;
     ray.Origin = g_Camera.pos;
     GetCameraDirectionFromUV(g_Camera.resolution * TexCoord, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, ray.Direction);
@@ -113,6 +113,14 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                     );
             
                 color = CalculateDiffuse(g_DirectionalLight.direction.rgb, hitNormal, g_DirectionalLight.color.rgb);
+            }
+            else if (DEBUG_RAYTRACING_UV == g_RaytracingData.debugSettings)
+            {
+                color = float3(hitSurface.textureCoordinate, 0.f);
+            }
+            else if (DEBUG_RAYTRACING_POS == g_RaytracingData.debugSettings)
+            {
+                color = float3(1.f, 1.f, 1.f);
             }
         }
     }

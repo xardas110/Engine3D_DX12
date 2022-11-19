@@ -229,7 +229,7 @@ void DeferredRenderer::Render(Window& window)
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::DirectionalLightCB, directionalLight);
 
         const char* listbox_items[] =
-        { "FinalColor", "albedo", "normal", "pbr", "emissive" };
+        { "FinalColor", "albedo", "normal", "pbr", "emissive", "UV", "POS"};
 
         ImGui::Begin("Select Raytracing debug color");
         static int listbox_item_current = 0;

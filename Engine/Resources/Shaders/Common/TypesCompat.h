@@ -42,6 +42,8 @@ using namespace DirectX;
 #define DEBUG_RAYTRACING_NORMAL 2
 #define DEBUG_RAYTRACING_PBR    3
 #define DEBUG_RAYTRACING_EMISSIVE 4
+#define DEBUG_RAYTRACING_UV 5
+#define DEBUG_RAYTRACING_POS 6
 
 struct Material
 {
