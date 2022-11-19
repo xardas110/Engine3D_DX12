@@ -349,11 +349,13 @@ bool EvaluateIndirectBRDF(
         const BRDFData data = PrepareBRDFData(Nlocal, rayDirectionLocal, Vlocal, material);
         sampleWeight = data.diffuseReflectance * Lambertian(data);
         
+        /*
         //TODO:Generate new u value
         float3 hSpecular = SampleGGXVNDF(Vlocal, float2(data.alpha, data.alpha), u);
         
         float VdotH = max(0.00001f, min(1.0f, dot(Vlocal, hSpecular)));
         sampleWeight *= (float3(1.0f, 1.0f, 1.0f) - EvaluateFresnelSchlick(data.specularF0, ShadowedF90(data.specularF0), VdotH));
+        */
     }
     else if (BRDF_TYPE_SPECULAR == brdfType)
     {

@@ -59,7 +59,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     uint ray_instance_mask = 0xffffffff;
 
     RayDesc ray;
-    ray.TMin = 0.0001f;
+    ray.TMin = 0.01f;
     ray.TMax = 1e10f;
     ray.Origin = g_Camera.pos;
     GetCameraDirectionFromUV(pixelCoords, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, ray.Direction);
@@ -68,8 +68,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     
     float3 radiance = float3(0.f, 0.f, 0.f);
     float3 troughput = float3(1.f, 1.f, 1.f);
-    
-   
+      
     if (DEBUG_RAYTRACING_FINALCOLOR == g_RaytracingData.debugSettings)
     {     
         SurfaceMaterial gBufferMat;
@@ -81,7 +80,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         gBufferMat.roughness = fi.roughness;
         gBufferMat.normal = fi.normal;
 
-        float3 V = ray.Direction;
+        float3 V = -ray.Direction;
         
         RayDesc shadowRayDesc;
         shadowRayDesc.TMin = 0.01f;
@@ -94,10 +93,88 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
         if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {
-            radiance += troughput * EvaluateBRDF(fi.normal, -g_DirectionalLight.direction.rgb, -V, gBufferMat) * 2.f;
+            radiance += troughput * EvaluateBRDF(fi.normal, -g_DirectionalLight.direction.rgb, V, gBufferMat) * 2.f;
         }
-                 
+              
+        int brdfType;
+        if (gBufferMat.metallic == 1.f && gBufferMat.roughness == 0.f)
+        {
+            brdfType = BRDF_TYPE_SPECULAR;
+        }
+        else
+        {
+            float brdfProbability = GetBRDFProbability(gBufferMat, V, fi.normal);
+
+            if (Rand(rngState) < brdfProbability)
+            {
+                brdfType = BRDF_TYPE_SPECULAR;
+                troughput /= brdfProbability;
+            }
+            else
+            {
+                brdfType = BRDF_TYPE_DIFFUSE;
+                troughput /= (1.0f - brdfProbability);
+            }
+        }
+        
+        brdfType = BRDF_TYPE_DIFFUSE;
+        
+        float3 brdfWeight;
+        float2 u = float2(Rand(rngState), Rand(rngState));
+        
+        ray.Origin = fragPos;
+        
+        if (EvaluateIndirectBRDF(u, fi.normal, fi.normal
+        , V, gBufferMat, brdfType, ray.Direction, brdfWeight))
+        {            
+            troughput *= brdfWeight;
+              
+            query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, ray);
+            query.Proceed();
+        
+            if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+            {
+                radiance += troughput * float3(1.f, 1.f, 1.f);
+            }
+            else
+            {
+                /*
+                HitAttributes hit;
+                hit.bFrontFaced = query.CommittedTriangleFrontFace();
+                int instanceIndex = query.CommittedInstanceID();
+                hit.primitiveIndex = query.CommittedPrimitiveIndex();
+                hit.geometryIndex = query.CommittedGeometryIndex();
+        
+                hit.barycentrics = query.CommittedTriangleBarycentrics();
+                hit.objToWorld = query.CommittedObjectToWorld3x4();
+                hit.posWS = query.WorldRayOrigin();
+            
+                MeshInfo meshInfo = g_GlobalMeshInfo[instanceIndex];
+                MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
+                
+                MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
+                hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
+                
+                SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, g_LinearRepeatSampler, g_GlobalTextureData);
+                hitSurfaceMaterial.normal = TangentToWorldNormal(hitSurface.tangent,
+                    hitSurface.bitangent,
+                    hitSurface.normal,
+                    hitSurfaceMaterial.normal,
+                    hit.objToWorld
+                    );
+            
+                /*
+                shadowRayDesc.Origin = hit.posWS;            
+                query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
+                query.Proceed();
+                       
+                radiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, -g_DirectionalLight.direction.rgb, -ray.Direction, hitSurfaceMaterial) * 2.f;
+                */  
+            }
+        }
+       
         OUT.DirectDiffuse = float4(radiance, 1.f);
+        
         return OUT;
     }
       
