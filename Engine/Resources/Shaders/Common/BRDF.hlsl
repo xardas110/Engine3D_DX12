@@ -21,6 +21,11 @@
 #define ONE_OVER_TWO_PI (1.0f / TWO_PI)
 #endif
 
+#define BRDF_TYPE_DIFFUSE 1
+#define BRDF_TYPE_SPECULAR 2
+
+#define RngStateType uint4
+
 struct BRDFData
 {
     float3 V;
@@ -151,6 +156,220 @@ float3 EvaluateBRDF(in float3 N, in float3 L, in float3 V, in SurfaceMaterial ma
     float3 diffuse = EvaluateLambertian(data);
 
     return (float3(1.0f, 1.0f, 1.0f) - data.F) * diffuse + specular;
+}
+
+// Source: "Hash Functions for GPU Rendering" by Jarzynski & Olano
+uint4 pcg4d(uint4 v)
+{
+    v = v * 1664525u + 1013904223u;
+
+    v.x += v.y * v.w;
+    v.y += v.z * v.x;
+    v.z += v.x * v.y;
+    v.w += v.y * v.z;
+
+    v = v ^ (v >> 16u);
+
+    v.x += v.y * v.w;
+    v.y += v.z * v.x;
+    v.z += v.x * v.y;
+    v.w += v.y * v.z;
+
+    return v;
+}
+
+RngStateType InitRNG(uint2 pixelCoords, uint2 resolution, uint frameNumber)
+{
+    return RngStateType(pixelCoords.xy, frameNumber, 0);
+}
+
+float uintToFloat(uint x)
+{
+    return asfloat(0x3f800000 | (x >> 9)) - 1.0f;
+}
+
+// Return random float in <0; 1) range  (PCG version)
+float Rand(inout RngStateType rngState)
+{
+    rngState.w++; //< Increment sample index
+    return uintToFloat(pcg4d(rngState).x);
+}
+
+float GetBRDFProbability(in SurfaceMaterial material, in float3 V, in float3 shadingNormal)
+{
+    float specularF0 = Luminance(BaseColorToSpecularF0(material.albedo, material.metallic));
+    float diffuseReflectance = Luminance(BaseColorToDiffuseReflectance(material.albedo, material.metallic));
+    float Fresnel = saturate(Luminance(EvaluateFresnelSchlick(specularF0, ShadowedF90(specularF0), max(0.0f, dot(V, shadingNormal)))));
+    
+    float specular = Fresnel;
+    float diffuse = diffuseReflectance * (1.0f - Fresnel);
+    float p = (specular / max(0.0001f, (specular + diffuse)));
+    return clamp(p, 0.1f, 0.9f);
+}
+
+float4 GetRotationToZAxis(in float3 input)
+{
+
+	// Handle special case when input is exact or near opposite of (0, 0, 1)
+    if (input.z < -0.99999f)
+        return float4(1.0f, 0.0f, 0.0f, 0.0f);
+
+    return normalize(float4(input.y, -input.x, 0.0f, 1.0f + input.z));
+}
+
+// Source: https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
+float3 RotatePoint(float4 q, float3 v)
+{
+    const float3 qAxis = float3(q.x, q.y, q.z);
+    return 2.0f * dot(qAxis, v) * qAxis + (q.w * q.w - dot(qAxis, qAxis)) * v + 2.0f * q.w * cross(qAxis, v);
+}
+
+float3 SampleHemisphere(float2 u, out float pdf) 
+{
+    float a = sqrt(u.x);
+    float b = TWO_PI * u.y;
+
+    float3 result = float3(
+		    a * cos(b),
+		    a * sin(b),
+		    sqrt(1.0f - u.x));
+
+	pdf = result.z * ONE_OVER_PI;
+
+	return result;
+}
+
+float3 SampleHemisphere(float2 u)
+{
+    float pdf;
+    return SampleHemisphere(u, pdf);
+}
+
+float Lambertian(const in BRDFData data)
+{
+    return 1.0f;
+}
+
+float3 SampleGGXVNDF(float3 Ve, float2 alpha2D, float2 u)
+{
+    float3 Vh = normalize(float3(alpha2D.x * Ve.x, alpha2D.y * Ve.y, Ve.z));
+
+    float lensq = Vh.x * Vh.x + Vh.y * Vh.y;
+    float3 T1 = lensq > 0.0f ? float3(-Vh.y, Vh.x, 0.0f) * rsqrt(lensq) : float3(1.0f, 0.0f, 0.0f);
+    float3 T2 = cross(Vh, T1);
+
+    float r = sqrt(u.x);
+    float phi = TWO_PI * u.y;
+    float t1 = r * cos(phi);
+    float t2 = r * sin(phi);
+    float s = 0.5f * (1.0f + Vh.z);
+    t2 = lerp(sqrt(1.0f - t1 * t1), t2, s);
+
+    float3 Nh = t1 * T1 + t2 * T2 + sqrt(max(0.0f, 1.0f - t1 * t1 - t2 * t2)) * Vh;
+	
+    return normalize(float3(alpha2D.x * Nh.x, alpha2D.y * Nh.y, max(0.0f, Nh.z)));
+}
+
+float Smith_G1_GGX(float a)
+{
+    float a2 = a * a;
+    return 2.0f / (sqrt((a2 + 1.0f) / a2) + 1.0f);
+}
+
+float Smith_G1_GGX(float alpha, float NdotS, float alphaSquared, float NdotSSquared)
+{
+    return 2.0f / (sqrt(((alphaSquared * (1.0f - NdotSSquared)) + NdotSSquared) / NdotSSquared) + 1.0f);
+}
+
+float Smith_G2_Over_G1_Height_Correlated(float alpha, float alphaSquared, float NdotL, float NdotV)
+{
+    float G1V = Smith_G1_GGX(alpha, NdotV, alphaSquared, NdotV * NdotV);
+    float G1L = Smith_G1_GGX(alpha, NdotL, alphaSquared, NdotL * NdotL);
+    return G1L / (G1V + G1L - G1V * G1L);
+}
+
+float SpecularSampleWeightGGXVNDF(float alpha, float alphaSquared, float NdotL, float NdotV, float HdotL, float NdotH)
+{
+	return Smith_G2_Over_G1_Height_Correlated(alpha, alphaSquared, NdotL, NdotV);
+}
+
+float3 SampleSpecularMicrofacet(float3 Vlocal, float alpha, float alphaSquared, float3 specularF0, float2 u, out float3 weight) 
+{
+	// Sample a microfacet normal (H) in local space
+    float3 Hlocal;
+	if (alpha == 0.0f) 
+    {
+		// Fast path for zero roughness (perfect reflection), also prevents NaNs appearing due to divisions by zeroes
+		Hlocal = float3(0.0f, 0.0f, 1.0f);
+	} 
+    else 
+    {
+		// For non-zero roughness, this calls VNDF sampling for GG-X distribution or Walter's sampling for Beckmann distribution
+		Hlocal = SampleGGXVNDF(Vlocal, float2(alpha, alpha), u);
+	}
+
+	// Reflect view direction to obtain light vector
+    float3 Llocal = reflect(-Vlocal, Hlocal);
+
+    float HdotL = max(0.00001f, min(1.0f, dot(Hlocal, Llocal)));
+    const float3 Nlocal = float3(0.0f, 0.0f, 1.0f);
+    float NdotL = max(0.00001f, min(1.0f, dot(Nlocal, Llocal)));
+    float NdotV = max(0.00001f, min(1.0f, dot(Nlocal, Vlocal)));
+    float NdotH = max(0.00001f, min(1.0f, dot(Nlocal, Hlocal)));
+    float3 F = EvaluateFresnelSchlick(specularF0, ShadowedF90(specularF0), HdotL);
+
+    weight = F * SpecularSampleWeightGGXVNDF(alpha, alphaSquared, NdotL, NdotV, HdotL, NdotH);
+
+    return Llocal;
+}
+
+float4 InvertRotation(float4 q)
+{
+    return float4(-q.x, -q.y, -q.z, q.w);
+}
+
+bool EvaluateIndirectBRDF(
+    in float2 u, in float3 shadingNormal, 
+    in float3 geometryNormal, in float3 V, 
+    in SurfaceMaterial material, const int brdfType, 
+    out float3 rayDirection, out float3 sampleWeight)
+{
+    if (dot(shadingNormal, V) <= 0.0f)
+        return false;
+    
+    float4 qRotationToZ = GetRotationToZAxis(shadingNormal);
+    float3 Vlocal = RotatePoint(qRotationToZ, V);
+    const float3 Nlocal = float3(0.0f, 0.0f, 1.0f);
+    
+    float3 rayDirectionLocal = float3(0.0f, 0.0f, 0.0f);
+    
+    if (BRDF_TYPE_DIFFUSE == brdfType)
+    {
+        rayDirectionLocal = SampleHemisphere(u);
+        const BRDFData data = PrepareBRDFData(Nlocal, rayDirectionLocal, Vlocal, material);
+        sampleWeight = data.diffuseReflectance * Lambertian(data);
+        
+        //TODO:Generate new u value
+        float3 hSpecular = SampleGGXVNDF(Vlocal, float2(data.alpha, data.alpha), u);
+        
+        float VdotH = max(0.00001f, min(1.0f, dot(Vlocal, hSpecular)));
+        sampleWeight *= (float3(1.0f, 1.0f, 1.0f) - EvaluateFresnelSchlick(data.specularF0, ShadowedF90(data.specularF0), VdotH));
+    }
+    else if (BRDF_TYPE_SPECULAR == brdfType)
+    {
+        const BRDFData data = PrepareBRDFData(Nlocal, float3(0.0f, 0.0f, 1.0f) /* unused L vector */, Vlocal, material);
+        rayDirectionLocal = SampleSpecularMicrofacet(Vlocal, data.alpha, data.alphaSquared, data.specularF0, u, sampleWeight);
+    }
+
+    if (Luminance(sampleWeight) == 0.0f)
+        return false;
+    
+    rayDirection = normalize(RotatePoint(InvertRotation(qRotationToZ), rayDirectionLocal));
+    
+    if (dot(geometryNormal, rayDirection) <= 0.0f)
+        return false;
+
+    return true;
 }
 
 #endif
