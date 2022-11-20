@@ -329,8 +329,7 @@ float4 InvertRotation(float4 q)
 }
 
 bool EvaluateIndirectBRDF(
-    in float2 u, in float3 shadingNormal, 
-    in float3 geometryNormal, in float3 V, 
+    in float2 u, in float3 shadingNormal, in float3 V, 
     in SurfaceMaterial material, const int brdfType, 
     out float3 rayDirection, out float3 sampleWeight)
 {
@@ -366,7 +365,7 @@ bool EvaluateIndirectBRDF(
     
     rayDirection = normalize(RotatePoint(InvertRotation(qRotationToZ), rayDirectionLocal));
     
-    if (dot(geometryNormal, rayDirection) <= 0.0f)
+    if (dot(shadingNormal, rayDirection) <= 0.0f)
         return false;
 
     return true;

@@ -118,11 +118,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 troughput /= (1.0f - brdfProbability);
             }
         }
-              
+
         float3 brdfWeight;
         float2 u = float2(Rand(rngState), Rand(rngState));
                                
-        if (EvaluateIndirectBRDF(u, fi.normal, fi.normal
+        if (EvaluateIndirectBRDF(u, fi.normal
         , V, gBufferMat, brdfType, ray.Direction, brdfWeight))
         {             
             troughput *= brdfWeight;
@@ -133,7 +133,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
             if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
             {
-                radiance += troughput * float3(1.f, 1.f, 1.f);
+                radiance += troughput * g_SkyColor;
             }
             else
             {
@@ -155,6 +155,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 hitSurface.position = mul(hit.objToWorld, hitSurface.position);
 
                 SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, g_LinearRepeatSampler, g_GlobalTextureData);
+
                 hitSurfaceMaterial.normal = 
                     TangentToWorldNormal(hitSurface.tangent,
                     hitSurface.bitangent,
@@ -168,7 +169,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 query.Proceed();
                 if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
                 {
-                    radiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, -g_DirectionalLight.direction.rgb, -ray.Direction, hitSurfaceMaterial);
+                    radiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, -g_DirectionalLight.direction.rgb, -ray.Direction, hitSurfaceMaterial) * 2.f;
                 }
             }
         }

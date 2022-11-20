@@ -104,9 +104,9 @@ SurfaceMaterial GetSurfaceMaterial(
     in MaterialInfo matInfo, in float2 texCoords, 
     in SamplerState inSampler, in Texture2D globalTextureData[])
 {
-    SurfaceMaterial surface;
-    surface.albedo = GetAlbedo(matInfo, texCoords, inSampler, globalTextureData);
+    SurfaceMaterial surface;  
     surface.ao = GetAO(matInfo, texCoords, inSampler, globalTextureData);
+    surface.albedo = GetAlbedo(matInfo, texCoords, inSampler, globalTextureData) * surface.ao;
     surface.emissive = GetEmissive(matInfo, texCoords, inSampler, globalTextureData);
     surface.height = GetHeight(matInfo, texCoords, inSampler, globalTextureData);
     surface.roughness = GetRoughness(matInfo, texCoords, inSampler, globalTextureData);
