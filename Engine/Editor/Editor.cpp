@@ -117,6 +117,7 @@ void Editor::OnUpdate(UpdateEventArgs& e)
 {
     UpdateGameMenuBar();
     UpdateWorldHierarchy();
+    UpdateMaterialManager();
     UpdateSelectedEntity();
 }
 
@@ -309,6 +310,29 @@ void Editor::UpdateSceneGraph(entt::entity entity, const std::string& tag, Relat
     }
 }
 
+void Editor::UpdateMaterialManager()
+{
+    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
+    ImGui::Begin("Material Editor");
+
+    for (auto& [name, materialID] : materialManager.materialData.map)
+    {
+        auto& material = materialManager.materialData.materials[materialID];
+
+        std::string nameStr = "Material: " + std::string(name.begin(), name.end());
+        ImGui::Text(nameStr.c_str());
+
+        ImGui::ColorPicker4("Color", &material.color.x, ImGuiColorEditFlags_Float);
+        ImGui::ColorPicker3("Transparency", &material.transparent.x, ImGuiColorEditFlags_Float);
+        ImGui::ColorPicker3("Emissive", &material.emissive.x, ImGuiColorEditFlags_Float);
+        ImGui::InputFloat("Roughness", &material.roughness);
+        ImGui::InputFloat("Metallic", &material.metallic);
+        ImGui::Spacing(); ImGui::Spacing();
+    }
+
+    ImGui::End();
+}
+
 void Editor::UpdateSelectedEntity()
 {
     if (selectedEntity == entt::null) return;
@@ -347,8 +371,20 @@ void Editor::UpdateMeshComponent(entt::entity entity)
 
 
     const std::wstring& wMaterialName = mesh.GetMaterialName();
-    std::string materialName = "Material Name: " + std::string(wMaterialName.begin(), wMaterialName.end());
+    std::string materialName = "Material Instance Name: " + std::string(wMaterialName.begin(), wMaterialName.end());
     ImGui::Text(materialName.c_str());
+   
+    auto& material = mesh.GetUserMaterial();
+    const auto& wMatName = mesh.GetUserMaterialName();
+    std::string matName = "User Defined material: " +  std::string(wMatName.begin(), wMatName.end());
+    auto materialCopy = material;
+    ImGui::Text(matName.c_str());
+    ImGui::ColorEdit4("Color", &materialCopy.color.x);
+    ImGui::ColorEdit3("Transparency", &materialCopy.transparent.x);
+    ImGui::ColorEdit3("Emissive", &materialCopy.emissive.x);
+    ImGui::InputFloat("Roughness", &materialCopy.roughness);
+    ImGui::InputFloat("Metallic", &materialCopy.metallic);
+
     ImGui::Text("Material Textures: ");
     ImGui::Spacing();
 
@@ -374,17 +410,6 @@ void Editor::UpdateMeshComponent(entt::entity entity)
 
         }
     }
-
-
-    /*
-D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
-ZeroMemory(&srvDesc, sizeof(srvDesc));
-srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-srvDesc.Texture2D.MipLevels = 1;
-srvDesc.Texture2D.MostDetailedMip = 0;
-srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-*/
 }
 
 void Editor::SelectEntity(entt::entity entity)

@@ -27,6 +27,8 @@ private:
 
 	void UpdateSceneGraph(entt::entity entity, const std::string& tag, RelationComponent& relation);
 
+	void UpdateMaterialManager();
+
 	void UpdateWorldHierarchy();
 	void UpdateSelectedEntity();
 	void UpdateMeshComponent(entt::entity entity);

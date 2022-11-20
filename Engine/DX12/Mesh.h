@@ -121,6 +121,7 @@ struct MeshInstance
 
     const std::wstring& GetMaterialName();
     const Material& GetUserMaterial();
+    const std::wstring& GetUserMaterialName();
 
     MeshInstanceID GetInstanceID() const
     {
