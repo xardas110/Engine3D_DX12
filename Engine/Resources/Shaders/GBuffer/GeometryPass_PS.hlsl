@@ -47,6 +47,8 @@ PixelShaderOutput main(PixelShaderInput IN)
         Material mat;
         mat = g_GlobalMaterials[matInfo.materialID];
         OUT.albedo.rgb *= mat.color.rgb;
+        OUT.PBR.y *= mat.roughness;
+        OUT.PBR.z *= mat.metallic;
     }
     
     return OUT;

@@ -29,9 +29,9 @@ bool SponzaExe::LoadContent()
     std::cout << "game init" << std::endl;
 
     Material materialRed;
-    materialRed.color = { 1.f, 0.f, 0.f, 1.f };
+    materialRed.color = { 1.f, 1.f, 1.f, 1.f };
 
-    auto materialID = MaterialInstance::CreateMaterial(L"RED", materialRed);
+    auto materialID = MaterialInstance::CreateMaterial(L"DefaultMaterial", materialRed);
 
     TextureInstance spaceAlbedo(L"Assets/Textures/SpaceBall/space-cruiser-panels2_albedo.png");
     TextureInstance spaceNormal(L"Assets/Textures/SpaceBall/space-cruiser-panels2_normal-dx.png");
@@ -49,7 +49,8 @@ bool SponzaExe::LoadContent()
     matInfo.height = spaceHeight.GetTextureID();
 
     MaterialInstance material;
-    material.CreateMaterialInstance(L"DefaultMaterial", matInfo);
+    material.CreateMaterialInstance(L"DefaultMaterialInstance", matInfo);
+    material.SetMaterial(materialID);
 
     /*
     {
@@ -94,6 +95,15 @@ bool SponzaExe::LoadContent()
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 50.f, 2.f, 50.f };
         trans.pos = { 0.f, 0.f, 0.f};
+    }
+
+    {
+        auto ent = CreateEntity("DxCube");
+        auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+        sm.SetMaterialInstance(material);
+        auto& trans = ent.GetComponent<TransformComponent>();
+        trans.scale = { 50.f, 50.f, 2.f };
+        trans.pos = { 0.f, 0.f, 0.f };
     }
 
     for (size_t i = 0; i < 20; i++)
