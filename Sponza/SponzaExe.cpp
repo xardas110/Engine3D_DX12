@@ -96,15 +96,6 @@ bool SponzaExe::LoadContent()
         trans.pos = { 0.f, 0.f, 0.f};
     }
 
-    {
-        auto ent = CreateEntity("DxCube");
-        auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
-        sm.SetMaterialInstance(material);
-        auto& trans = ent.GetComponent<TransformComponent>();
-        trans.scale = { 50.f, 2.f, 50.f };
-        trans.pos = { -10.f, 10.f, -10.f };
-    }
-
     for (size_t i = 0; i < 20; i++)
     {
         {
