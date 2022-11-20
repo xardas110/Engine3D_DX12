@@ -238,6 +238,41 @@ void DeferredRenderer::Render(Window& window)
 
         rtData.debugSettings = listbox_item_current;
 
+        commandList->SetGraphicsRootSignature(m_LightPass.rootSignature);
+
+        auto lightmapHeap = m_LightPass.CreateUAVViews();
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::UAV(m_LightPass.rwAccumulation.GetD3D12Resource().Get()));
+
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_LightPass.m_SRVHeap.heap.Get());
+        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(LightPassParam::AccumBuffer, lightmapHeap);
+
+        static int accumFrame{ 0 };
+
+        ImGui::Begin("AccumBuffer");
+        
+        rtData.bResetDuty = false;
+
+        if (ImGui::Button("Reset AccumBuffer"))
+        {
+            rtData.bResetDuty = true;
+            accumFrame = 0;
+        }
+        
+        if (game->bCamMoved)
+        {
+            game->bCamMoved = false;
+            rtData.bResetDuty = true;
+            accumFrame = 0;
+        }
+
+        accumFrame++;
+
+
+        ImGui::End();
+      
+        rtData.accumulatedFrameNumber = accumFrame;
+
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::RaytracingDataCB, rtData);
 
         commandList->Draw(3);

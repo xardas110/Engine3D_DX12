@@ -18,6 +18,7 @@ namespace LightPassParam
 		DirectionalLightCB,
 		CameraCB,
 		RaytracingDataCB,
+		AccumBuffer,
 		Size
 	};
 }
@@ -39,9 +40,15 @@ private:
 	//Returns handle to heap start
 	D3D12_GPU_DESCRIPTOR_HANDLE CreateSRVViews();
 
+	//Returns handle to heap start
+	D3D12_GPU_DESCRIPTOR_HANDLE CreateUAVViews();
+
 	SRVHeapData m_SRVHeap;
 
 	RenderTarget renderTarget;
 	RootSignature rootSignature;
+
+	Texture rwAccumulation;
+
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipeline;
 };

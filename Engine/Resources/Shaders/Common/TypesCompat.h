@@ -140,8 +140,9 @@ struct RaytracingDataCB
 {
     int debugSettings COMPAT_INT(-1); //-1 means nodebugging
     int frameNumber COMPAT_INT(0);
-    int pad1; 
-    int pad2;
+    int accumulatedFrameNumber; 
+    int bResetDuty;
+
 };
 
 #endif

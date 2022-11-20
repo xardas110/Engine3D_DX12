@@ -96,6 +96,8 @@ void Game::OnRender(RenderEventArgs& e)
 
 void Game::OnKeyPressed(KeyEventArgs& e)
 {
+    bCamMoved = true;
+    
     switch (e.Key)
     {
     case KeyCode::Escape:
@@ -181,6 +183,8 @@ void Game::OnMouseMoved(class MouseMotionEventArgs& e)
 
     if (e.RightButton)
     {        
+        bCamMoved = true;
+
         int relX = m_CameraController.globalMousePos.x - m_CameraController.previousGlobalMousePos.x;
         int relY = m_CameraController.globalMousePos.y - m_CameraController.previousGlobalMousePos.y;
 
