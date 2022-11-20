@@ -2,6 +2,9 @@
 #include <MaterialManager.h>
 #include <TextureManager.h>
 
+std::wstring g_NoMaterial = L"No Material";
+Material g_NoUserMaterial; //Already initialized with values
+
 bool IsMaterialValid(UINT id)
 {
 	return id != UINT_MAX;
@@ -123,4 +126,53 @@ void MaterialManager::SetMaterial(MaterialID materialId, MaterialInstanceID matI
 	//Error checking with subscript error
 	instanceData.cpuInfo[matInstanceID].materialID = materialId;
 	instanceData.gpuInfo[matInstanceID].materialID = materialId;
+}
+
+TextureID MaterialManager::GetTextureID(MaterialType::Type type, MaterialInstanceID matInstanceId)
+{
+	auto& matInfo = instanceData.cpuInfo[matInstanceId];
+
+	switch (type)
+	{
+	case MaterialType::ao:
+		return matInfo.ao;
+	case MaterialType::albedo:
+		return matInfo.albedo;
+	case MaterialType::normal:
+		return matInfo.normal;
+	case MaterialType::roughness:
+		return matInfo.roughness;
+	case MaterialType::metallic:
+		return matInfo.metallic;
+	case MaterialType::opacity:
+		return matInfo.opacity;
+	case MaterialType::emissive:
+		return matInfo.emissive;
+	case MaterialType::lightmap:
+		return matInfo.lightmap;
+	case MaterialType::height:
+		return matInfo.height;
+	default:
+		return UINT_MAX;
+		break;
+	}
+}
+
+const std::wstring& MaterialManager::GetMaterialInstanceName(MaterialInstanceID matInstanceId) const
+{
+	for (const auto& [name, id] : instanceData.map)
+	{
+		if (id == matInstanceId) return name;
+	}
+
+	return g_NoMaterial;
+}
+
+const Material& MaterialManager::GetUserDefinedMaterial(MaterialInstanceID matInstanceId) const
+{
+	auto materialID = instanceData.cpuInfo[matInstanceId].materialID;
+	
+	if (materialID == UINT_MAX) return g_NoUserMaterial;
+
+	return materialData.materials[materialID];
 }

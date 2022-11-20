@@ -13,6 +13,8 @@
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx12.h>
 
+#include <StaticDescriptorHeap.h>
+
 // Root parameters for the ImGui root signature.
 enum RootParameters
 {
@@ -70,19 +72,10 @@ bool GUI::Initialize( std::shared_ptr<Window> window )
 
     auto& device = Application::Get().GetDevice();
 
-    {
-        D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-        desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        desc.NumDescriptors = 24;
-        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-        if (device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&g_pd3dSrvDescHeap)) != S_OK)
-            return false;
-    }
-
     ImGui_ImplDX12_Init(device.Get(), 3,
-        DXGI_FORMAT_R8G8B8A8_UNORM, g_pd3dSrvDescHeap,
-        g_pd3dSrvDescHeap->GetCPUDescriptorHandleForHeapStart(),
-        g_pd3dSrvDescHeap->GetGPUDescriptorHandleForHeapStart());
+        DXGI_FORMAT_R8G8B8A8_UNORM, m_Heap.heap.Get(),
+        m_Heap.heap->GetCPUDescriptorHandleForHeapStart(),
+        m_Heap.heap->GetGPUDescriptorHandleForHeapStart());
 
     return true;
 }
@@ -104,7 +97,7 @@ void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& 
     // Rendering
     ImGui::Render();
     commandList->SetRenderTarget(renderTarget);
-    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, g_pd3dSrvDescHeap);
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_Heap.heap.Get());
 
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList->GetGraphicsCommandList().Get());
 
@@ -123,27 +116,9 @@ void GUI::Destroy()
         ImGui_ImplDX12_Shutdown();
         ImGui_ImplWin32_Shutdown();
         ImGui::DestroyContext(m_pImGuiCtx);
-        if (g_pd3dSrvDescHeap) { g_pd3dSrvDescHeap->Release(); g_pd3dSrvDescHeap = NULL; }
         m_pImGuiCtx = nullptr;
         m_Window.reset();
     }
-}
-
-void GUI::GetNextHeapHandle(D3D12_CPU_DESCRIPTOR_HANDLE& cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE& gpuHandle)
-{
-    auto device = Application::Get().GetDevice();
-    UINT handle_increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-    ++nextHeapHandle;
-    cpuHandle = g_pd3dSrvDescHeap->GetCPUDescriptorHandleForHeapStart();
-    gpuHandle = g_pd3dSrvDescHeap->GetGPUDescriptorHandleForHeapStart();
-
-    cpuHandle.ptr += (handle_increment) * nextHeapHandle;
-    gpuHandle.ptr += (handle_increment) * nextHeapHandle;
-}
-void GUI::ResetHeapHandle()
-{
-    nextHeapHandle = 0;
 }
 
 //--------------------------------------------------------------------------------------

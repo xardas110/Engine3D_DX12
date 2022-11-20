@@ -45,6 +45,7 @@
 
 #include <memory>
 #include <DeferredRenderer.h>
+#include <Editor.h>
 
 class Game;
 class Texture;
@@ -210,8 +211,9 @@ private:
     int m_PreviousMouseY;
 
 #ifndef DEBUG_EDITOR
-#ifdef DEBUG_IMGUI
+#ifdef DEBUG_IMGUI   
     GUI m_GUI;
+    std::unique_ptr<Editor> m_Editor;
 #endif // DEBUG_IMGUI  
 #endif // !DEBUG_EDITOR
 };

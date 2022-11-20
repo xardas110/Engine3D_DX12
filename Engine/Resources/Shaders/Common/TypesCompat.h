@@ -51,15 +51,28 @@ struct Material
     XMFLOAT4 color COMPAT_VEC4F(1.f, 1.f, 1.f, 1.f);
 
     XMFLOAT3 emissive COMPAT_VEC3F_NULL;
-    float shininess COMPAT_FLOAT(64.f);
-
+    float roughness COMPAT_FLOAT(0.f);
+    
     //Color for transperent objects
     XMFLOAT3 transparent COMPAT_VEC3F_ONE;
-    float pad;
+    float metallic COMPAT_FLOAT(0.f);
+
 };
+
+#ifndef hlsl
+    namespace MaterialType
+    {
+        enum Type
+        {
+            ao, albedo, normal, roughness, metallic, opacity, emissive, lightmap, height, NumMaterialTypes
+        };
+    }
+
+#endif // !hlsl
 
 struct MaterialInfo
 {
+
     UINT ao TEXTURE_NULL;
     UINT albedo TEXTURE_NULL;
     UINT normal TEXTURE_NULL;

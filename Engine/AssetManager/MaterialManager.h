@@ -2,6 +2,8 @@
 #include <TypesCompat.h>
 #include <Material.h>
 
+
+
 class TextureData;
 
 struct MaterialManager
@@ -18,6 +20,10 @@ struct MaterialManager
 
 	void SetMaterial(MaterialID materialId, MaterialInstanceID matInstanceID);
 
+	TextureID GetTextureID(MaterialType::Type type, MaterialInstanceID matInstanceId);
+
+	const std::wstring& GetMaterialInstanceName(MaterialInstanceID matInstanceId) const;
+	const Material& GetUserDefinedMaterial(MaterialInstanceID matInstanceId) const;
 private:
 	MaterialManager(const TextureManager& textureData);
 

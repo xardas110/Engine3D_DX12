@@ -9,6 +9,7 @@ struct SRVHeapData
 	friend class TextureManager;
 	friend class MeshManager;
 	friend class DeferredRenderer;
+	friend class GUI;
 private:
 	mutable size_t lastIndex = 0;
 	const size_t increment = 0;
@@ -38,5 +39,12 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE GetHandleAtStart()
 	{
 		return heap->GetGPUDescriptorHandleForHeapStart();
+	}
+
+	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandle(UINT index)
+	{
+		D3D12_GPU_DESCRIPTOR_HANDLE handle = heap->GetGPUDescriptorHandleForHeapStart();
+		handle.ptr += index * increment;
+		return handle;
 	}
 };

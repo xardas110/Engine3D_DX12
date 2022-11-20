@@ -36,6 +36,7 @@
 #include <wrl.h>
 #include <DynamicDescriptorHeap.h>
 #include <Texture.h>
+#include <StaticDescriptorHeap.h>
 
 class CommandList;
 class Texture;
@@ -66,13 +67,8 @@ public:
 protected:
 
 private:
-    void GetNextHeapHandle(D3D12_CPU_DESCRIPTOR_HANDLE &cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE& gpuHandle);
-    void ResetHeapHandle();
-
     ImGuiContext* m_pImGuiCtx;
     std::shared_ptr<Window> m_Window;
 
-    //Max 24 windows for now(assigned inside virtual bool Initialize( std::shared_ptr<Window> window );)
-    ID3D12DescriptorHeap* g_pd3dSrvDescHeap = NULL;
-    int nextHeapHandle = 0; //First handle is for the main window
+    SRVHeapData m_Heap;
 };
