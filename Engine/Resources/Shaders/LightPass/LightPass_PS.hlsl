@@ -123,8 +123,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         float2 u = float2(Rand(rngState), Rand(rngState));
         
         ray.Origin = fragPos;
-        
-        if (EvaluateIndirectBRDF(u, float3(0.f, 1.f, 0.f), fi.normal
+                     
+        if (EvaluateIndirectBRDF(u, fi.normal, fi.normal
         , V, gBufferMat, brdfType, ray.Direction, brdfWeight))
         {            
             troughput *= brdfWeight;
@@ -165,8 +165,10 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 shadowRayDesc.Origin = hit.posWS;            
                 query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
                 query.Proceed();
-                       
-                radiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, -g_DirectionalLight.direction.rgb, -ray.Direction, hitSurfaceMaterial);
+                if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+                {
+                    radiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, -g_DirectionalLight.direction.rgb, -ray.Direction, hitSurfaceMaterial);
+                }
             }
         }
        
