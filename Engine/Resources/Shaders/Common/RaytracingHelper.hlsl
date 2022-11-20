@@ -11,7 +11,6 @@ struct HitAttributes
     int geometryIndex;
     float3x4 objToWorld;
     bool bFrontFaced;
-    float3 posWS;
 };
 
 float2 BaryInterp2(in float2 v0, in float2 v1, in float2 v2, in float3 bary)
