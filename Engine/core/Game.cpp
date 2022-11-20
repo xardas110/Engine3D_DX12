@@ -87,6 +87,14 @@ void Game::OnUpdate(UpdateEventArgs& e)
     m_Camera.set_Rotation(cameraRotation);
 
     XMMATRIX viewMatrix = m_Camera.get_ViewMatrix();
+
+    if (m_CameraController.forward > 0.f ||
+        m_CameraController.backward > 0.f ||
+        m_CameraController.left > 0.f ||
+        m_CameraController.right > 0.f)       
+    {
+        bCamMoved = true;
+    }
 }
 
 void Game::OnRender(RenderEventArgs& e)
@@ -96,8 +104,6 @@ void Game::OnRender(RenderEventArgs& e)
 
 void Game::OnKeyPressed(KeyEventArgs& e)
 {
-    bCamMoved = true;
-    
     switch (e.Key)
     {
     case KeyCode::Escape:

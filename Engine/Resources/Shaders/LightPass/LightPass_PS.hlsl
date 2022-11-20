@@ -121,14 +121,13 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
               
         float3 brdfWeight;
         float2 u = float2(Rand(rngState), Rand(rngState));
-        
-        ray.Origin = fragPos;
-                     
+                               
         if (EvaluateIndirectBRDF(u, fi.normal, fi.normal
         , V, gBufferMat, brdfType, ray.Direction, brdfWeight))
-        {            
+        {             
             troughput *= brdfWeight;
-              
+            
+            ray.Origin = fragPos;
             query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, ray);
             query.Proceed();
         
@@ -146,23 +145,25 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
                 hit.barycentrics = query.CommittedTriangleBarycentrics();
                 hit.objToWorld = query.CommittedObjectToWorld3x4();
-                hit.posWS = query.WorldRayOrigin();
+                
             
                 MeshInfo meshInfo = g_GlobalMeshInfo[instanceIndex];
                 MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
                 
                 MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
                 hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
-                
+                hitSurface.position = mul(hit.objToWorld, hitSurface.position);
+
                 SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, g_LinearRepeatSampler, g_GlobalTextureData);
-                hitSurfaceMaterial.normal = TangentToWorldNormal(hitSurface.tangent,
+                hitSurfaceMaterial.normal = 
+                    TangentToWorldNormal(hitSurface.tangent,
                     hitSurface.bitangent,
                     hitSurface.normal,
                     hitSurfaceMaterial.normal,
                     hit.objToWorld
                     );
-            
-                shadowRayDesc.Origin = hit.posWS;            
+
+                shadowRayDesc.Origin = hitSurface.position;
                 query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
                 query.Proceed();
                 if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
