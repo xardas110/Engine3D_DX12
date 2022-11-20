@@ -25,6 +25,8 @@ ConstantBuffer<DirectionalLightCB> g_DirectionalLight       : register(b0);
 ConstantBuffer<CameraCB>           g_Camera                 : register(b1);
 ConstantBuffer<RaytracingDataCB>   g_RaytracingData         : register(b2);
 
+RWTexture2D<float4>             g_accumulationBuffer[]        : register(u0);
+
 struct PixelShaderOutput
 {
     float4 DirectDiffuse    : SV_TARGET0;
@@ -93,7 +95,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
         if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {
-            radiance += troughput * EvaluateBRDF(fi.normal, -g_DirectionalLight.direction.rgb, V, gBufferMat) * 2.f;
+            radiance += troughput * EvaluateBRDF(fi.normal, -g_DirectionalLight.direction.rgb, V, gBufferMat);
         }
               
         int brdfType;
@@ -164,11 +166,21 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
                 query.Proceed();
                        
-                radiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, -g_DirectionalLight.direction.rgb, -ray.Direction, hitSurfaceMaterial) * 2.f;
+                radiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, -g_DirectionalLight.direction.rgb, -ray.Direction, hitSurfaceMaterial);
             }
         }
        
-        OUT.DirectDiffuse = float4(radiance, 1.f);
+        float3 accumulatedColor = g_accumulationBuffer[3][pixelCoords].rgb + radiance;
+        g_accumulationBuffer[3][pixelCoords] = float4(accumulatedColor, 1.0f);
+        
+        if (g_RaytracingData.bResetDuty == 1)
+        {
+            g_accumulationBuffer[3][pixelCoords] = float4(radiance, 1.f);
+            OUT.DirectDiffuse = float4(radiance, 1.f);
+            return OUT;
+        }
+        
+        OUT.DirectDiffuse = float4(accumulatedColor / g_RaytracingData.accumulatedFrameNumber, 1.f);
         
         return OUT;
     }

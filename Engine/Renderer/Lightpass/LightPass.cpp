@@ -18,6 +18,7 @@ void LightPass::CreateRenderTarget(int width, int height)
     DXGI_FORMAT directDiffuseFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
     DXGI_FORMAT indirectDiffuseFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
     DXGI_FORMAT indirectSpecularFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+    DXGI_FORMAT rwAccumFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
 
     // Create an off-screen render target with a single color buffer and a depth buffer.
     auto directDiffuseDesc = CD3DX12_RESOURCE_DESC::Tex2D(directDiffuseFormat, width, height);
@@ -31,6 +32,10 @@ void LightPass::CreateRenderTarget(int width, int height)
     auto indirectSpecularDesc = CD3DX12_RESOURCE_DESC::Tex2D(indirectSpecularFormat, width, height);
     indirectSpecularDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     indirectSpecularDesc.MipLevels = 1;
+
+    auto rwAccumDesc = CD3DX12_RESOURCE_DESC::Tex2D(rwAccumFormat, width, height);
+    rwAccumDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    rwAccumDesc.MipLevels = 1;
 
     D3D12_CLEAR_VALUE directDiffuseClear;
     directDiffuseClear.Format = directDiffuseFormat;
@@ -52,6 +57,13 @@ void LightPass::CreateRenderTarget(int width, int height)
     specularClear.Color[1] = 1.0f;
     specularClear.Color[2] = 1.0f;
     specularClear.Color[3] = 1.0f;
+
+    D3D12_CLEAR_VALUE rwAccumClear;
+    rwAccumClear.Format = rwAccumFormat;
+    rwAccumClear.Color[0] = 0.0f;
+    rwAccumClear.Color[1] = 0.0f;
+    rwAccumClear.Color[2] = 0.0f;
+    rwAccumClear.Color[3] = 0.0f;
   
     Texture directDiffuse = Texture(directDiffuseDesc, &directDiffuseClear,
         TextureUsage::RenderTarget,
@@ -64,6 +76,10 @@ void LightPass::CreateRenderTarget(int width, int height)
     Texture indirectSpecular = Texture(indirectSpecularDesc, &specularClear,
         TextureUsage::RenderTarget,
         L"LightPass IndirectSpecular");
+
+    rwAccumulation = Texture(rwAccumDesc, nullptr,
+        TextureUsage::RenderTarget,
+        L"LightPass AccumBuffer");
 
     renderTarget.AttachTexture(AttachmentPoint::Color0, directDiffuse);
     renderTarget.AttachTexture(AttachmentPoint::Color1, indirectDiffuse);
@@ -111,6 +127,14 @@ void LightPass::CreatePipeline()
     gBufferSRVHeap.OffsetInDescriptorsFromTableStart = 0;
     gBufferSRVHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
+    CD3DX12_DESCRIPTOR_RANGE1 gAccumBuffer = {};
+    gAccumBuffer.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+    gAccumBuffer.NumDescriptors = 1;
+    gAccumBuffer.BaseShaderRegister = 0;
+    gAccumBuffer.RegisterSpace = 0;
+    gAccumBuffer.OffsetInDescriptorsFromTableStart = 0;
+    gAccumBuffer.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+
     CD3DX12_ROOT_PARAMETER1 rootParameters[LightPassParam::Size];
     rootParameters[LightPassParam::AccelerationStructure].InitAsShaderResourceView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
     rootParameters[LightPassParam::GBufferHeap].InitAsDescriptorTable(1, &gBufferSRVHeap);
@@ -121,6 +145,7 @@ void LightPass::CreatePipeline()
     rootParameters[LightPassParam::DirectionalLightCB].InitAsConstantBufferView(0);
     rootParameters[LightPassParam::CameraCB].InitAsConstantBufferView(1);
     rootParameters[LightPassParam::RaytracingDataCB].InitAsConstantBufferView(2);
+    rootParameters[LightPassParam::AccumBuffer].InitAsDescriptorTable(1, &gAccumBuffer);
 
     CD3DX12_STATIC_SAMPLER_DESC samplers[2];
     samplers[0] = CD3DX12_STATIC_SAMPLER_DESC(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT);
@@ -175,6 +200,7 @@ void LightPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
 void LightPass::OnResize(int width, int height)
 {
     renderTarget.Resize(width, height);
+    rwAccumulation.Resize(width, height);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateSRVViews()
@@ -192,6 +218,18 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateSRVViews()
     device->CreateShaderResourceView(
         renderTarget.GetTexture(AttachmentPoint::Color2).GetD3D12Resource().Get(), nullptr,
         m_SRVHeap.SetHandle(2));
+
+    return m_SRVHeap.GetHandleAtStart();
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateUAVViews()
+{
+    auto device = Application::Get().GetDevice();
+
+    D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+    uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+
+    device->CreateUnorderedAccessView(rwAccumulation.GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(3));
 
     return m_SRVHeap.GetHandleAtStart();
 }

@@ -195,4 +195,6 @@ private:
 
     } m_CameraController;
    
+    bool bCamMoved = false;
+
 };
