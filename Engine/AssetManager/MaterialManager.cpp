@@ -160,7 +160,23 @@ TextureID MaterialManager::GetTextureID(MaterialType::Type type, MaterialInstanc
 
 const std::wstring& MaterialManager::GetMaterialInstanceName(MaterialInstanceID matInstanceId) const
 {
+	if (matInstanceId == UINT_MAX) return g_NoMaterial;
+
 	for (const auto& [name, id] : instanceData.map)
+	{
+		if (id == matInstanceId) return name;
+	}
+
+	return g_NoMaterial;
+}
+
+const std::wstring& MaterialManager::GetMaterialName(MaterialInstanceID matInstanceId) const
+{
+	auto matId = instanceData.cpuInfo[matInstanceId].materialID;
+
+	if (matId == UINT_MAX) return g_NoMaterial;
+
+	for (const auto& [name, id] : materialData.map)
 	{
 		if (id == matInstanceId) return name;
 	}
@@ -172,7 +188,10 @@ const Material& MaterialManager::GetUserDefinedMaterial(MaterialInstanceID matIn
 {
 	auto materialID = instanceData.cpuInfo[matInstanceId].materialID;
 	
-	if (materialID == UINT_MAX) return g_NoUserMaterial;
+	if (materialID == UINT_MAX)
+	{
+		return g_NoUserMaterial;
+	}
 
 	return materialData.materials[materialID];
 }

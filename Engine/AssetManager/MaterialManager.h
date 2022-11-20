@@ -10,6 +10,7 @@ struct MaterialManager
 {
 	friend class AssetManager;
 	friend class DeferredRenderer;
+	friend class Editor;
 
 	MaterialInstanceID CreateMaterialInstance(const std::wstring& name, const MaterialInfo& textureIDs);
 	bool GetMaterialInstance(const std::wstring& name, MaterialInstance& outMaterialInstance);
@@ -23,6 +24,8 @@ struct MaterialManager
 	TextureID GetTextureID(MaterialType::Type type, MaterialInstanceID matInstanceId);
 
 	const std::wstring& GetMaterialInstanceName(MaterialInstanceID matInstanceId) const;
+	const std::wstring& GetMaterialName(MaterialInstanceID matInstanceId) const;
+
 	const Material& GetUserDefinedMaterial(MaterialInstanceID matInstanceId) const;
 private:
 	MaterialManager(const TextureManager& textureData);

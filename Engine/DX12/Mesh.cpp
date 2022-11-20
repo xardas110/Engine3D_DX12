@@ -95,8 +95,15 @@ const Material& MeshInstance::GetUserMaterial()
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
     auto matInstanceID = meshManager.instanceData.meshInfo[id].materialInstanceID;
-
     return materialManager.GetUserDefinedMaterial(matInstanceID);
+}
+
+const std::wstring& MeshInstance::GetUserMaterialName()
+{
+    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
+    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
+    auto matInstanceID = meshManager.instanceData.meshInfo[id].materialInstanceID;
+    return materialManager.GetMaterialName(matInstanceID);
 }
 
 Mesh::Mesh()
