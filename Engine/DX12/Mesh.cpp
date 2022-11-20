@@ -69,6 +69,36 @@ void MeshInstance::SetMaterialInstance(const MaterialInstance& matInstance)
     meshManager.instanceData.meshInfo[id].materialInstanceID = matInstance.GetMaterialInstanceID();
 }
 
+const Texture* MeshInstance::GetTexture(MaterialType::Type type)
+{
+    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
+    auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
+    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
+
+    auto matInstanceID = meshManager.instanceData.meshInfo[id].materialInstanceID;
+    
+    auto textureID = materialManager.GetTextureID(type, matInstanceID);
+    return textureManager.GetTexture(textureID);
+}
+
+const std::wstring& MeshInstance::GetMaterialName()
+{
+    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
+    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
+    auto matInstanceID = meshManager.instanceData.meshInfo[id].materialInstanceID;
+
+    return materialManager.GetMaterialInstanceName(matInstanceID);
+}
+
+const Material& MeshInstance::GetUserMaterial()
+{
+    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
+    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
+    auto matInstanceID = meshManager.instanceData.meshInfo[id].materialInstanceID;
+
+    return materialManager.GetUserDefinedMaterial(matInstanceID);
+}
+
 Mesh::Mesh()
     : m_IndexCount(0)
 {}

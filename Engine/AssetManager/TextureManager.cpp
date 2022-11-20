@@ -25,6 +25,13 @@ bool TextureManager::LoadTexture(const std::wstring& path, TextureInstance& outT
 	return true;
 }
 
+const Texture* TextureManager::GetTexture(TextureID textureID)
+{
+	if (textureID == UINT_MAX) return nullptr;
+
+	return &textureData.textures[textureID].texture;
+}
+
 TextureID TextureManager::CreateTexture(const std::wstring& path)
 {
 	auto device = Application::Get().GetDevice();

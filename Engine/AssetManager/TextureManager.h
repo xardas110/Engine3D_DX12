@@ -12,7 +12,8 @@ struct TextureManager
 	using SRVHeapID = UINT;
 
 	bool LoadTexture(const std::wstring& path, TextureInstance& outTextureInstance);
-
+	//Must be valid texture id
+	const Texture* GetTexture(TextureID textureID);
 private:
 
 	TextureManager(const SRVHeapData& srvHeapData);

@@ -10,6 +10,7 @@
 #include <RenderTarget.h>
 #include <ResourceStateTracker.h>
 #include <Texture.h>
+#include <World.h>
 
 Window::Window(HWND hWnd, const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync )
     : m_hWnd(hWnd)
@@ -33,6 +34,7 @@ Window::Window(HWND hWnd, const std::wstring& windowName, int clientWidth, int c
 
     m_dxgiSwapChain = CreateSwapChain();
     UpdateRenderTargetViews();
+
 }
 
 Window::~Window()
@@ -188,7 +190,14 @@ void Window::ToggleFullscreen()
 void Window::RegisterCallbacks(std::shared_ptr<Game> pGame)
 {
     m_pGame = pGame;
-    return;
+
+    if (auto game = m_pGame.lock())
+    {
+        if (auto world = std::reinterpret_pointer_cast<World>(game))
+        {
+            m_Editor = std::make_unique<Editor>(world.get());
+        }
+    }
 }
 
 void Window::OnUpdate(UpdateEventArgs& e)
@@ -204,6 +213,9 @@ void Window::OnUpdate(UpdateEventArgs& e)
     if (auto pGame = m_pGame.lock())
     {
         UpdateEventArgs updateEventArgs(m_UpdateClock.GetDeltaSeconds(), m_UpdateClock.GetTotalSeconds(), e.FrameNumber);
+        
+        if (m_Editor) m_Editor->OnUpdate(updateEventArgs);
+
         pGame->OnUpdate(updateEventArgs);
     }
 }

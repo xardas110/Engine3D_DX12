@@ -116,6 +116,21 @@ struct MeshInstance
     //Path or name
     MeshInstance(const std::wstring& path);
     void SetMaterialInstance(const MaterialInstance& matInstance);
+
+    const Texture* GetTexture(MaterialType::Type type);
+
+    const std::wstring& GetMaterialName();
+    const Material& GetUserMaterial();
+
+    MeshInstanceID GetInstanceID() const
+    {
+        return id;
+    }
+
+    bool IsValid() const
+    {
+        return id != UINT_MAX;
+    }
 private:
     MeshInstance() = default;
     MeshInstanceID id{UINT_MAX};

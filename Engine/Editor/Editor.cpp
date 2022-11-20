@@ -8,7 +8,6 @@
 #include <Entity.h>
 #include <imgui_impl_dx12.h>
 
-#ifdef DEBUG_EDITOR
 static ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow
 | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
@@ -108,94 +107,17 @@ void Editor::ShowDockSpace(bool* p_open)
 Editor::Editor(World* world)
 	:m_World(world)
 {
-    m_Gui.Initialize(world->m_pWindow);
 }
 
 void Editor::Destroy()
 {
-    m_Gui.Destroy();
 }
 
 void Editor::OnUpdate(UpdateEventArgs& e)
 {
-    auto mainWindow = m_World->m_pWindow;
-
-    m_Gui.NewFrame();
-
-    m_UpdateClock.Tick();
-    UpdateEventArgs updateEventArgs(m_UpdateClock.GetDeltaSeconds(), m_UpdateClock.GetTotalSeconds(), e.FrameNumber);  
-
-    RenderGui(updateEventArgs);
-
-    PollWindowInputs(mainWindow);
-    mainWindow->OnUpdate(updateEventArgs);
-
-}
-
-void Editor::OnRender(RenderEventArgs& e)
-{
-    auto mainWindow = m_World->m_pWindow;
-
-    m_RenderClock.Tick();
-    RenderEventArgs renderEventArgs(m_RenderClock.GetDeltaSeconds(), m_RenderClock.GetTotalSeconds(), e.FrameNumber);
-
-    mainWindow->OnRender(renderEventArgs);
-    OnViewportRender(mainWindow);
-
-    mainWindow->Present(Texture(), m_Gui);
-
-    m_Gui.ResetHeapHandle();
-}
-
-void Editor::OnViewportRender(std::shared_ptr<Window> window)
-{
-    auto device = Application::Get().GetDevice();
-
-    D3D12_CPU_DESCRIPTOR_HANDLE my_texture_srv_cpu_handle;
-    D3D12_GPU_DESCRIPTOR_HANDLE my_texture_srv_gpu_handle;
-    
-    m_Gui.GetNextHeapHandle(my_texture_srv_cpu_handle, my_texture_srv_gpu_handle);
-
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
-    ZeroMemory(&srvDesc, sizeof(srvDesc));
-    srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels = 1;
-    srvDesc.Texture2D.MostDetailedMip = 0;
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    device->CreateShaderResourceView(window->GetDeferredRendererFinalTexture().GetD3D12Resource().Get(), &srvDesc, my_texture_srv_cpu_handle);
-
-    ImGui::Begin(std::string(std::string(window->GetWindowName().begin(), window->GetWindowName().end()) + " Viewport").c_str(), 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav);
-    ImGui::Image((ImTextureID)my_texture_srv_gpu_handle.ptr, ImGui::GetWindowSize());
-    ImGui::End();
-}
-
-void Editor::OnResize(ResizeEventArgs& e, std::shared_ptr<Window>& window)
-{
-    //Resizes swapchain relative to the window
-    //This will only resize the swapchain and the renderwindow
-    //The game will be resized by the imgui viewport
-    window->OnResize(e);
-}
-
-void Editor::RenderGui(UpdateEventArgs& e)
-{
-    if (!m_World) return;
-
-    ShowDockSpace(&m_UI.bUseDocking);
-    ImGui::ShowMetricsWindow();
-
     UpdateGameMenuBar();
     UpdateWorldHierarchy();
     UpdateSelectedEntity();
-
-    //Beware! Might need to run last
-    UpdateRuntimeGame(e);
-
-    if (m_UI.showDemoWindow)
-    {
-        ImGui::ShowDemoWindow(&m_UI.showDemoWindow);
-    }
 }
 
 MouseButtonEventArgs::MouseButton DecodeMouseButton(KeyCode::Key key)
@@ -221,138 +143,6 @@ MouseButtonEventArgs::MouseButton DecodeMouseButton(KeyCode::Key key)
     }
 
     return mouseButton;
-}
-
-void Editor::PollWindowInputs(std::shared_ptr<Window> window)
-{
-    ViewportData& data = m_ViewportDataMap[window->GetWindowName()];
-    ViewportData& previousData = m_PreviousViewportDataMap[window->GetWindowName()];
-
-    std::string title = 
-        std::string(std::string(window->GetWindowName().begin(),      
-        window->GetWindowName().end()) + " Viewport");
-
-    ImGui::Begin(title.c_str(), 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav);
-
-    POINT p;
-    if (GetCursorPos(&p))
-    {
-        data.mouseGlobalPosX = p.x;
-        data.mouseGlobalPosY = p.y;
-    }
-
-    ResizeEventArgs e(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
-    if (data.width != e.Width || data.height != e.Height)
-    { 
-        data.width = e.Width; 
-        data.height = e.Height;
-
-        window->m_DeferredRenderer.OnResize(e);
-        if (auto pGame = window->m_pGame.lock())
-        {
-            pGame->OnResize(e);
-        }
-    }
-
-    data.bFocused = ImGui::IsWindowFocused();
-    data.bHovered = ImGui::IsWindowHovered();
-
-    data.mousePosX = data.mouseGlobalPosX - ImGui::GetCursorScreenPos().x;
-    data.mousePosY = data.mouseGlobalPosY - ImGui::GetCursorScreenPos().y;
-
-    if (data.bHovered)
-    { 
-        data.bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
-        data.bControl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
-        data.bAlt = (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
-
-        for (int i = 0; i < KeyCode::Size; i++)
-        {
-            KeyCode::Key keyCode = KeyCode::Key(i);
-            if (GetAsyncKeyState(keyCode))
-            {
-                if (!data.keys[keyCode])
-                { 
-                    if (keyCode >= KeyCode::None && keyCode <= KeyCode::XButton2)
-                    {
-                        MouseButtonEventArgs mouseEventArgs(
-                            DecodeMouseButton(keyCode), 
-                            MouseButtonEventArgs::Pressed, data.keys[KeyCode::Left],
-                            data.keys[KeyCode::MButton],
-                            data.keys[KeyCode::Right],
-                            data.bControl, data.bShift, data.mousePosX, data.mousePosY);
-                        window->OnMouseButtonPressed(mouseEventArgs);
-                    }
-                    else
-                    { 
-                        KeyEventArgs keyEventArgs(keyCode, 0, KeyEventArgs::Pressed, data.bControl, data.bShift, data.bAlt);
-                        window->OnKeyPressed(keyEventArgs);
-                    }
-                }
-
-                data.keys[keyCode] = true;
-            }
-            else
-            {
-                if (data.keys[keyCode])
-                {
-                    if (keyCode >= KeyCode::None && keyCode <= KeyCode::XButton2)
-                    {
-                        MouseButtonEventArgs mouseEventArgs(
-                            DecodeMouseButton(keyCode),
-                            MouseButtonEventArgs::Released, data.keys[KeyCode::Left],
-                            data.keys[KeyCode::MButton],
-                            data.keys[KeyCode::Right],
-                            data.bControl, data.bShift, data.mousePosX, data.mousePosY);
-                        window->OnMouseButtonReleased(mouseEventArgs);
-                    }
-                    else
-                    { 
-                        KeyEventArgs keyEventArgs(keyCode, 0, KeyEventArgs::Released, data.bControl, data.bShift, data.bAlt);
-                        window->OnKeyReleased(keyEventArgs);
-                    }
-                }
-
-                data.keys[keyCode] = false;
-            }
-        }
-
-        if (!Cmp(previousData.mousePosX, data.mousePosX) || !Cmp(previousData.mousePosY, data.mousePosY))
-        { 
-            MouseMotionEventArgs mouseMotion(data.keys[KeyCode::LButton], 
-                data.keys[KeyCode::MButton], data.keys[KeyCode::RButton], 
-                data.bControl, data.bShift, data.mousePosX, data.mousePosY);
-            window->OnMouseMoved(mouseMotion);
-        }     
-    }
-    
-    //Release all buttons if mouse is outside viewport
-    if (!Cmp(data.bHovered, previousData.bHovered))
-    {
-        for (int i = 0; i < KeyCode::Size; i++)
-        {
-            KeyCode::Key keyCode = KeyCode::Key(i);
-
-            if (data.keys[keyCode])
-            {           
-                MouseButtonEventArgs mouseEventArgs(
-                    DecodeMouseButton(keyCode),
-                    MouseButtonEventArgs::Released, data.keys[KeyCode::Left],
-                    data.keys[KeyCode::MButton],
-                    data.keys[KeyCode::Right],
-                    data.bControl, data.bShift, data.mousePosX, data.mousePosY);
-                window->OnMouseButtonReleased(mouseEventArgs);
-
-                KeyEventArgs keyEventArgs(keyCode, 0, KeyEventArgs::Released, data.bControl, data.bShift, data.bAlt);
-                window->OnKeyReleased(keyEventArgs);
-
-                data.keys[keyCode] = false;
-            }
-        }
-    }   
-    ImGui::End();
-
-    previousData = data;
 }
 
 void Editor::UpdateGameMenuBar()
@@ -530,16 +320,74 @@ void Editor::UpdateSelectedEntity()
     auto& tag = reg.get<TagComponent>(selectedEntity);
     auto& trans = reg.get<TransformComponent>(selectedEntity);
 
-    ImGui::Begin(std::string("Selected Entity: " + tag.GetTag() + " -> id: " + std::to_string((std::uint32_t)selectedEntity)).c_str());
+    ImGui::Begin("Selected Entity");
+    ImGui::Text("Transform component");
     ImGui::InputFloat3("Position", &trans.pos.m128_f32[0]);
     ImGui::InputFloat3("Scale", &trans.scale.m128_f32[0]);
     ImGui::InputFloat4("Rotation", &trans.rot.m128_f32[0]);
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    UpdateMeshComponent(selectedEntity);
+
     ImGui::End();
+}
+
+void Editor::UpdateMeshComponent(entt::entity entity)
+{
+    auto device = Application::Get().GetDevice();
+    auto window = m_World->m_pWindow;
+    auto& gui = window->m_GUI;
+
+    auto& reg = m_World->registry;
+    if (!reg.any_of<MeshComponent>(entity)) return;
+
+    auto& mesh = reg.get<MeshComponent>(selectedEntity);
+    if (!mesh.IsValid()) return;
+
+
+    const std::wstring& wMaterialName = mesh.GetMaterialName();
+    std::string materialName = "Material Name: " + std::string(wMaterialName.begin(), wMaterialName.end());
+    ImGui::Text(materialName.c_str());
+    ImGui::Text("Material Textures: ");
+    ImGui::Spacing();
+
+    for (size_t i = 0; i < MaterialType::NumMaterialTypes; i++)
+    {
+        const auto texture = mesh.GetTexture((MaterialType::Type)i);
+
+        if (texture)
+        {
+            auto srvCPU = gui.m_Heap.SetHandle(i+1);
+            device->CreateShaderResourceView(texture->GetD3D12Resource().Get(), nullptr, srvCPU);
+            auto srvGPU = gui.m_Heap.GetGPUHandle(i+1);
+
+            wchar_t name[128] = {};
+            UINT size = sizeof(name);
+            texture->GetD3D12Resource()->GetPrivateData(WKPDID_D3DDebugObjectNameW, &size, name);
+
+            std::wstring nameWStr = std::wstring(name);
+            std::string nameStr = std::string(nameWStr.begin(), nameWStr.end());
+            ImGui::Text(nameStr.c_str());
+            auto imgSize = ImVec2(128, 128);
+            ImGui::Image((ImTextureID)srvGPU.ptr, imgSize);
+
+        }
+    }
+
+
+    /*
+D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
+ZeroMemory(&srvDesc, sizeof(srvDesc));
+srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+srvDesc.Texture2D.MipLevels = 1;
+srvDesc.Texture2D.MostDetailedMip = 0;
+srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+*/
 }
 
 void Editor::SelectEntity(entt::entity entity)
 {
     selectedEntity = entity;
 }
-
-#endif // DEBUG_EDITOR
