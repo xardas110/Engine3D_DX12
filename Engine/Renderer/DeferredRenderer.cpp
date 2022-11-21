@@ -16,6 +16,13 @@
 #include <TypesCompat.h>
 #include <WinPixEventRuntime/pix3.h>
 
+//#include <NRIDescs.h>
+//#include <Extensions/NRIWrapperD3D12.h>
+//#include <Extensions/NRIHelper.h>
+
+//#include <NRD.h>
+//#include <NRDIntegration.h>
+
 using namespace DirectX;
 
 bool IsDirectXRaytracingSupported(IDXGIAdapter4* adapter)
@@ -41,6 +48,8 @@ DeferredRenderer::DeferredRenderer(int width, int height)
 
     m_Raytracer = std::unique_ptr<Raytracing>(new Raytracing());
     m_Raytracer->Init();
+
+    //NrdIntegration NRD = NrdIntegration(3);
 }
 
 DeferredRenderer::~DeferredRenderer()
