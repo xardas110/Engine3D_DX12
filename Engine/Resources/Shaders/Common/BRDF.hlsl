@@ -329,7 +329,7 @@ float4 InvertRotation(float4 q)
 }
 
 bool EvaluateIndirectBRDF(
-    in float2 u, in float3 shadingNormal, in float3 V, 
+    in float2 u, in float3 shadingNormal, in float3 geometryNormal, in float3 V, 
     in SurfaceMaterial material, const int brdfType, 
     out float3 rayDirection, out float3 sampleWeight)
 {
@@ -365,10 +365,29 @@ bool EvaluateIndirectBRDF(
     
     rayDirection = normalize(RotatePoint(InvertRotation(qRotationToZ), rayDirectionLocal));
     
-    if (dot(shadingNormal, rayDirection) <= 0.0f)
+    if (dot(geometryNormal, rayDirection) <= 0.0f)
         return false;
 
     return true;
+}
+
+//Raytracing gems chapter 6
+float3 OffsetRay(const float3 p, const float3 n)
+{
+    static const float origin = 1.0f / 32.0f;
+    static const float float_scale = 1.0f / 65536.0f;
+    static const float int_scale = 256.0f;
+
+    int3 of_i = int3(int_scale * n.x, int_scale * n.y, int_scale * n.z);
+
+    float3 p_i = float3(
+		asfloat(asint(p.x) + ((p.x < 0) ? -of_i.x : of_i.x)),
+		asfloat(asint(p.y) + ((p.y < 0) ? -of_i.y : of_i.y)),
+		asfloat(asint(p.z) + ((p.z < 0) ? -of_i.z : of_i.z)));
+
+    return float3(abs(p.x) < origin ? p.x + float_scale * n.x : p_i.x,
+		abs(p.y) < origin ? p.y + float_scale * n.y : p_i.y,
+		abs(p.z) < origin ? p.z + float_scale * n.z : p_i.z);
 }
 
 #endif
