@@ -231,9 +231,12 @@ void DeferredRenderer::Render(Window& window)
         const char* listbox_items[] =
         { "FinalColor", "albedo", "normal", "pbr", "emissive", "UV", "POS"};
 
-        ImGui::Begin("Select Raytracing debug color");
+        ImGui::Begin("RayTracing Settings");
         static int listbox_item_current = 0;
         ImGui::ListBox("listbox\n(single select)", &listbox_item_current, listbox_items, IM_ARRAYSIZE(listbox_items));
+        static int rtNumBounces = 2;
+        ImGui::InputInt("NumBounces", &rtNumBounces);
+        rtData.numBounces = rtNumBounces;
         ImGui::End();
 
         rtData.debugSettings = listbox_item_current;
@@ -267,10 +270,8 @@ void DeferredRenderer::Render(Window& window)
         }
 
         accumFrame++;
-
-
         ImGui::End();
-      
+   
         rtData.accumulatedFrameNumber = accumFrame;
 
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::RaytracingDataCB, rtData);

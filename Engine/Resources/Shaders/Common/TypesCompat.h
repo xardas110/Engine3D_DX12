@@ -157,6 +157,10 @@ struct RaytracingDataCB
     int frameNumber COMPAT_INT(0);
     int accumulatedFrameNumber; 
     int bResetDuty;
+    int numBounces;
+    int pad1;
+    int pad2;
+    int pad3;
 
 };
 

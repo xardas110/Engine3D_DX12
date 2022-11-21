@@ -62,19 +62,71 @@ bool SponzaExe::LoadContent()
         trans.pos = { 0.f, 0.f, 0.f };
     }
     */
-    for (size_t i = 0; i < 100; i++)
+
+    float spacing = 10.f;
+
+    for (size_t i = 0; i < 10; i++)
+    {
+        {
+            auto ent = CreateEntity("DxCube");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultSphere");
+            sm.SetMaterialInstance(material);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 2.f, 2.f, 2.f };
+            trans.pos = { -50.f + spacing * i, spacing, -5.f };
+            //trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(45.f));
+        }
+    }
+
+    for (size_t i = 0; i < 10; i++)
     {
     {
         auto ent = CreateEntity("DxCube");
-        auto& sm = ent.AddComponent<MeshComponent>(L"DefaultSphere");
+        auto& sm = ent.AddComponent<MeshComponent>(L"DefaultTorus");
         sm.SetMaterialInstance(material);
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 2.f, 2.f, 2.f };
-        trans.pos = {  -50.f + float(rand() % 100),float(rand() % 10), -50.f + float(rand() % 100) };
-        trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(45.f));
+        trans.pos = {  -50.f + spacing * i, spacing, -10.f };
+        //trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(45.f));
     }
     }
-
+    for (size_t i = 0; i < 10; i++)
+    {
+        {
+            auto ent = CreateEntity("DxCube");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultSphere");
+            sm.SetMaterialInstance(material);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 2.f, 2.f, 2.f };
+            trans.pos = { -50.f + spacing * i, 5.f, -10.f };
+            //trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(45.f));
+        }
+    }
+    for (size_t i = 0; i < 10; i++)
+    {
+        {
+            auto ent = CreateEntity("DxCube");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+            sm.SetMaterialInstance(material);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 8.f, 5.f, 8.f };
+            trans.pos = { -50.f + spacing * i, 15.f, -10.f };
+            //trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(45.f));
+        }
+    }
+    for (size_t i = 0; i < 10; i++)
+    {
+        {
+            auto ent = CreateEntity("DxCube");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultSphere");
+            sm.SetMaterialInstance(material);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 2.f, 2.f, 2.f };
+            trans.pos = { -50.f + spacing * i, spacing, -15.f };
+            //trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(45.f));
+        }
+    }
+    /*
     for (size_t i = 0; i < 50; i++)
     {
         {
@@ -82,12 +134,12 @@ bool SponzaExe::LoadContent()
             auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
             sm.SetMaterialInstance(material);
             auto& trans = ent.GetComponent<TransformComponent>();
-            trans.scale = { 2.f, 2.f, 2.f };
+            trans.scale = { 5.f, 5.f, 5.f };
             trans.pos = { -50.f + float(rand() % 100),float(rand() % 10), -50.f + float(rand() % 100) };
-            trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(rand() % 360));
+            //trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(rand() % 360));
         }
     }
-
+    */
     {
         auto ent = CreateEntity("DxCube");
         auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
@@ -103,9 +155,19 @@ bool SponzaExe::LoadContent()
         sm.SetMaterialInstance(material);
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 50.f, 50.f, 2.f };
-        trans.pos = { 0.f, 0.f, 0.f };
+        trans.pos = { 0.f, 30.f, 0.f };
     }
-
+    /*
+    {
+        auto ent = CreateEntity("DxCube");
+        auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+        sm.SetMaterialInstance(material);
+        auto& trans = ent.GetComponent<TransformComponent>();
+        trans.scale = { 50.f, 50.f, 2.f };
+        trans.pos = { 0.f, 0.f, -25.f };
+    }
+    */
+/*
     for (size_t i = 0; i < 20; i++)
     {
         {
@@ -115,7 +177,7 @@ bool SponzaExe::LoadContent()
             auto& trans = ent.GetComponent<TransformComponent>();
             trans.scale = { 5.f, 5.f, 5.f };
             trans.pos = { -50.f + float(rand() % 100),float(rand() % 10), -50.f + float(rand() % 100) };
-            trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(rand() % 360));
+            //trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(rand() % 360));
         }
     }
 
@@ -126,9 +188,9 @@ bool SponzaExe::LoadContent()
             auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCone");
             sm.SetMaterialInstance(material);
             auto& trans = ent.GetComponent<TransformComponent>();
-            trans.scale = { 2.f, 2.f, 2.f };
+            trans.scale = { 5.f, 5.f, 5.f };
             trans.pos = { -50.f + float(rand() % 100),float(rand() % 10), -50.f + float(rand() % 100) };
-            trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(rand() % 360));
+            //trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(rand() % 360));
         }
     }
 
@@ -142,7 +204,7 @@ bool SponzaExe::LoadContent()
         trans.pos = { 3.f, 10.f, 0.f };       
     }
     }
-    
+    */
 	return true;
 }
 
