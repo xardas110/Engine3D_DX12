@@ -10,12 +10,13 @@
 #include <CompositionPass/CompositionPass.h>
 #include <Debug/DebugTexture.h>
 
-//#include <NRIDescs.h>
-//#include <Extensions/NRIWrapperD3D12.h>
-//#include <Extensions/NRIHelper.h>
+#include <NRI.h>
+#include <NRIDescs.h>
+#include <Extensions/NRIWrapperD3D12.h>
+#include <Extensions/NRIHelper.h>
 
-//#include <NRD.h>
-//#include <NRDIntegration.h>
+#include <NRD.h>
+#include <NRDIntegration.h>
 
 class Game;
 class MeshTuple;
