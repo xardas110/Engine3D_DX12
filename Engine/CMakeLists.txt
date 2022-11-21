@@ -1,7 +1,6 @@
 cmake_minimum_required( VERSION 3.23.2 ) # Latest version of CMake when this file was created.
 
 add_compile_definitions(DEBUG_CMD)
-
 add_compile_definitions(ImTextureID=ImU64)
 
 set(BUILD_SHARED_LIBS OFF)
@@ -9,10 +8,9 @@ add_subdirectory(Libs/assimp)
 
 find_package(Vulkan REQUIRED FATAL_ERROR)
 
-set(BUILD_SHARED_LIBS OFF)
+set(NRD_STATIC_LIBRARY ON)
 add_subdirectory(Libs/RayTracingDenoiser)
 
-set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(Libs/NRI)
 
 set( HEADER_FILES 
@@ -73,7 +71,7 @@ set( HEADER_FILES
     "DX12/StaticDescriptorHeap.h" 
     "Renderer/CompositionPass/CompositionPass.h"
     "Renderer/Debug/DebugTexture.h"
- "Lights/DirectionalLight.h" )
+ "Lights/DirectionalLight.h"  "Renderer/Denoiser/NvidiaDenoiser.h")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
@@ -122,7 +120,7 @@ set( SOURCE_FILES
     "Renderer/GBuffer/GBuffer.cpp" 
     "DX12/StaticDescriptorHeap.cpp" 
     "Renderer/CompositionPass/CompositionPass.cpp"
-    "Renderer/Debug/DebugTexture.cpp" "Lights/DirectionalLight.cpp" )
+    "Renderer/Debug/DebugTexture.cpp" "Lights/DirectionalLight.cpp"  "Renderer/Denoiser/NvidiaDenoiser.cpp")
 
 set( IMGUI_HEADERS
     external/ImGui/imgui.h
@@ -197,6 +195,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC Renderer/GBuffer
     PUBLIC Renderer/Debug
     PUBLIC Renderer/Lightpass
+    PUBLIC Renderer/Denoiser
     PUBLIC Lights
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
