@@ -9,10 +9,10 @@ add_subdirectory(Libs/assimp)
 
 find_package(Vulkan REQUIRED FATAL_ERROR)
 
-set(BUILD_SHARED_LIBS ON)
+set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(Libs/RayTracingDenoiser)
 
-set(BUILD_SHARED_LIBS ON)
+set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(Libs/NRI)
 
 set( HEADER_FILES 
