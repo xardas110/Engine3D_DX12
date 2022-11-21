@@ -7,6 +7,8 @@ add_compile_definitions(ImTextureID=ImU64)
 set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(Libs/assimp)
 
+find_package(Vulkan REQUIRED FATAL_ERROR)
+
 set(BUILD_SHARED_LIBS ON)
 add_subdirectory(Libs/RayTracingDenoiser)
 
@@ -202,6 +204,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
  set ( TARGET_LINK_LIBS
     PUBLIC assimp
     PUBLIC NRD
+    PUBLIC NRI
     PUBLIC DirectXTex
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
