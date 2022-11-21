@@ -201,6 +201,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
 
  set ( TARGET_LINK_LIBS
     PUBLIC assimp
+    PUBLIC NRD
     PUBLIC DirectXTex
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
