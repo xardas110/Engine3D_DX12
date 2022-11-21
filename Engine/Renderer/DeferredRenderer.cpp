@@ -93,6 +93,21 @@ void DeferredRenderer::Render(Window& window)
 
     auto& directionalLight = game->m_DirectionalLight;
 
+    ImGui::Begin("Directional light settings");
+    if (ImGui::SliderFloat3("Light Direction", &directionalLight.data.direction.m128_f32[0], -1, +1))
+    {
+
+        if (XMVector3Equal(directionalLight.data.direction, XMVectorZero()))
+        { 
+            directionalLight.data.direction = { 0.f, -1.f, 0.f, directionalLight.data.direction.m128_f32[3] };
+        }        
+        else
+        { 
+            directionalLight.data.direction = XMVector3Normalize(directionalLight.data.direction);
+        }
+    }
+    ImGui::End();
+
     // Clear the render targets.
     {
         PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"ClearGBuffer");

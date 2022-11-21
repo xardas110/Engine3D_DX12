@@ -73,8 +73,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     currentMat.ao = fi.ao;
     currentMat.emissive = fi.emissive;
     currentMat.height = fi.height;
-    currentMat.metallic = 1.f; //fi.metallic;
-    currentMat.roughness = 0.f; //fi.roughness;
+    currentMat.metallic = fi.metallic;
+    currentMat.roughness = fi.roughness;
     currentMat.normal = fi.normal;
     geometryNormal = fi.normal;
             
@@ -172,13 +172,13 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         query.Proceed();
         if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {
-            radiance += EvaluateBRDF(hitSurface.normal, L, V, hitSurfaceMaterial) * 2.f;
+            radiance += EvaluateBRDF(hitSurface.normal, L, V, hitSurfaceMaterial);
         }
                         
         currentMat = hitSurfaceMaterial;
         ray.TMin = 0.0f;
         ray.Origin = shadowRayDesc.Origin;
-        }
+    }
             
     float3 accumulatedColor = g_accumulationBuffer[3][pixelCoords].rgb + radiance;
     g_accumulationBuffer[3][pixelCoords] = float4(accumulatedColor, 1.0f);
