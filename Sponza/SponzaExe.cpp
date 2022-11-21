@@ -109,7 +109,7 @@ bool SponzaExe::LoadContent()
             auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
             sm.SetMaterialInstance(material);
             auto& trans = ent.GetComponent<TransformComponent>();
-            trans.scale = { 8.f, 5.f, 8.f };
+            trans.scale = { 8.f, 8.f, 8.f };
             trans.pos = { -50.f + spacing * i, 15.f, -10.f };
             //trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(45.f));
         }
@@ -121,8 +121,8 @@ bool SponzaExe::LoadContent()
             auto& sm = ent.AddComponent<MeshComponent>(L"DefaultSphere");
             sm.SetMaterialInstance(material);
             auto& trans = ent.GetComponent<TransformComponent>();
-            trans.scale = { 2.f, 2.f, 2.f };
-            trans.pos = { -50.f + spacing * i, spacing, -15.f };
+            trans.scale = { 5.f, 5.f, 5.f };
+            trans.pos = { -50.f + spacing * i, spacing, -20.f };
             //trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(45.f));
         }
     }

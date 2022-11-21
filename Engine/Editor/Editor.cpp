@@ -115,6 +115,7 @@ void Editor::Destroy()
 
 void Editor::OnUpdate(UpdateEventArgs& e)
 {
+    ImGui::ShowMetricsWindow();
     UpdateGameMenuBar();
     UpdateWorldHierarchy();
     UpdateMaterialManager();
