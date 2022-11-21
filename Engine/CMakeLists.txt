@@ -8,6 +8,10 @@ set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(Libs/assimp)
 
 set(BUILD_SHARED_LIBS ON)
+add_subdirectory(Libs/RayTracingDenoiser)
+
+set(BUILD_SHARED_LIBS ON)
+add_subdirectory(Libs/NRI)
 
 set( HEADER_FILES 
     "core/EnginePCH.h"
@@ -173,6 +177,9 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC external/ImGui
     PUBLIC Libs/assimp/include
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Libs/assimp/include
+    PUBLIC Libs/RayTracingDenoiser/include
+    PUBLIC Libs/RayTracingDenoiser/Integration
+    PUBLIC Libs/NRI/include
     PUBLIC core
     PUBLIC Editor
     Public Physics

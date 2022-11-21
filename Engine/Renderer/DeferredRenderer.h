@@ -48,5 +48,6 @@ class DeferredRenderer
 	LightPass m_LightPass;
 	CompositionPass m_CompositionPass;
 	DebugTexturePass m_DebugTexturePass;	
+
 };
 
