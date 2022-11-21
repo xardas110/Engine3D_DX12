@@ -9,14 +9,7 @@
 #include <LightPass/LightPass.h>
 #include <CompositionPass/CompositionPass.h>
 #include <Debug/DebugTexture.h>
-
-#include <NRI.h>
-#include <NRIDescs.h>
-#include <Extensions/NRIWrapperD3D12.h>
-#include <Extensions/NRIHelper.h>
-
-#include <NRD.h>
-#include <NRDIntegration.h>
+#include <NvidiaDenoiser.h>
 
 class Game;
 class MeshTuple;
@@ -56,6 +49,6 @@ class DeferredRenderer
 	LightPass m_LightPass;
 	CompositionPass m_CompositionPass;
 	DebugTexturePass m_DebugTexturePass;	
-
+	NvidiaDenoiser m_NvidiaDenoiser;
 };
 
