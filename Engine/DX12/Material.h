@@ -10,6 +10,13 @@ struct MaterialInstance
 	friend class MaterialManager;
 	friend class DeferredRenderer;
 
+	MaterialInstance() = default;
+
+	MaterialInstance(const std::wstring& name, const MaterialInfo& textureIDs)
+	{
+		materialInstanceID = CreateMaterialInstance(name, textureIDs);
+	}
+
 	MaterialInstanceID CreateMaterialInstance(const std::wstring& name, const MaterialInfo& textureIDs);
 	bool GetMaterialInstance(const std::wstring& name);
 

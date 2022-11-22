@@ -4,6 +4,7 @@
 #include <Application.h>
 #include <CommandList.h>
 #include <CommandQueue.h>
+#include <AssimpLoader.h>
 
 MeshManager::MeshManager(const SRVHeapData& srvHeapData)
 	:m_SrvHeapData(srvHeapData)
@@ -84,6 +85,86 @@ void MeshManager::CreateTorus(const std::wstring& name)
 	commandQueue->WaitForFenceValue(fenceVal2);
 
 	meshData.CreateMesh(name, tuple, m_SrvHeapData);
+}
+
+void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh)
+{
+	auto commandQueue = Application::Get().GetCommandQueue();
+	auto commandList = commandQueue->GetCommandList();
+	auto rtCommandList = commandQueue->GetCommandList();
+	auto textureManager = Application::Get().GetAssetManager()->m_TextureManager;
+
+	AssimpLoader loader(path);
+
+	auto sm = loader.GetAssimpStaticMesh();
+	outStaticMesh.startOffset = instanceData.meshIds.size();
+
+	int num = 0; 
+	for (auto& mesh : sm.meshes)
+	{		
+		MeshTuple tuple;
+		tuple.mesh = std::move(*Mesh::CreateMesh(*commandList, mesh.vertices, mesh.indices, false));
+		tuple.mesh.InitializeBlas(*rtCommandList);
+		std::wstring currentName = std::wstring(path.begin(), path.end()) + std::to_wstring(num++);
+		meshData.CreateMesh(currentName, tuple, m_SrvHeapData);
+		MeshInstance meshInstance;
+		CreateMeshInstance(currentName, meshInstance);
+		
+		MaterialInfo matInfo;
+		
+		if (mesh.material.HasTexture(AssimpMaterialType::Albedo))
+		{
+			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Albedo).path;
+			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+			matInfo.albedo = tex.GetTextureID();
+		}
+		if (mesh.material.HasTexture(AssimpMaterialType::Ambient))
+		{
+			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Ambient).path;
+			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+			matInfo.ao = tex.GetTextureID();
+		}
+		if (mesh.material.HasTexture(AssimpMaterialType::Normal))
+		{
+			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Normal).path;
+			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+			matInfo.normal = tex.GetTextureID();
+		}
+		if (mesh.material.HasTexture(AssimpMaterialType::Emissive))
+		{
+			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Emissive).path;
+			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+			matInfo.emissive = tex.GetTextureID();
+		}
+		if (mesh.material.HasTexture(AssimpMaterialType::Roughness))
+		{
+			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Roughness).path;
+			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+			matInfo.roughness = tex.GetTextureID();
+		}
+		if (mesh.material.HasTexture(AssimpMaterialType::Metallic))
+		{
+			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Metallic).path;
+			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+			matInfo.metallic = tex.GetTextureID();
+		}
+		if (mesh.material.HasTexture(AssimpMaterialType::Height))
+		{
+			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Height).path;
+			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+			matInfo.height = tex.GetTextureID();
+		}
+		if (mesh.material.HasTexture(AssimpMaterialType::Opacity))
+		{
+			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Opacity).path;
+			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+			matInfo.opacity = tex.GetTextureID();
+		}
+		MaterialInstance matInstance(currentName, matInfo);
+		meshInstance.SetMaterialInstance(matInstance);
+	}
+
+	outStaticMesh.endOffset = outStaticMesh.startOffset + num;
 }
 
 bool MeshManager::CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID)

@@ -30,14 +30,14 @@ float4 GetAlbedo(in MaterialInfo matInfo, in float2 texCoords, in SamplerState i
     return float4(1.f, 0.f, 0.f, 1.f);
 }
 
-float3 GetNormal(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[])
+float3 GetNormal(in MaterialInfo matInfo, in float2 texCoords, in float3 fallbackNormal, in SamplerState inSampler, in Texture2D globalTextureData[])
 {
     if (matInfo.normal != 0xffffffff)
     {
         Texture2D normal = globalTextureData[matInfo.normal];
         return normal.Sample(inSampler, texCoords).rgb;
     }
-    return float3(0.f, 1.f, 0.f);
+    return fallbackNormal;
 }
 
 float GetAO(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[])
@@ -101,7 +101,7 @@ float GetOpacity(in MaterialInfo matInfo, in float2 texCoords, in SamplerState i
 }
 
 SurfaceMaterial GetSurfaceMaterial(
-    in MaterialInfo matInfo, in float2 texCoords, 
+    in MaterialInfo matInfo, in float2 texCoords, in float3 fallbackNormal,
     in SamplerState inSampler, in Texture2D globalTextureData[])
 {
     SurfaceMaterial surface;  
@@ -112,7 +112,7 @@ SurfaceMaterial GetSurfaceMaterial(
     surface.roughness = GetRoughness(matInfo, texCoords, inSampler, globalTextureData);
     surface.metallic = GetMetallic(matInfo, texCoords, inSampler, globalTextureData);
     surface.opacity = GetOpacity(matInfo, texCoords, inSampler, globalTextureData);
-    surface.normal = GetNormal(matInfo, texCoords, inSampler, globalTextureData);
+    surface.normal = GetNormal(matInfo, texCoords, fallbackNormal, inSampler, globalTextureData);
     return surface;
 }
 

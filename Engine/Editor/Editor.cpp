@@ -353,23 +353,22 @@ void Editor::UpdateSelectedEntity()
     ImGui::Spacing();
     ImGui::Spacing();
 
-    UpdateMeshComponent(selectedEntity);
+    if (reg.any_of<MeshComponent>(selectedEntity))
+    {
+        auto& mesh = reg.get<MeshComponent>(selectedEntity);
+        UpdateMeshComponent(mesh);
+    }
 
     ImGui::End();
 }
 
-void Editor::UpdateMeshComponent(entt::entity entity)
+void Editor::UpdateMeshComponent(MeshComponent& mesh)
 {
     auto device = Application::Get().GetDevice();
     auto window = m_World->m_pWindow;
     auto& gui = window->m_GUI;
 
-    auto& reg = m_World->registry;
-    if (!reg.any_of<MeshComponent>(entity)) return;
-
-    auto& mesh = reg.get<MeshComponent>(selectedEntity);
     if (!mesh.IsValid()) return;
-
 
     const std::wstring& wMaterialName = mesh.GetMaterialName();
     std::string materialName = "Material Instance Name: " + std::string(wMaterialName.begin(), wMaterialName.end());
