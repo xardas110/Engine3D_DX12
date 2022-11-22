@@ -56,6 +56,18 @@ DeferredRenderer::~DeferredRenderer()
 {
 }
 
+std::vector<MeshInstanceWrapper> DeferredRenderer::GetMesheInstances(entt::registry& registry)
+{
+    std::vector<MeshInstanceWrapper> instances;
+    auto& view = registry.view<TransformComponent, MeshComponent>();
+    for (auto [entity, transform, mesh] : view.each())
+    {
+        MeshInstanceWrapper wrap(transform, mesh);
+        instances.emplace_back(wrap);
+    }
+    return instances;
+}
+
 void DeferredRenderer::Render(Window& window)
 {
     if (!window.m_pGame.lock()) return;
@@ -77,7 +89,7 @@ void DeferredRenderer::Render(Window& window)
     auto& meshes = assetManager->m_MeshManager.meshData.meshes;
     auto& meshInstance = assetManager->m_MeshManager.instanceData;
     auto& textures = assetManager->m_TextureManager.textureData.textures;
-
+    auto meshInstances = GetMesheInstances(game->registry);
     auto* camera = game->GetRenderCamera();
 
     ObjectCB objectCB; //todo move to cam
@@ -152,14 +164,11 @@ void DeferredRenderer::Render(Window& window)
         commandList->SetPipelineState(m_GBuffer.zPrePassPipeline);
         commandList->SetGraphicsRootSignature(m_GBuffer.zPrePassRS);
 
-        auto& view = game->registry.view<TransformComponent, MeshComponent>();
-        for (auto [entity, transform, mesh] : view.each())
-        {
-
+        for (auto [transform, mesh] : meshInstances)
+        {       
             objectCB.model = transform.GetTransform();
             objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
             objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
-            objectCB.entId = (UINT)entity;
             objectCB.meshId = mesh.id;
 
             objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
@@ -197,13 +206,11 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->TransitionBarrier(m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0), D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-        auto& view = game->registry.view<TransformComponent, MeshComponent>();
-        for (auto [entity, transform, mesh] : view.each())
+        for (auto [transform, mesh] : meshInstances)
         {       
             objectCB.model = transform.GetTransform();
             objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
             objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
-            objectCB.entId = (UINT)entity;
             objectCB.meshId = mesh.id;
         
             objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));

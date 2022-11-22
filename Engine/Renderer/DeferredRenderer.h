@@ -40,6 +40,8 @@ class DeferredRenderer
 
 	void OnResize(ResizeEventArgs& e);
 
+	std::vector<MeshInstanceWrapper> GetMesheInstances(entt::registry& registry);
+
 	int m_Width, m_Height; //shold be above the rest, cuz of initializing
 
 	D3D12_RECT m_ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
