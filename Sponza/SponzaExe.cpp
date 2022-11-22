@@ -21,8 +21,12 @@ bool SponzaExe::LoadContent()
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
-    auto bathRoom = CreateEntity("Sponza");
-    bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/bathroom/LAZIENKA.gltf");
+    auto bathRoom = CreateEntity("bathroom");
+    bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/Sponza.dae");
+    auto& trans = bathRoom.GetComponent<TransformComponent>();
+
+    trans.scale = { 0.015f, 0.015f, 0.015f };
+    trans.pos = { 0.f, 0.f, -50.f };
 
     meshManager.CreateCube();
     meshManager.CreateSphere();
@@ -45,7 +49,7 @@ bool SponzaExe::LoadContent()
 
     MaterialInfo matInfo;
     matInfo.albedo = spaceAlbedo.GetTextureID();
-    matInfo.normal = spaceNormal.GetTextureID();
+    //matInfo.normal = spaceNormal.GetTextureID();
     matInfo.metallic = spaceMetallic.GetTextureID();
     matInfo.roughness = spaceRoughness.GetTextureID();
     matInfo.ao = spaceAO.GetTextureID();

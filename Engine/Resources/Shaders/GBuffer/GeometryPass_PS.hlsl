@@ -33,10 +33,19 @@ PixelShaderOutput main(PixelShaderInput IN)
     PixelShaderOutput OUT;
     
     MaterialInfo matInfo = g_GlobalMaterialInfo[g_ObjectCB.materialGPUID];   
-    
-    SurfaceMaterial surface = GetSurfaceMaterial(matInfo, IN.TexCoord, IN.NormalWS, g_LinearRepeatSampler, g_GlobalTextureData);
-    surface.normal = TangentToWorldNormal(IN.Tangent_N, IN.BiTangent_N, IN.NormalLS_N, surface.normal, g_ObjectCB.model);
-
+           
+    bool bMatHasNormal;
+    SurfaceMaterial surface = GetSurfaceMaterial(matInfo, IN.TexCoord, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
+        
+    if (bMatHasNormal == true)
+    {    
+        surface.normal = TangentToWorldNormal(IN.Tangent_N, IN.BiTangent_N, IN.NormalLS_N, surface.normal, g_ObjectCB.model);
+    }
+    else
+    {
+        surface.normal = IN.NormalWS;
+    }
+        
     OUT.albedo = float4(surface.albedo, 1.f);
     OUT.normalHeight = float4(surface.normal, surface.height);
     OUT.PBR = float4(surface.ao, surface.roughness, surface.metallic, 1.f);

@@ -13,7 +13,6 @@ std::wstring StringToWString(const std::string& s)
 AssetManager::AssetManager()
 	: m_TextureManager(m_SrvHeapData), m_MaterialManager(m_TextureManager), m_MeshManager(m_SrvHeapData)
 {
-
 }
 
 AssetManager::~AssetManager()

@@ -56,14 +56,28 @@ DeferredRenderer::~DeferredRenderer()
 {
 }
 
-std::vector<MeshInstanceWrapper> DeferredRenderer::GetMesheInstances(entt::registry& registry)
+std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(entt::registry& registry)
 {
+    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     std::vector<MeshInstanceWrapper> instances;
-    auto& view = registry.view<TransformComponent, MeshComponent>();
-    for (auto [entity, transform, mesh] : view.each())
     {
-        MeshInstanceWrapper wrap(transform, mesh);
-        instances.emplace_back(wrap);
+        auto& view = registry.view<TransformComponent, MeshComponent>();
+        for (auto [entity, transform, mesh] : view.each())
+        {
+            MeshInstanceWrapper wrap(transform, mesh);
+            instances.emplace_back(wrap);
+        }
+    }
+    {
+        auto& view = registry.view<TransformComponent, StaticMeshComponent>();
+        for (auto [entity, transform, sm] : view.each())
+        {
+            for (size_t i = sm.startOffset; i < sm.endOffset; i++)
+            {
+                MeshInstanceWrapper wrap(transform, i);
+                instances.emplace_back(wrap);
+            }
+        }
     }
     return instances;
 }
@@ -89,7 +103,7 @@ void DeferredRenderer::Render(Window& window)
     auto& meshes = assetManager->m_MeshManager.meshData.meshes;
     auto& meshInstance = assetManager->m_MeshManager.instanceData;
     auto& textures = assetManager->m_TextureManager.textureData.textures;
-    auto meshInstances = GetMesheInstances(game->registry);
+    auto meshInstances = GetMeshInstances(game->registry);
     auto* camera = game->GetRenderCamera();
 
     ObjectCB objectCB; //todo move to cam
@@ -137,7 +151,6 @@ void DeferredRenderer::Render(Window& window)
         m_LightPass.ClearRendetTarget(*commandList, clearColor);
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
-
     {// BUILD DXR STRUCTURE
         PIXBeginEvent(dxrCommandList->GetGraphicsCommandList().Get(), 0, L"Building DXR structure");
 
@@ -153,7 +166,6 @@ void DeferredRenderer::Render(Window& window)
             PIXEndEvent(computeQueue->GetD3D12CommandQueue().Get());
         }
     }
-
     //DEPTH PREPASS
     {
         PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"zPrePass");
@@ -180,18 +192,6 @@ void DeferredRenderer::Render(Window& window)
         }
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
-    /*
-    commandList->GetGraphicsCommandList()->SetGraphicsRootShaderResourceView(
-        GlobalRootParam::AccelerationStructure, 
-        m_Raytracer->GetCurrentTLAS()->GetGPUVirtualAddress());
-    
-    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.Get());
-    commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(GlobalRootParam::GlobalHeapData, srvHeap->GetGPUDescriptorHandleForHeapStart());
-
-    commandList->SetGraphicsDynamicStructuredBuffer(GlobalRootParam::GlobalMeshInfo, globalMeshInfo);
-    commandList->SetGraphicsDynamicStructuredBuffer(GlobalRootParam::GlobalMaterialInfo, globalMaterialInfo);
-  */
-
     {//GBuffer Pass
         PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"GBufferPass");
         commandList->SetRenderTarget(m_GBuffer.renderTarget);

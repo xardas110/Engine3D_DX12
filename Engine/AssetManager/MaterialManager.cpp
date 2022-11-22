@@ -1,6 +1,7 @@
 #include <EnginePCH.h>
 #include <MaterialManager.h>
 #include <TextureManager.h>
+#include <Texture.h>
 
 std::wstring g_NoMaterial = L"No Material";
 Material g_NoUserMaterial; //Already initialized with values
@@ -13,6 +14,7 @@ bool IsMaterialValid(UINT id)
 MaterialManager::MaterialManager(const TextureManager& textureManager)
 	:m_TextureManager(textureManager)
 {
+
 }
 
 MaterialInstanceID MaterialManager::CreateMaterialInstance(const std::wstring& name, const MaterialInfo& textureIDs)

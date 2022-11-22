@@ -7,17 +7,17 @@
 
 struct SurfaceMaterial
 {
-    float3 albedo;
-    float ao;
+    float3 albedo COMPAT_VEC3F(1.f, 0.f, 0.f);
+    float ao COMPAT_FLOAT(1.f);
     
-    float3 normal;
-    float height;
+    float3 normal COMPAT_VEC3F(0.f, 1.f, 0.f);
+    float height COMPAT_FLOAT(1.f);
       
-    float3 emissive;
-    float opacity;
+    float3 emissive COMPAT_VEC3F(1.f, 0.f, 0.f);
+    float opacity COMPAT_FLOAT(1.f);
     
-    float roughness;
-    float metallic;
+    float roughness COMPAT_FLOAT(1.f);
+    float metallic COMPAT_FLOAT(0.f);
 };
 
 float4 GetAlbedo(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[])
@@ -30,14 +30,16 @@ float4 GetAlbedo(in MaterialInfo matInfo, in float2 texCoords, in SamplerState i
     return float4(1.f, 0.f, 0.f, 1.f);
 }
 
-float3 GetNormal(in MaterialInfo matInfo, in float2 texCoords, in float3 fallbackNormal, in SamplerState inSampler, in Texture2D globalTextureData[])
+float3 GetNormal(in MaterialInfo matInfo, in float2 texCoords, out bool bMatHasNormal, in SamplerState inSampler, in Texture2D globalTextureData[])
 {
     if (matInfo.normal != 0xffffffff)
     {
         Texture2D normal = globalTextureData[matInfo.normal];
+        bMatHasNormal = true;
         return normal.Sample(inSampler, texCoords).rgb;
     }
-    return fallbackNormal;
+    bMatHasNormal = false;
+    return float3(0.f, 1.f, 0.f);
 }
 
 float GetAO(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[])
@@ -57,7 +59,7 @@ float GetRoughness(in MaterialInfo matInfo, in float2 texCoords, in SamplerState
         Texture2D roughness = globalTextureData[matInfo.roughness];
         return roughness.Sample(inSampler, texCoords).r;
     }
-    return 0.f;
+    return 1.f;
 }
 
 float GetMetallic(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[])
@@ -101,10 +103,10 @@ float GetOpacity(in MaterialInfo matInfo, in float2 texCoords, in SamplerState i
 }
 
 SurfaceMaterial GetSurfaceMaterial(
-    in MaterialInfo matInfo, in float2 texCoords, in float3 fallbackNormal,
+    in MaterialInfo matInfo, in float2 texCoords, out bool bMatHasNormal,
     in SamplerState inSampler, in Texture2D globalTextureData[])
 {
-    SurfaceMaterial surface;  
+    SurfaceMaterial surface;    
     surface.ao = GetAO(matInfo, texCoords, inSampler, globalTextureData);
     surface.albedo = GetAlbedo(matInfo, texCoords, inSampler, globalTextureData); //* surface.ao;
     surface.emissive = GetEmissive(matInfo, texCoords, inSampler, globalTextureData);
@@ -112,7 +114,7 @@ SurfaceMaterial GetSurfaceMaterial(
     surface.roughness = GetRoughness(matInfo, texCoords, inSampler, globalTextureData);
     surface.metallic = GetMetallic(matInfo, texCoords, inSampler, globalTextureData);
     surface.opacity = GetOpacity(matInfo, texCoords, inSampler, globalTextureData);
-    surface.normal = GetNormal(matInfo, texCoords, fallbackNormal, inSampler, globalTextureData);
+    surface.normal = GetNormal(matInfo, texCoords, bMatHasNormal, inSampler, globalTextureData);
     return surface;
 }
 

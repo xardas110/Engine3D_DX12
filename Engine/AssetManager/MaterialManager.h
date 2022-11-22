@@ -3,7 +3,6 @@
 #include <Material.h>
 
 
-
 class TextureData;
 
 struct MaterialManager
@@ -48,4 +47,6 @@ private:
 	} instanceData;
 
 	const TextureManager& m_TextureManager;
+
+	MaterialInstance m_ErrorMaterial;
 };

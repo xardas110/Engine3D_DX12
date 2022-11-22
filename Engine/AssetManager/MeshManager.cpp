@@ -175,8 +175,7 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 		}
 
 		MaterialInstance matInstance(currentName, matInfo);
-		meshInstance.SetMaterialInstance(matInstance);
-		
+		meshInstance.SetMaterialInstance(matInstance);				
 	}
 
 	auto fenceVal1 = commandQueue->ExecuteCommandList(commandList);

@@ -74,7 +74,6 @@ struct Material
 
 struct MaterialInfo
 {
-
     UINT ao TEXTURE_NULL;
     UINT albedo TEXTURE_NULL;
     UINT normal TEXTURE_NULL;
