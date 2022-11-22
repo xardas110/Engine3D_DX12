@@ -43,6 +43,7 @@
 #include <Material.h>
 #include <TypesCompat.h>
 #include <Helpers.h>
+#include <Transform.h>
 
 using MeshID = UINT;
 using MeshInstanceID = UINT;
@@ -197,4 +198,13 @@ public:
 private:
     std::uint32_t startOffset{0};
     std::uint32_t endOffset{0};
+};
+
+struct MeshInstanceWrapper
+{
+    MeshInstanceWrapper(Transform& trans, MeshInstance instance)
+        :trans(trans), instance(instance) {}
+        
+    Transform& trans; //complete world transform
+    MeshInstance instance;
 };
