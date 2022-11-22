@@ -116,6 +116,7 @@ void Application::Initialize()
 
     // Initialize managers
     m_AssetManager = AssetManager::CreateInstance();
+
 }
 
 void Application::Create(HINSTANCE hInst)

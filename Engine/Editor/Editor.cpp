@@ -369,9 +369,6 @@ void Editor::UpdateSelectedEntity()
         auto& meshManger = Application::Get().GetAssetManager()->m_MeshManager;
         auto& sm = reg.get<StaticMeshComponent>(selectedEntity);
 
-        std::cout << "Start offste: " << sm.startOffset << std::endl;
-        std::cout << "end offste: " << sm.endOffset << std::endl;
-
         for (size_t i = sm.startOffset; i < sm.endOffset; i++)
         {
             auto mesh = MeshInstance(i);

@@ -31,10 +31,12 @@ private:
 	
 	std::string path = "";
 
-	unsigned int aiFlags = aiProcess_CalcTangentSpace 
-		| aiProcess_Triangulate 
-		| aiProcess_GenUVCoords 
-		| aiProcess_FlipUVs;
+	unsigned int aiFlags = aiProcess_CalcTangentSpace
+		| aiProcess_Triangulate
+		| aiProcess_GenUVCoords
+		| aiProcess_FlipUVs
+		| aiProcess_GenSmoothNormals
+		| aiProcess_FlipWindingOrder;
 
 	struct AssimpTexture
 	{

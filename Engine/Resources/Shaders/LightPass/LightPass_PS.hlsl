@@ -150,19 +150,29 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 
         MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
         hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
+        hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
+
         hitSurface.position = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
 
         geometryNormal = hitSurface.normal;
                 
-        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, hitSurface.normal, g_LinearRepeatSampler, g_GlobalTextureData);
+        bool bMatHasNormal;
+        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
                
-        hitSurfaceMaterial.normal = 
+        if (bMatHasNormal == true)
+        {         
+            hitSurfaceMaterial.normal =
             TangentToWorldNormal(hitSurface.tangent,
             hitSurface.bitangent,
             hitSurface.normal,
             hitSurfaceMaterial.normal,
             hit.objToWorld
             );
+        }
+        else
+        {
+            hitSurfaceMaterial.normal = hitSurface.normal;    
+        }
                   
         shadowRayDesc.TMin = 0.0f;
         shadowRayDesc.Origin = OffsetRay(hitSurface.position, hitSurface.normal);
@@ -214,8 +224,25 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         MeshInfo meshInfo = g_GlobalMeshInfo[instanceIndex];
         MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
         MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
-            SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, hitSurface
-            .normal, g_LinearRepeatSampler, g_GlobalTextureData);
+        hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
+        hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
+        bool bMatHasNormal;
+        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
+               
+        if (bMatHasNormal == true)
+        {
+            hitSurfaceMaterial.normal =
+            TangentToWorldNormal(hitSurface.tangent,
+            hitSurface.bitangent,
+            hitSurface.normal,
+            hitSurfaceMaterial.normal,
+            hit.objToWorld
+            );
+        }
+        else
+        {
+            hitSurfaceMaterial.normal = hitSurface.normal;
+        }
             
         if (DEBUG_RAYTRACING_ALBEDO == g_RaytracingData.debugSettings)
         {
@@ -223,12 +250,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         }
         else if (DEBUG_RAYTRACING_NORMAL == g_RaytracingData.debugSettings)
         {
-            color = TangentToWorldNormal(hitSurface.tangent,
-            hitSurface.bitangent,
-            hitSurface.normal,
-            hitSurfaceMaterial.normal,
-            hit.objToWorld
-            );
+                color = hitSurfaceMaterial.normal.rgb;
+
         }
         else if (DEBUG_RAYTRACING_PBR == g_RaytracingData.debugSettings)
         {
