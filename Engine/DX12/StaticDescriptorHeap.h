@@ -47,4 +47,9 @@ public:
 		handle.ptr += index * increment;
 		return handle;
 	}
+
+	void Resethandle(int resetOffset)
+	{
+		lastIndex = resetOffset;
+	}
 };

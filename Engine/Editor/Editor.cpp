@@ -353,10 +353,30 @@ void Editor::UpdateSelectedEntity()
     ImGui::Spacing();
     ImGui::Spacing();
 
+    auto device = Application::Get().GetDevice();
+    auto window = m_World->m_pWindow;
+    auto& gui = window->m_GUI;
+
+    gui.m_Heap.Resethandle(1);
+
     if (reg.any_of<MeshComponent>(selectedEntity))
     {
         auto& mesh = reg.get<MeshComponent>(selectedEntity);
         UpdateMeshComponent(mesh);
+    }
+    if (reg.any_of<StaticMeshComponent>(selectedEntity))
+    {
+        auto& meshManger = Application::Get().GetAssetManager()->m_MeshManager;
+        auto& sm = reg.get<StaticMeshComponent>(selectedEntity);
+
+        std::cout << "Start offste: " << sm.startOffset << std::endl;
+        std::cout << "end offste: " << sm.endOffset << std::endl;
+
+        for (size_t i = sm.startOffset; i < sm.endOffset; i++)
+        {
+            auto mesh = MeshInstance(i);
+            UpdateMeshComponent(mesh);
+        }     
     }
 
     ImGui::End();
@@ -369,13 +389,15 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
     auto& gui = window->m_GUI;
 
     if (!mesh.IsValid()) return;
-
+  
     const std::wstring& wMaterialName = mesh.GetMaterialName();
     std::string materialName = "Material Instance Name: " + std::string(wMaterialName.begin(), wMaterialName.end());
     ImGui::Text(materialName.c_str());
    
-    auto& material = mesh.GetUserMaterial();
+    //auto& material = mesh.GetUserMaterial();
+  
     const auto& wMatName = mesh.GetUserMaterialName();
+    /*
     std::string matName = "User Defined material: " +  std::string(wMatName.begin(), wMatName.end());
     auto materialCopy = material;
     ImGui::Text(matName.c_str());
@@ -384,7 +406,7 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
     ImGui::ColorEdit3("Emissive", &materialCopy.emissive.x);
     ImGui::InputFloat("Roughness", &materialCopy.roughness);
     ImGui::InputFloat("Metallic", &materialCopy.metallic);
-
+    */
     ImGui::Text("Material Textures: ");
     ImGui::Spacing();
 
@@ -394,9 +416,10 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
 
         if (texture)
         {
-            auto srvCPU = gui.m_Heap.SetHandle(i+1);
+            UINT lastIndex;
+            auto srvCPU = gui.m_Heap.IncrementHandle(lastIndex);
             device->CreateShaderResourceView(texture->GetD3D12Resource().Get(), nullptr, srvCPU);
-            auto srvGPU = gui.m_Heap.GetGPUHandle(i+1);
+            auto srvGPU = gui.m_Heap.GetGPUHandle(lastIndex);
 
             wchar_t name[128] = {};
             UINT size = sizeof(name);
@@ -410,6 +433,7 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
 
         }
     }
+    
 }
 
 void Editor::SelectEntity(entt::entity entity)
