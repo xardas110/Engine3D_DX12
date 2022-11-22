@@ -167,7 +167,7 @@ void Raytracing::BuildAccelerationStructures()
     */
 }
 
-void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, entt::registry& registry, MeshManager& meshManager, UINT backbufferIndex)
+void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::vector<MeshInstanceWrapper>& meshWrapperInstances, MeshManager& meshManager, UINT backbufferIndex)
 {
     m_CurrentBufferIndex = backbufferIndex;
 
@@ -178,8 +178,7 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, entt::r
     auto& meshes = meshManager.meshData.meshes;
     auto& meshInstances = meshManager.instanceData;
 
-    auto view = registry.view<TransformComponent, MeshComponent>();
-    for (auto[entity, trans, mesh] : view.each())
+    for (auto[trans, mesh] : meshWrapperInstances)
     {
         const auto& internalMesh = meshes[meshInstances.meshIds[mesh.id]];
 

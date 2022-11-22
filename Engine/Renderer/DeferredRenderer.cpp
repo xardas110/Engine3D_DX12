@@ -142,7 +142,7 @@ void DeferredRenderer::Render(Window& window)
         PIXBeginEvent(dxrCommandList->GetGraphicsCommandList().Get(), 0, L"Building DXR structure");
 
         
-        m_Raytracer->BuildAccelerationStructure(*dxrCommandList, game->registry, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);
+        m_Raytracer->BuildAccelerationStructure(*dxrCommandList, meshInstances, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);
         
         PIXEndEvent(dxrCommandList->GetGraphicsCommandList().Get());       
 
