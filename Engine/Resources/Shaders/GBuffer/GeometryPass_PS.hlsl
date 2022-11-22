@@ -34,7 +34,7 @@ PixelShaderOutput main(PixelShaderInput IN)
     
     MaterialInfo matInfo = g_GlobalMaterialInfo[g_ObjectCB.materialGPUID];   
     
-    SurfaceMaterial surface = GetSurfaceMaterial(matInfo, IN.TexCoord, g_LinearRepeatSampler, g_GlobalTextureData);
+    SurfaceMaterial surface = GetSurfaceMaterial(matInfo, IN.TexCoord, IN.NormalWS, g_LinearRepeatSampler, g_GlobalTextureData);
     surface.normal = TangentToWorldNormal(IN.Tangent_N, IN.BiTangent_N, IN.NormalLS_N, surface.normal, g_ObjectCB.model);
 
     OUT.albedo = float4(surface.albedo, 1.f);

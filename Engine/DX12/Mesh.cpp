@@ -567,6 +567,6 @@ void Mesh::InitializeBlas(CommandList& commandList)
 
 StaticMesh::StaticMesh(const std::string& path)
 {
-   // auto* smm = Application::Get().GetAssetManager();
-    //smm->LoadStaticMesh(path, *this);
+    auto& mm = Application::Get().GetAssetManager()->m_MeshManager;
+    mm.LoadStaticMesh(path, *this);
 }

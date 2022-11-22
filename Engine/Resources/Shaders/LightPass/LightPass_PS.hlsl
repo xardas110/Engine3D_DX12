@@ -154,7 +154,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
         geometryNormal = hitSurface.normal;
                 
-        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, g_LinearRepeatSampler, g_GlobalTextureData);
+        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, hitSurface.normal, g_LinearRepeatSampler, g_GlobalTextureData);
                
         hitSurfaceMaterial.normal = 
             TangentToWorldNormal(hitSurface.tangent,
@@ -214,7 +214,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         MeshInfo meshInfo = g_GlobalMeshInfo[instanceIndex];
         MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
         MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
-        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, g_LinearRepeatSampler, g_GlobalTextureData);
+            SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, hitSurface
+            .normal, g_LinearRepeatSampler, g_GlobalTextureData);
             
         if (DEBUG_RAYTRACING_ALBEDO == g_RaytracingData.debugSettings)
         {

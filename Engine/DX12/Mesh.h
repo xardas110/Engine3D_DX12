@@ -186,11 +186,12 @@ class StaticMesh
 {
     friend class AssetManager;
     friend class DeferredRenderer;
+    friend class MeshManager;
 
 public:
     StaticMesh() = default;
     StaticMesh(const std::string& path);
 private:
     std::uint32_t startOffset{0};
-    std::uint32_t count{0};
+    std::uint32_t endOffset{0};
 };

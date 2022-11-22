@@ -16,7 +16,6 @@ public:
 	Editor(World* world); //for unique ptr
 private:
 	void ShowDockSpace(bool* p_open);
-
 	
 	void Destroy(); //Destructor has to be public, Application will clean.
 
@@ -31,7 +30,7 @@ private:
 
 	void UpdateWorldHierarchy();
 	void UpdateSelectedEntity();
-	void UpdateMeshComponent(entt::entity entity);
+	void UpdateMeshComponent(MeshComponent& mesh);
 
 	void SelectEntity(entt::entity entity);
 
