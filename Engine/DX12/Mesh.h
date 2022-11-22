@@ -112,6 +112,7 @@ struct MeshInstance
     friend class DeferredRenderer;
     friend class MeshManager;
     friend class Raytracing;
+    friend class Editor;
 
     //Path or name
     MeshInstance(const std::wstring& path);
@@ -134,6 +135,7 @@ struct MeshInstance
     }
 private:
     MeshInstance() = default;
+    MeshInstance(MeshInstanceID id) :id(id) {};
     MeshInstanceID id{UINT_MAX};
 };
 
@@ -187,6 +189,7 @@ class StaticMesh
     friend class AssetManager;
     friend class DeferredRenderer;
     friend class MeshManager;
+    friend class Editor;
 
 public:
     StaticMesh() = default;

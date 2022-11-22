@@ -21,7 +21,7 @@ bool SponzaExe::LoadContent()
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
-    auto bathRoom = CreateEntity("BathRoom");
+    auto bathRoom = CreateEntity("Sponza");
     bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/bathroom/LAZIENKA.gltf");
 
     meshManager.CreateCube();

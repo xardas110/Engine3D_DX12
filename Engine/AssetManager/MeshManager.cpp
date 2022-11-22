@@ -97,19 +97,23 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 	AssimpLoader loader(path);
 
 	auto sm = loader.GetAssimpStaticMesh();
-	outStaticMesh.startOffset = instanceData.meshIds.size();
+	outStaticMesh.startOffset = instanceData.meshInfo.size();
+
+	std::cout << "Num meshes in static mesh: " << sm.meshes.size() << std::endl;
 
 	int num = 0; 
 	for (auto& mesh : sm.meshes)
 	{		
+		std::wstring currentName = std::wstring(path.begin(), path.end()) + std::to_wstring(num++);
+
 		MeshTuple tuple;
 		tuple.mesh = std::move(*Mesh::CreateMesh(*commandList, mesh.vertices, mesh.indices, false));
 		tuple.mesh.InitializeBlas(*rtCommandList);
-		std::wstring currentName = std::wstring(path.begin(), path.end()) + std::to_wstring(num++);
-		meshData.CreateMesh(currentName, tuple, m_SrvHeapData);
-		MeshInstance meshInstance;
-		CreateMeshInstance(currentName, meshInstance);
 		
+		meshData.CreateMesh(currentName, tuple, m_SrvHeapData);
+
+		MeshInstance meshInstance(currentName);
+
 		MaterialInfo matInfo;
 		
 		if (mesh.material.HasTexture(AssimpMaterialType::Albedo))
@@ -160,9 +164,26 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
 			matInfo.opacity = tex.GetTextureID();
 		}
+		bool bHasAnyMat = false;
+		for (size_t i = 0; i < AssimpMaterialType::Size; i++)
+		{
+			if(mesh.material.HasTexture((AssimpMaterialType::Type)i))
+			{ 
+				bHasAnyMat = true;
+				break;
+			}
+		}
+
 		MaterialInstance matInstance(currentName, matInfo);
 		meshInstance.SetMaterialInstance(matInstance);
+		
 	}
+
+	auto fenceVal1 = commandQueue->ExecuteCommandList(commandList);
+	auto fenceVal2 = commandQueue->ExecuteCommandList(rtCommandList);
+
+	commandQueue->WaitForFenceValue(fenceVal1);
+	commandQueue->WaitForFenceValue(fenceVal2);
 
 	outStaticMesh.endOffset = outStaticMesh.startOffset + num;
 }
@@ -175,7 +196,7 @@ bool MeshManager::CreateMeshInstance(const std::wstring& path, MeshInstance& out
 	{
 		const auto meshID = meshData.GetMeshID(path);
 		const auto& meshInfo = meshData.meshes[meshID].meshInfo;
-		
+
 		outMeshInstanceID.id = instanceData.CreateInstance(meshID, meshInfo);
 
 		return true;
