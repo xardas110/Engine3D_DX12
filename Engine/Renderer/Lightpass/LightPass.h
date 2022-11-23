@@ -27,6 +27,7 @@ namespace nriTypes
 {
 	enum Type
 	{
+		inMV,
 		inNormalRoughness,
 		inViewZ,
 		inIndirectDiffuse,
@@ -67,6 +68,7 @@ private:
 
 	Texture denoisedIndirectDiffuse;
 	Texture denoisedIndirectSpecular;
+	Texture motionVector;
 	
 	const Texture& GetTexture(nriTypes::Type type);
 

@@ -117,6 +117,10 @@ void LightPass::CreateRenderTarget(int width, int height)
         TextureUsage::RenderTarget,
         L"LightPass Denoised IndirectSpecular");
 
+    motionVector = Texture(indirectDiffuseDesc, &indirectDiffuseClear,
+        TextureUsage::RenderTarget,
+        L"LightPass motionVector");
+
     rwAccumulation = Texture(rwAccumDesc, nullptr,
         TextureUsage::RenderTarget,
         L"LightPass AccumBuffer");
@@ -314,6 +318,8 @@ const Texture& LightPass::GetTexture(nriTypes::Type type)
 {
     switch (type)
     {
+    case nriTypes::inMV:
+        return motionVector;
     case nriTypes::inNormalRoughness:
         return renderTarget.GetTexture(AttachmentPoint::Color4);
     case nriTypes::inViewZ:
