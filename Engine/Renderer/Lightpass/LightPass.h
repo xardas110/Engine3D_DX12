@@ -50,5 +50,8 @@ private:
 
 	Texture rwAccumulation;
 
+	Texture denoisedIndirectDiffuse;
+	Texture denoisedIndirectSpecular;
+
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipeline;
 };
