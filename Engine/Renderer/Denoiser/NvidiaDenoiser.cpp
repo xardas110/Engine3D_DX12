@@ -68,6 +68,7 @@ NvidiaDenoiser::NvidiaDenoiser()
 
 	deviceDesc.d3d12PhysicalAdapter = m_Adapter.Get();
 	deviceDesc.d3d12GraphicsQueue = cq->GetD3D12CommandQueue().Get();
+
 	deviceDesc.enableNRIValidation = true;
 	
 	m_NRIDevice = nullptr;
@@ -84,8 +85,8 @@ NvidiaDenoiser::NvidiaDenoiser()
 	nriResult = nri::GetInterface(*m_NRIDevice,
 		NRI_INTERFACE(nri::WrapperD3D12Interface), (nri::WrapperD3D12Interface*)&NRI);
 
-	ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocator)));
-
+	ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator)));
+	ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)));
 }
 
 NvidiaDenoiser::~NvidiaDenoiser()
@@ -99,9 +100,6 @@ void NvidiaDenoiser::Init(int width, int height, LightPass& lightPass)
 {
 	this->width = width;
 	this->height = height;
-
-	auto cq = Application::Get().GetCommandQueue();
-	m_CommandList = cq->GetCommandList();
 
 	const nrd::MethodDesc methodDescs[] =
 	{
@@ -121,8 +119,8 @@ void NvidiaDenoiser::Init(int width, int height, LightPass& lightPass)
 	}	
 
 	nri::CommandBufferD3D12Desc commandBufferDesc = {};
-	commandBufferDesc.d3d12CommandList = (ID3D12GraphicsCommandList*)m_CommandList->GetGraphicsCommandList().Get();
-	commandBufferDesc.d3d12CommandAllocator = m_commandAllocator.Get();
+	commandBufferDesc.d3d12CommandList = (ID3D12GraphicsCommandList*)m_CommandList.Get();
+	commandBufferDesc.d3d12CommandAllocator = m_CommandAllocator.Get();
 
 	NRI.CreateCommandBufferD3D12(*m_NRIDevice, commandBufferDesc, nriCommandBuffer);
 
@@ -226,7 +224,6 @@ void NvidiaDenoiser::RenderFrame(const CameraCB &cam, LightPass& lightPass, int 
 {
 	commonSettings = {};
 
-	/*
 	memcpy(commonSettings.viewToClipMatrix, &cam.proj, sizeof(cam.proj));
 	memcpy(commonSettings.worldToViewMatrix, &cam.view, sizeof(cam.proj));
 
@@ -241,7 +238,7 @@ void NvidiaDenoiser::RenderFrame(const CameraCB &cam, LightPass& lightPass, int 
 	commonSettings.isDisocclusionThresholdMixAvailable = false;
 	//commonSettings.accumulationMode = nrd::AccumulationMode::CLEAR_AND_RESTART;
 	//commonSettings.enableValidation = true;
-	*/
+
 	nrd::ReblurSettings settings = {};
 	NRD.SetMethodSettings(nrd::Method::REBLUR_DIFFUSE_SPECULAR, &settings);
 
@@ -281,5 +278,5 @@ void NvidiaDenoiser::RenderFrame(const CameraCB &cam, LightPass& lightPass, int 
 		
 	};
 
-	NRD.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, false);
+	NRD.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, true);
 }
