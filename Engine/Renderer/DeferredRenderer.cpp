@@ -49,7 +49,7 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_Raytracer = std::unique_ptr<Raytracing>(new Raytracing());
     m_Raytracer->Init();
 
-    //NrdIntegration NRD = NrdIntegration(3);
+    m_NvidiaDenoiser.Init(width, height, m_LightPass);
 }
 
 DeferredRenderer::~DeferredRenderer()
@@ -299,6 +299,9 @@ void DeferredRenderer::Render(Window& window)
         commandList->Draw(3);
 
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
+    }
+    {//Denoising 
+        m_NvidiaDenoiser.RenderFrame(cameraCB, m_LightPass, window.m_CurrentBackBufferIndex);
     }
     {//Composition branch
         PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"CompositionPass");

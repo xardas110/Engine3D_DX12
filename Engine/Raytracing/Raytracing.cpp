@@ -178,6 +178,8 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::ve
     auto& meshes = meshManager.meshData.meshes;
     auto& meshInstances = meshManager.instanceData;
 
+    if (meshWrapperInstances.empty()) return;
+
     for (auto[trans, mesh] : meshWrapperInstances)
     {
         const auto& internalMesh = meshes[meshInstances.meshIds[mesh.id]];

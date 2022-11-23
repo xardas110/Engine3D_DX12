@@ -24,6 +24,20 @@ nri::Device* m_NRIDevice;
 
 NriInterface NRI;
 
+nrd::CommonSettings commonSettings = {};
+
+nri::CommandBuffer* nriCommandBuffer = nullptr;
+
+// Better use "true" if resources are not changing between frames (i.e. are not suballocated from a heap)
+bool enableDescriptorCaching = true;
+
+struct NRITextures
+{
+	nri::TextureTransitionBarrierDesc entryDescs = {};
+	nri::Format entryFormat = {};
+}nriTextures[nriTypes::size];
+
+
 NvidiaDenoiser::NvidiaDenoiser()
 {
 	auto device = Application::Get().GetDevice();
@@ -36,7 +50,7 @@ NvidiaDenoiser::NvidiaDenoiser()
 
 	deviceDesc.d3d12PhysicalAdapter = m_Adapter.Get();
 	deviceDesc.d3d12GraphicsQueue = cq->GetD3D12CommandQueue().Get();
-	deviceDesc.enableNRIValidation = false;
+	deviceDesc.enableNRIValidation = true;
 	
 	m_NRIDevice = nullptr;
 	nri::Result nriResult = nri::CreateDeviceFromD3D12Device(deviceDesc, m_NRIDevice);
@@ -52,6 +66,8 @@ NvidiaDenoiser::NvidiaDenoiser()
 	nriResult = nri::GetInterface(*m_NRIDevice,
 		NRI_INTERFACE(nri::WrapperD3D12Interface), (nri::WrapperD3D12Interface*)&NRI);
 
+	ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocator)));
+
 }
 
 NvidiaDenoiser::~NvidiaDenoiser()
@@ -61,8 +77,14 @@ NvidiaDenoiser::~NvidiaDenoiser()
 	//NRD.Destroy();
 }
 
-void NvidiaDenoiser::Init(int width, int height, const Texture& diffuseSpecular)
+void NvidiaDenoiser::Init(int width, int height, LightPass& lightPass)
 {
+	this->width = width;
+	this->height = height;
+
+	auto cq = Application::Get().GetCommandQueue();
+	m_CommandList = cq->GetCommandList();
+
 	const nrd::MethodDesc methodDescs[] =
 	{
 		// Put neeeded methods here, like:
@@ -78,57 +100,138 @@ void NvidiaDenoiser::Init(int width, int height, const Texture& diffuseSpecular)
 	if (!result)
 	{
 		throw std::exception("Failed to create NRI interface");
-	}
+	}	
+}
 
-	auto cq = Application::Get().GetCommandQueue();
 
+void NvidiaDenoiser::RenderFrame(const CameraCB &cam, LightPass& lightPass, int currentBackbufferIndex)
+{
 	nri::CommandBufferD3D12Desc commandBufferDesc = {};
-	commandBufferDesc.d3d12CommandList = (ID3D12GraphicsCommandList*)cq->GetCommandList()->GetGraphicsCommandList().Get();
+	commandBufferDesc.d3d12CommandList = (ID3D12GraphicsCommandList*)m_CommandList->GetGraphicsCommandList().Get();
+	commandBufferDesc.d3d12CommandAllocator = m_commandAllocator.Get();
 
-	nri::CommandBuffer* nriCommandBuffer = nullptr;
 	NRI.CreateCommandBufferD3D12(*m_NRIDevice, commandBufferDesc, nriCommandBuffer);
 
-	nri::TextureTransitionBarrierDesc entryDescs[1] = {};
-	nri::Format entryFormat[1] = {};
+	{//Normalrough
+		nri::TextureD3D12Desc normalRoughDesc = {};
+		normalRoughDesc.d3d12Resource = lightPass.GetTexture(nriTypes::inNormalRoughness).GetD3D12Resource().Get();
 
-	nri::TextureTransitionBarrierDesc& entryDesc = entryDescs[0];
+		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inNormalRoughness].entryDescs;
+		nriTextures[nriTypes::inNormalRoughness].entryFormat = nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R10G10B10A2_UNORM);
+		NRI.CreateTextureD3D12(*m_NRIDevice, normalRoughDesc, (nri::Texture*&)entryDesc.texture);
 
-	nri::TextureD3D12Desc textureDesc = {};
-	textureDesc.d3d12Resource = diffuseSpecular.GetD3D12Resource().Get();
-	NRI.CreateTextureD3D12(*m_NRIDevice, textureDesc, (nri::Texture*&)entryDesc.texture);
+		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE;
+		entryDesc.nextLayout = nri::TextureLayout::SHADER_RESOURCE;
+	};
+	{//viewZ
+		nri::TextureD3D12Desc texDesc = {};
+		texDesc.d3d12Resource = lightPass.GetTexture(nriTypes::inViewZ).GetD3D12Resource().Get();
+
+		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inViewZ].entryDescs;
+
+		nriTextures[nriTypes::inViewZ].entryFormat = nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R32_FLOAT);
+		NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, (nri::Texture*&)entryDesc.texture);
+
+		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE;
+		entryDesc.nextLayout = nri::TextureLayout::SHADER_RESOURCE;
+	};
+	{//Indirect Diffuse
+		nri::TextureD3D12Desc texDesc = {};
+		texDesc.d3d12Resource = lightPass.GetTexture(nriTypes::inIndirectDiffuse).GetD3D12Resource().Get();
+
+		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inIndirectDiffuse].entryDescs;
+
+		nriTextures[nriTypes::inIndirectDiffuse].entryFormat = nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R16G16B16A16_FLOAT);
+		NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, (nri::Texture*&)entryDesc.texture);
+
+		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE;
+		entryDesc.nextLayout = nri::TextureLayout::SHADER_RESOURCE;
+	};
+	{//Indirect Specular
+		nri::TextureD3D12Desc texDesc = {};
+		texDesc.d3d12Resource = lightPass.GetTexture(nriTypes::inIndirectSpecular).GetD3D12Resource().Get();
+
+		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inIndirectSpecular].entryDescs;
+
+		nriTextures[nriTypes::inIndirectSpecular].entryFormat = nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R16G16B16A16_FLOAT);
+		NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, (nri::Texture*&)entryDesc.texture);
+
+		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE;
+		entryDesc.nextLayout = nri::TextureLayout::SHADER_RESOURCE;
+	};
+	{//OUT Indirect Diffuse
+		nri::TextureD3D12Desc texDesc = {};
+		texDesc.d3d12Resource = lightPass.GetTexture(nriTypes::outIndirectDiffuse).GetD3D12Resource().Get();
+
+		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::outIndirectDiffuse].entryDescs;
+
+		nriTextures[nriTypes::outIndirectDiffuse].entryFormat = nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R16G16B16A16_FLOAT);
+		NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, (nri::Texture*&)entryDesc.texture);
+
+		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE_STORAGE;
+		entryDesc.nextLayout = nri::TextureLayout::GENERAL;
+	};
+	{//OUT Indirect Specular
+		nri::TextureD3D12Desc texDesc = {};
+		texDesc.d3d12Resource = lightPass.GetTexture(nriTypes::outIndirectSpecular).GetD3D12Resource().Get();
+
+		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::outIndirectSpecular].entryDescs;
+
+		nriTextures[nriTypes::outIndirectSpecular].entryFormat = nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R16G16B16A16_FLOAT);
+		NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, (nri::Texture*&)entryDesc.texture);
+
+		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE_STORAGE;
+		entryDesc.nextLayout = nri::TextureLayout::GENERAL;
+	};
 
 	// You need to specify the current state of the resource here, after denoising NRD can modify
 	// this state. Application must continue state tracking from this point.
 	// Useful information:
 	//    SRV = nri::AccessBits::SHADER_RESOURCE, nri::TextureLayout::SHADER_RESOURCE
 	//    UAV = nri::AccessBits::SHADER_RESOURCE_STORAGE, nri::TextureLayout::GENERAL
-	entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE;
-	entryDesc.nextLayout = nri::TextureLayout::SHADER_RESOURCE;
-	
-	nrd::CommonSettings commonSettings = {};
-	commonSettings.motionVectorScale[0] = {0};
+
+/*
+	memcpy(commonSettings.viewToClipMatrix, &cam.proj, sizeof(cam.proj));
+	memcpy(commonSettings.worldToViewMatrix, &cam.view, sizeof(cam.proj));
+
+	commonSettings.resolutionScale[0] = 1;
+	commonSettings.resolutionScale[1] = 1;
+	commonSettings.motionVectorScale[0] = { 0 };
 	commonSettings.motionVectorScale[1] = { 0 };
 	commonSettings.motionVectorScale[2] = { 0 };
 	commonSettings.isMotionVectorInWorldSpace = true;
 	commonSettings.denoisingRange = 50000.f;
+	commonSettings.accumulationMode = nrd::AccumulationMode::CLEAR_AND_RESTART;
+*/
 
 	nrd::ReblurSettings settings = {};
 	NRD.SetMethodSettings(nrd::Method::REBLUR_DIFFUSE_SPECULAR, &settings);
 
 	NrdUserPool userPool = {};
-
 	{
-		NrdIntegrationTexture tex;
-		tex.format = nri::Format::RGBA32_SFLOAT;
 		// Fill only required "in-use" inputs and outputs in appropriate slots using entryDescs & entryFormat,
 		// applying remapping if necessary. Unused slots will be {nullptr, nri::Format::UNKNOWN}
-		NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_NORMAL_ROUGHNESS, tex);
+		
+		NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_NORMAL_ROUGHNESS,
+			{ &nriTextures[nriTypes::inNormalRoughness].entryDescs, nriTextures[nriTypes::inNormalRoughness].entryFormat });
 
+		NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_VIEWZ,
+			{ &nriTextures[nriTypes::inViewZ].entryDescs, nriTextures[nriTypes::inViewZ].entryFormat });
+
+		NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_DIFF_RADIANCE_HITDIST,
+			{ &nriTextures[nriTypes::inIndirectDiffuse].entryDescs, nriTextures[nriTypes::inIndirectDiffuse].entryFormat });
+
+		NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_SPEC_RADIANCE_HITDIST,
+			{ &nriTextures[nriTypes::inIndirectSpecular].entryDescs, nriTextures[nriTypes::inIndirectSpecular].entryFormat });
+
+		
+		NrdIntegration_SetResource(userPool, nrd::ResourceType::OUT_DIFF_RADIANCE_HITDIST,
+			{ &nriTextures[nriTypes::outIndirectDiffuse].entryDescs, nriTextures[nriTypes::outIndirectDiffuse].entryFormat });
+
+		NrdIntegration_SetResource(userPool, nrd::ResourceType::OUT_SPEC_RADIANCE_HITDIST,
+			{ &nriTextures[nriTypes::outIndirectSpecular].entryDescs, nriTextures[nriTypes::outIndirectSpecular].entryFormat });
+			
 	};
 
-	// Better use "true" if resources are not changing between frames (i.e. are not suballocated from a heap)
-	bool enableDescriptorCaching = true;
-
-	NRD.Denoise(0, *nriCommandBuffer, commonSettings, userPool, enableDescriptorCaching);
+	NRD.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, false);
 }
-

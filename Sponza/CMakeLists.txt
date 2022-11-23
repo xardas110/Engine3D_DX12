@@ -3,6 +3,8 @@ cmake_minimum_required( VERSION 3.20.0 ) # Latest version of CMake when this fil
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DEBUG:FULL")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DEBUG:FULL")
 
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+
 set( HEADER_FILES
     inc/Sponza.h
  "SponzaExe.h")
@@ -46,11 +48,11 @@ target_link_libraries( SponzaBin
 )
 
 # Set debug database to enable the "Edit and Continue" feature.
-#target_compile_options( Sponza 
-#    PRIVATE $<$<CONFIG:Debug>:/ZI>
-#)
+target_compile_options( SponzaBin 
+    PRIVATE $<$<CONFIG:Debug>:/ZI>
+)
 
-#target_link_options(Engine PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/DEBUG:NONE>)
+target_link_options(EngineBin PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/DEBUG:FULL>)
 
 # Set Local Debugger Settings (Command Arguments and Environment Variables)
 set( COMMAND_ARGUMENTS "-wd \"${CMAKE_SOURCE_DIR}\"" )

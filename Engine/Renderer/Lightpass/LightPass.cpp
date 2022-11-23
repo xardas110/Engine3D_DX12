@@ -35,6 +35,14 @@ void LightPass::CreateRenderTarget(int width, int height)
     indirectSpecularDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     indirectSpecularDesc.MipLevels = 1;
 
+    auto outIndirectDiffuseDesc = CD3DX12_RESOURCE_DESC::Tex2D(indirectDiffuseFormat, width, height);
+    outIndirectDiffuseDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    outIndirectDiffuseDesc.MipLevels = 1;
+
+    auto outIndirectSpecularDesc = CD3DX12_RESOURCE_DESC::Tex2D(indirectSpecularFormat, width, height);
+    outIndirectSpecularDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    outIndirectSpecularDesc.MipLevels = 1;
+  
     auto normalRoughnessDesc = CD3DX12_RESOURCE_DESC::Tex2D(normalRoughnessFormat, width, height);
     normalRoughnessDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     normalRoughnessDesc.MipLevels = 1;
@@ -101,11 +109,11 @@ void LightPass::CreateRenderTarget(int width, int height)
         TextureUsage::RenderTarget,
         L"LightPass IndirectSpecular");
 
-    denoisedIndirectDiffuse = Texture(indirectDiffuseDesc, &indirectDiffuseClear,
+    denoisedIndirectDiffuse = Texture(outIndirectDiffuseDesc, nullptr,
         TextureUsage::RenderTarget,
         L"LightPass Denoised IndirectDiffuse");
 
-    denoisedIndirectSpecular = Texture(indirectSpecularDesc, &specularClear,
+    denoisedIndirectSpecular = Texture(outIndirectSpecularDesc, nullptr,
         TextureUsage::RenderTarget,
         L"LightPass Denoised IndirectSpecular");
 
@@ -132,8 +140,8 @@ void LightPass::CreateRenderTarget(int width, int height)
     renderTarget.AttachTexture(AttachmentPoint::Color4, normalRoughness);
     renderTarget.AttachTexture(AttachmentPoint::Color5, linearDepth);
 
-    renderTarget.AttachTexture(AttachmentPoint::Color6, denoisedIndirectDiffuse);
-    renderTarget.AttachTexture(AttachmentPoint::Color7, denoisedIndirectSpecular);
+   // renderTarget.AttachTexture(AttachmentPoint::Color6, denoisedIndirectDiffuse);
+   // renderTarget.AttachTexture(AttachmentPoint::Color7, denoisedIndirectSpecular);
 }
 
 void LightPass::CreatePipeline()
@@ -248,8 +256,8 @@ void LightPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color3), clearColor);
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color4), clearColor);
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color5), clearColor);
-    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color6), clearColor);
-    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color7), clearColor);
+    //commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color6), clearColor);
+    //commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color7), clearColor);
 }
 
 void LightPass::OnResize(int width, int height)
@@ -300,4 +308,26 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateUAVViews()
     device->CreateUnorderedAccessView(rwAccumulation.GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(3));
 
     return m_SRVHeap.GetHandleAtStart();
+}
+
+const Texture& LightPass::GetTexture(nriTypes::Type type)
+{
+    switch (type)
+    {
+    case nriTypes::inNormalRoughness:
+        return renderTarget.GetTexture(AttachmentPoint::Color4);
+    case nriTypes::inViewZ:
+        return renderTarget.GetTexture(AttachmentPoint::Color5);
+    case nriTypes::inIndirectDiffuse:
+        return renderTarget.GetTexture(AttachmentPoint::Color1);
+    case nriTypes::inIndirectSpecular:
+        return renderTarget.GetTexture(AttachmentPoint::Color2);
+    case nriTypes::outIndirectDiffuse:
+        return denoisedIndirectDiffuse;
+    case nriTypes::outIndirectSpecular:
+        return denoisedIndirectSpecular;
+    default:
+        assert(false && "no specified texture");
+        break;
+    }
 }
