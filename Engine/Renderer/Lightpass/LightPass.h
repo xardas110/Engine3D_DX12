@@ -23,11 +23,26 @@ namespace LightPassParam
 	};
 }
 
+namespace nriTypes
+{
+	enum Type
+	{
+		inNormalRoughness,
+		inViewZ,
+		inIndirectDiffuse,
+		inIndirectSpecular,
+		outIndirectDiffuse,
+		outIndirectSpecular,
+		size
+	};
+}
+
 struct LightPass
 {
 private:
 	friend class DeferredRenderer;
 	friend class Window;
+	friend class NvidiaDenoiser;
 
 	LightPass(const int& width, const int& height);
 	void CreateRenderTarget(int width, int height);
@@ -52,6 +67,8 @@ private:
 
 	Texture denoisedIndirectDiffuse;
 	Texture denoisedIndirectSpecular;
+	
+	const Texture& GetTexture(nriTypes::Type type);
 
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipeline;
 };

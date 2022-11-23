@@ -7,7 +7,7 @@
 
 DescriptorAllocation::DescriptorAllocation()
     : m_Descriptor{ 0 }
-    , m_NumHandles( 0 )
+    , m_NumHandles(0)
     , m_DescriptorSize( 0 )
     , m_Page( nullptr )
 {}
