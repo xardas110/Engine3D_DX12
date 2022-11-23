@@ -49,24 +49,24 @@ void LightPass::CreateRenderTarget(int width, int height)
 
     D3D12_CLEAR_VALUE directDiffuseClear;
     directDiffuseClear.Format = directDiffuseFormat;
-    directDiffuseClear.Color[0] = 1.0f;
-    directDiffuseClear.Color[1] = 1.0f;
-    directDiffuseClear.Color[2] = 1.0f;
-    directDiffuseClear.Color[3] = 1.0f;
+    directDiffuseClear.Color[0] = 0.0f;
+    directDiffuseClear.Color[1] = 0.0f;
+    directDiffuseClear.Color[2] = 0.0f;
+    directDiffuseClear.Color[3] = 0.0f;
 
     D3D12_CLEAR_VALUE indirectDiffuseClear;
     indirectDiffuseClear.Format = indirectDiffuseFormat;
-    indirectDiffuseClear.Color[0] = 1.0f;
-    indirectDiffuseClear.Color[1] = 1.0f;
-    indirectDiffuseClear.Color[2] = 1.0f;
-    indirectDiffuseClear.Color[3] = 1.0f;
+    indirectDiffuseClear.Color[0] = 0.0f;
+    indirectDiffuseClear.Color[1] = 0.0f;
+    indirectDiffuseClear.Color[2] = 0.0f;
+    indirectDiffuseClear.Color[3] = 0.0f;
 
     D3D12_CLEAR_VALUE specularClear;
     specularClear.Format = indirectSpecularFormat;
-    specularClear.Color[0] = 1.0f;
-    specularClear.Color[1] = 1.0f;
-    specularClear.Color[2] = 1.0f;
-    specularClear.Color[3] = 1.0f;
+    specularClear.Color[0] = 0.0f;
+    specularClear.Color[1] = 0.0f;
+    specularClear.Color[2] = 0.0f;
+    specularClear.Color[3] = 0.0f;
 
     D3D12_CLEAR_VALUE normalRoughnessClear;
     normalRoughnessClear.Format = normalRoughnessFormat;
@@ -101,6 +101,14 @@ void LightPass::CreateRenderTarget(int width, int height)
         TextureUsage::RenderTarget,
         L"LightPass IndirectSpecular");
 
+    denoisedIndirectDiffuse = Texture(indirectDiffuseDesc, &indirectDiffuseClear,
+        TextureUsage::RenderTarget,
+        L"LightPass Denoised IndirectDiffuse");
+
+    denoisedIndirectSpecular = Texture(indirectSpecularDesc, &specularClear,
+        TextureUsage::RenderTarget,
+        L"LightPass Denoised IndirectSpecular");
+
     rwAccumulation = Texture(rwAccumDesc, nullptr,
         TextureUsage::RenderTarget,
         L"LightPass AccumBuffer");
@@ -123,6 +131,9 @@ void LightPass::CreateRenderTarget(int width, int height)
     renderTarget.AttachTexture(AttachmentPoint::Color3, rtDebug);
     renderTarget.AttachTexture(AttachmentPoint::Color4, normalRoughness);
     renderTarget.AttachTexture(AttachmentPoint::Color5, linearDepth);
+
+    renderTarget.AttachTexture(AttachmentPoint::Color6, denoisedIndirectDiffuse);
+    renderTarget.AttachTexture(AttachmentPoint::Color7, denoisedIndirectSpecular);
 }
 
 void LightPass::CreatePipeline()
@@ -237,6 +248,8 @@ void LightPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color3), clearColor);
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color4), clearColor);
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color5), clearColor);
+    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color6), clearColor);
+    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color7), clearColor);
 }
 
 void LightPass::OnResize(int width, int height)
