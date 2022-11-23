@@ -49,7 +49,7 @@ bool SponzaExe::LoadContent()
 
     MaterialInfo matInfo;
     matInfo.albedo = spaceAlbedo.GetTextureID();
-    //matInfo.normal = spaceNormal.GetTextureID();
+    matInfo.normal = spaceNormal.GetTextureID();
     matInfo.metallic = spaceMetallic.GetTextureID();
     matInfo.roughness = spaceRoughness.GetTextureID();
     matInfo.ao = spaceAO.GetTextureID();

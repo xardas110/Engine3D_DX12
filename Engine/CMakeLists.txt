@@ -2,6 +2,7 @@ cmake_minimum_required( VERSION 3.23.2 ) # Latest version of CMake when this fil
 
 add_compile_definitions(DEBUG_CMD)
 add_compile_definitions(ImTextureID=ImU64)
+add_compile_definitions(NRD_COMPILER_DXC)
 
 set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(Libs/assimp)
@@ -179,6 +180,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Libs/assimp/include
     PUBLIC Libs/RayTracingDenoiser/include
     PUBLIC Libs/RayTracingDenoiser/Integration
+    PUBLIC Libs/RayTracingDenoiser/Shaders/Include
     PUBLIC Libs/NRI/include
     PUBLIC core
     PUBLIC Editor

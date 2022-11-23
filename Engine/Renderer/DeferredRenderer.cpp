@@ -120,6 +120,8 @@ void DeferredRenderer::Render(Window& window)
     cameraCB.viewProj = cameraCB.view * cameraCB.proj;
     cameraCB.invViewProj = XMMatrixInverse(nullptr, cameraCB.viewProj);
     cameraCB.resolution = { (float)m_Width, (float)m_Height };
+    cameraCB.zNear = camera->GetNear();
+    cameraCB.zFar = camera->GetFar();
 
     RaytracingDataCB rtData;
     rtData.frameNumber = Application::GetFrameCount();
@@ -152,13 +154,9 @@ void DeferredRenderer::Render(Window& window)
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
     {// BUILD DXR STRUCTURE
-        PIXBeginEvent(dxrCommandList->GetGraphicsCommandList().Get(), 0, L"Building DXR structure");
-
-        
-        m_Raytracer->BuildAccelerationStructure(*dxrCommandList, meshInstances, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);
-        
+        PIXBeginEvent(dxrCommandList->GetGraphicsCommandList().Get(), 0, L"Building DXR structure");    
+        m_Raytracer->BuildAccelerationStructure(*dxrCommandList, meshInstances, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);      
         PIXEndEvent(dxrCommandList->GetGraphicsCommandList().Get());       
-
         {//Compute execute
             PIXBeginEvent(computeQueue->GetD3D12CommandQueue().Get(), 0, L"ComputeQue DXR execute");
             //EXECUTING RTX STRUCTURE BUILDING
@@ -283,16 +281,8 @@ void DeferredRenderer::Render(Window& window)
 
         static int accumFrame{ 0 };
 
-        ImGui::Begin("AccumBuffer");
-        
         rtData.bResetDuty = false;
 
-        if (ImGui::Button("Reset AccumBuffer"))
-        {
-            rtData.bResetDuty = true;
-            accumFrame = 0;
-        }
-        
         if (game->bCamMoved)
         {
             game->bCamMoved = false;
@@ -301,7 +291,6 @@ void DeferredRenderer::Render(Window& window)
         }
 
         accumFrame++;
-        ImGui::End();
    
         rtData.accumulatedFrameNumber = accumFrame;
 
@@ -363,7 +352,7 @@ void DeferredRenderer::Render(Window& window)
         const char* listbox_items[] =
         { "FinalColor", "GBufferAlbedo", "GBufferNormal",
             "GBufferPBR", "GBufferEmissive", "DirectDiffuse",
-            "IndirectDiffuse", "IndirectSpecular" };
+            "IndirectDiffuse", "IndirectSpecular", "RTDebug"};
 
         const Texture* texArray[] =
         {
@@ -375,6 +364,7 @@ void DeferredRenderer::Render(Window& window)
             &m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color0),
             &m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color1),
             &m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color2),
+            &m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color3),
         };
         ImGui::Begin("Select render buffer");
         static int listbox_item_current = 0;

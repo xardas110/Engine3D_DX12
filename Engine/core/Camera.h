@@ -73,6 +73,16 @@ public:
      */
     float get_FoV() const;
 
+    float GetNear() const
+    {
+        return m_zNear;
+    }
+
+    float GetFar() const
+    {
+        return m_zFar;
+    }
+
     /**
      * Set the camera's position in world-space.
      */
