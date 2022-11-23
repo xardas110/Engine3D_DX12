@@ -158,6 +158,22 @@ float3 EvaluateBRDF(in float3 N, in float3 L, in float3 V, in SurfaceMaterial ma
     return (float3(1.0f, 1.0f, 1.0f) - data.F) * diffuse + specular;
 }
 
+float3 EvaluateDiffuseBRDF(in BRDFData data)
+{
+    if (data.bVbackFacing || data.bLbackFacing)
+        return float3(0.0f, 0.0f, 0.0f);
+    
+    return (float3(1.0f, 1.0f, 1.0f) - data.F) * EvaluateLambertian(data);
+}
+
+float3 EvaluateSpecularBRDF(in BRDFData data)
+{
+    if (data.bVbackFacing || data.bLbackFacing)
+        return float3(0.0f, 0.0f, 0.0f);
+    
+    return EvaluateMicrofacet(data);
+}
+
 // Source: "Hash Functions for GPU Rendering" by Jarzynski & Olano
 uint4 pcg4d(uint4 v)
 {

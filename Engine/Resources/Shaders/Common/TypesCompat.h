@@ -147,7 +147,8 @@ struct CameraCB
     XMFLOAT3 pos;
     float pad;
     XMFLOAT2 resolution; //native res
-    XMINT2 pad1;
+    float zNear;
+    float zFar;
 };
 
 struct RaytracingDataCB

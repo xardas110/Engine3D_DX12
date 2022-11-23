@@ -106,6 +106,11 @@ void NvidiaDenoiser::Init(int width, int height, const Texture& diffuseSpecular)
 	entryDesc.nextLayout = nri::TextureLayout::SHADER_RESOURCE;
 	
 	nrd::CommonSettings commonSettings = {};
+	commonSettings.motionVectorScale[0] = {0};
+	commonSettings.motionVectorScale[1] = { 0 };
+	commonSettings.motionVectorScale[2] = { 0 };
+	commonSettings.isMotionVectorInWorldSpace = true;
+	commonSettings.denoisingRange = 50000.f;
 
 	nrd::ReblurSettings settings = {};
 	NRD.SetMethodSettings(nrd::Method::REBLUR_DIFFUSE_SPECULAR, &settings);

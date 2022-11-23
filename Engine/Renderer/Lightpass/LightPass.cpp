@@ -15,10 +15,12 @@ LightPass::LightPass(const int& width, const int& height)
 void LightPass::CreateRenderTarget(int width, int height)
 {
     // Create an HDR intermediate render target.
-    DXGI_FORMAT directDiffuseFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-    DXGI_FORMAT indirectDiffuseFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-    DXGI_FORMAT indirectSpecularFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+    DXGI_FORMAT directDiffuseFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    DXGI_FORMAT indirectDiffuseFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    DXGI_FORMAT indirectSpecularFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
     DXGI_FORMAT rwAccumFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
+    DXGI_FORMAT normalRoughnessFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
+    DXGI_FORMAT linearDepthFormat = DXGI_FORMAT_R32_FLOAT;
 
     // Create an off-screen render target with a single color buffer and a depth buffer.
     auto directDiffuseDesc = CD3DX12_RESOURCE_DESC::Tex2D(directDiffuseFormat, width, height);
@@ -32,6 +34,14 @@ void LightPass::CreateRenderTarget(int width, int height)
     auto indirectSpecularDesc = CD3DX12_RESOURCE_DESC::Tex2D(indirectSpecularFormat, width, height);
     indirectSpecularDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     indirectSpecularDesc.MipLevels = 1;
+
+    auto normalRoughnessDesc = CD3DX12_RESOURCE_DESC::Tex2D(normalRoughnessFormat, width, height);
+    normalRoughnessDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    normalRoughnessDesc.MipLevels = 1;
+
+    auto linearDepthDesc = CD3DX12_RESOURCE_DESC::Tex2D(linearDepthFormat, width, height);
+    linearDepthDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    linearDepthDesc.MipLevels = 1;
 
     auto rwAccumDesc = CD3DX12_RESOURCE_DESC::Tex2D(rwAccumFormat, width, height);
     rwAccumDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
@@ -58,6 +68,20 @@ void LightPass::CreateRenderTarget(int width, int height)
     specularClear.Color[2] = 1.0f;
     specularClear.Color[3] = 1.0f;
 
+    D3D12_CLEAR_VALUE normalRoughnessClear;
+    normalRoughnessClear.Format = normalRoughnessFormat;
+    normalRoughnessClear.Color[0] = 1.0f;
+    normalRoughnessClear.Color[1] = 1.0f;
+    normalRoughnessClear.Color[2] = 1.0f;
+    normalRoughnessClear.Color[3] = 1.0f;
+
+    D3D12_CLEAR_VALUE linearDepthClear;
+    linearDepthClear.Format = linearDepthFormat;
+    linearDepthClear.Color[0] = 1.0f;
+    linearDepthClear.Color[1] = 1.0f;
+    linearDepthClear.Color[2] = 1.0f;
+    linearDepthClear.Color[3] = 1.0f;
+
     D3D12_CLEAR_VALUE rwAccumClear;
     rwAccumClear.Format = rwAccumFormat;
     rwAccumClear.Color[0] = 0.0f;
@@ -81,9 +105,24 @@ void LightPass::CreateRenderTarget(int width, int height)
         TextureUsage::RenderTarget,
         L"LightPass AccumBuffer");
 
+    Texture rtDebug = Texture(directDiffuseDesc, &directDiffuseClear,
+        TextureUsage::RenderTarget,
+        L"LightPass Raytracing debug");
+
+    Texture normalRoughness = Texture(normalRoughnessDesc, &normalRoughnessClear,
+        TextureUsage::RenderTarget,
+        L"LightPass NormalRoughness");
+
+    Texture linearDepth = Texture(linearDepthDesc, &linearDepthClear,
+        TextureUsage::RenderTarget,
+        L"LightPass LinearDepth");
+
     renderTarget.AttachTexture(AttachmentPoint::Color0, directDiffuse);
     renderTarget.AttachTexture(AttachmentPoint::Color1, indirectDiffuse);
     renderTarget.AttachTexture(AttachmentPoint::Color2, indirectSpecular);
+    renderTarget.AttachTexture(AttachmentPoint::Color3, rtDebug);
+    renderTarget.AttachTexture(AttachmentPoint::Color4, normalRoughness);
+    renderTarget.AttachTexture(AttachmentPoint::Color5, linearDepth);
 }
 
 void LightPass::CreatePipeline()
@@ -195,6 +234,9 @@ void LightPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color0), clearColor);
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color1), clearColor);
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color2), clearColor);
+    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color3), clearColor);
+    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color4), clearColor);
+    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color5), clearColor);
 }
 
 void LightPass::OnResize(int width, int height)
@@ -218,6 +260,19 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateSRVViews()
     device->CreateShaderResourceView(
         renderTarget.GetTexture(AttachmentPoint::Color2).GetD3D12Resource().Get(), nullptr,
         m_SRVHeap.SetHandle(2));
+
+    device->CreateShaderResourceView(
+        renderTarget.GetTexture(AttachmentPoint::Color3).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(4));
+
+    device->CreateShaderResourceView(
+        renderTarget.GetTexture(AttachmentPoint::Color4).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(5));
+
+    device->CreateShaderResourceView(
+        renderTarget.GetTexture(AttachmentPoint::Color5).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(6));
+
 
     return m_SRVHeap.GetHandleAtStart();
 }
