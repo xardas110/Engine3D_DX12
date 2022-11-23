@@ -78,12 +78,18 @@ NvidiaDenoiser::NvidiaDenoiser()
 	nriResult = nri::GetInterface(*m_NRIDevice,
 		NRI_INTERFACE(nri::CoreInterface), (nri::CoreInterface*)&NRI);
 
+	NRDERRORCHECK(nriResult);
+
 	nriResult = nri::GetInterface(*m_NRIDevice,
 		NRI_INTERFACE(nri::HelperInterface), (nri::HelperInterface*)&NRI);
+
+	NRDERRORCHECK(nriResult);
 
 	// Get appropriate "wrapper" extension (XXX - can be D3D11, D3D12 or VULKAN)
 	nriResult = nri::GetInterface(*m_NRIDevice,
 		NRI_INTERFACE(nri::WrapperD3D12Interface), (nri::WrapperD3D12Interface*)&NRI);
+
+	NRDERRORCHECK(nriResult);
 
 	ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator)));
 	ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)));
@@ -98,9 +104,6 @@ NvidiaDenoiser::~NvidiaDenoiser()
 
 void NvidiaDenoiser::Init(int width, int height, LightPass& lightPass)
 {
-	this->width = width;
-	this->height = height;
-
 	const nrd::MethodDesc methodDescs[] =
 	{
 		// Put neeeded methods here, like:
@@ -116,10 +119,13 @@ void NvidiaDenoiser::Init(int width, int height, LightPass& lightPass)
 	if (!result)
 	{
 		throw std::exception("Failed to create NRI interface");
-	}	
+	}
+}
 
+void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, LightPass& lightPass, int currentBackbufferIndex, int width, int height)
+{
 	nri::CommandBufferD3D12Desc commandBufferDesc = {};
-	commandBufferDesc.d3d12CommandList = (ID3D12GraphicsCommandList*)m_CommandList.Get();
+	commandBufferDesc.d3d12CommandList = (ID3D12GraphicsCommandList*)commandList.GetGraphicsCommandList().Get();
 	commandBufferDesc.d3d12CommandAllocator = m_CommandAllocator.Get();
 
 	NRI.CreateCommandBufferD3D12(*m_NRIDevice, commandBufferDesc, nriCommandBuffer);
@@ -131,7 +137,7 @@ void NvidiaDenoiser::Init(int width, int height, LightPass& lightPass)
 
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inNormalRoughness].entryDescs;
 
-		nriTextures[nriTypes::inNormalRoughness].entryFormat = 
+		nriTextures[nriTypes::inNormalRoughness].entryFormat =
 			nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R10G10B10A2_UNORM);
 
 		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, normalRoughDesc, (nri::Texture*&)entryDesc.texture));
@@ -217,15 +223,15 @@ void NvidiaDenoiser::Init(int width, int height, LightPass& lightPass)
 		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE_STORAGE;
 		entryDesc.nextLayout = nri::TextureLayout::GENERAL;
 	};
-}
 
 
-void NvidiaDenoiser::RenderFrame(const CameraCB &cam, LightPass& lightPass, int currentBackbufferIndex)
-{
 	commonSettings = {};
 
+	memcpy(commonSettings.worldToViewMatrix, &cam.view, sizeof(cam.view));
 	memcpy(commonSettings.viewToClipMatrix, &cam.proj, sizeof(cam.proj));
-	memcpy(commonSettings.worldToViewMatrix, &cam.view, sizeof(cam.proj));
+	
+	memcpy(commonSettings.worldToViewMatrixPrev, &cam.prevView, sizeof(cam.view));
+	memcpy(commonSettings.viewToClipMatrixPrev, &cam.prevProj, sizeof(cam.prevProj));
 
 	commonSettings.resolutionScale[0] = 1;
 	commonSettings.resolutionScale[1] = 1;
@@ -233,11 +239,6 @@ void NvidiaDenoiser::RenderFrame(const CameraCB &cam, LightPass& lightPass, int 
 	commonSettings.motionVectorScale[1] = { 0 };
 	commonSettings.motionVectorScale[2] = { 0 };
 	commonSettings.isMotionVectorInWorldSpace = true;
-	commonSettings.denoisingRange = 50000.f;
-	commonSettings.isHistoryConfidenceInputsAvailable = false;
-	commonSettings.isDisocclusionThresholdMixAvailable = false;
-	//commonSettings.accumulationMode = nrd::AccumulationMode::CLEAR_AND_RESTART;
-	//commonSettings.enableValidation = true;
 
 	nrd::ReblurSettings settings = {};
 	NRD.SetMethodSettings(nrd::Method::REBLUR_DIFFUSE_SPECULAR, &settings);
@@ -246,7 +247,7 @@ void NvidiaDenoiser::RenderFrame(const CameraCB &cam, LightPass& lightPass, int 
 	{
 		// Fill only required "in-use" inputs and outputs in appropriate slots using entryDescs & entryFormat,
 		// applying remapping if necessary. Unused slots will be {nullptr, nri::Format::UNKNOWN}
-		
+
 		NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_MV,
 			{ &nriTextures[nriTypes::inMV].entryDescs,
 			nriTextures[nriTypes::inMV].entryFormat });

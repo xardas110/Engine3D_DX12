@@ -237,7 +237,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
     OUT.IndirectDiffuse = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectDiffuse, firstDiffuseBounceDistance);
     OUT.IndirectSpecular = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectSpecular, firstSpecularBounceDistance);
-        
+    OUT.DirectDiffuse = float4(directRadiance, 1.f);
+    /*    
     float3 accumulatedColor = g_accumulationBuffer[3][pixelCoords].rgb + finalGather;
     g_accumulationBuffer[3][pixelCoords] = float4(accumulatedColor, 1.0f);
         
@@ -248,6 +249,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         g_accumulationBuffer[3][pixelCoords] = float4(finalGather, 1.f);
         OUT.DirectDiffuse = float4(finalGather, 1.f);
     }
+       */ 
   /*        
     if (DEBUG_RAYTRACING_FINALCOLOR == g_RaytracingData.debugSettings)
     {           

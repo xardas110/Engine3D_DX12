@@ -140,6 +140,8 @@ struct CameraCB
 {
     XMMATRIX view;
     XMMATRIX proj;
+    XMMATRIX prevView;
+    XMMATRIX prevProj;
     XMMATRIX invView;
     XMMATRIX invProj;
     XMMATRIX viewProj;

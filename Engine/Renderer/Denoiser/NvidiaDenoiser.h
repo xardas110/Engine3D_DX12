@@ -2,6 +2,7 @@
 #include <Texture.h>
 #include <LightPass/LightPass.h>
 #include <TypesCompat.h>
+#include <CommandList.h>
 
 class NvidiaDenoiser
 {
@@ -14,11 +15,8 @@ class NvidiaDenoiser
 
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> m_Adapter;	
 
-	void RenderFrame(const CameraCB& cam, LightPass& lightPass, int currentBackbufferIndex);
+	void RenderFrame(CommandList& commandList, const CameraCB& cam, LightPass& lightPass, int currentBackbufferIndex, int width, int height);
 	
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 	Microsoft::WRL::ComPtr<ID3D12CommandList> m_CommandList;
-
-	int width = 0;
-	int height = 0;
 };

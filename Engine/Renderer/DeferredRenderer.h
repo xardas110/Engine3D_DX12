@@ -52,5 +52,7 @@ class DeferredRenderer
 	CompositionPass m_CompositionPass;
 	DebugTexturePass m_DebugTexturePass;	
 	NvidiaDenoiser m_NvidiaDenoiser;
+
+	CameraCB cameraCB;
 };
 

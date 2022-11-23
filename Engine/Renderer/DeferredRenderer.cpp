@@ -111,8 +111,7 @@ void DeferredRenderer::Render(Window& window)
     objectCB.proj = camera->get_ProjectionMatrix();
     objectCB.invView = XMMatrixInverse(nullptr, objectCB.view);
     objectCB.invProj = XMMatrixInverse(nullptr, objectCB.proj);
-    
-    CameraCB cameraCB;
+      
     cameraCB.view = camera->get_ViewMatrix();
     cameraCB.proj = camera->get_ProjectionMatrix();
     cameraCB.invView = XMMatrixInverse(nullptr, cameraCB.view);
@@ -301,7 +300,33 @@ void DeferredRenderer::Render(Window& window)
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
     {//Denoising 
-        m_NvidiaDenoiser.RenderFrame(cameraCB, m_LightPass, window.m_CurrentBackBufferIndex);
+        auto lightMapView = m_LightPass.CreateSRVViews();
+        auto uavViews = m_LightPass.CreateUAVViews();
+        auto lightMapHeap = m_LightPass.m_SRVHeap;
+
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, lightMapHeap.heap.Get());
+
+        commandList->SetGraphicsRootSignature(m_LightPass.rootSignature);
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color4).GetD3D12Resource().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET,
+           D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color5).GetD3D12Resource().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color1).GetD3D12Resource().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color2).GetD3D12Resource().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_LightPass.denoisedIndirectDiffuse.GetD3D12Resource().Get(), D3D12_RESOURCE_STATE_PRESENT,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_LightPass.denoisedIndirectSpecular.GetD3D12Resource().Get(), D3D12_RESOURCE_STATE_PRESENT,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+
+        m_NvidiaDenoiser.RenderFrame(*commandList, cameraCB, m_LightPass, window.m_CurrentBackBufferIndex, m_Width, m_Height);
     }
     {//Composition branch
         PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"CompositionPass");
@@ -330,6 +355,7 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(CompositionPassParam::GBufferHeap, gBufferHeap);
 
+        auto lightmapCView = m_LightPass.CreateUAVViews();
         auto lightMapView = m_LightPass.CreateSRVViews();
         auto lightMapHeap = m_LightPass.m_SRVHeap;
 
@@ -387,6 +413,9 @@ void DeferredRenderer::Render(Window& window)
         graphicsQueue->ExecuteCommandLists(commandLists); 
         PIXEndEvent(graphicsQueue->GetD3D12CommandQueue().Get());
     }  
+
+    cameraCB.prevView = cameraCB.view;
+    cameraCB.prevProj = cameraCB.proj;  
 }
 
 void DeferredRenderer::OnResize(ResizeEventArgs& e)
