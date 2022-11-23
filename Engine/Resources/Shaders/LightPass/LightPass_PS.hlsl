@@ -62,6 +62,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         OUT.DirectDiffuse = float4(g_SkyColor, 1.f);
         OUT.IndirectDiffuse = float4(g_SkyColor, 0.f);
         OUT.IndirectSpecular = float4(g_SkyColor, 0.f);
+        OUT.linearDepth = 10000000.f;
+        OUT.normalRoughness = float4(0.f, 1.f, 0.f, 0.f);
         return OUT;
     }
         
@@ -91,7 +93,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     geometryNormal = fi.normal;
             
     OUT.normalRoughness = NRD_FrontEnd_PackNormalAndRoughness(fi.normal, fi.roughness);
-    OUT.linearDepth = g_Camera.zNear + (g_Camera.zFar - g_Camera.zNear) * fi.depth;
+    OUT.linearDepth = (2.f * g_Camera.zNear * g_Camera.zFar) / (g_Camera.zFar + g_Camera.zNear - fi.depth * (g_Camera.zFar - g_Camera.zNear));
               
     float3 V = -ray.Direction;
     float3 L = -g_DirectionalLight.direction.rgb;    
@@ -115,8 +117,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 //Direct Lighting END-------------
   
 //Indirect Lighting BEGIN----------        
-    float firstDiffuseBounceDistance = 0.f;
-    float firstSpecularBounceDistance = 0.f;
+    float firstDiffuseBounceDistance = 10000.f;
+    float firstSpecularBounceDistance = 10000.f;
     for (int i = 0; i < g_RaytracingData.numBounces; i++)
     {                            
         int brdfType;
@@ -155,8 +157,6 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
         if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {                
-            OUT.linearDepth = 10000000.f;
-                
             if (brdfType == BRDF_TYPE_DIFFUSE)               
                 indirectDiffuse += troughput * g_SkyColor;              
             else              
@@ -164,22 +164,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
              
             break;
         }
-            
-        if (brdfType == BRDF_TYPE_DIFFUSE)
-        {
-            if (i == 0)
-            {
-                firstDiffuseBounceDistance = query.RayTMin();
-            }
-        }               
-        else
-        {
-            if (i == 0)
-            {
-                firstSpecularBounceDistance = query.RayTMin();
-            }
-        }
-                      
+                     
         HitAttributes hit;
         hit.bFrontFaced = query.CommittedTriangleFrontFace();
         int instanceIndex = query.CommittedInstanceID();
@@ -194,11 +179,24 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
         hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
         hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
-
         hitSurface.position = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
-
         geometryNormal = hitSurface.normal;
                 
+        if (brdfType == BRDF_TYPE_DIFFUSE)
+        {
+            if (i == 0)
+            {
+                firstDiffuseBounceDistance = query.CommittedRayT();
+            }
+        }
+        else
+        {
+            if (i == 0)
+            {
+                firstSpecularBounceDistance = query.CommittedRayT();
+            }
+        }
+                        
         bool bMatHasNormal;
         SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
                
@@ -243,15 +241,14 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float3 accumulatedColor = g_accumulationBuffer[3][pixelCoords].rgb + finalGather;
     g_accumulationBuffer[3][pixelCoords] = float4(accumulatedColor, 1.0f);
         
+    OUT.DirectDiffuse = float4(accumulatedColor / g_RaytracingData.accumulatedFrameNumber, 1.f);
+        
     if (g_RaytracingData.bResetDuty == 1)
     {
         g_accumulationBuffer[3][pixelCoords] = float4(finalGather, 1.f);
         OUT.DirectDiffuse = float4(finalGather, 1.f);
-        return OUT;
     }
-        
-    OUT.DirectDiffuse = float4(accumulatedColor / g_RaytracingData.accumulatedFrameNumber, 1.f);      
-  
+  /*        
     if (DEBUG_RAYTRACING_FINALCOLOR == g_RaytracingData.debugSettings)
     {           
         return OUT;
@@ -267,14 +264,14 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     if (query.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
     {
         HitAttributes hit;
-            hit.bFrontFaced = query.CandidateTriangleFrontFace();
+        hit.bFrontFaced = query.CandidateTriangleFrontFace();
         
         int instanceIndex = query.CandidateInstanceID();
-            hit.primitiveIndex = query.CandidatePrimitiveIndex();
-            hit.geometryIndex = query.CandidateGeometryIndex();
+        hit.primitiveIndex = query.CandidatePrimitiveIndex();
+        hit.geometryIndex = query.CandidateGeometryIndex();
         
-            hit.barycentrics = query.CandidateTriangleBarycentrics();
-            hit.objToWorld = query.CandidateObjectToWorld3x4();
+        hit.barycentrics = query.CandidateTriangleBarycentrics();
+        hit.objToWorld = query.CandidateObjectToWorld3x4();
         
         MeshInfo meshInfo = g_GlobalMeshInfo[instanceIndex];
         MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
@@ -330,7 +327,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     {
         color = g_SkyColor;
     }
-    
+   */
+        
     OUT.rtColor = float4(color, 1.f);
     
     return OUT;
