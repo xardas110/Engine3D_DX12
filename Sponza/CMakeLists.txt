@@ -3,8 +3,6 @@ cmake_minimum_required( VERSION 3.20.0 ) # Latest version of CMake when this fil
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DEBUG:FULL")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DEBUG:FULL")
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
-
 set( HEADER_FILES
     inc/Sponza.h
  "SponzaExe.h")

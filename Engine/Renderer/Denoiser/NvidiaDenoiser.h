@@ -13,11 +13,11 @@ class NvidiaDenoiser
 	void Init(int width, int height, LightPass& lightPass);
 
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> m_Adapter;	
-	std::shared_ptr<CommandList> m_CommandList;
 
 	void RenderFrame(const CameraCB& cam, LightPass& lightPass, int currentBackbufferIndex);
 	
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_commandAllocator;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
+	Microsoft::WRL::ComPtr<ID3D12CommandList> m_CommandList;
 
 	int width = 0;
 	int height = 0;
