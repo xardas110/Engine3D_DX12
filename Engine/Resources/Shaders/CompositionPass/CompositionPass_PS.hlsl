@@ -1,6 +1,11 @@
 #define HLSL
 #include "../Common/TypesCompat.h"
 
+#include "..\..\..\Libs\RayTracingDenoiser\Shaders\Include\NRDEncoding.hlsli"
+
+#define NRD_HEADER_ONLY
+#include "..\..\..\Libs\RayTracingDenoiser\Shaders\Include\NRD.hlsli"
+
 RaytracingAccelerationStructure g_Scene                     : register(t0);
 Texture2D                       g_GlobalTextureData[]       : register(t1, space0);
 StructuredBuffer<MeshVertex>    g_GlobalMeshVertexData[]    : register(t1, space1);
@@ -26,15 +31,18 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     PixelShaderOutput OUT;
 
     float4 directDiffuse = g_LightMapHeap[0].Sample(g_NearestRepeatSampler, TexCoord);
-    float4 indirectDiffuse = g_LightMapHeap[1].Sample(g_NearestRepeatSampler, TexCoord);
-    float4 indirectSpecular = g_LightMapHeap[2].Sample(g_NearestRepeatSampler, TexCoord);
-    
+    float4 indirectDiffuse = g_LightMapHeap[7].Sample(g_NearestRepeatSampler, TexCoord);
+    float4 indirectSpecular = g_LightMapHeap[8].Sample(g_NearestRepeatSampler, TexCoord);
+   
+    indirectDiffuse = REBLUR_BackEnd_UnpackRadianceAndNormHitDist(indirectDiffuse);
+    indirectSpecular = REBLUR_BackEnd_UnpackRadianceAndNormHitDist(indirectSpecular);
+         
     float4 albedo = g_GBufferHeap[0].Sample(g_NearestRepeatSampler, TexCoord);
     float4 normal = g_GBufferHeap[1].Sample(g_NearestRepeatSampler, TexCoord);
     float4 pbr = g_GBufferHeap[2].Sample(g_NearestRepeatSampler, TexCoord);
     float4 emissive = g_GBufferHeap[3].Sample(g_NearestRepeatSampler, TexCoord);
     
-    OUT.ColorTexture = directDiffuse;
+    OUT.ColorTexture = float4(directDiffuse.rgb + indirectDiffuse.rgb + indirectSpecular.rgb, 1.f);
 
     return OUT;
 }

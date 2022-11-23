@@ -311,6 +311,9 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateUAVViews()
 
     device->CreateUnorderedAccessView(rwAccumulation.GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(3));
 
+    device->CreateUnorderedAccessView(denoisedIndirectDiffuse.GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(7));
+    device->CreateUnorderedAccessView(denoisedIndirectSpecular.GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(8));
+
     return m_SRVHeap.GetHandleAtStart();
 }
 
