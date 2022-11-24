@@ -12,6 +12,7 @@
 #include <NRDIntegration.h>
 #include <NRDIntegration.hpp>
 #include <NRDSettings.h>
+#include <Helpers.h>
 
 NrdIntegration NRD = NrdIntegration(3);
 
@@ -54,7 +55,6 @@ struct NRITextures
 	nri::TextureTransitionBarrierDesc entryDescs = {};
 	nri::Format entryFormat = {};
 }nriTextures[nriTypes::size];
-
 
 NvidiaDenoiser::NvidiaDenoiser()
 {
@@ -227,27 +227,33 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 
 	commonSettings = {};
 
-	memcpy(commonSettings.worldToViewMatrix, &cam.view, sizeof(cam.view));
+	auto view = cam.view;
+	auto prevView = cam.prevView;
+
+	view.r[3] *= {0.f, 0.f, 0.f, 0.f};
+	prevView.r[3] *= {0.f, 0.f, 0.f, 0.f};
+
+	PrintMatrix(view);
+
+	memcpy(commonSettings.worldToViewMatrix, &view, sizeof(cam.view));
 	memcpy(commonSettings.viewToClipMatrix, &cam.proj, sizeof(cam.proj));
 	
-	memcpy(commonSettings.worldToViewMatrixPrev, &cam.prevView, sizeof(cam.view));
+	memcpy(commonSettings.worldToViewMatrixPrev, &prevView, sizeof(cam.prevView));
 	memcpy(commonSettings.viewToClipMatrixPrev, &cam.prevProj, sizeof(cam.prevProj));
 
-	commonSettings.resolutionScale[0] = 1;
-	commonSettings.resolutionScale[1] = 1;
+	//commonSettings.resolutionScale[0] = 1;
+	//commonSettings.resolutionScale[1] = 1;
 	commonSettings.motionVectorScale[0] = { 0 };
 	commonSettings.motionVectorScale[1] = { 0 };
 	commonSettings.motionVectorScale[2] = { 0 };
 	commonSettings.isMotionVectorInWorldSpace = true;
 
 	nrd::ReblurSettings settings = {};
+
 	NRD.SetMethodSettings(nrd::Method::REBLUR_DIFFUSE_SPECULAR, &settings);
 
 	NrdUserPool userPool = {};
 	{
-		// Fill only required "in-use" inputs and outputs in appropriate slots using entryDescs & entryFormat,
-		// applying remapping if necessary. Unused slots will be {nullptr, nri::Format::UNKNOWN}
-
 		NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_MV,
 			{ &nriTextures[nriTypes::inMV].entryDescs,
 			nriTextures[nriTypes::inMV].entryFormat });
@@ -274,10 +280,9 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 
 
 		NrdIntegration_SetResource(userPool, nrd::ResourceType::OUT_SPEC_RADIANCE_HITDIST,
-			{ &nriTextures[nriTypes::outIndirectSpecular].entryDescs, 
+			{ &nriTextures[nriTypes::outIndirectSpecular].entryDescs,
 			nriTextures[nriTypes::outIndirectSpecular].entryFormat });
-		
-	};
+	}
 
 	NRD.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, true);
 }

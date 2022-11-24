@@ -42,7 +42,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float4 pbr = g_GBufferHeap[2].Sample(g_NearestRepeatSampler, TexCoord);
     float4 emissive = g_GBufferHeap[3].Sample(g_NearestRepeatSampler, TexCoord);
     
-    OUT.ColorTexture = float4(directDiffuse.rgb + indirectDiffuse.rgb + indirectSpecular.rgb, 1.f);
+        OUT.ColorTexture = float4(directDiffuse.rgb + indirectDiffuse.rgb + indirectSpecular.rgb, 1.f);
 
     return OUT;
 }

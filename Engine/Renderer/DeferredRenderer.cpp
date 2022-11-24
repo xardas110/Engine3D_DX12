@@ -104,6 +104,7 @@ void DeferredRenderer::Render(Window& window)
     auto& meshInstance = assetManager->m_MeshManager.instanceData;
     auto& textures = assetManager->m_TextureManager.textureData.textures;
     auto meshInstances = GetMeshInstances(game->registry);
+    prevTrans.resize(meshInstances.size());
     auto* camera = game->GetRenderCamera();
 
     ObjectCB objectCB; //todo move to cam
@@ -203,13 +204,14 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->TransitionBarrier(m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0), D3D12_RESOURCE_STATE_RENDER_TARGET);
 
+        int i = 0;
         for (auto [transform, mesh] : meshInstances)
         {       
             objectCB.model = transform.GetTransform();
             objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
             objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
             objectCB.meshId = mesh.id;
-        
+            objectCB.invWorldToPrevWorld = XMMatrixInverse(nullptr, prevTrans[i++].GetTransform());
             objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
             globalMeshInfo[mesh.id].objRot = transform.rot;
 
@@ -327,6 +329,25 @@ void DeferredRenderer::Render(Window& window)
             D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 
         m_NvidiaDenoiser.RenderFrame(*commandList, cameraCB, m_LightPass, window.m_CurrentBackBufferIndex, m_Width, m_Height);
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color1).GetD3D12Resource().Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color2).GetD3D12Resource().Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color4).GetD3D12Resource().Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color5).GetD3D12Resource().Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_LightPass.denoisedIndirectDiffuse.GetD3D12Resource().Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            D3D12_RESOURCE_STATE_PRESENT));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_LightPass.denoisedIndirectSpecular.GetD3D12Resource().Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            D3D12_RESOURCE_STATE_PRESENT));
+
     }
     {//Composition branch
         PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"CompositionPass");
@@ -381,7 +402,7 @@ void DeferredRenderer::Render(Window& window)
         const char* listbox_items[] =
         { "FinalColor", "GBufferAlbedo", "GBufferNormal",
             "GBufferPBR", "GBufferEmissive", "DirectDiffuse",
-            "IndirectDiffuse", "IndirectSpecular", "RTDebug"};
+            "IndirectDiffuse", "IndirectSpecular", "RTDebug", "DenoisedIndirectDiffuse", "DenoisedIndirectSpecular"};
 
         const Texture* texArray[] =
         {
@@ -394,6 +415,8 @@ void DeferredRenderer::Render(Window& window)
             &m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color1),
             &m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color2),
             &m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color3),
+            &m_LightPass.denoisedIndirectDiffuse,
+            &m_LightPass.denoisedIndirectSpecular,
         };
         ImGui::Begin("Select render buffer");
         static int listbox_item_current = 0;
@@ -413,7 +436,13 @@ void DeferredRenderer::Render(Window& window)
         graphicsQueue->ExecuteCommandLists(commandLists); 
         PIXEndEvent(graphicsQueue->GetD3D12CommandQueue().Get());
     }  
-
+   
+    {//prev transform for motion vector
+        int i = 0;
+        for (auto& [transform, mesh] : meshInstances)
+            prevTrans[i++] = transform;
+    }
+    
     cameraCB.prevView = cameraCB.view;
     cameraCB.prevProj = cameraCB.proj;  
 }
@@ -433,4 +462,5 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     m_LightPass.OnResize(m_Width, m_Height);
     m_CompositionPass.OnResize(m_Width, m_Height);
     m_DebugTexturePass.OnResize(m_Width, m_Height);
+    m_NvidiaDenoiser.Init(m_Width, m_Height, m_LightPass);
 }
