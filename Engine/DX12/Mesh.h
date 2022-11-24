@@ -206,5 +206,5 @@ struct MeshInstanceWrapper
         :trans(trans), instance(instance) {}
         
     Transform& trans; //complete world transform
-    MeshInstance instance;
+    MeshInstance instance;    
 };

@@ -30,7 +30,7 @@ ConstantBuffer<DirectionalLightCB> g_DirectionalLight       : register(b0);
 ConstantBuffer<CameraCB>           g_Camera                 : register(b1);
 ConstantBuffer<RaytracingDataCB>   g_RaytracingData         : register(b2);
 
-RWTexture2D<float4>             g_accumulationBuffer[]        : register(u0);
+RWTexture2D<float4>             g_GlobalUAV[]               : register(u0);
  
 static RayQuery<RAY_FLAG_CULL_NON_OPAQUE|RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES|RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_CULL_BACK_FACING_TRIANGLES> query;
 static uint ray_flags = 0; // Any this ray requires in addition those above.
@@ -52,7 +52,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
     float3 g_SkyColor = float3(0.4f, 0.6f, 0.9f);
     uint2 pixelCoords = g_Camera.resolution * TexCoord;
-    
+
     RngStateType rngState = InitRNG(pixelCoords, g_Camera.resolution, g_RaytracingData.frameNumber);
     
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);
@@ -60,9 +60,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     if (fi.shaderModel < 0.48f || fi.shaderModel > 0.52f)
     {
         OUT.DirectDiffuse = float4(g_SkyColor, 1.f);
-        OUT.IndirectDiffuse = float4(g_SkyColor, 0.f);
-        OUT.IndirectSpecular = float4(g_SkyColor, 0.f);
-        OUT.linearDepth = 10000000.f;
+        OUT.IndirectDiffuse = float4(0.f, 0.f, 0.f, 0.f);
+        OUT.IndirectSpecular = float4(0.f, 0.f, 0.f, 0.f);
+        OUT.linearDepth = 50001.f;
         OUT.normalRoughness = float4(0.f, 1.f, 0.f, 0.f);
         return OUT;
     }
@@ -73,7 +73,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     ray.TMin = 0.1f;
     ray.TMax = 1e10f;
     ray.Origin = fragPos;
-    GetCameraDirectionFromUV(pixelCoords, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, ray.Direction);
+    ray.Direction = normalize(fragPos.rgb - g_Camera.pos.rgb);
 
     float3 color = float3(1.f, 0.f, 0.f);   
     float3 directRadiance = float3(0.f, 0.f, 0.f);
@@ -117,8 +117,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 //Direct Lighting END-------------
   
 //Indirect Lighting BEGIN----------        
-    float firstDiffuseBounceDistance = 10000.f;
-    float firstSpecularBounceDistance = 10000.f;
+    float firstDiffuseBounceDistance = 0.f;
+    float firstSpecularBounceDistance = 0.f;
     for (int i = 0; i < g_RaytracingData.numBounces; i++)
     {                            
         int brdfType;
@@ -157,11 +157,16 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
         if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {                
-            if (brdfType == BRDF_TYPE_DIFFUSE)               
-                indirectDiffuse += troughput * g_SkyColor;              
-            else              
+            if (brdfType == BRDF_TYPE_DIFFUSE)
+            {     
+                firstDiffuseBounceDistance = 10000.f;
+                indirectDiffuse += troughput * g_SkyColor;      
+            }
+            else
+            {              
+                firstSpecularBounceDistance = 10000.f;
                 indirectSpecular += troughput * g_SkyColor;
-             
+            }           
             break;
         }
                      

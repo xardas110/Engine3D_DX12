@@ -117,7 +117,7 @@ void LightPass::CreateRenderTarget(int width, int height)
         TextureUsage::RenderTarget,
         L"LightPass Denoised IndirectSpecular");
 
-    motionVector = Texture(indirectDiffuseDesc, &indirectDiffuseClear,
+    motionVector = Texture(outIndirectDiffuseDesc, nullptr,
         TextureUsage::RenderTarget,
         L"LightPass motionVector");
 
@@ -144,8 +144,6 @@ void LightPass::CreateRenderTarget(int width, int height)
     renderTarget.AttachTexture(AttachmentPoint::Color4, normalRoughness);
     renderTarget.AttachTexture(AttachmentPoint::Color5, linearDepth);
 
-   // renderTarget.AttachTexture(AttachmentPoint::Color6, denoisedIndirectDiffuse);
-   // renderTarget.AttachTexture(AttachmentPoint::Color7, denoisedIndirectSpecular);
 }
 
 void LightPass::CreatePipeline()
@@ -260,14 +258,15 @@ void LightPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color3), clearColor);
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color4), clearColor);
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color5), clearColor);
-    //commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color6), clearColor);
-    //commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color7), clearColor);
 }
 
 void LightPass::OnResize(int width, int height)
 {
     renderTarget.Resize(width, height);
     rwAccumulation.Resize(width, height);
+    denoisedIndirectDiffuse.Resize(width, height);
+    denoisedIndirectSpecular.Resize(width, height);
+    motionVector.Resize(width, height);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateSRVViews()
@@ -310,7 +309,6 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateUAVViews()
     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
 
     device->CreateUnorderedAccessView(rwAccumulation.GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(3));
-
     device->CreateUnorderedAccessView(denoisedIndirectDiffuse.GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(7));
     device->CreateUnorderedAccessView(denoisedIndirectSpecular.GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(8));
 

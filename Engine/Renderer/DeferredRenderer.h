@@ -54,5 +54,7 @@ class DeferredRenderer
 	NvidiaDenoiser m_NvidiaDenoiser;
 
 	CameraCB cameraCB;
+
+	std::vector<Transform> prevTrans;
 };
 

@@ -36,7 +36,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // For HRESULT
 #include <comdef.h> // For _com_error class (used to decode HR result codes).
-
+#include <iostream>
 
 #define ALIGN16 __declspec(align(16))
 
@@ -356,4 +356,17 @@ namespace Math
 inline bool Cmp(const float a, const float b, const float epsilon = 0.0005f)
 {
     return (fabs(a - b) < epsilon);
+}
+
+inline void PrintMatrix(const DirectX::XMMATRIX& mat)
+{ 
+    for (size_t i = 0; i < 4; i++)
+    {
+        for (size_t j = 0; j < 4; j++)
+        {
+            std::cout << mat.r[i].m128_f32[j] << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
 }

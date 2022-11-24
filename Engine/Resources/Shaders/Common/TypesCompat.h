@@ -117,6 +117,7 @@ struct ObjectCB
     UINT pad2 UINT_MAX_NULL;
 
     XMMATRIX transposeInverseModel;
+    XMMATRIX invWorldToPrevWorld;
 };
 
 struct MeshVertex
