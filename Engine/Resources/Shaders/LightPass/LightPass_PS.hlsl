@@ -229,7 +229,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {
             BRDFData data = PrepareBRDFData(hitSurface.normal, L, V, hitSurfaceMaterial);              
-            indirectDiffuse += troughput * EvaluateDiffuseBRDF(data);
+                indirectDiffuse += troughput * (EvaluateDiffuseBRDF(data) / hitSurfaceMaterial.albedo);
             indirectSpecular += troughput * EvaluateSpecularBRDF(data);
         }
                         

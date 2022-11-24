@@ -13,6 +13,7 @@
 #include <NRDIntegration.hpp>
 #include <NRDSettings.h>
 #include <Helpers.h>
+#include <imgui.h>
 
 NrdIntegration NRD = NrdIntegration(3);
 
@@ -97,9 +98,14 @@ NvidiaDenoiser::NvidiaDenoiser()
 
 NvidiaDenoiser::~NvidiaDenoiser()
 {
+	//Clean this sht somehow
 
-	// Also NRD needs to be recreated on "resize"
-	//NRD.Destroy();
+	for (size_t i = 0; i < nriTypes::size; i++)
+	{
+		NRI.DestroyTexture((nri::Texture&)nriTextures[i].entryDescs.texture);
+	}
+	NRI.DestroyCommandBuffer(*nriCommandBuffer);
+	NRD.Destroy();
 }
 
 void NvidiaDenoiser::Init(int width, int height, LightPass& lightPass)
@@ -230,10 +236,28 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	auto view = cam.view;
 	auto prevView = cam.prevView;
 
-	view.r[3] *= {0.f, 0.f, 0.f, 0.f};
-	prevView.r[3] *= {0.f, 0.f, 0.f, 0.f};
+	auto invView = XMMatrixInverse(nullptr, view);
+	auto invPrevView = XMMatrixInverse(nullptr, prevView);
 
-	PrintMatrix(view);
+	auto camDelta = invPrevView.r[3] - invView.r[3];
+
+	auto model = XMMatrixIdentity();
+	model = XMMatrixTranslationFromVector(invView.r[3]);
+	view = model * view;
+
+	model = XMMatrixIdentity();
+	model = XMMatrixTranslationFromVector(invPrevView.r[3]);
+	prevView = model * prevView;
+	
+	static float scale = 1.2f;
+
+	ImGui::DragFloat("Scale", &scale, 0.1f, 0.f, 3.f);
+
+	model = XMMatrixIdentity();
+	model = XMMatrixTranslationFromVector(-camDelta * scale);
+	prevView = model * prevView;
+
+	PrintMatrix(prevView);
 
 	memcpy(commonSettings.worldToViewMatrix, &view, sizeof(cam.view));
 	memcpy(commonSettings.viewToClipMatrix, &cam.proj, sizeof(cam.proj));
@@ -247,9 +271,9 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	commonSettings.motionVectorScale[1] = { 0 };
 	commonSettings.motionVectorScale[2] = { 0 };
 	commonSettings.isMotionVectorInWorldSpace = true;
-
+	
 	nrd::ReblurSettings settings = {};
-
+	settings.enableReferenceAccumulation = true;
 	NRD.SetMethodSettings(nrd::Method::REBLUR_DIFFUSE_SPECULAR, &settings);
 
 	NrdUserPool userPool = {};
