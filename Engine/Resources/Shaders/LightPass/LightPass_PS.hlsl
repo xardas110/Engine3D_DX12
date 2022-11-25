@@ -36,6 +36,7 @@ struct PixelShaderOutput
     float4 DirectDiffuse    : SV_TARGET0;
     float4 IndirectDiffuse  : SV_TARGET1;
     float4 IndirectSpecular : SV_TARGET2;
+    float4 rtDebug          : SV_TARGET3;
 };
   
 PixelShaderOutput main(float2 TexCoord : TEXCOORD)
@@ -229,6 +230,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     OUT.IndirectDiffuse = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectDiffuse, firstDiffuseBounceDistance);
     OUT.IndirectSpecular = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectSpecular, firstSpecularBounceDistance);
     OUT.DirectDiffuse = float4(directRadiance, 1.f);
+        
     /*    
     float3 accumulatedColor = g_accumulationBuffer[3][pixelCoords].rgb + finalGather;
     g_accumulationBuffer[3][pixelCoords] = float4(accumulatedColor, 1.0f);
@@ -240,9 +242,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         g_accumulationBuffer[3][pixelCoords] = float4(finalGather, 1.f);
         OUT.DirectDiffuse = float4(finalGather, 1.f);
     }
-       */ 
-  /*        
-    if (DEBUG_RAYTRACING_FINALCOLOR == g_RaytracingData.debugSettings)
+       */     
+        
+    if (DEBUG_FINAL_COLOR == g_RaytracingData.debugSettings)
     {           
         return OUT;
     }
@@ -289,41 +291,41 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             hitSurfaceMaterial.normal = hitSurface.normal;
         }
             
-        if (DEBUG_RAYTRACING_ALBEDO == g_RaytracingData.debugSettings)
+        if (DEBUG_RAYTRACED_ALBEDO == g_RaytracingData.debugSettings)
         {
             color = hitSurfaceMaterial.albedo;
         }
-        else if (DEBUG_RAYTRACING_NORMAL == g_RaytracingData.debugSettings)
+        else if (DEBUG_RAYTRACED_NORMAL == g_RaytracingData.debugSettings)
         {
-                color = hitSurfaceMaterial.normal.rgb;
-
+            color = hitSurfaceMaterial.normal.rgb;
         }
-        else if (DEBUG_RAYTRACING_PBR == g_RaytracingData.debugSettings)
+        else if (DEBUG_RAYTRACED_AO == g_RaytracingData.debugSettings)
         {
-            color = float3(hitSurfaceMaterial.ao, hitSurfaceMaterial.roughness, hitSurfaceMaterial.metallic);
+            color = float3(hitSurfaceMaterial.ao, hitSurfaceMaterial.ao, hitSurfaceMaterial.ao);
         }
-        else if (DEBUG_RAYTRACING_EMISSIVE == g_RaytracingData.debugSettings)
+        else if (DEBUG_RAYTRACED_ROUGHNESS == g_RaytracingData.debugSettings)
+        {
+            color = float3(hitSurfaceMaterial.roughness, hitSurfaceMaterial.roughness, hitSurfaceMaterial.roughness);
+        }
+        else if (DEBUG_RAYTRACED_METALLIC == g_RaytracingData.debugSettings)
+        {
+            color = float3(hitSurfaceMaterial.metallic, hitSurfaceMaterial.metallic, hitSurfaceMaterial.metallic);
+        }
+        else if (DEBUG_RAYTRACED_HEIGHT == g_RaytracingData.debugSettings)
+        {
+            color = float3(hitSurfaceMaterial.height, hitSurfaceMaterial.height, hitSurfaceMaterial.height);
+        }
+        else if (DEBUG_RAYTRACED_EMISSIVE == g_RaytracingData.debugSettings)
         {
             color = hitSurfaceMaterial.emissive;
-        }
-        else if (DEBUG_RAYTRACING_UV == g_RaytracingData.debugSettings)
-        {
-            color = float3(hitSurface.textureCoordinate, 0.f);
-        }
-        else if (DEBUG_RAYTRACING_POS == g_RaytracingData.debugSettings)
-        {
-            hitSurface.position = mul(hit.objToWorld, hitSurface.position);
-            color = hitSurface.position;
-        }               
+        }            
     }
     else
     {
         color = g_SkyColor;
     }
-  
         
-    OUT.rtColor = float4(color, 1.f);
-     */
-        
+    OUT.rtDebug = float4(color, 1.f);
+    
     return OUT;
 };

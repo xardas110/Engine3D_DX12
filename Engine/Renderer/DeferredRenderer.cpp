@@ -86,6 +86,8 @@ void DeferredRenderer::Render(Window& window)
 {
     if (!window.m_pGame.lock()) return;
     
+    static int listbox_item_debug = 0;
+
     auto game = window.m_pGame.lock();
 
     auto graphicsQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
@@ -123,6 +125,7 @@ void DeferredRenderer::Render(Window& window)
     RaytracingDataCB rtData;
     rtData.numBounces = 2;
     rtData.frameNumber = Application::GetFrameCount();
+    rtData.debugSettings = listbox_item_debug;
 
     XMStoreFloat3(&cameraCB.pos, camera->get_Translation());
 
@@ -432,45 +435,75 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->Draw(3);
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
-    }
-    /*
+    } 
     { //Debug pass
         commandList->SetRenderTarget(m_DebugTexturePass.renderTarget);
         commandList->SetViewport(m_DebugTexturePass.renderTarget.GetViewport());
         commandList->SetScissorRect(m_ScissorRect);
         commandList->SetPipelineState(m_DebugTexturePass.pipeline);
         commandList->SetGraphicsRootSignature(m_DebugTexturePass.rootSignature);
+
         commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
         const char* listbox_items[] =
-        { "FinalColor", "GBufferAlbedo", "GBufferNormal",
-            "GBufferPBR", "GBufferEmissive", "DirectDiffuse",
-            "IndirectDiffuse", "IndirectSpecular", "RTDebug", "DenoisedIndirectDiffuse", "DenoisedIndirectSpecular"};
+        {   "Final Color", 
+            "GBuffer Albedo", 
+            "GBuffer Normal & Roughness",
+            "GBuffer MotionVector", 
+            "GBuffer Emissive & SM", 
+            "GBuffer AO & Metallic & Height",
+            "GBuffer LinearDepth", 
+            "LightBuffer Direct Light",
+            "LightBuffer IndirectDiffuse", 
+            "LightBuffer IndirectSpecular", 
+            "LightBuffer Denoised IndirectDiffuse",
+            "LightBuffer Denoised IndirectSpecular", 
+            "Raytraced Albedo", 
+            "Raytraced Normal",
+            "Raytraced AO", 
+            "Raytraced Roughness", 
+            "Raytraced Metallic", 
+            "Raytraced Height",
+            "Raytraced Emissive"
+        };
 
         const Texture* texArray[] =
         {
             &m_CompositionPass.renderTarget.GetTexture(AttachmentPoint::Color0),
-            &m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0),
-            &m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color1),
-            &m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color2),
-            &m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color3),
-            &m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color0),
-            &m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color1),
-            &m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color2),
-            &m_LightPass.renderTarget.GetTexture(AttachmentPoint::Color3),
-            &m_LightPass.denoisedIndirectDiffuse,
-            &m_LightPass.denoisedIndirectSpecular,
+            &m_GBuffer.GetTexture(GBUFFER_ALBEDO),
+            &m_GBuffer.GetTexture(GBUFFER_NORMAL_ROUGHNESS),
+            &m_GBuffer.GetTexture(GBUFFER_MOTION_VECTOR),
+            &m_GBuffer.GetTexture(GBUFFER_EMISSIVE_SHADER_MODEL),
+            &m_GBuffer.GetTexture(GBUFFER_AO_METALLIC_HEIGHT),
+            &m_GBuffer.GetTexture(GBUFFER_LINEAR_DEPTH),
+            &m_LightPass.GetTexture(LIGHTBUFFER_DIRECT_LIGHT),
+            &m_LightPass.GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE),
+            &m_LightPass.GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR),
+            &m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE),
+            &m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR),
+            &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
+            &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
+            &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
+            &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
+            &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
+            &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
+            &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
         };
         ImGui::Begin("Select render buffer");
-        static int listbox_item_current = 0;
-        ImGui::ListBox("listbox\n(single select)", &listbox_item_current, listbox_items, IM_ARRAYSIZE(listbox_items));
+        ImGui::ListBox("listbox\n(single select)", &listbox_item_debug, listbox_items, IM_ARRAYSIZE(listbox_items));
         ImGui::End();
 
-        commandList->SetShaderResourceView(DebugTextureParam::texture, 0, *texArray[listbox_item_current]);
+        commandList->SetShaderResourceView(DebugTextureParam::texture, 0, *texArray[listbox_item_debug]);
 
         commandList->Draw(3);
+
+        commandList->TransitionBarrier(m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE), D3D12_RESOURCE_STATE_PRESENT);
+
+        if (DEBUG_RAYTRACED_ALBEDO <= listbox_item_debug)
+           SetRenderTexture(&m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG));
+        else
+            SetRenderTexture(&m_DebugTexturePass.renderTarget.GetTexture(AttachmentPoint::Color0));
     }
-    */
     { //Set UAV buffers back to present for denoising
         commandList->GetGraphicsCommandList()->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
@@ -482,7 +515,7 @@ void DeferredRenderer::Render(Window& window)
             &CD3DX12_RESOURCE_BARRIER::Transition(
                 m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR).GetD3D12Resource().Get(),
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_PRESENT));
+                D3D12_RESOURCE_STATE_PRESENT));     
     }
     {//Graphics execute
         PIXBeginEvent(graphicsQueue->GetD3D12CommandQueue().Get(), 0, L"Graphics execute");

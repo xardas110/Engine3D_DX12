@@ -13,7 +13,7 @@ struct SRVHeapData
 private:
 	mutable size_t lastIndex = 0;
 	const size_t increment = 0;
-	const int heapSize = 1024;
+	const int heapSize = 50000;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
 public:
 	SRVHeapData();

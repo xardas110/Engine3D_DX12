@@ -42,7 +42,7 @@ class DeferredRenderer
 
 	std::vector<MeshInstanceWrapper> GetMeshInstances(entt::registry& registry);
 
-	int m_Width, m_Height; //shold be above the rest, cuz of initializing
+	int m_Width, m_Height; //should be above the rest, cuz of initializing
 
 	D3D12_RECT m_ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
 	std::unique_ptr<Raytracing> m_Raytracer{nullptr};
@@ -54,6 +54,18 @@ class DeferredRenderer
 	NvidiaDenoiser m_NvidiaDenoiser;
 
 	CameraCB cameraCB;
+
+	void SetRenderTexture(const Texture* texture)
+	{
+		renderTexture = texture;
+	}
+
+	const Texture* GetRenderTexture()
+	{
+		return renderTexture;
+	}
+	
+	const Texture* renderTexture{ nullptr };
 
 	std::vector<Transform> prevTrans;
 };
