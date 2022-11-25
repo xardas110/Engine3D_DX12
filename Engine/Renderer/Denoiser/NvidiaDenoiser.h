@@ -66,12 +66,8 @@ class NvidiaDenoiser
 	NvidiaDenoiser(int width, int height, DenoiserTextures& texs);
 	~NvidiaDenoiser();
 
-	Microsoft::WRL::ComPtr<IDXGIAdapter4> m_Adapter;	
-
 	void RenderFrame(CommandList& commandList, const CameraCB& cam, int currentBackbufferIndex, int width, int height);
 	
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
-
 	NrdIntegration NRD = NrdIntegration(3);
 
 	struct NriInterface
@@ -89,4 +85,8 @@ class NvidiaDenoiser
 	nri::CommandBuffer* nriCommandBuffer = nullptr;
 
 	NRITextures nriTextures[nriTypes::size];
+
+	Microsoft::WRL::ComPtr<IDXGIAdapter4> m_Adapter;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
+
 };
