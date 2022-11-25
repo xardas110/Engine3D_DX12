@@ -9,7 +9,7 @@ add_subdirectory(Libs/assimp)
 
 find_package(Vulkan REQUIRED FATAL_ERROR)
 
-set(NRD_STATIC_LIBRARY ON)
+set(NRD_STATIC_LIBRARY OFF)
 add_subdirectory(Libs/RayTracingDenoiser)
 
 add_subdirectory(Libs/NRI)

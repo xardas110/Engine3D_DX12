@@ -24,7 +24,8 @@ Game::Game( const std::wstring& name, int width, int height, bool vSync )
     XMVECTOR cameraUp = XMVectorSet(0, 1, 0, 0);
 
     m_Camera.set_LookAt(cameraPos, cameraTarget, cameraUp);
-    m_Camera.set_Projection(45.0f, width / (float)height, 0.1f, 100.0f);
+    m_Camera.set_Projection(45.0f, width / (float)height, 0.1f, 50000.0f);
+
 }
 
 Game::~Game()
@@ -233,7 +234,7 @@ void Game::OnResize(ResizeEventArgs& e)
 
         float fov = m_Camera.get_FoV();
         float aspectRatio = m_Width / (float)m_Height;
-        m_Camera.set_Projection(fov, aspectRatio, 0.1f, 100.0f);
+        m_Camera.set_Projection(fov, aspectRatio, 0.1f, 50000.0f);
     }
 }
 

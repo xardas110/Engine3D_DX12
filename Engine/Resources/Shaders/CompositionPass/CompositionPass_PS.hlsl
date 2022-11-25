@@ -39,7 +39,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
          
     float4 albedo = g_GBufferHeap[GBUFFER_ALBEDO].Sample(g_NearestRepeatSampler, TexCoord);
  
-    OUT.ColorTexture = float4(directDiffuse.rgb + (denoisedIndirectDiffuse.rgb * albedo.rgb) + denoisedIndirectSpecular.rgb, 1.f);
+    OUT.ColorTexture = float4(directDiffuse.rgb + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb, 1.f);
 
     return OUT;
 }

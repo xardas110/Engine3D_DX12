@@ -108,19 +108,22 @@ NvidiaDenoiser::NvidiaDenoiser()
 	NRDERRORCHECK(nriResult);
 
 	ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator)));
-	ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocator.Get(), nullptr, IID_PPV_ARGS(&m_CommandList)));
 }
 
 NvidiaDenoiser::~NvidiaDenoiser()
 {
 	//Clean this sht somehow
 
-	for (size_t i = 0; i < nriTypes::size; i++)
-	{
-		NRI.DestroyTexture((nri::Texture&)nriTextures[i].entryDescs.texture);
-	}
-	NRI.DestroyCommandBuffer(*nriCommandBuffer);
 	NRD.Destroy();
+
+
+	NRI.DestroyCommandBuffer(*nriCommandBuffer);
+
+	nri::DestroyDevice(*m_NRIDevice);
+	
+
+	//m_NRIDevice = nullptr;
+	
 }
 
 void NvidiaDenoiser::Init(int width, int height, LightPass& lightPass)
@@ -248,45 +251,42 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 
 	commonSettings = {};
 
-	auto view = cam.view;
-	auto prevView = cam.prevView;
+	auto view =  cam.view ;
+	auto prevView =  cam.prevView;
+	auto proj = cam.proj;
+	auto prevProj = cam.prevProj;
+/*
+	auto currentPos = XMMatrixInverse(nullptr, view).r[3];
+	auto prevPos = XMMatrixInverse(nullptr, prevView).r[3];
 
-	auto invView = XMMatrixInverse(nullptr, view);
-	auto invPrevView = XMMatrixInverse(nullptr, prevView);
+	auto delta = prevPos - currentPos;
 
-	auto camDelta = invPrevView.r[3] - invView.r[3];
+
+
+	view.r[3] = { 0.f, 0.f, 0.f, 1.f };
+	prevView.r[3] = { 0.f, 0.f, 0.f, 1.f };
+
+	delta.m128_f32[3] = 1.f;
 
 	auto model = XMMatrixIdentity();
-	model = XMMatrixTranslationFromVector(invView.r[3]);
-	view = model * view;
+	model = XMMatrixTranslationFromVector(-delta);
 
-	model = XMMatrixIdentity();
-	model = XMMatrixTranslationFromVector(invPrevView.r[3]);
 	prevView = model * prevView;
-	
-	static float scale = 1.2f;
+*/
 
-	ImGui::DragFloat("Scale", &scale, 0.1f, 0.f, 3.f);
-
-	model = XMMatrixIdentity();
-	model = XMMatrixTranslationFromVector(-camDelta * scale);
-	prevView = model * prevView;
-
-	//PrintMatrix(prevView);
+//	PrintMatrix(prevView);
 
 	memcpy(commonSettings.worldToViewMatrix, &view, sizeof(cam.view));
-	memcpy(commonSettings.viewToClipMatrix, &cam.proj, sizeof(cam.proj));
+	memcpy(commonSettings.viewToClipMatrix, &proj, sizeof(cam.proj));
 	
 	memcpy(commonSettings.worldToViewMatrixPrev, &prevView, sizeof(cam.prevView));
-	memcpy(commonSettings.viewToClipMatrixPrev, &cam.prevProj, sizeof(cam.prevProj));
+	memcpy(commonSettings.viewToClipMatrixPrev, &prevProj, sizeof(cam.prevProj));
 
-	//commonSettings.resolutionScale[0] = 1;
-	//commonSettings.resolutionScale[1] = 1;
 	commonSettings.motionVectorScale[0] = { 0 };
 	commonSettings.motionVectorScale[1] = { 0 };
 	commonSettings.motionVectorScale[2] = { 0 };
 	commonSettings.isMotionVectorInWorldSpace = true;
-	
+
 	nrd::ReblurSettings settings = {};
 	//settings.enableReferenceAccumulation = true;
 	//settings.enablePerformanceMode = true;
