@@ -53,7 +53,7 @@ GPackInfo PackGBuffer(in CameraCB camera, in ObjectCB objectCB, in SurfaceMateri
     
     OUT.aoMetallicHeight = float4(mat.ao, mat.metallic, mat.height, 0.f);
     
-    OUT.linearDepth = (2.f * camera.zNear * camera.zFar) / (camera.zFar + camera.zNear - depth * (camera.zFar - camera.zNear));
+    OUT.linearDepth = (camera.zNear * camera.zFar) / (camera.zFar + camera.zNear - depth * (camera.zFar - camera.zNear));
         
     return OUT;
 }

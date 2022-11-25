@@ -146,12 +146,13 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         {                
             if (brdfType == BRDF_TYPE_DIFFUSE)
             {     
-                firstDiffuseBounceDistance = 10000.f;
+                firstDiffuseBounceDistance = 50000.f;
                 indirectDiffuse += troughput * g_SkyColor;      
             }
             else
+                
             {              
-                firstSpecularBounceDistance = 10000.f;
+                firstSpecularBounceDistance = 50000.f;
                 indirectSpecular += troughput * g_SkyColor;
             }           
             break;
@@ -216,7 +217,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {
             BRDFData data = PrepareBRDFData(hitSurface.normal, L, V, hitSurfaceMaterial);              
-                indirectDiffuse += troughput * (EvaluateDiffuseBRDF(data) / hitSurfaceMaterial.albedo);
+            indirectDiffuse += troughput * (EvaluateDiffuseBRDF(data));
             indirectSpecular += troughput * EvaluateSpecularBRDF(data);
         }
                         

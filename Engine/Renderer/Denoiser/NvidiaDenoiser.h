@@ -40,5 +40,5 @@ class NvidiaDenoiser
 	void RenderFrame(CommandList& commandList, const CameraCB& cam, DenoiserTextures& texs, int currentBackbufferIndex, int width, int height);
 	
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
-	Microsoft::WRL::ComPtr<ID3D12CommandList> m_CommandList;
+
 };

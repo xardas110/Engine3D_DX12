@@ -189,7 +189,7 @@ void LightPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_DIRECT_LIGHT), clearValue);
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE), clearValue);
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR), clearValue);
-    commandlist.ClearTexture(GetTexture(LIGHTBUFFER_RT_DEBUG), clearValue);
+    commandlist.ClearTexture(GetTexture(LIGHTBUFFER_RT_DEBUG), clearColor);
 }
 
 void LightPass::OnResize(int width, int height)
