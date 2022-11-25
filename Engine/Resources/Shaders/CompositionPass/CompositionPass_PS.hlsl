@@ -30,19 +30,16 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
     PixelShaderOutput OUT;
 
-    float4 directDiffuse = g_LightMapHeap[0].Sample(g_NearestRepeatSampler, TexCoord);
-    float4 indirectDiffuse = g_LightMapHeap[7].Sample(g_NearestRepeatSampler, TexCoord);
-    float4 indirectSpecular = g_LightMapHeap[8].Sample(g_NearestRepeatSampler, TexCoord);
+    float4 directDiffuse = g_LightMapHeap[LIGHTBUFFER_DIRECT_LIGHT].Sample(g_NearestRepeatSampler, TexCoord);
+    float4 denoisedIndirectDiffuse = g_LightMapHeap[LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE].Sample(g_NearestRepeatSampler, TexCoord);
+    float4 denoisedIndirectSpecular = g_LightMapHeap[LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR].Sample(g_NearestRepeatSampler, TexCoord);
    
-    indirectDiffuse = REBLUR_BackEnd_UnpackRadianceAndNormHitDist(indirectDiffuse);
-    indirectSpecular = REBLUR_BackEnd_UnpackRadianceAndNormHitDist(indirectSpecular);
+    denoisedIndirectDiffuse = REBLUR_BackEnd_UnpackRadianceAndNormHitDist(denoisedIndirectDiffuse);
+    denoisedIndirectSpecular = REBLUR_BackEnd_UnpackRadianceAndNormHitDist(denoisedIndirectSpecular);
          
-    float4 albedo = g_GBufferHeap[0].Sample(g_NearestRepeatSampler, TexCoord);
-    float4 normal = g_GBufferHeap[1].Sample(g_NearestRepeatSampler, TexCoord);
-    float4 pbr = g_GBufferHeap[2].Sample(g_NearestRepeatSampler, TexCoord);
-    float4 emissive = g_GBufferHeap[3].Sample(g_NearestRepeatSampler, TexCoord);
-    
-    OUT.ColorTexture = float4(directDiffuse.rgb + (indirectDiffuse.rgb  * albedo.rgb) + indirectSpecular.rgb, 1.f);
+    float4 albedo = g_GBufferHeap[GBUFFER_ALBEDO].Sample(g_NearestRepeatSampler, TexCoord);
+ 
+    OUT.ColorTexture = float4(directDiffuse.rgb + (denoisedIndirectDiffuse.rgb * albedo.rgb) + denoisedIndirectSpecular.rgb, 1.f);
 
     return OUT;
 }

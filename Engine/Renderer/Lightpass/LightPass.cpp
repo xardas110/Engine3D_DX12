@@ -5,6 +5,8 @@
 #include <LightPass_VS.h>
 #include <LightPass_PS.h>
 
+#include <DX12Helper.h>
+#include <TypesCompat.h>
 
 LightPass::LightPass(const int& width, const int& height)
 {
@@ -14,98 +16,39 @@ LightPass::LightPass(const int& width, const int& height)
 
 void LightPass::CreateRenderTarget(int width, int height)
 {
-    // Create an HDR intermediate render target.
-    DXGI_FORMAT directDiffuseFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
-    DXGI_FORMAT indirectDiffuseFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
-    DXGI_FORMAT indirectSpecularFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
-    DXGI_FORMAT rwAccumFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
-    DXGI_FORMAT normalRoughnessFormat = DXGI_FORMAT_R10G10B10A2_UNORM;
-    DXGI_FORMAT linearDepthFormat = DXGI_FORMAT_R32_FLOAT;
-
-    // Create an off-screen render target with a single color buffer and a depth buffer.
-    auto directDiffuseDesc = CD3DX12_RESOURCE_DESC::Tex2D(directDiffuseFormat, width, height);
+    auto directDiffuseDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height);
     directDiffuseDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     directDiffuseDesc.MipLevels = 1;
 
-    auto indirectDiffuseDesc = CD3DX12_RESOURCE_DESC::Tex2D(indirectDiffuseFormat, width, height);
+    auto indirectDiffuseDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height);
     indirectDiffuseDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     indirectDiffuseDesc.MipLevels = 1;
 
-    auto indirectSpecularDesc = CD3DX12_RESOURCE_DESC::Tex2D(indirectSpecularFormat, width, height);
+    auto indirectSpecularDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height);
     indirectSpecularDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     indirectSpecularDesc.MipLevels = 1;
 
-    auto outIndirectDiffuseDesc = CD3DX12_RESOURCE_DESC::Tex2D(indirectDiffuseFormat, width, height);
+    auto outIndirectDiffuseDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height);
     outIndirectDiffuseDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     outIndirectDiffuseDesc.MipLevels = 1;
 
-    auto outIndirectSpecularDesc = CD3DX12_RESOURCE_DESC::Tex2D(indirectSpecularFormat, width, height);
+    auto outIndirectSpecularDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height);
     outIndirectSpecularDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     outIndirectSpecularDesc.MipLevels = 1;
   
-    auto normalRoughnessDesc = CD3DX12_RESOURCE_DESC::Tex2D(normalRoughnessFormat, width, height);
-    normalRoughnessDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-    normalRoughnessDesc.MipLevels = 1;
-
-    auto linearDepthDesc = CD3DX12_RESOURCE_DESC::Tex2D(linearDepthFormat, width, height);
-    linearDepthDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-    linearDepthDesc.MipLevels = 1;
-
-    auto rwAccumDesc = CD3DX12_RESOURCE_DESC::Tex2D(rwAccumFormat, width, height);
+    auto rwAccumDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R32G32B32A32_FLOAT, width, height);
     rwAccumDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     rwAccumDesc.MipLevels = 1;
-
-    D3D12_CLEAR_VALUE directDiffuseClear;
-    directDiffuseClear.Format = directDiffuseFormat;
-    directDiffuseClear.Color[0] = 0.0f;
-    directDiffuseClear.Color[1] = 0.0f;
-    directDiffuseClear.Color[2] = 0.0f;
-    directDiffuseClear.Color[3] = 0.0f;
-
-    D3D12_CLEAR_VALUE indirectDiffuseClear;
-    indirectDiffuseClear.Format = indirectDiffuseFormat;
-    indirectDiffuseClear.Color[0] = 0.0f;
-    indirectDiffuseClear.Color[1] = 0.0f;
-    indirectDiffuseClear.Color[2] = 0.0f;
-    indirectDiffuseClear.Color[3] = 0.0f;
-
-    D3D12_CLEAR_VALUE specularClear;
-    specularClear.Format = indirectSpecularFormat;
-    specularClear.Color[0] = 0.0f;
-    specularClear.Color[1] = 0.0f;
-    specularClear.Color[2] = 0.0f;
-    specularClear.Color[3] = 0.0f;
-
-    D3D12_CLEAR_VALUE normalRoughnessClear;
-    normalRoughnessClear.Format = normalRoughnessFormat;
-    normalRoughnessClear.Color[0] = 1.0f;
-    normalRoughnessClear.Color[1] = 1.0f;
-    normalRoughnessClear.Color[2] = 1.0f;
-    normalRoughnessClear.Color[3] = 1.0f;
-
-    D3D12_CLEAR_VALUE linearDepthClear;
-    linearDepthClear.Format = linearDepthFormat;
-    linearDepthClear.Color[0] = 1.0f;
-    linearDepthClear.Color[1] = 1.0f;
-    linearDepthClear.Color[2] = 1.0f;
-    linearDepthClear.Color[3] = 1.0f;
-
-    D3D12_CLEAR_VALUE rwAccumClear;
-    rwAccumClear.Format = rwAccumFormat;
-    rwAccumClear.Color[0] = 0.0f;
-    rwAccumClear.Color[1] = 0.0f;
-    rwAccumClear.Color[2] = 0.0f;
-    rwAccumClear.Color[3] = 0.0f;
-  
-    Texture directDiffuse = Texture(directDiffuseDesc, &directDiffuseClear,
+ 
+    Texture directDiffuse = Texture(directDiffuseDesc, &ClearValue(directDiffuseDesc.Format, {0.f, 0.f, 0.f, 0.f}),
         TextureUsage::RenderTarget,
         L"LightPass DirectDiffuse");
 
-    Texture indirectDiffuse = Texture(indirectDiffuseDesc, &indirectDiffuseClear,
+    Texture indirectDiffuse = Texture(indirectDiffuseDesc, &ClearValue(indirectDiffuseDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
         TextureUsage::RenderTarget,
         L"LightPass IndirectDiffuse");
 
-    Texture indirectSpecular = Texture(indirectSpecularDesc, &specularClear,
+    Texture indirectSpecular = Texture(indirectSpecularDesc, &ClearValue(indirectSpecularDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
         TextureUsage::RenderTarget,
         L"LightPass IndirectSpecular");
 
@@ -117,33 +60,13 @@ void LightPass::CreateRenderTarget(int width, int height)
         TextureUsage::RenderTarget,
         L"LightPass Denoised IndirectSpecular");
 
-    motionVector = Texture(outIndirectDiffuseDesc, nullptr,
-        TextureUsage::RenderTarget,
-        L"LightPass motionVector");
-
     rwAccumulation = Texture(rwAccumDesc, nullptr,
         TextureUsage::RenderTarget,
         L"LightPass AccumBuffer");
 
-    Texture rtDebug = Texture(directDiffuseDesc, &directDiffuseClear,
-        TextureUsage::RenderTarget,
-        L"LightPass Raytracing debug");
-
-    Texture normalRoughness = Texture(normalRoughnessDesc, &normalRoughnessClear,
-        TextureUsage::RenderTarget,
-        L"LightPass NormalRoughness");
-
-    Texture linearDepth = Texture(linearDepthDesc, &linearDepthClear,
-        TextureUsage::RenderTarget,
-        L"LightPass LinearDepth");
-
-    renderTarget.AttachTexture(AttachmentPoint::Color0, directDiffuse);
-    renderTarget.AttachTexture(AttachmentPoint::Color1, indirectDiffuse);
-    renderTarget.AttachTexture(AttachmentPoint::Color2, indirectSpecular);
-    renderTarget.AttachTexture(AttachmentPoint::Color3, rtDebug);
-    renderTarget.AttachTexture(AttachmentPoint::Color4, normalRoughness);
-    renderTarget.AttachTexture(AttachmentPoint::Color5, linearDepth);
-
+    renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_DIRECT_LIGHT, directDiffuse);
+    renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_INDIRECT_DIFFUSE, indirectDiffuse);
+    renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_INDIRECT_SPECULAR, indirectSpecular);
 }
 
 void LightPass::CreatePipeline()
@@ -252,12 +175,11 @@ void LightPass::CreatePipeline()
 
 void LightPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
 {
-    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color0), clearColor);
-    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color1), clearColor);
-    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color2), clearColor);
-    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color3), clearColor);
-    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color4), clearColor);
-    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color5), clearColor);
+    float clearValue[] = { 0.f, 0.f, 0.f, 0.f };
+
+    commandlist.ClearTexture(GetTexture(LIGHTBUFFER_DIRECT_LIGHT), clearValue);
+    commandlist.ClearTexture(GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE), clearValue);
+    commandlist.ClearTexture(GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR), clearValue);
 }
 
 void LightPass::OnResize(int width, int height)
@@ -266,7 +188,6 @@ void LightPass::OnResize(int width, int height)
     rwAccumulation.Resize(width, height);
     denoisedIndirectDiffuse.Resize(width, height);
     denoisedIndirectSpecular.Resize(width, height);
-    motionVector.Resize(width, height);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateSRVViews()
@@ -274,29 +195,16 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateSRVViews()
     auto device = Application::Get().GetDevice();
 
     device->CreateShaderResourceView(
-        renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(), nullptr,
-        m_SRVHeap.SetHandle(0));
+        GetTexture(LIGHTBUFFER_DIRECT_LIGHT).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(LIGHTBUFFER_DIRECT_LIGHT));
 
     device->CreateShaderResourceView(
-        renderTarget.GetTexture(AttachmentPoint::Color1).GetD3D12Resource().Get(), nullptr,
-        m_SRVHeap.SetHandle(1));
+        GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(LIGHTBUFFER_INDIRECT_DIFFUSE));
 
     device->CreateShaderResourceView(
-        renderTarget.GetTexture(AttachmentPoint::Color2).GetD3D12Resource().Get(), nullptr,
-        m_SRVHeap.SetHandle(2));
-
-    device->CreateShaderResourceView(
-        renderTarget.GetTexture(AttachmentPoint::Color3).GetD3D12Resource().Get(), nullptr,
-        m_SRVHeap.SetHandle(4));
-
-    device->CreateShaderResourceView(
-        renderTarget.GetTexture(AttachmentPoint::Color4).GetD3D12Resource().Get(), nullptr,
-        m_SRVHeap.SetHandle(5));
-
-    device->CreateShaderResourceView(
-        renderTarget.GetTexture(AttachmentPoint::Color5).GetD3D12Resource().Get(), nullptr,
-        m_SRVHeap.SetHandle(6));
-
+        GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(LIGHTBUFFER_INDIRECT_SPECULAR));
 
     return m_SRVHeap.GetHandleAtStart();
 }
@@ -308,33 +216,18 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateUAVViews()
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
 
-    device->CreateUnorderedAccessView(rwAccumulation.GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(3));
-    device->CreateUnorderedAccessView(denoisedIndirectDiffuse.GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(7));
-    device->CreateUnorderedAccessView(denoisedIndirectSpecular.GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(8));
+    device->CreateUnorderedAccessView(GetTexture(LIGHTBUFFER_ACCUM_BUFFER).GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(LIGHTBUFFER_ACCUM_BUFFER));
+    device->CreateUnorderedAccessView(GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE).GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE));
+    device->CreateUnorderedAccessView(GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR).GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR));
 
     return m_SRVHeap.GetHandleAtStart();
 }
 
-const Texture& LightPass::GetTexture(nriTypes::Type type)
+const Texture& LightPass::GetTexture(int type)
 {
-    switch (type)
-    {
-    case nriTypes::inMV:
-        return motionVector;
-    case nriTypes::inNormalRoughness:
-        return renderTarget.GetTexture(AttachmentPoint::Color4);
-    case nriTypes::inViewZ:
-        return renderTarget.GetTexture(AttachmentPoint::Color5);
-    case nriTypes::inIndirectDiffuse:
-        return renderTarget.GetTexture(AttachmentPoint::Color1);
-    case nriTypes::inIndirectSpecular:
-        return renderTarget.GetTexture(AttachmentPoint::Color2);
-    case nriTypes::outIndirectDiffuse:
-        return denoisedIndirectDiffuse;
-    case nriTypes::outIndirectSpecular:
-        return denoisedIndirectSpecular;
-    default:
-        assert(false && "no specified texture");
-        break;
-    }
+    if (type == LIGHTBUFFER_ACCUM_BUFFER) return rwAccumulation;
+    if (type == LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE) return denoisedIndirectDiffuse;
+    if (type == LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR) return denoisedIndirectSpecular;
+
+    return renderTarget.GetTexture((AttachmentPoint)type);
 }

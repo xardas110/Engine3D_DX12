@@ -51,6 +51,21 @@ void NRDERRORCHECK(nri::Result result)
 // Better use "true" if resources are not changing between frames (i.e. are not suballocated from a heap)
 bool enableDescriptorCaching = true;
 
+namespace nriTypes
+{
+	enum Type
+	{
+		inMV,
+		inNormalRoughness,
+		inViewZ,
+		inIndirectDiffuse,
+		inIndirectSpecular,
+		outIndirectDiffuse,
+		outIndirectSpecular,
+		size
+	};
+}
+
 struct NRITextures
 {
 	nri::TextureTransitionBarrierDesc entryDescs = {};
@@ -128,7 +143,7 @@ void NvidiaDenoiser::Init(int width, int height, LightPass& lightPass)
 	}
 }
 
-void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, LightPass& lightPass, int currentBackbufferIndex, int width, int height)
+void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, DenoiserTextures& texs, int currentBackbufferIndex, int width, int height)
 {
 	nri::CommandBufferD3D12Desc commandBufferDesc = {};
 	commandBufferDesc.d3d12CommandList = (ID3D12GraphicsCommandList*)commandList.GetGraphicsCommandList().Get();
@@ -139,7 +154,7 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	{//Normalrough
 		nri::TextureD3D12Desc normalRoughDesc = {};
 
-		normalRoughDesc.d3d12Resource = lightPass.GetTexture(nriTypes::inNormalRoughness).GetD3D12Resource().Get();
+		normalRoughDesc.d3d12Resource = texs.inNormalRough.GetD3D12Resource().Get();
 
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inNormalRoughness].entryDescs;
 
@@ -153,7 +168,7 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	};
 	{//Motion Vector
 		nri::TextureD3D12Desc texDesc = {};
-		texDesc.d3d12Resource = lightPass.GetTexture(nriTypes::inMV).GetD3D12Resource().Get();
+		texDesc.d3d12Resource = texs.inMV.GetD3D12Resource().Get();
 
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inMV].entryDescs;
 
@@ -166,7 +181,7 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	};
 	{//viewZ
 		nri::TextureD3D12Desc texDesc = {};
-		texDesc.d3d12Resource = lightPass.GetTexture(nriTypes::inViewZ).GetD3D12Resource().Get();
+		texDesc.d3d12Resource = texs.inViewZ.GetD3D12Resource().Get();
 
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inViewZ].entryDescs;
 
@@ -179,7 +194,7 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	};
 	{//Indirect Diffuse
 		nri::TextureD3D12Desc texDesc = {};
-		texDesc.d3d12Resource = lightPass.GetTexture(nriTypes::inIndirectDiffuse).GetD3D12Resource().Get();
+		texDesc.d3d12Resource = texs.inIndirectDiffuse.GetD3D12Resource().Get();
 
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inIndirectDiffuse].entryDescs;
 
@@ -192,7 +207,7 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	};
 	{//Indirect Specular
 		nri::TextureD3D12Desc texDesc = {};
-		texDesc.d3d12Resource = lightPass.GetTexture(nriTypes::inIndirectSpecular).GetD3D12Resource().Get();
+		texDesc.d3d12Resource = texs.inIndirectSpecular.GetD3D12Resource().Get();
 
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inIndirectSpecular].entryDescs;
 
@@ -205,7 +220,7 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	};
 	{//OUT Indirect Diffuse
 		nri::TextureD3D12Desc texDesc = {};
-		texDesc.d3d12Resource = lightPass.GetTexture(nriTypes::outIndirectDiffuse).GetD3D12Resource().Get();
+		texDesc.d3d12Resource = texs.outIndirectDiffuse.GetD3D12Resource().Get();
 
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::outIndirectDiffuse].entryDescs;
 
@@ -218,7 +233,7 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	};
 	{//OUT Indirect Specular
 		nri::TextureD3D12Desc texDesc = {};
-		texDesc.d3d12Resource = lightPass.GetTexture(nriTypes::outIndirectSpecular).GetD3D12Resource().Get();
+		texDesc.d3d12Resource = texs.outIndirectSpecular.GetD3D12Resource().Get();
 
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::outIndirectSpecular].entryDescs;
 
@@ -257,7 +272,7 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	model = XMMatrixTranslationFromVector(-camDelta * scale);
 	prevView = model * prevView;
 
-	PrintMatrix(prevView);
+	//PrintMatrix(prevView);
 
 	memcpy(commonSettings.worldToViewMatrix, &view, sizeof(cam.view));
 	memcpy(commonSettings.viewToClipMatrix, &cam.proj, sizeof(cam.proj));

@@ -23,21 +23,6 @@ namespace LightPassParam
 	};
 }
 
-namespace nriTypes
-{
-	enum Type
-	{
-		inMV,
-		inNormalRoughness,
-		inViewZ,
-		inIndirectDiffuse,
-		inIndirectSpecular,
-		outIndirectDiffuse,
-		outIndirectSpecular,
-		size
-	};
-}
-
 struct LightPass
 {
 private:
@@ -65,12 +50,10 @@ private:
 	RootSignature rootSignature;
 
 	Texture rwAccumulation;
-
 	Texture denoisedIndirectDiffuse;
 	Texture denoisedIndirectSpecular;
-	Texture motionVector;
-	
-	const Texture& GetTexture(nriTypes::Type type);
+
+	const Texture& GetTexture(int type);
 
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipeline;
 };

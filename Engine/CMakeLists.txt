@@ -72,7 +72,7 @@ set( HEADER_FILES
     "DX12/StaticDescriptorHeap.h" 
     "Renderer/CompositionPass/CompositionPass.h"
     "Renderer/Debug/DebugTexture.h"
- "Lights/DirectionalLight.h"  "Renderer/Denoiser/NvidiaDenoiser.h")
+ "Lights/DirectionalLight.h"  "Renderer/Denoiser/NvidiaDenoiser.h" "core/DX12Helper.h")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
