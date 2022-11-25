@@ -36,17 +36,39 @@ struct DenoiserTextures
 	const Texture& outIndirectSpecular;
 };
 
+namespace nriTypes
+{
+	enum Type
+	{
+		inMV,
+		inNormalRoughness,
+		inViewZ,
+		inIndirectDiffuse,
+		inIndirectSpecular,
+		outIndirectDiffuse,
+		outIndirectSpecular,
+		size
+	};
+}
+
+struct NRITextures
+{
+	nri::Texture* texture;
+	nri::TextureTransitionBarrierDesc entryDescs = {};
+	nri::Format entryFormat = {};
+};
+
 class NvidiaDenoiser
 {
 	friend class DeferredRenderer;
 	friend struct std::default_delete<NvidiaDenoiser>;
 
-	NvidiaDenoiser(int width, int height);
+	NvidiaDenoiser(int width, int height, DenoiserTextures& texs);
 	~NvidiaDenoiser();
 
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> m_Adapter;	
 
-	void RenderFrame(CommandList& commandList, const CameraCB& cam, DenoiserTextures& texs, int currentBackbufferIndex, int width, int height);
+	void RenderFrame(CommandList& commandList, const CameraCB& cam, int currentBackbufferIndex, int width, int height);
 	
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 
@@ -65,4 +87,6 @@ class NvidiaDenoiser
 	nrd::CommonSettings commonSettings = {};
 
 	nri::CommandBuffer* nriCommandBuffer = nullptr;
+
+	NRITextures nriTextures[nriTypes::size];
 };

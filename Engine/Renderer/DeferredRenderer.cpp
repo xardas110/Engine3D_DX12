@@ -49,7 +49,7 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_Raytracer = std::unique_ptr<Raytracing>(new Raytracing());
     m_Raytracer->Init();
 
-    m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(width, height));
+    m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(width, height, GetDenoiserTextures()));
 }
 
 DeferredRenderer::~DeferredRenderer()
@@ -80,6 +80,20 @@ std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(entt::regist
         }
     }
     return instances;
+}
+
+DenoiserTextures DeferredRenderer::GetDenoiserTextures()
+{
+    DenoiserTextures dt(
+        m_GBuffer.GetTexture(GBUFFER_MOTION_VECTOR),
+        m_GBuffer.GetTexture(GBUFFER_LINEAR_DEPTH),
+        m_GBuffer.GetTexture(GBUFFER_NORMAL_ROUGHNESS),
+        m_LightPass.GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE),
+        m_LightPass.GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR),
+        m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE),
+        m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR)
+    );
+    return dt;
 }
 
 void DeferredRenderer::Render(Window& window)
@@ -291,15 +305,7 @@ void DeferredRenderer::Render(Window& window)
         auto lightMapHeap = m_LightPass.m_SRVHeap;
         auto gBufferHeap = m_GBuffer.m_SRVHeap;
 
-        DenoiserTextures dt(
-            m_GBuffer.GetTexture(GBUFFER_MOTION_VECTOR),
-            m_GBuffer.GetTexture(GBUFFER_LINEAR_DEPTH),
-            m_GBuffer.GetTexture(GBUFFER_NORMAL_ROUGHNESS),
-            m_LightPass.GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE),
-            m_LightPass.GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR),
-            m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE),
-            m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR)
-        );
+        DenoiserTextures dt = GetDenoiserTextures();
 
         commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gBufferHeap.heap.Get());
 
@@ -347,7 +353,7 @@ void DeferredRenderer::Render(Window& window)
                 D3D12_RESOURCE_STATE_PRESENT,
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 
-        m_NvidiaDenoiser->RenderFrame(*commandList, cameraCB, dt, window.m_CurrentBackBufferIndex, m_Width, m_Height);
+        m_NvidiaDenoiser->RenderFrame(*commandList, cameraCB, window.m_CurrentBackBufferIndex, m_Width, m_Height);
 
         commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gBufferHeap.heap.Get());
 
@@ -552,5 +558,6 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     m_LightPass.OnResize(m_Width, m_Height);
     m_CompositionPass.OnResize(m_Width, m_Height);
     m_DebugTexturePass.OnResize(m_Width, m_Height);
-    m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height));
+    
+    m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height, GetDenoiserTextures()));
 }

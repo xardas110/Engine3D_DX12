@@ -9,6 +9,7 @@
 #include <Helpers.h>
 #include <imgui.h>
 
+
 std::string errorResult[] =
 {
 	"Success", "FAILURE", "INVALID ARGUMENT",
@@ -26,28 +27,7 @@ void NRDERRORCHECK(nri::Result result)
 	throw std::exception(errorResult[(int)result].c_str());
 }
 
-namespace nriTypes
-{
-	enum Type
-	{
-		inMV,
-		inNormalRoughness,
-		inViewZ,
-		inIndirectDiffuse,
-		inIndirectSpecular,
-		outIndirectDiffuse,
-		outIndirectSpecular,
-		size
-	};
-}
-
-struct NRITextures
-{
-	nri::TextureTransitionBarrierDesc entryDescs = {};
-	nri::Format entryFormat = {};
-}nriTextures[nriTypes::size];
-
-NvidiaDenoiser::NvidiaDenoiser(int width, int height)
+NvidiaDenoiser::NvidiaDenoiser(int width, int height, DenoiserTextures& texs)
 {
 	auto device = Application::Get().GetDevice();
 	auto cq = Application::Get().GetCommandQueue();
@@ -100,60 +80,36 @@ NvidiaDenoiser::NvidiaDenoiser(int width, int height)
 	{
 		throw std::exception("Failed to create NRI interface");
 	}
-}
-
-NvidiaDenoiser::~NvidiaDenoiser()
-{
-	//Clean this sht somehow
-
-	m_CommandAllocator->Reset();
-
-	NRD.Destroy();
-
-	//NRI.DestroyCommandBuffer(*nriCommandBuffer);
-
-	//for (uint32_t i = 0; i < nriTypes::size; i++)
-	//	NRI.DestroyTexture((nri::Texture&)nriTextures[i].entryDescs.texture);
-	
-	nri::DestroyDevice(*m_NRIDevice);
-	
-}
-
-void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, DenoiserTextures& texs, int currentBackbufferIndex, int width, int height)
-{
-	/*
-	nri::CommandBufferD3D12Desc commandBufferDesc = {};
-	commandBufferDesc.d3d12CommandList = (ID3D12GraphicsCommandList*)commandList.GetGraphicsCommandList().Get();
-	commandBufferDesc.d3d12CommandAllocator = m_CommandAllocator.Get();
-
-	NRI.CreateCommandBufferD3D12(*m_NRIDevice, commandBufferDesc, nriCommandBuffer);
-
-	NRITextures nriTextures[nriTypes::size];
 
 	{//Normalrough
 		nri::TextureD3D12Desc normalRoughDesc = {};
 
 		normalRoughDesc.d3d12Resource = texs.inNormalRough.GetD3D12Resource().Get();
 
-		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inNormalRoughness].entryDescs;
+		auto& current = nriTextures[nriTypes::inNormalRoughness];
 
 		nriTextures[nriTypes::inNormalRoughness].entryFormat =
 			nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R10G10B10A2_UNORM);
 
-		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, normalRoughDesc, (nri::Texture*&)entryDesc.texture));
+		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, normalRoughDesc, current.texture));
 
-		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE;
-		entryDesc.nextLayout = nri::TextureLayout::SHADER_RESOURCE;
+		current.entryDescs.texture = current.texture;
+
+		current.entryDescs.nextAccess = nri::AccessBits::SHADER_RESOURCE;
+		current.entryDescs.nextLayout = nri::TextureLayout::SHADER_RESOURCE;
 	};
 	{//Motion Vector
 		nri::TextureD3D12Desc texDesc = {};
 		texDesc.d3d12Resource = texs.inMV.GetD3D12Resource().Get();
 
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inMV].entryDescs;
+		auto& current = nriTextures[nriTypes::inMV];
 
 		nriTextures[nriTypes::inMV].entryFormat = nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R16G16B16A16_FLOAT);
 
-		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, (nri::Texture*&)entryDesc.texture));
+		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, current.texture));
+
+		entryDesc.texture = current.texture;
 
 		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE;
 		entryDesc.nextLayout = nri::TextureLayout::SHADER_RESOURCE;
@@ -163,10 +119,12 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 		texDesc.d3d12Resource = texs.inViewZ.GetD3D12Resource().Get();
 
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inViewZ].entryDescs;
+		auto& current = nriTextures[nriTypes::inViewZ];
 
 		nriTextures[nriTypes::inViewZ].entryFormat = nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R32_FLOAT);
 
-		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, (nri::Texture*&)entryDesc.texture));
+		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, current.texture));
+		entryDesc.texture = current.texture;
 
 		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE;
 		entryDesc.nextLayout = nri::TextureLayout::SHADER_RESOURCE;
@@ -176,10 +134,12 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 		texDesc.d3d12Resource = texs.inIndirectDiffuse.GetD3D12Resource().Get();
 
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inIndirectDiffuse].entryDescs;
+		auto& current = nriTextures[nriTypes::inIndirectDiffuse];
 
 		nriTextures[nriTypes::inIndirectDiffuse].entryFormat = nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R16G16B16A16_FLOAT);
 
-		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, (nri::Texture*&)entryDesc.texture));
+		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, current.texture));
+		entryDesc.texture = current.texture;
 
 		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE;
 		entryDesc.nextLayout = nri::TextureLayout::SHADER_RESOURCE;
@@ -189,10 +149,12 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 		texDesc.d3d12Resource = texs.inIndirectSpecular.GetD3D12Resource().Get();
 
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::inIndirectSpecular].entryDescs;
+		auto& current = nriTextures[nriTypes::inIndirectSpecular];
 
 		nriTextures[nriTypes::inIndirectSpecular].entryFormat = nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R16G16B16A16_FLOAT);
 
-		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, (nri::Texture*&)entryDesc.texture));
+		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, current.texture));
+		entryDesc.texture = current.texture;
 
 		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE;
 		entryDesc.nextLayout = nri::TextureLayout::SHADER_RESOURCE;
@@ -202,11 +164,13 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 		texDesc.d3d12Resource = texs.outIndirectDiffuse.GetD3D12Resource().Get();
 
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::outIndirectDiffuse].entryDescs;
+		auto& current = nriTextures[nriTypes::outIndirectDiffuse];
 
 		nriTextures[nriTypes::outIndirectDiffuse].entryFormat = nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R16G16B16A16_FLOAT);
 
-		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, (nri::Texture*&)entryDesc.texture));
-
+		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, current.texture));
+		
+		entryDesc.texture = current.texture;
 		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE_STORAGE;
 		entryDesc.nextLayout = nri::TextureLayout::GENERAL;
 	};
@@ -215,15 +179,37 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 		texDesc.d3d12Resource = texs.outIndirectSpecular.GetD3D12Resource().Get();
 
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::outIndirectSpecular].entryDescs;
+		auto& current = nriTextures[nriTypes::outIndirectSpecular];
 
 		nriTextures[nriTypes::outIndirectSpecular].entryFormat = nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R16G16B16A16_FLOAT);
 
-		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, (nri::Texture*&)entryDesc.texture));
+		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, current.texture));
 
+		entryDesc.texture = current.texture;
 		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE_STORAGE;
 		entryDesc.nextLayout = nri::TextureLayout::GENERAL;
 	};
+}
 
+NvidiaDenoiser::~NvidiaDenoiser()
+{
+	m_CommandAllocator->Reset();
+
+	NRD.Destroy();	
+
+	for (uint32_t i = 0; i < nriTypes::size; i++)
+		NRI.DestroyTexture(*nriTextures[i].texture);
+
+	nri::DestroyDevice(*m_NRIDevice);
+}
+
+void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, int currentBackbufferIndex, int width, int height)
+{
+	nri::CommandBufferD3D12Desc commandBufferDesc = {};
+	commandBufferDesc.d3d12CommandList = (ID3D12GraphicsCommandList*)commandList.GetGraphicsCommandList().Get();
+	commandBufferDesc.d3d12CommandAllocator = m_CommandAllocator.Get();
+	
+	NRI.CreateCommandBufferD3D12(*m_NRIDevice, commandBufferDesc, nriCommandBuffer);
 
 	commonSettings = {};
 
@@ -274,5 +260,6 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	}
 
 	NRD.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, true);
-	*/
+
+	NRI.DestroyCommandBuffer(*nriCommandBuffer);
 }

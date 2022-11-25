@@ -65,6 +65,8 @@ class DeferredRenderer
 		return renderTexture;
 	}
 	
+	DenoiserTextures GetDenoiserTextures();
+
 	const Texture* renderTexture{ nullptr };
 
 	std::vector<Transform> prevTrans;
