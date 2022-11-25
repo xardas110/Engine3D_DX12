@@ -384,13 +384,13 @@ void DeferredRenderer::Render(Window& window)
             &CD3DX12_RESOURCE_BARRIER::Transition(
                 dt.outIndirectDiffuse.GetD3D12Resource().Get(),
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                D3D12_RESOURCE_STATE_PRESENT));
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
         commandList->GetGraphicsCommandList()->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
                 dt.outIndirectSpecular.GetD3D12Resource().Get(), 
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                D3D12_RESOURCE_STATE_PRESENT));
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
     }
     {//Composition branch
@@ -471,6 +471,19 @@ void DeferredRenderer::Render(Window& window)
         commandList->Draw(3);
     }
     */
+    { //Set UAV buffers back to present for denoising
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_PRESENT));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_PRESENT));
+    }
     {//Graphics execute
         PIXBeginEvent(graphicsQueue->GetD3D12CommandQueue().Get(), 0, L"Graphics execute");
         std::vector<std::shared_ptr<CommandList>> commandLists;
