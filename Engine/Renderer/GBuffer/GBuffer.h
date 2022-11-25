@@ -3,12 +3,14 @@
 #include <RootSignature.h>
 #include <CommandList.h>
 #include <StaticDescriptorHeap.h>
+#include <TypesCompat.h>
 
 namespace GBufferParam
 {
 	enum
 	{
 		ObjectCB,		
+		CameraCB,
 		GlobalHeapData,
 		GlobalMatInfo,
 		GlobalMaterials,
@@ -39,6 +41,9 @@ private:
 	void ClearRendetTarget(CommandList& commandlist, float clearColor[4]);
 
 	void OnResize(int width, int height);
+
+	//See TypesCompat.h for gbuffer textures. i.e GBUFFER_ALBEDO == albedo type
+	const Texture& GetTexture(int type);
 
 	RenderTarget renderTarget;
 

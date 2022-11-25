@@ -4,6 +4,28 @@
 #include <TypesCompat.h>
 #include <CommandList.h>
 
+struct DenoiserTextures
+{
+	DenoiserTextures(const Texture& inMV, const Texture& inViewZ, const Texture& inNormalRough,
+		const Texture& inIndirectDiffuse, const Texture& inIndirectSpecular,
+		const Texture& outIndirectDiffuse, const Texture& outIndirectSpecular)
+		:	inMV(inMV), 
+			inViewZ(inViewZ),
+			inNormalRough(inNormalRough), 
+			inIndirectDiffuse(inIndirectDiffuse),
+			inIndirectSpecular(inIndirectSpecular), 
+			outIndirectDiffuse(outIndirectDiffuse),
+			outIndirectSpecular(outIndirectSpecular) {};
+
+	const Texture& inMV;
+	const Texture& inViewZ;
+	const Texture& inNormalRough;
+	const Texture& inIndirectDiffuse;
+	const Texture& inIndirectSpecular;
+	const Texture& outIndirectDiffuse;
+	const Texture& outIndirectSpecular;
+};
+
 class NvidiaDenoiser
 {
 	friend class DeferredRenderer;
@@ -15,7 +37,7 @@ class NvidiaDenoiser
 
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> m_Adapter;	
 
-	void RenderFrame(CommandList& commandList, const CameraCB& cam, LightPass& lightPass, int currentBackbufferIndex, int width, int height);
+	void RenderFrame(CommandList& commandList, const CameraCB& cam, DenoiserTextures& texs, int currentBackbufferIndex, int width, int height);
 	
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 	Microsoft::WRL::ComPtr<ID3D12CommandList> m_CommandList;

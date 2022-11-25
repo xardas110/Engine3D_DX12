@@ -7,11 +7,6 @@
 #include "../Common/MaterialAttributes.hlsl"
 #include "../Common/BRDF.hlsl"
 
-#include "..\..\..\Libs\RayTracingDenoiser\Shaders\Include\NRDEncoding.hlsli"
-
-#define NRD_HEADER_ONLY
-#include "..\..\..\Libs\RayTracingDenoiser\Shaders\Include\NRD.hlsli"
-
 RaytracingAccelerationStructure g_Scene                     : register(t0);
 Texture2D                       g_GlobalTextureData[]       : register(t1, space0);
 StructuredBuffer<MeshVertex>    g_GlobalMeshVertexData[]    : register(t1, space1);
@@ -41,9 +36,6 @@ struct PixelShaderOutput
     float4 DirectDiffuse    : SV_TARGET0;
     float4 IndirectDiffuse  : SV_TARGET1;
     float4 IndirectSpecular : SV_TARGET2;
-    float4 rtColor          : SV_TARGET3;
-    float4 normalRoughness  : SV_TARGET4;
-    float  linearDepth      : SV_TARGET5;
 };
   
 PixelShaderOutput main(float2 TexCoord : TEXCOORD)
@@ -56,18 +48,15 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     RngStateType rngState = InitRNG(pixelCoords, g_Camera.resolution, g_RaytracingData.frameNumber);
     
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);
-    
-    if (fi.shaderModel < 0.48f || fi.shaderModel > 0.52f)
+    float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj);
+                    
+    if (fi.shaderModel == SM_SKY)
     {
         OUT.DirectDiffuse = float4(g_SkyColor, 1.f);
         OUT.IndirectDiffuse = float4(0.f, 0.f, 0.f, 0.f);
         OUT.IndirectSpecular = float4(0.f, 0.f, 0.f, 0.f);
-        OUT.linearDepth = 50001.f;
-        OUT.normalRoughness = float4(0.f, 1.f, 0.f, 0.f);
         return OUT;
     }
-        
-    float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj);
         
     RayDesc ray;
     ray.TMin = 0.1f;
@@ -91,10 +80,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     currentMat.roughness = fi.roughness;
     currentMat.normal = fi.normal;
     geometryNormal = fi.normal;
-            
-    OUT.normalRoughness = NRD_FrontEnd_PackNormalAndRoughness(fi.normal, fi.roughness);
-    OUT.linearDepth = (2.f * g_Camera.zNear * g_Camera.zFar) / (g_Camera.zFar + g_Camera.zNear - fi.depth * (g_Camera.zFar - g_Camera.zNear));
-              
+                  
     float3 V = -ray.Direction;
     float3 L = -g_DirectionalLight.direction.rgb;    
                  
@@ -334,9 +320,10 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     {
         color = g_SkyColor;
     }
-   */
+  
         
     OUT.rtColor = float4(color, 1.f);
-    
+     */
+        
     return OUT;
 };

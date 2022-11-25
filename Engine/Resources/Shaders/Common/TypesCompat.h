@@ -47,6 +47,29 @@ using namespace DirectX;
 #define DEBUG_RAYTRACING_UV 5
 #define DEBUG_RAYTRACING_POS 6
 
+//0-7 color targets and 8 is depth
+#define GBUFFER_ALBEDO 0
+#define GBUFFER_NORMAL_ROUGHNESS 1
+#define GBUFFER_MOTION_VECTOR 2
+#define GBUFFER_EMISSIVE_SHADER_MODEL 3
+#define GBUFFER_AO_METALLIC_HEIGHT 4
+#define GBUFFER_LINEAR_DEPTH 5
+#define GBUFFER_STANDARD_DEPTH 8
+
+//RenderTargets 0-7 color
+#define LIGHTBUFFER_DIRECT_LIGHT 0
+#define LIGHTBUFFER_INDIRECT_DIFFUSE 1
+#define LIGHTBUFFER_INDIRECT_SPECULAR 2
+//UAV buffers
+#define LIGHTBUFFER_ACCUM_BUFFER 3
+#define LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE 4
+#define LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR 5
+
+//ShaderModels max 255 shader models
+#define SM_SKY 0
+#define SM_BRDF 1
+#define SM_BSDF 2
+
 struct Material
 {
     //Color with opacity
@@ -69,7 +92,6 @@ struct Material
             ao, albedo, normal, roughness, metallic, opacity, emissive, lightmap, height, NumMaterialTypes
         };
     }
-
 #endif // !hlsl
 
 struct MaterialInfo
@@ -114,7 +136,7 @@ struct ObjectCB
     UINT entId UINT_MAX_NULL;
     UINT meshId UINT_MAX_NULL;
     UINT materialGPUID UINT_MAX_NULL; //for raster
-    UINT pad2 UINT_MAX_NULL;
+    UINT shaderModel COMPAT_FLOAT(1.f);
 
     XMMATRIX transposeInverseModel;
     XMMATRIX invWorldToPrevWorld;
