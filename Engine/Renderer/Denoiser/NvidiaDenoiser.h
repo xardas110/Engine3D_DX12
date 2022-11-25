@@ -4,6 +4,16 @@
 #include <TypesCompat.h>
 #include <CommandList.h>
 
+#include <NRI.h>
+
+#include <Extensions/NRIWrapperD3D12.h>
+#include <Extensions/NRIHelper.h>
+
+#include <NRD.h>
+#include <NRDIntegration.h>
+
+#include <NRDSettings.h>
+
 struct DenoiserTextures
 {
 	DenoiserTextures(const Texture& inMV, const Texture& inViewZ, const Texture& inNormalRough,
@@ -29,11 +39,10 @@ struct DenoiserTextures
 class NvidiaDenoiser
 {
 	friend class DeferredRenderer;
+	friend struct std::default_delete<NvidiaDenoiser>;
 
-	NvidiaDenoiser();
+	NvidiaDenoiser(int width, int height);
 	~NvidiaDenoiser();
-
-	void Init(int width, int height, LightPass& lightPass);
 
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> m_Adapter;	
 
@@ -41,4 +50,19 @@ class NvidiaDenoiser
 	
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 
+	NrdIntegration NRD = NrdIntegration(3);
+
+	struct NriInterface
+		: public nri::CoreInterface
+		, public nri::HelperInterface
+		, public nri::WrapperD3D12Interface
+	{};
+
+	nri::Device* m_NRIDevice;
+
+	NriInterface NRI;
+
+	nrd::CommonSettings commonSettings = {};
+
+	nri::CommandBuffer* nriCommandBuffer = nullptr;
 };

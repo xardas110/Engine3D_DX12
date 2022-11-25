@@ -46,6 +46,13 @@ bool Game::Initialize()
     m_pWindow->RegisterCallbacks(shared_from_this());
     m_pWindow->Show();
 
+    // auto bathRoom = CreateEntity("bathroom");
+// bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/Sponza.dae");
+// auto& trans = bathRoom.GetComponent<TransformComponent>();
+
+//  trans.scale = { 0.015f, 0.015f, 0.015f };
+//  trans.pos = { 0.f, 0.f, -50.f };
+
     return true;
 }
 

@@ -49,7 +49,7 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_Raytracer = std::unique_ptr<Raytracing>(new Raytracing());
     m_Raytracer->Init();
 
-    m_NvidiaDenoiser.Init(width, height, m_LightPass);
+    m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(width, height));
 }
 
 DeferredRenderer::~DeferredRenderer()
@@ -347,7 +347,7 @@ void DeferredRenderer::Render(Window& window)
                 D3D12_RESOURCE_STATE_PRESENT,
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 
-        m_NvidiaDenoiser.RenderFrame(*commandList, cameraCB, dt, window.m_CurrentBackBufferIndex, m_Width, m_Height);
+        m_NvidiaDenoiser->RenderFrame(*commandList, cameraCB, dt, window.m_CurrentBackBufferIndex, m_Width, m_Height);
 
         commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gBufferHeap.heap.Get());
 
@@ -552,5 +552,5 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     m_LightPass.OnResize(m_Width, m_Height);
     m_CompositionPass.OnResize(m_Width, m_Height);
     m_DebugTexturePass.OnResize(m_Width, m_Height);
-    m_NvidiaDenoiser.Init(m_Width, m_Height, m_LightPass);
+    m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height));
 }

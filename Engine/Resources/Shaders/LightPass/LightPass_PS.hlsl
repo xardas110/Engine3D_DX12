@@ -146,13 +146,13 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         {                
             if (brdfType == BRDF_TYPE_DIFFUSE)
             {     
-                firstDiffuseBounceDistance = 50000.f;
+                firstDiffuseBounceDistance = 50001.f;
                 indirectDiffuse += troughput * g_SkyColor;      
             }
             else
                 
             {              
-                firstSpecularBounceDistance = 50000.f;
+                firstSpecularBounceDistance = 50001.f;
                 indirectSpecular += troughput * g_SkyColor;
             }           
             break;
@@ -231,19 +231,6 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     OUT.IndirectDiffuse = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectDiffuse, firstDiffuseBounceDistance);
     OUT.IndirectSpecular = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectSpecular, firstSpecularBounceDistance);
     OUT.DirectDiffuse = float4(directRadiance, 1.f);
-        
-    /*    
-    float3 accumulatedColor = g_accumulationBuffer[3][pixelCoords].rgb + finalGather;
-    g_accumulationBuffer[3][pixelCoords] = float4(accumulatedColor, 1.0f);
-        
-    OUT.DirectDiffuse = float4(accumulatedColor / g_RaytracingData.accumulatedFrameNumber, 1.f);
-        
-    if (g_RaytracingData.bResetDuty == 1)
-    {
-        g_accumulationBuffer[3][pixelCoords] = float4(finalGather, 1.f);
-        OUT.DirectDiffuse = float4(finalGather, 1.f);
-    }
-       */     
         
     if (DEBUG_FINAL_COLOR == g_RaytracingData.debugSettings)
     {           

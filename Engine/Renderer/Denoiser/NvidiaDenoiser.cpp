@@ -3,33 +3,11 @@
 #include <Application.h>
 #include <CommandQueue.h>
 
-#include <NRI.h>
 #include <NRIDescs.hpp>
-#include <Extensions/NRIWrapperD3D12.h>
-#include <Extensions/NRIHelper.h>
-
-#include <NRD.h>
-#include <NRDIntegration.h>
 #include <NRDIntegration.hpp>
-#include <NRDSettings.h>
+
 #include <Helpers.h>
 #include <imgui.h>
-
-NrdIntegration NRD = NrdIntegration(3);
-
-struct NriInterface
-	: public nri::CoreInterface
-	, public nri::HelperInterface
-	, public nri::WrapperD3D12Interface
-{};
-
-nri::Device* m_NRIDevice;
-
-NriInterface NRI;
-
-nrd::CommonSettings commonSettings = {};
-
-nri::CommandBuffer* nriCommandBuffer = nullptr;
 
 std::string errorResult[] =
 {
@@ -47,9 +25,6 @@ void NRDERRORCHECK(nri::Result result)
 
 	throw std::exception(errorResult[(int)result].c_str());
 }
-
-// Better use "true" if resources are not changing between frames (i.e. are not suballocated from a heap)
-bool enableDescriptorCaching = true;
 
 namespace nriTypes
 {
@@ -72,7 +47,7 @@ struct NRITextures
 	nri::Format entryFormat = {};
 }nriTextures[nriTypes::size];
 
-NvidiaDenoiser::NvidiaDenoiser()
+NvidiaDenoiser::NvidiaDenoiser(int width, int height)
 {
 	auto device = Application::Get().GetDevice();
 	auto cq = Application::Get().GetCommandQueue();
@@ -108,26 +83,7 @@ NvidiaDenoiser::NvidiaDenoiser()
 	NRDERRORCHECK(nriResult);
 
 	ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator)));
-}
 
-NvidiaDenoiser::~NvidiaDenoiser()
-{
-	//Clean this sht somehow
-
-	NRD.Destroy();
-
-
-	NRI.DestroyCommandBuffer(*nriCommandBuffer);
-
-	nri::DestroyDevice(*m_NRIDevice);
-	
-
-	//m_NRIDevice = nullptr;
-	
-}
-
-void NvidiaDenoiser::Init(int width, int height, LightPass& lightPass)
-{
 	const nrd::MethodDesc methodDescs[] =
 	{
 		// Put neeeded methods here, like:
@@ -146,13 +102,33 @@ void NvidiaDenoiser::Init(int width, int height, LightPass& lightPass)
 	}
 }
 
+NvidiaDenoiser::~NvidiaDenoiser()
+{
+	//Clean this sht somehow
+
+	m_CommandAllocator->Reset();
+
+	NRD.Destroy();
+
+	//NRI.DestroyCommandBuffer(*nriCommandBuffer);
+
+	//for (uint32_t i = 0; i < nriTypes::size; i++)
+	//	NRI.DestroyTexture((nri::Texture&)nriTextures[i].entryDescs.texture);
+	
+	nri::DestroyDevice(*m_NRIDevice);
+	
+}
+
 void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, DenoiserTextures& texs, int currentBackbufferIndex, int width, int height)
 {
+	/*
 	nri::CommandBufferD3D12Desc commandBufferDesc = {};
 	commandBufferDesc.d3d12CommandList = (ID3D12GraphicsCommandList*)commandList.GetGraphicsCommandList().Get();
 	commandBufferDesc.d3d12CommandAllocator = m_CommandAllocator.Get();
 
 	NRI.CreateCommandBufferD3D12(*m_NRIDevice, commandBufferDesc, nriCommandBuffer);
+
+	NRITextures nriTextures[nriTypes::size];
 
 	{//Normalrough
 		nri::TextureD3D12Desc normalRoughDesc = {};
@@ -251,36 +227,11 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 
 	commonSettings = {};
 
-	auto view =  cam.view ;
-	auto prevView =  cam.prevView;
-	auto proj = cam.proj;
-	auto prevProj = cam.prevProj;
-/*
-	auto currentPos = XMMatrixInverse(nullptr, view).r[3];
-	auto prevPos = XMMatrixInverse(nullptr, prevView).r[3];
-
-	auto delta = prevPos - currentPos;
-
-
-
-	view.r[3] = { 0.f, 0.f, 0.f, 1.f };
-	prevView.r[3] = { 0.f, 0.f, 0.f, 1.f };
-
-	delta.m128_f32[3] = 1.f;
-
-	auto model = XMMatrixIdentity();
-	model = XMMatrixTranslationFromVector(-delta);
-
-	prevView = model * prevView;
-*/
-
-//	PrintMatrix(prevView);
-
-	memcpy(commonSettings.worldToViewMatrix, &view, sizeof(cam.view));
-	memcpy(commonSettings.viewToClipMatrix, &proj, sizeof(cam.proj));
+	memcpy(commonSettings.worldToViewMatrix, &cam.view, sizeof(cam.view));
+	memcpy(commonSettings.viewToClipMatrix, &cam.proj, sizeof(cam.proj));
 	
-	memcpy(commonSettings.worldToViewMatrixPrev, &prevView, sizeof(cam.prevView));
-	memcpy(commonSettings.viewToClipMatrixPrev, &prevProj, sizeof(cam.prevProj));
+	memcpy(commonSettings.worldToViewMatrixPrev, &cam.prevView, sizeof(cam.prevView));
+	memcpy(commonSettings.viewToClipMatrixPrev, &cam.prevProj, sizeof(cam.prevProj));
 
 	commonSettings.motionVectorScale[0] = { 0 };
 	commonSettings.motionVectorScale[1] = { 0 };
@@ -288,8 +239,6 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	commonSettings.isMotionVectorInWorldSpace = true;
 
 	nrd::ReblurSettings settings = {};
-	//settings.enableReferenceAccumulation = true;
-	//settings.enablePerformanceMode = true;
 	NRD.SetMethodSettings(nrd::Method::REBLUR_DIFFUSE_SPECULAR, &settings);
 
 	NrdUserPool userPool = {};
@@ -325,4 +274,5 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	}
 
 	NRD.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, true);
+	*/
 }

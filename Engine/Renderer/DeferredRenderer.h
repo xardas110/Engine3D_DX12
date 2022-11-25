@@ -48,10 +48,10 @@ class DeferredRenderer
 	std::unique_ptr<Raytracing> m_Raytracer{nullptr};
 
 	GBuffer m_GBuffer;
-	LightPass m_LightPass;
+	LightPass m_LightPass; //Init before denoiser
 	CompositionPass m_CompositionPass;
 	DebugTexturePass m_DebugTexturePass;	
-	NvidiaDenoiser m_NvidiaDenoiser;
+	std::unique_ptr<NvidiaDenoiser> m_NvidiaDenoiser;
 
 	CameraCB cameraCB;
 

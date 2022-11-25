@@ -239,7 +239,7 @@ void GBuffer::CreateDepthPrePassPipeline()
 void GBuffer::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
 {
     float zeroColor[] = { 0.f, 0.f, 0.f, 0.f };
-    float skyClear[] = { 50000.f, 50000.f, 50000.f, 50000.f };
+    float skyClear[] = { 50001.f, 50001.f, 50001.f, 50001.f };
 
     commandlist.ClearTexture(renderTarget.GetTexture((AttachmentPoint)GBUFFER_ALBEDO), clearColor);
 
