@@ -288,7 +288,8 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	commonSettings.isMotionVectorInWorldSpace = true;
 	
 	nrd::ReblurSettings settings = {};
-	settings.enableReferenceAccumulation = true;
+	//settings.enableReferenceAccumulation = true;
+	//settings.enablePerformanceMode = true;
 	NRD.SetMethodSettings(nrd::Method::REBLUR_DIFFUSE_SPECULAR, &settings);
 
 	NrdUserPool userPool = {};

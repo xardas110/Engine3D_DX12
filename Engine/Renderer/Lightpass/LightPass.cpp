@@ -40,6 +40,10 @@ void LightPass::CreateRenderTarget(int width, int height)
     rwAccumDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     rwAccumDesc.MipLevels = 1;
  
+    auto rtDebugDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM , width, height);
+    rtDebugDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    rtDebugDesc.MipLevels = 1;
+
     Texture directDiffuse = Texture(directDiffuseDesc, &ClearValue(directDiffuseDesc.Format, {0.f, 0.f, 0.f, 0.f}),
         TextureUsage::RenderTarget,
         L"LightPass DirectDiffuse");
@@ -51,6 +55,10 @@ void LightPass::CreateRenderTarget(int width, int height)
     Texture indirectSpecular = Texture(indirectSpecularDesc, &ClearValue(indirectSpecularDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
         TextureUsage::RenderTarget,
         L"LightPass IndirectSpecular");
+
+    Texture rtDebug = Texture(rtDebugDesc, &ClearValue(rtDebugDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
+        TextureUsage::RenderTarget,
+        L"LightPass RtDebug");
 
     denoisedIndirectDiffuse = Texture(outIndirectDiffuseDesc, nullptr,
         TextureUsage::RenderTarget,
@@ -67,6 +75,7 @@ void LightPass::CreateRenderTarget(int width, int height)
     renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_DIRECT_LIGHT, directDiffuse);
     renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_INDIRECT_DIFFUSE, indirectDiffuse);
     renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_INDIRECT_SPECULAR, indirectSpecular);
+    renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_RT_DEBUG, rtDebug);
 }
 
 void LightPass::CreatePipeline()
@@ -82,21 +91,21 @@ void LightPass::CreatePipeline()
 
     CD3DX12_DESCRIPTOR_RANGE1 srvHeapRanges[3] = {};
     srvHeapRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvHeapRanges[0].NumDescriptors = 512;
+    srvHeapRanges[0].NumDescriptors = UINT_MAX;
     srvHeapRanges[0].BaseShaderRegister = 1;
     srvHeapRanges[0].RegisterSpace = 0;
     srvHeapRanges[0].OffsetInDescriptorsFromTableStart = 0;
     srvHeapRanges[0].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     srvHeapRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvHeapRanges[1].NumDescriptors = 240;
+    srvHeapRanges[1].NumDescriptors = UINT_MAX;
     srvHeapRanges[1].BaseShaderRegister = 1;
     srvHeapRanges[1].RegisterSpace = 1;
     srvHeapRanges[1].OffsetInDescriptorsFromTableStart = 0;
     srvHeapRanges[1].Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     srvHeapRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvHeapRanges[2].NumDescriptors = 240;
+    srvHeapRanges[2].NumDescriptors = UINT_MAX;
     srvHeapRanges[2].BaseShaderRegister = 1;
     srvHeapRanges[2].RegisterSpace = 2;
     srvHeapRanges[2].OffsetInDescriptorsFromTableStart = 0;
@@ -104,7 +113,7 @@ void LightPass::CreatePipeline()
  
     CD3DX12_DESCRIPTOR_RANGE1 gBufferSRVHeap = {};
     gBufferSRVHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    gBufferSRVHeap.NumDescriptors = 5;
+    gBufferSRVHeap.NumDescriptors = 20;
     gBufferSRVHeap.BaseShaderRegister = 5;
     gBufferSRVHeap.RegisterSpace = 6;
     gBufferSRVHeap.OffsetInDescriptorsFromTableStart = 0;
@@ -180,6 +189,7 @@ void LightPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_DIRECT_LIGHT), clearValue);
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE), clearValue);
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR), clearValue);
+    commandlist.ClearTexture(GetTexture(LIGHTBUFFER_RT_DEBUG), clearValue);
 }
 
 void LightPass::OnResize(int width, int height)
@@ -205,6 +215,10 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateSRVViews()
     device->CreateShaderResourceView(
         GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR).GetD3D12Resource().Get(), nullptr,
         m_SRVHeap.SetHandle(LIGHTBUFFER_INDIRECT_SPECULAR));
+
+    device->CreateShaderResourceView(
+        GetTexture(LIGHTBUFFER_RT_DEBUG).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(LIGHTBUFFER_RT_DEBUG));
 
     return m_SRVHeap.GetHandleAtStart();
 }

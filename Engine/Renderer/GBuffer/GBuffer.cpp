@@ -117,7 +117,7 @@ void GBuffer::CreatePipeline()
 
     CD3DX12_DESCRIPTOR_RANGE1 srvRanges[1] = {};
     srvRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvRanges[0].NumDescriptors = 512;
+    srvRanges[0].NumDescriptors = UINT_MAX;
     srvRanges[0].BaseShaderRegister = 1;
     srvRanges[0].RegisterSpace = 0;
     srvRanges[0].OffsetInDescriptorsFromTableStart = 0;

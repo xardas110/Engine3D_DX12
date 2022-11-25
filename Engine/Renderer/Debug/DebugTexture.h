@@ -2,6 +2,7 @@
 #include <RenderTarget.h>
 #include <RootSignature.h>
 #include <CommandList.h>
+#include <StaticDescriptorHeap.h>
 
 namespace DebugTextureParam
 {
@@ -19,6 +20,7 @@ private:
 	friend class Window;
 
 	DebugTexturePass(int width, int height)
+		:srvHeap(5)
 	{
 		CreatePipeline();
 		CreateRenderTarget(width, height);
@@ -33,4 +35,6 @@ private:
 	RenderTarget renderTarget;
 	RootSignature rootSignature;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipeline;
+
+	SRVHeapData srvHeap;
 };
