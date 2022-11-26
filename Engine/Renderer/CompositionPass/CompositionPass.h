@@ -16,6 +16,7 @@ namespace CompositionPassParam
 		GlobalMeshInfo,
 		RaytracingDataCB,
 		CameraCB,
+		Cubemap,
 		Size
 	};
 }

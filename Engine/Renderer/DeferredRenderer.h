@@ -10,6 +10,7 @@
 #include <CompositionPass/CompositionPass.h>
 #include <Debug/DebugTexture.h>
 #include <NvidiaDenoiser.h>
+#include <Skybox/Skybox.h>
 
 class Game;
 class MeshTuple;
@@ -70,5 +71,7 @@ class DeferredRenderer
 	const Texture* renderTexture{ nullptr };
 
 	std::vector<Transform> prevTrans;
+
+	std::unique_ptr<Skybox> m_Skybox;
 };
 

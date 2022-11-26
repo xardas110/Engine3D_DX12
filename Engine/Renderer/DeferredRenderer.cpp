@@ -50,6 +50,7 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_Raytracer->Init();
 
     m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(width, height, GetDenoiserTextures()));
+    m_Skybox = std::unique_ptr<Skybox>(new Skybox(L"Assets/Textures/grace-new.hdr"));
 }
 
 DeferredRenderer::~DeferredRenderer()
@@ -431,13 +432,15 @@ void DeferredRenderer::Render(Window& window)
         auto lightMapView = m_LightPass.CreateSRVViews();
         auto lightMapHeap = m_LightPass.m_SRVHeap;
 
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, lightMapHeap.heap.Get());
-
         commandList->GetGraphicsCommandList()->SetGraphicsRootShaderResourceView(
             CompositionPassParam::AccelerationStructure,
             m_Raytracer->GetCurrentTLAS()->GetGPUVirtualAddress());
 
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, lightMapHeap.heap.Get());
         commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(CompositionPassParam::LightMapHeap, lightMapView);
+
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_Skybox->heap.heap.Get());
+        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(CompositionPassParam::Cubemap, m_Skybox->GetSRVView());
 
         commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::RaytracingDataCB, rtData);
         commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::CameraCB, cameraCB);
