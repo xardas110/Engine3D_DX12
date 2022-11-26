@@ -101,12 +101,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     BRDFData gBufferBRDF = PrepareBRDFData(currentMat.normal, L, V, currentMat);
         
     if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
-    {
-        
+    {        
         float3 diffuse = troughput * EvaluateDiffuseBRDF(gBufferBRDF);
         float3 specular = troughput * EvaluateSpecularBRDF(gBufferBRDF);
             
-        directRadiance += diffuse + specular;
+        directRadiance += (diffuse + specular) * g_DirectionalLight.color.w  * g_DirectionalLight.color.rgb;
     }
       
     OUT.DirectDiffuse = float4(directRadiance, 1.f);
@@ -229,8 +228,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {
             BRDFData data = PrepareBRDFData(hitSurface.normal, L, V, hitSurfaceMaterial);              
-            indirectDiffuse += troughput * (EvaluateDiffuseBRDF(data));
-            indirectSpecular += troughput * EvaluateSpecularBRDF(data);
+            indirectDiffuse += troughput * (EvaluateDiffuseBRDF(data)) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+            indirectSpecular += troughput * EvaluateSpecularBRDF(data) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
         }
                         
         currentMat = hitSurfaceMaterial;
