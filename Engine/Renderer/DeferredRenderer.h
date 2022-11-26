@@ -11,6 +11,7 @@
 #include <Debug/DebugTexture.h>
 #include <NvidiaDenoiser.h>
 #include <Skybox/Skybox.h>
+#include <HDR/HDR.h>
 
 class Game;
 class MeshTuple;
@@ -73,5 +74,6 @@ class DeferredRenderer
 	std::vector<Transform> prevTrans;
 
 	std::unique_ptr<Skybox> m_Skybox;
+
 };
 

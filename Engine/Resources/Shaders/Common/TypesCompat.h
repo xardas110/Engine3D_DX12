@@ -84,6 +84,39 @@ using namespace DirectX;
 #define SM_BRDF 1
 #define SM_BSDF 2
 
+// Tonemapping methods
+#define TM_Linear     0
+#define TM_Reinhard   1
+#define TM_ReinhardSq 2
+#define TM_ACESFilmic 3
+
+struct TonemapCB
+{
+    // The method to use to perform tonemapping.
+    UINT TonemapMethod COMPAT_ONE;
+    // Exposure should be expressed as a relative expsure value (-2, -1, 0, +1, +2 )
+    float Exposure COMPAT_FLOAT(0.f);
+
+    // The maximum luminance to use for linear tonemapping.
+    float MaxLuminance COMPAT_FLOAT(1.f);
+
+    // Reinhard constant. Generlly this is 1.0.
+    float K COMPAT_FLOAT(1.f);
+
+    // ACES Filmic parameters
+    // See: https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting/142
+    float A COMPAT_FLOAT(0.22f); // Shoulder strength
+    float B COMPAT_FLOAT(0.3f); // Linear strength
+    float C COMPAT_FLOAT(0.1f); // Linear angle
+    float D COMPAT_FLOAT(0.2f); // Toe strength
+    float E COMPAT_FLOAT(0.01f);; // Toe Numerator
+    float F COMPAT_FLOAT(0.3f);; // Toe denominator
+    // Note E/F = Toe angle.
+    float LinearWhite COMPAT_FLOAT(11.2f);
+
+    float Gamma COMPAT_FLOAT(2.2f);
+};
+
 struct Material
 {
     //Color with opacity
@@ -95,7 +128,6 @@ struct Material
     //Color for transperent objects
     XMFLOAT3 transparent COMPAT_VEC3F(1.f, 1.f, 1.f);
     float metallic COMPAT_FLOAT(1.f);
-
 };
 
 #ifndef hlsl

@@ -108,6 +108,7 @@ void CompositionPass::CreatePipeline()
     rootParameters[CompositionPassParam::RaytracingDataCB].InitAsConstantBufferView(0);
     rootParameters[CompositionPassParam::CameraCB].InitAsConstantBufferView(1);
     rootParameters[CompositionPassParam::Cubemap].InitAsDescriptorTable(1, &cubemapSRVHeap);
+    rootParameters[CompositionPassParam::TonemapCB].InitAsConstantBufferView(2);
 
     CD3DX12_STATIC_SAMPLER_DESC samplers[2];
     samplers[0] = CD3DX12_STATIC_SAMPLER_DESC(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT);
