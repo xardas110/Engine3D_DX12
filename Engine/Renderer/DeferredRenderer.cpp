@@ -439,6 +439,8 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(CompositionPassParam::LightMapHeap, lightMapView);
 
+        commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::RaytracingDataCB, rtData);
+
         commandList->Draw(3);
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     } 
@@ -485,8 +487,8 @@ void DeferredRenderer::Render(Window& window)
             &m_LightPass.GetTexture(LIGHTBUFFER_DIRECT_LIGHT),
             &m_LightPass.GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE),
             &m_LightPass.GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR),
-            &m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE),
-            &m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR),
+            &m_CompositionPass.renderTarget.GetTexture(AttachmentPoint::Color0),
+            &m_CompositionPass.renderTarget.GetTexture(AttachmentPoint::Color0),
             &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
             &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
             &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),

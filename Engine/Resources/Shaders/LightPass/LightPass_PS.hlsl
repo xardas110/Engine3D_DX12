@@ -232,6 +232,15 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     OUT.IndirectSpecular = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectSpecular, firstSpecularBounceDistance);
     OUT.DirectDiffuse = float4(directRadiance, 1.f);
         
+    if (DEBUG_LIGHTBUFFER_INDIRECT_DIFFUSE == g_RaytracingData.debugSettings)
+    {
+        OUT.IndirectDiffuse = float4(indirectDiffuse, 1.f);
+    }
+    else if (DEBUG_LIGHTBUFFER_INDIRECT_SPECULAR == g_RaytracingData.debugSettings)
+    {
+        OUT.IndirectSpecular = float4(indirectSpecular, 1.f);
+    }
+        
     if (DEBUG_FINAL_COLOR == g_RaytracingData.debugSettings)
     {           
         return OUT;

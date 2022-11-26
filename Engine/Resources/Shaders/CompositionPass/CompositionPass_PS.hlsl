@@ -21,6 +21,8 @@ Texture2D                       g_LightMapHeap[]            : register(t6, space
 SamplerState                    g_NearestRepeatSampler      : register(s0);
 SamplerState                    g_LinearRepeatSampler       : register(s1);
 
+ConstantBuffer<RaytracingDataCB> g_RaytracingData           : register(b0);
+    
 struct PixelShaderOutput
 {
     float4 ColorTexture    : SV_TARGET0;
@@ -41,5 +43,13 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
  
     OUT.ColorTexture = float4(directDiffuse.rgb + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb, 1.f);
 
+    if (g_RaytracingData.debugSettings == DEBUG_LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE)
+    {
+        OUT.ColorTexture = float4(denoisedIndirectDiffuse.rgb, 1.f);
+    }
+    else if (g_RaytracingData.debugSettings == DEBUG_LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR)
+    {
+         OUT.ColorTexture = float4(denoisedIndirectSpecular.rgb, 1.f);   
+    }
     return OUT;
 }

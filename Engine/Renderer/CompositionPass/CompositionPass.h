@@ -14,6 +14,7 @@ namespace CompositionPassParam
 		GlobalMatInfo,
 		GlobalMaterials,
 		GlobalMeshInfo,
+		RaytracingDataCB,
 		Size
 	};
 }
