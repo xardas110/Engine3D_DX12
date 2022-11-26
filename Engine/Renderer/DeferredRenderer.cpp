@@ -440,7 +440,7 @@ void DeferredRenderer::Render(Window& window)
         commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(CompositionPassParam::LightMapHeap, lightMapView);
 
         commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::RaytracingDataCB, rtData);
-        commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::CameraCB, cameraCB);
+        commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::CameraCB, cameraCB);
 
         commandList->Draw(3);
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
