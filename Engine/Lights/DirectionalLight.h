@@ -5,9 +5,9 @@ struct DirectionalLight
 {
 	DirectionalLight()
 	{
-		SetDirection(XMFLOAT3(-0.f, -0.58f, 0.f));
+		SetDirection(XMFLOAT3(-0.26f, -0.938f, -0.245f));
 		SetColor(XMFLOAT3(1.f, 1.f, 1.f));
-		SetItensity(1.f);
+		SetItensity(3.f);
 	}
 
 	void SetDirection(const XMFLOAT3 newDir);
