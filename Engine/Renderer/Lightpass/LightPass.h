@@ -19,6 +19,7 @@ namespace LightPassParam
 		CameraCB,
 		RaytracingDataCB,
 		AccumBuffer,
+		Cubemap,
 		Size
 	};
 }

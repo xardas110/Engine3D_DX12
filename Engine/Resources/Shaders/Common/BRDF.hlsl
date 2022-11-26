@@ -465,4 +465,9 @@ float3 ApproxSpecularIntegralGGX(float3 specularReflectance, float alpha, float 
     return mad(specularReflectance, max(0.0, scale), max(0.0, bias));
 }
 
+float4 SampleSky(in float3 dir, in TextureCube<float4> cubemap, in SamplerState linearSampler)
+{
+    return cubemap.Sample(linearSampler, dir);
+}
+
 #endif

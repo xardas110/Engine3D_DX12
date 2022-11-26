@@ -18,6 +18,8 @@ StructuredBuffer<Material>      g_GlobalMaterials           : register(t4, space
 
 Texture2D                       g_GBufferHeap[]             : register(t5, space6);
 
+TextureCube<float4>             g_Cubemap                   : register(t7, space8);
+    
 SamplerState                    g_NearestRepeatSampler      : register(s0);
 SamplerState                    g_LinearRepeatSampler       : register(s1);
 
@@ -43,7 +45,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
     PixelShaderOutput OUT;
         
-    float3 g_SkyColor = float3(0.4f, 0.6f, 0.9f);
+    //float3 g_SkyColor = float3(0.4f, 0.6f, 0.9f);
     uint2 pixelCoords = g_Camera.resolution * TexCoord;
 
     RngStateType rngState = InitRNG(pixelCoords, g_Camera.resolution, g_RaytracingData.frameNumber);
@@ -53,7 +55,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                     
     if (fi.shaderModel == SM_SKY)
     {
-        OUT.DirectDiffuse = float4(g_SkyColor, 1.f);
+        OUT.DirectDiffuse = float4(0.f, 0.f, 0.f, 0.f);
         OUT.IndirectDiffuse = float4(0.f, 0.f, 0.f, 0.f);
         OUT.IndirectSpecular = float4(0.f, 0.f, 0.f, 0.f);
         return OUT;
@@ -153,13 +155,13 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             if (brdfType == BRDF_TYPE_DIFFUSE)
             {     
                 firstDiffuseBounceDistance = 50001.f;
-                indirectDiffuse += troughput * g_SkyColor;      
+                indirectDiffuse += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;      
             }
             else
                 
             {              
                 firstSpecularBounceDistance = 50001.f;
-                indirectSpecular += troughput * g_SkyColor;
+                indirectSpecular += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;
             }           
             break;
         }
@@ -330,7 +332,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     }
     else
     {
-        color = g_SkyColor;
+        color = float4(1.f, 0.f, 0.f, 1.f);
     }
         
     OUT.rtDebug = float4(color, 1.f);

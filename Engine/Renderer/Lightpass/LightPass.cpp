@@ -127,6 +127,14 @@ void LightPass::CreatePipeline()
     gAccumBuffer.OffsetInDescriptorsFromTableStart = 0;
     gAccumBuffer.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
+    CD3DX12_DESCRIPTOR_RANGE1 cubemapSRVHeap = {};
+    cubemapSRVHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    cubemapSRVHeap.NumDescriptors = 6;
+    cubemapSRVHeap.BaseShaderRegister = 7;
+    cubemapSRVHeap.RegisterSpace = 8;
+    cubemapSRVHeap.OffsetInDescriptorsFromTableStart = 0;
+    cubemapSRVHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+
     CD3DX12_ROOT_PARAMETER1 rootParameters[LightPassParam::Size];
     rootParameters[LightPassParam::AccelerationStructure].InitAsShaderResourceView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
     rootParameters[LightPassParam::GBufferHeap].InitAsDescriptorTable(1, &gBufferSRVHeap);
@@ -138,6 +146,7 @@ void LightPass::CreatePipeline()
     rootParameters[LightPassParam::CameraCB].InitAsConstantBufferView(1);
     rootParameters[LightPassParam::RaytracingDataCB].InitAsConstantBufferView(2);
     rootParameters[LightPassParam::AccumBuffer].InitAsDescriptorTable(1, &gAccumBuffer);
+    rootParameters[LightPassParam::Cubemap].InitAsDescriptorTable(1, &cubemapSRVHeap);
 
     CD3DX12_STATIC_SAMPLER_DESC samplers[2];
     samplers[0] = CD3DX12_STATIC_SAMPLER_DESC(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT);

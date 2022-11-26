@@ -49,7 +49,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         float3 direction;
         GetCameraDirectionFromUV(pixelCoords, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, direction);
             
-        OUT.ColorTexture = g_Cubemap.Sample(g_LinearRepeatSampler, direction);
+        OUT.ColorTexture = SampleSky(direction, g_Cubemap, g_LinearRepeatSampler);
             
         return OUT;
     }
