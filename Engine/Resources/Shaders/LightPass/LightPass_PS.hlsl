@@ -94,9 +94,15 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
     query.Proceed();
         
+    BRDFData gBufferBRDF = PrepareBRDFData(currentMat.normal, L, V, currentMat);
+        
     if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
     {
-        directRadiance += troughput * EvaluateBRDF(currentMat.normal, L, V, currentMat);
+        
+        float3 diffuse = troughput * EvaluateDiffuseBRDF(gBufferBRDF);
+        float3 specular = troughput * EvaluateSpecularBRDF(gBufferBRDF);
+            
+        directRadiance += diffuse + specular;
     }
       
     OUT.DirectDiffuse = float4(directRadiance, 1.f);
@@ -226,7 +232,12 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         ray.Origin = shadowRayDesc.Origin;
     }
     
-    float3 finalGather = directRadiance + indirectDiffuse + indirectSpecular;
+    float3 fenv = ApproxSpecularIntegralGGX(gBufferBRDF.specularF0, gBufferBRDF.alpha, gBufferBRDF.NdotV);
+    float diffDemod = (1.f - fenv) * gBufferBRDF.diffuseReflectance;
+    float specDemod = fenv;
+    
+    indirectDiffuse.rgb /= (diffDemod * 0.99f + 0.01f);
+    indirectSpecular.rgb /= specDemod;
         
     OUT.IndirectDiffuse = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectDiffuse, firstDiffuseBounceDistance);
     OUT.IndirectSpecular = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectSpecular, firstSpecularBounceDistance);
