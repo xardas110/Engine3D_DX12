@@ -87,7 +87,7 @@ void MeshManager::CreateTorus(const std::wstring& name)
 	meshData.CreateMesh(name, tuple, m_SrvHeapData);
 }
 
-void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh)
+void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh, bool bHeightAsNormal)
 {
 	auto commandQueue = Application::Get().GetCommandQueue();
 	auto commandList = commandQueue->GetCommandList();
@@ -157,6 +157,9 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Height).path;
 			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
 			matInfo.height = tex.GetTextureID();
+
+			if (bHeightAsNormal)
+				matInfo.normal = tex.GetTextureID();
 		}
 		if (mesh.material.HasTexture(AssimpMaterialType::Opacity))
 		{

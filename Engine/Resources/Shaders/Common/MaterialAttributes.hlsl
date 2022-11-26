@@ -59,7 +59,7 @@ float GetRoughness(in MaterialInfo matInfo, in float2 texCoords, in SamplerState
         Texture2D roughness = globalTextureData[matInfo.roughness];
         return roughness.Sample(inSampler, texCoords).r;
     }
-    return 1.0f;
+    return 0.8f;
 }
 
 float GetMetallic(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[])
@@ -115,6 +115,7 @@ SurfaceMaterial GetSurfaceMaterial(
     surface.metallic = GetMetallic(matInfo, texCoords, inSampler, globalTextureData);
     surface.opacity = GetOpacity(matInfo, texCoords, inSampler, globalTextureData);
     surface.normal = GetNormal(matInfo, texCoords, bMatHasNormal, inSampler, globalTextureData);
+    
     return surface;
 }
 

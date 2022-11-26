@@ -21,7 +21,7 @@ bool SponzaExe::LoadContent()
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
     auto bathRoom = CreateEntity("bathroom");
-    bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/Sponza.dae");
+    bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/Sponza.obj", true);
     auto& trans = bathRoom.GetComponent<TransformComponent>();
 
     trans.scale = { 0.015f, 0.015f, 0.015f };

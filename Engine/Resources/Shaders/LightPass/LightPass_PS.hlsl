@@ -50,7 +50,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
     RngStateType rngState = InitRNG(pixelCoords, g_Camera.resolution, g_RaytracingData.frameNumber);
     
-    GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);
+    GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);    
+    fi.albedo = pow(fi.albedo, 2.2f);
+        
     float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj);
                     
     if (fi.shaderModel == SM_SKY)
@@ -201,6 +203,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         bool bMatHasNormal;
         SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
                
+        hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
+            
         if (bMatHasNormal == true)
         {         
             hitSurfaceMaterial.normal =

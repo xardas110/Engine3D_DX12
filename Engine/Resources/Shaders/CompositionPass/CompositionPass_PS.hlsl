@@ -42,8 +42,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
     PixelShaderOutput OUT;
 
-    GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);
-    
+    GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);   
+    fi.albedo = pow(fi.albedo, 2.2f);
+        
     if (fi.shaderModel == SM_SKY)
     {
         uint2 pixelCoords = TexCoord * g_Camera.resolution;
@@ -95,11 +96,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
     if (g_RaytracingData.debugSettings == DEBUG_LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE)
     {
-        OUT.ColorTexture = float4(denoisedIndirectDiffuse.rgb / (diffDemod * 0.99f + 0.01f), 1.f);
+        OUT.ColorTexture = float4(denoisedIndirectDiffuse.rgb, 1.f);
     }
     else if (g_RaytracingData.debugSettings == DEBUG_LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR)
     {
-         OUT.ColorTexture = float4(denoisedIndirectSpecular.rgb / specDemod, 1.f);   
+         OUT.ColorTexture = float4(denoisedIndirectSpecular.rgb, 1.f);   
     }
     return OUT;
 }

@@ -565,8 +565,8 @@ void Mesh::InitializeBlas(CommandList& commandList)
     commandList.GetGraphicsCommandList()->BuildRaytracingAccelerationStructure(&blasDesc, 0, nullptr);
 }
 
-StaticMesh::StaticMesh(const std::string& path)
+StaticMesh::StaticMesh(const std::string& path, bool bHeightAsNormal)
 {
     auto& mm = Application::Get().GetAssetManager()->m_MeshManager;
-    mm.LoadStaticMesh(path, *this);
+    mm.LoadStaticMesh(path, *this, bHeightAsNormal);
 }
