@@ -194,7 +194,7 @@ class StaticMesh
 
 public:
     StaticMesh() = default;
-    StaticMesh(const std::string& path);
+    StaticMesh(const std::string& path, bool bHeightAsNormal = false);
 private:
     std::uint32_t startOffset{0};
     std::uint32_t endOffset{0};

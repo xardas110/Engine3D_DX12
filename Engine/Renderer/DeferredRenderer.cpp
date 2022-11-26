@@ -140,9 +140,15 @@ void DeferredRenderer::Render(Window& window)
     cameraCB.zFar = camera->GetFar();
 
     RaytracingDataCB rtData;
-    rtData.numBounces = 2;
     rtData.frameNumber = Application::GetFrameCount();
     rtData.debugSettings = listbox_item_debug;
+
+    static int numBounces = 2;
+
+    ImGui::Begin("Raytracing Settings");
+    ImGui::SliderInt("Num Bounces", &numBounces, 0, 10);
+    rtData.numBounces = numBounces;
+    ImGui::End();
 
     XMStoreFloat3(&cameraCB.pos, camera->get_Translation());
 

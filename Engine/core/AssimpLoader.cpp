@@ -14,8 +14,10 @@ void GetTexturePath(aiTextureType type, aiMaterial* material, const std::string&
 
         auto texName = p.filename().string();
         outTexPath = std::string(modelPath.begin(), modelPath.begin() + modelPath.find_last_of('/')) + "/" + texName;
-
-        std::cout << "Tex path: " << outTexPath << std::endl;
+   
+        std::cout << "Loading texture at path: " << outTexPath << std::endl;
+        std::cout << "Texture Type: " << aiTextureTypeToString(type) << std::endl;
+        std::cout << "---------------------------------------------------------------" << std::endl;
     }
 }
 
@@ -103,6 +105,8 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene)
         GetTexturePath(aiTextureType::aiTextureType_SPECULAR, material, path, internalMesh.material.textures[AssimpMaterialType::Specular].path);
 
         GetTexturePath(aiTextureType::aiTextureType_EMISSIVE, material, path, internalMesh.material.textures[AssimpMaterialType::Emissive].path);
+
+        GetTexturePath(aiTextureType::aiTextureType_HEIGHT, material, path, internalMesh.material.textures[AssimpMaterialType::Height].path);
 
         GetTexturePath(aiTextureType::aiTextureType_NORMALS, material, path, internalMesh.material.textures[AssimpMaterialType::Normal].path);
 
