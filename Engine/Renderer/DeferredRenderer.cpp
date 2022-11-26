@@ -50,7 +50,7 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_Raytracer->Init();
 
     m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(width, height, GetDenoiserTextures()));
-    m_Skybox = std::unique_ptr<Skybox>(new Skybox(L"Assets/Textures/grace-new.hdr"));
+    m_Skybox = std::unique_ptr<Skybox>(new Skybox(L"Assets/Textures/belfast_sunset_puresky_4k.hdr"));
 }
 
 DeferredRenderer::~DeferredRenderer()
@@ -290,6 +290,9 @@ void DeferredRenderer::Render(Window& window)
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::CameraCB, cameraCB);
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::DirectionalLightCB, directionalLight);
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::RaytracingDataCB, rtData);
+
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_Skybox->heap.heap.Get());
+        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(LightPassParam::Cubemap, m_Skybox->GetSRVView());
 
         commandList->Draw(3);
 
