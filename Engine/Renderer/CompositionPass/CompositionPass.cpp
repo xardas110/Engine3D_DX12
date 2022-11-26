@@ -89,6 +89,14 @@ void CompositionPass::CreatePipeline()
     lightmapSRVHeap.OffsetInDescriptorsFromTableStart = 0;
     lightmapSRVHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
+    CD3DX12_DESCRIPTOR_RANGE1 cubemapSRVHeap = {};
+    cubemapSRVHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    cubemapSRVHeap.NumDescriptors = 6;
+    cubemapSRVHeap.BaseShaderRegister = 7;
+    cubemapSRVHeap.RegisterSpace = 8;
+    cubemapSRVHeap.OffsetInDescriptorsFromTableStart = 0;
+    cubemapSRVHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+
     CD3DX12_ROOT_PARAMETER1 rootParameters[CompositionPassParam::Size];
     rootParameters[CompositionPassParam::AccelerationStructure].InitAsShaderResourceView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
     rootParameters[CompositionPassParam::LightMapHeap].InitAsDescriptorTable(1, &lightmapSRVHeap);
@@ -99,6 +107,7 @@ void CompositionPass::CreatePipeline()
     rootParameters[CompositionPassParam::GlobalMaterials].InitAsShaderResourceView(4, 5);
     rootParameters[CompositionPassParam::RaytracingDataCB].InitAsConstantBufferView(0);
     rootParameters[CompositionPassParam::CameraCB].InitAsConstantBufferView(1);
+    rootParameters[CompositionPassParam::Cubemap].InitAsDescriptorTable(1, &cubemapSRVHeap);
 
     CD3DX12_STATIC_SAMPLER_DESC samplers[2];
     samplers[0] = CD3DX12_STATIC_SAMPLER_DESC(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT);

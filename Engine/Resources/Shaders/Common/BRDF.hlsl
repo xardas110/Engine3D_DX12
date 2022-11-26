@@ -408,6 +408,7 @@ float3 OffsetRay(const float3 p, const float3 n)
 		abs(p.z) < origin ? p.z + float_scale * n.z : p_i.z);
 }
 
+//https://github.com/NVIDIAGameWorks/Falcor/blob/056f7b7c73b69fa8140d211bbf683ddf297a2ae0/Source/Falcor/Rendering/Materials/Microfacet.slang#L213
 /** Approximate pre-integrated specular BRDF. The approximation assumes GGX VNDF and Schlick's approximation.
     See Eq 4 in [Ray Tracing Gems, Chapter 32]
 
