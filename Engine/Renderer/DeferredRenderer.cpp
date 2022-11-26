@@ -101,6 +101,8 @@ void DeferredRenderer::Render(Window& window)
 {
     if (!window.m_pGame.lock()) return;
     
+    HDR::UpdateGUI();
+
     static int listbox_item_debug = 0;
 
     auto game = window.m_pGame.lock();
@@ -447,6 +449,7 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::RaytracingDataCB, rtData);
         commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::CameraCB, cameraCB);
+        commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::TonemapCB, HDR::GetTonemapCB());
 
         commandList->Draw(3);
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());

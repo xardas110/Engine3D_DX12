@@ -17,6 +17,7 @@ namespace CompositionPassParam
 		RaytracingDataCB,
 		CameraCB,
 		Cubemap,
+		TonemapCB,
 		Size
 	};
 }

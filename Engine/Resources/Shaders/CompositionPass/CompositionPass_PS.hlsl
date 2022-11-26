@@ -10,6 +10,7 @@
 #include "../GBuffer/GBuffer.hlsl"
 #include "../Common/MaterialAttributes.hlsl"
 #include "../Common/RaytracingHelper.hlsl"
+#include "../Common/HDR.hlsl"
 
 RaytracingAccelerationStructure g_Scene                     : register(t0);
 Texture2D                       g_GlobalTextureData[]       : register(t1, space0);
@@ -30,6 +31,7 @@ SamplerState                    g_LinearRepeatSampler       : register(s1);
 
 ConstantBuffer<RaytracingDataCB> g_RaytracingData           : register(b0);
 ConstantBuffer<CameraCB>        g_Camera                    : register(b1);
+ConstantBuffer<TonemapCB>       g_TonemapCB                 : register(b2);
     
 struct PixelShaderOutput
 {
@@ -48,8 +50,12 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             
         float3 direction;
         GetCameraDirectionFromUV(pixelCoords, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, direction);
+         
+        float3 color = SampleSky(direction, g_Cubemap, g_LinearRepeatSampler).rgb;
             
-        OUT.ColorTexture = SampleSky(direction, g_Cubemap, g_LinearRepeatSampler);
+        color = ApplyTonemap(color, g_TonemapCB);
+            
+        OUT.ColorTexture = float4(color, 1.f);
             
         return OUT;
     }
@@ -81,7 +87,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     denoisedIndirectDiffuse.rgb *= (diffDemod * 0.99f + 0.01f);
     denoisedIndirectSpecular.rgb *= specDemod;
 
-    OUT.ColorTexture = float4(directDiffuse.rgb + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb, 1.f);
+    float3 color = directDiffuse.rgb + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb;
+       
+    color = ApplyTonemap(color, g_TonemapCB);
+        
+    OUT.ColorTexture = float4(color, 1.f);
 
     if (g_RaytracingData.debugSettings == DEBUG_LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE)
     {

@@ -72,7 +72,7 @@ set( HEADER_FILES
     "DX12/StaticDescriptorHeap.h" 
     "Renderer/CompositionPass/CompositionPass.h"
     "Renderer/Debug/DebugTexture.h"
- "Lights/DirectionalLight.h"  "Renderer/Denoiser/NvidiaDenoiser.h" "core/DX12Helper.h" "Renderer/Skybox/Skybox.h")
+ "Lights/DirectionalLight.h"  "Renderer/Denoiser/NvidiaDenoiser.h" "core/DX12Helper.h" "Renderer/Skybox/Skybox.h" "Renderer/HDR/HDR.h")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
@@ -121,7 +121,7 @@ set( SOURCE_FILES
     "Renderer/GBuffer/GBuffer.cpp" 
     "DX12/StaticDescriptorHeap.cpp" 
     "Renderer/CompositionPass/CompositionPass.cpp"
-    "Renderer/Debug/DebugTexture.cpp" "Lights/DirectionalLight.cpp"  "Renderer/Denoiser/NvidiaDenoiser.cpp" "Renderer/Skybox/Skybox.cpp")
+    "Renderer/Debug/DebugTexture.cpp" "Lights/DirectionalLight.cpp"  "Renderer/Denoiser/NvidiaDenoiser.cpp" "Renderer/Skybox/Skybox.cpp" "Renderer/HDR/HDR.cpp")
 
 set( IMGUI_HEADERS
     external/ImGui/imgui.h
