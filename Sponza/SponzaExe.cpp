@@ -20,12 +20,12 @@ bool SponzaExe::LoadContent()
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
-   // auto bathRoom = CreateEntity("bathroom");
-   // bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/Sponza.dae");
-   // auto& trans = bathRoom.GetComponent<TransformComponent>();
+    auto bathRoom = CreateEntity("bathroom");
+    bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/Sponza.dae");
+    auto& trans = bathRoom.GetComponent<TransformComponent>();
 
-  //  trans.scale = { 0.015f, 0.015f, 0.015f };
-  //  trans.pos = { 0.f, 0.f, -50.f };
+    trans.scale = { 0.015f, 0.015f, 0.015f };
+    trans.pos = { 0.f, 0.f, -50.f };
 
     meshManager.CreateCube();
     meshManager.CreateSphere();
