@@ -6,6 +6,10 @@
 #define NRD_HEADER_ONLY
 #include "..\..\..\Libs\RayTracingDenoiser\Shaders\Include\NRD.hlsli"
 
+#include "../Common/BRDF.hlsl"
+#include "../GBuffer/GBuffer.hlsl"
+#include "../Common/MaterialAttributes.hlsl"
+
 RaytracingAccelerationStructure g_Scene                     : register(t0);
 Texture2D                       g_GlobalTextureData[]       : register(t1, space0);
 StructuredBuffer<MeshVertex>    g_GlobalMeshVertexData[]    : register(t1, space1);
@@ -22,6 +26,7 @@ SamplerState                    g_NearestRepeatSampler      : register(s0);
 SamplerState                    g_LinearRepeatSampler       : register(s1);
 
 ConstantBuffer<RaytracingDataCB> g_RaytracingData           : register(b0);
+ConstantBuffer<CameraCB>        g_Camera                    : register(b1);
     
 struct PixelShaderOutput
 {
@@ -39,8 +44,27 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     denoisedIndirectDiffuse = REBLUR_BackEnd_UnpackRadianceAndNormHitDist(denoisedIndirectDiffuse);
     denoisedIndirectSpecular = REBLUR_BackEnd_UnpackRadianceAndNormHitDist(denoisedIndirectSpecular);
          
-    float4 albedo = g_GBufferHeap[GBUFFER_ALBEDO].Sample(g_NearestRepeatSampler, TexCoord);
- 
+    GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);
+    float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj);
+    
+    float3 V = -normalize(fragPos.rgb - g_Camera.pos.rgb);
+    float3 N = fi.normal;
+    
+    float NdotV = dot(N, V);
+        
+    float3 F0 = BaseColorToSpecularF0(fi.albedo, fi.metallic);
+    float3 diffuseReflectance = BaseColorToDiffuseReflectance(fi.albedo, fi.metallic);
+    
+    float alpha = fi.roughness * fi.roughness;
+      
+    float3 fenv = ApproxSpecularIntegralGGX(F0, alpha, NdotV);
+        
+    float diffDemod = (1.f - fenv) * diffuseReflectance;
+    float specDemod = fenv;
+    
+    denoisedIndirectDiffuse.rgb *= (diffDemod * 0.99f + 0.01f);
+    denoisedIndirectSpecular.rgb *= specDemod;
+
     OUT.ColorTexture = float4(directDiffuse.rgb + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb, 1.f);
 
     if (g_RaytracingData.debugSettings == DEBUG_LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE)

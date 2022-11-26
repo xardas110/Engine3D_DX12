@@ -192,11 +192,11 @@ struct CameraCB
 
 struct RaytracingDataCB
 {
-    int debugSettings COMPAT_INT(-1); //-1 means nodebugging
+    int debugSettings COMPAT_INT(-1); //-1 means no debugging
     int frameNumber COMPAT_INT(0);
     int accumulatedFrameNumber; 
     int bResetDuty;
-    int numBounces;
+    int numBounces COMPAT_INT(2);
     int pad1;
     int pad2;
     int pad3;
