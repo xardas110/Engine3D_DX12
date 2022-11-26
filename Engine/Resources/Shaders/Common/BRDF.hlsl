@@ -26,6 +26,8 @@
 
 #define RngStateType uint4
 
+#define SpecularMaskingFunctionSmithGGXCorrelated
+
 struct BRDFData
 {
     float3 V;
@@ -413,8 +415,7 @@ float3 OffsetRay(const float3 p, const float3 n)
     \param[in] alpha GGX width parameter (should be clamped to small epsilon beforehand).
     \param[in] cosTheta Dot product between shading normal and evaluated direction, in the positive hemisphere.
 */
-/*
-float3 approxSpecularIntegralGGX(float3 specularReflectance, float alpha, float cosTheta)
+float3 ApproxSpecularIntegralGGX(float3 specularReflectance, float alpha, float cosTheta)
 {
     cosTheta = abs(cosTheta);
 
@@ -423,37 +424,13 @@ float3 approxSpecularIntegralGGX(float3 specularReflectance, float alpha, float 
     X.y = cosTheta;
     X.z = cosTheta * cosTheta;
     X.w = cosTheta * X.z;
-
+ 
     float4 Y;
     Y.x = 1.f;
     Y.y = alpha;
     Y.z = alpha * alpha;
     Y.w = alpha * Y.z;
-
-    // Select coefficients based on BRDF version being in use (either separable or correlated G term)
-#if SpecularMaskingFunction == SpecularMaskingFunctionSmithGGXSeparable
-    float2x2 M1 = float2x2(
-        0.99044f, -1.28514f,
-        1.29678f, -0.755907f
-    );
-
-    float3x3 M2 = float3x3(
-        1.0f, 2.92338f, 59.4188f,
-        20.3225f, -27.0302f, 222.592f,
-        121.563f, 626.13f, 316.627f
-    );
-
-    float2x2 M3 = float2x2(
-        0.0365463f, 3.32707f,
-        9.0632f, -9.04756f
-    );
-
-    float3x3 M4 = float3x3(
-        1.0f, 3.59685f, -1.36772f,
-        9.04401f, -16.3174f, 9.22949f,
-        5.56589f, 19.7886f, -20.2123f
-    );
-#elif SpecularMaskingFunction == SpecularMaskingFunctionSmithGGXCorrelated
+      
     float2x2 M1 = float2x2(
         0.995367f, -1.38839f,
         -0.24751f, 1.97442f
@@ -475,16 +452,16 @@ float3 approxSpecularIntegralGGX(float3 specularReflectance, float alpha, float 
         19.3254f, -28.9947f, 16.9514f,
         0.545386f, 96.0994f, -79.4492f
     );
-#endif
-
+     
     float bias = dot(mul(M1, X.xy), Y.xy) * rcp(dot(mul(M2, X.xyw), Y.xyw));
     float scale = dot(mul(M3, X.xy), Y.xy) * rcp(dot(mul(M4, X.xzw), Y.xyw));
-
+    
     // This is a hack for specular reflectance of 0
-    float specularReflectanceLuma = dot(specularReflectance, float3(1.f / 3.f));
-    bias *= saturate(specularReflectanceLuma * 50.0f);
+    float specularReflectanceLuma = dot(specularReflectance, float3(1.f / 3.f, 1.f / 3.f, 1.f / 3.f));
 
+    bias *= saturate(specularReflectanceLuma * 50.0f);
+  
     return mad(specularReflectance, max(0.0, scale), max(0.0, bias));
 }
-*/
+
 #endif
