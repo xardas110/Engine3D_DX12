@@ -30,6 +30,7 @@ ConstantBuffer<RaytracingDataCB>   g_RaytracingData         : register(b2);
 RWTexture2D<float4>             g_GlobalUAV[]               : register(u0);
  
 static RayQuery<RAY_FLAG_CULL_NON_OPAQUE|RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES|RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_CULL_BACK_FACING_TRIANGLES> query;
+static RayQuery<RAY_FLAG_CULL_NON_OPAQUE|RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES|RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH> shadowQuery;
 static uint ray_flags = 0; // Any this ray requires in addition those above.
 static uint ray_instance_mask = 0xffffffff;
     
@@ -66,7 +67,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     RayDesc ray;
     ray.TMin = 0.1f;
     ray.TMax = 1e10f;
-    ray.Origin = fragPos;
+    ray.Origin = OffsetRay(fragPos, fi.normal);
     ray.Direction = normalize(fragPos.rgb - g_Camera.pos.rgb);
 
     float3 color = float3(1.f, 0.f, 0.f);   
@@ -95,12 +96,12 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     shadowRayDesc.Origin = ray.Origin;
     shadowRayDesc.Direction = L;
                 
-    query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
-    query.Proceed();
+    shadowQuery.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
+    shadowQuery.Proceed();
         
     BRDFData gBufferBRDF = PrepareBRDFData(currentMat.normal, L, V, currentMat);
         
-    if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+    if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
     {        
         float3 diffuse = troughput * EvaluateDiffuseBRDF(gBufferBRDF);
         float3 specular = troughput * EvaluateSpecularBRDF(gBufferBRDF);
@@ -179,7 +180,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
                 
         MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
-        hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
+        //hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
         hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
         hitSurface.position = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
         geometryNormal = hitSurface.normal;
@@ -223,11 +224,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         shadowRayDesc.Origin = OffsetRay(hitSurface.position, hitSurface.normal);
         shadowRayDesc.Direction = L;
                 
-        query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
-        query.Proceed();
-        if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+        shadowQuery.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
+        shadowQuery.Proceed();
+        if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {
-            BRDFData data = PrepareBRDFData(hitSurface.normal, L, V, hitSurfaceMaterial);               
+            BRDFData data = PrepareBRDFData(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial);
             indirectDiffuse += troughput * (EvaluateDiffuseBRDF(data)) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
             indirectSpecular += troughput * (EvaluateSpecularBRDF(data)) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
         }
