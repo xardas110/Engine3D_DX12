@@ -87,9 +87,9 @@ float3 GetEmissive(in MaterialInfo matInfo, in float2 texCoords, in SamplerState
     if (matInfo.emissive != 0xffffffff)
     {
         Texture2D emissive = globalTextureData[matInfo.emissive];
-        return emissive.Sample(inSampler, texCoords).r;
+        return emissive.Sample(inSampler, texCoords);
     }
-    return float3(1.f, 0.f, 0.f);
+    return float3(0.f, 0.f, 0.f);
 }
 
 float GetOpacity(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[])

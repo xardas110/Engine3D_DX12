@@ -493,7 +493,7 @@ static void ReverseWinding(IndexCollection32& indices, VertexCollection& vertice
 
 void Mesh::Initialize(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords)
 {
-    if (vertices.size() >= USHRT_MAX)
+    if (vertices.size() >= UINT_MAX)
         throw std::exception("Too many vertices for 16-bit index buffer");
 
     if (!rhcoords)
