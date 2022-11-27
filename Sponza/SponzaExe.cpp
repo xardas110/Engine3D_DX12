@@ -21,16 +21,17 @@ bool SponzaExe::LoadContent()
 
     
     {
-        auto bathRoom = CreateEntity("bathroom");
+        auto bathRoom = CreateEntity("Simple Room");
         bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", true);
         auto& trans = bathRoom.GetComponent<TransformComponent>();
+        trans.pos = { 70.f, 0.f, 0.f };
     }
     {
         auto sponza = CreateEntity("sponza");
         sponza.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.obj", true);
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.scale = { 0.015f, 0.015f, 0.015f };
-        trans.pos = { 0.f, 0.f, -50.f };
+        trans.pos = { 0.f, 0.f, -70.f };
     }
 
     meshManager.CreateCube();
