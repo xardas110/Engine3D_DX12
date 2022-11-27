@@ -9,6 +9,19 @@
 #include <Helpers.h>
 #include <imgui.h>
 
+static void ShowHelpMarker(const char* desc)
+{
+	ImGui::TextDisabled("(?)");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+		ImGui::TextUnformatted(desc);
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
+}
+
 
 std::string errorResult[] =
 {
@@ -205,13 +218,16 @@ NvidiaDenoiser::~NvidiaDenoiser()
 
 void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, int currentBackbufferIndex, int width, int height)
 {
+	OnGUI();
+
+	auto& commonSettings = denoiserSettings.commonSettings;
+	auto& settings = denoiserSettings.settings;
+
 	nri::CommandBufferD3D12Desc commandBufferDesc = {};
 	commandBufferDesc.d3d12CommandList = (ID3D12GraphicsCommandList*)commandList.GetGraphicsCommandList().Get();
 	commandBufferDesc.d3d12CommandAllocator = m_CommandAllocator.Get();
 	
 	NRI.CreateCommandBufferD3D12(*m_NRIDevice, commandBufferDesc, nriCommandBuffer);
-
-	commonSettings = {};
 
 	memcpy(commonSettings.worldToViewMatrix, &cam.view, sizeof(cam.view));
 	memcpy(commonSettings.viewToClipMatrix, &cam.proj, sizeof(cam.proj));
@@ -224,7 +240,7 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	commonSettings.motionVectorScale[2] = { 0 };
 	commonSettings.isMotionVectorInWorldSpace = true;
 
-	nrd::ReblurSettings settings = {};
+	
 	NRD.SetMethodSettings(nrd::Method::REBLUR_DIFFUSE_SPECULAR, &settings);
 
 	NrdUserPool userPool = {};
@@ -262,4 +278,85 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	NRD.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, true);
 
 	NRI.DestroyCommandBuffer(*nriCommandBuffer);
+}
+
+void NvidiaDenoiser::OnGUI()
+{
+	ImGui::Begin("Denoiser Settings");
+
+	auto& settings = denoiserSettings.settings;
+	auto& commonSettings = denoiserSettings.commonSettings;
+
+	ShowHelpMarker("(pixels) - pre-accumulation spatial reuse pass blur radius (0 = disabled, must be used in case of probabilistic sampling)");
+	ImGui::SameLine();
+	ImGui::SliderFloat("Diffuse Prepass Blur Radius", &settings.diffusePrepassBlurRadius, 0.f, 100.f);
+
+	ShowHelpMarker("(pixels) - pre-accumulation spatial reuse pass blur radius (0 = disabled, must be used in case of probabilistic sampling)");
+	ImGui::SameLine();
+	ImGui::SliderFloat("Specular Prepass Blur Radius", &settings.specularPrepassBlurRadius, 0.f, 100.f);
+	
+	ShowHelpMarker("(pixels) - base denoising radius (30 is a baseline for 1440p)");
+	ImGui::SameLine();
+	ImGui::SliderFloat("Blur radius", &settings.blurRadius, 0.f, 100.f);
+
+	ShowHelpMarker("(pixels) - base stride between samples in history reconstruction pass");
+	ImGui::SameLine();
+	ImGui::SliderFloat("historyFixStrideBetweenSamples", &settings.historyFixStrideBetweenSamples, 0.f, 100.f);
+
+	ShowHelpMarker("(normalized %) - base fraction of diffuse or specular lobe angle used to drive normal based rejection");
+	ImGui::SameLine();
+	ImGui::SliderFloat("lobeAngleFraction", &settings.lobeAngleFraction, 0.f, 1.f);
+
+	ShowHelpMarker("(normalized %) - base fraction of center roughness used to drive roughness based rejection");
+	ImGui::SameLine();
+	ImGui::SliderFloat("roughnessFraction", &settings.roughnessFraction, 0.f, 1.f);
+
+	ShowHelpMarker("[0; 1] - if roughness < this, temporal accumulation becomes responsive and driven by roughness (useful for animated water)");
+	ImGui::SameLine();
+	ImGui::SliderFloat("responsiveAccumulationRoughnessThreshold", &settings.responsiveAccumulationRoughnessThreshold, 0.f, 1.f);
+
+	ShowHelpMarker("(normalized %) - stabilizes output, more stabilization improves antilag (clean signals can use lower values)");
+	ImGui::SameLine();
+	ImGui::SliderFloat("stabilizationStrength", &settings.stabilizationStrength, 0.f, 1.f);
+
+	ShowHelpMarker("(normalized %) - represents maximum allowed deviation from local tangent plane");
+	ImGui::SameLine();
+	ImGui::SliderFloat("planeDistanceSensitivity", &settings.planeDistanceSensitivity, 0.f, 1.f);
+
+	ShowHelpMarker("(normalized %) - if relative distance difference is greater than threshold, history gets reset (0.5-2.5% works well)");
+	ImGui::SameLine();
+	ImGui::SliderFloat("disocclusionThreshold", &commonSettings.disocclusionThreshold, 0.f, 1.f);
+
+	ShowHelpMarker("(normalized %) - alternative disocclusion threshold, which is mixed to based on IN_DISOCCLUSION_THRESHOLD_MIX");
+	ImGui::SameLine();
+	ImGui::SliderFloat("disocclusionThresholdAlternate", &commonSettings.disocclusionThresholdAlternate, 0.f, 1.f);
+
+	ShowHelpMarker("[0; 1] - enables noisy input / denoised output comparison");
+	ImGui::SameLine();
+	ImGui::SliderFloat("splitScreen", &commonSettings.splitScreen, 0.f, 1.f);
+
+	ShowHelpMarker("Adds bias in case of badly defined signals, but tries to fight with fireflies");
+	ImGui::SameLine();
+	ImGui::Checkbox("enableAntiFirefly", &settings.enableAntiFirefly);
+
+	ShowHelpMarker("Turns off spatial filtering and virtual motion based specular tracking");
+	ImGui::SameLine();
+	ImGui::Checkbox("enableReferenceAccumulation", &settings.enableReferenceAccumulation);
+
+	ShowHelpMarker("Boosts performance by sacrificing IQ");
+	ImGui::SameLine();
+	ImGui::Checkbox("enablePerformanceMode", &settings.enablePerformanceMode);
+
+	ShowHelpMarker("Spatial passes do optional material index comparison as: ( materialEnabled ? material[ center ] == material[ sample ] : 1 )");
+	ImGui::SameLine();
+	ImGui::Checkbox("enableMaterialTestForDiffuse", &settings.enableMaterialTestForDiffuse);
+
+	ShowHelpMarker("Spatial passes do optional material index comparison as: ( materialEnabled ? material[ center ] == material[ sample ] : 1 )");
+	ImGui::SameLine();
+	ImGui::Checkbox("enableMaterialTestForSpecular", &settings.enableMaterialTestForSpecular);
+
+	if (ImGui::Button("Reset to default"))
+		denoiserSettings = DenoiserSettings();
+
+	ImGui::End();
 }

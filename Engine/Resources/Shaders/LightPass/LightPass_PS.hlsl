@@ -227,9 +227,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         query.Proceed();
         if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {
-            BRDFData data = PrepareBRDFData(hitSurface.normal, L, V, hitSurfaceMaterial);              
+            BRDFData data = PrepareBRDFData(hitSurface.normal, L, V, hitSurfaceMaterial);               
             indirectDiffuse += troughput * (EvaluateDiffuseBRDF(data)) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
-            indirectSpecular += troughput * EvaluateSpecularBRDF(data) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+            indirectSpecular += troughput * (EvaluateSpecularBRDF(data)) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
         }
                         
         currentMat = hitSurfaceMaterial;
@@ -238,8 +238,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     }
     
     float3 fenv = ApproxSpecularIntegralGGX(gBufferBRDF.specularF0, gBufferBRDF.alpha, gBufferBRDF.NdotV);
-    float diffDemod = (1.f - fenv) * gBufferBRDF.diffuseReflectance;
-    float specDemod = fenv;
+    float3 diffDemod = (1.f - fenv) * gBufferBRDF.diffuseReflectance;
+    float3 specDemod = fenv;
     
     indirectDiffuse.rgb /= (diffDemod * 0.99f + 0.01f);
     indirectSpecular.rgb /= specDemod;
