@@ -28,12 +28,7 @@ ConstantBuffer<CameraCB>           g_Camera                 : register(b1);
 ConstantBuffer<RaytracingDataCB>   g_RaytracingData         : register(b2);
 
 RWTexture2D<float4>             g_GlobalUAV[]               : register(u0);
- 
-static RayQuery<RAY_FLAG_CULL_NON_OPAQUE|RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES|RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_CULL_BACK_FACING_TRIANGLES> query;
-static RayQuery<RAY_FLAG_CULL_NON_OPAQUE|RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES|RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH> shadowQuery;
-static uint ray_flags = 0; // Any this ray requires in addition those above.
-static uint ray_instance_mask = 0xffffffff;
-    
+  
 struct PixelShaderOutput
 {
     float4 DirectDiffuse    : SV_TARGET0;
@@ -63,6 +58,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         OUT.IndirectSpecular = float4(0.f, 0.f, 0.f, 0.f);
         return OUT;
     }
+    
+    RayQuery <  RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES   > query;
+
+    uint ray_flags = 0; // Any this ray requires in addition those above.
+    uint ray_instance_mask = 0xffffffff;
         
     RayDesc ray;
     ray.TMin = 0.f;
@@ -232,9 +232,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         shadowRayDesc.Origin = OffsetRay(hitSurface.position, geometryNormal);
         shadowRayDesc.Direction = L;
                 
-        shadowQuery.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
-        shadowQuery.Proceed();
-        if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+        query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
+        query.Proceed();
+        if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {
             BRDFData data = PrepareBRDFData(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial);
             indirectDiffuse += troughput * (EvaluateDiffuseBRDF(data)) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;

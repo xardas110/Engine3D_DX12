@@ -92,7 +92,7 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 	auto commandQueue = Application::Get().GetCommandQueue();
 	auto commandList = commandQueue->GetCommandList();
 	auto rtCommandList = commandQueue->GetCommandList();
-	auto textureManager = Application::Get().GetAssetManager()->m_TextureManager;
+	auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
 
 	AssimpLoader loader(path);
 
@@ -156,10 +156,15 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 		{
 			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Height).path;
 			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-			matInfo.height = tex.GetTextureID();
-
+			
 			if (bHeightAsNormal)
+			{ 
 				matInfo.normal = tex.GetTextureID();
+			}
+			else
+			{
+				matInfo.height = tex.GetTextureID();
+			}
 		}
 		if (mesh.material.HasTexture(AssimpMaterialType::Opacity))
 		{
@@ -230,7 +235,7 @@ void MeshManager::MeshData::AddMesh(const std::wstring& name, MeshTuple& tuple)
 {
 	const auto currentIndex = meshes.size();
 	map[name] = currentIndex;
-	meshes.push_back(std::move(tuple));
+	meshes.emplace_back(std::move(tuple));
 	refCounter.emplace_back(UINT(1U));
 }
 
