@@ -15,7 +15,6 @@ SponzaExe::~SponzaExe()
 
 bool SponzaExe::LoadContent()
 {
-	std::cout << "Sponza exe running " << std::endl;
 
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
@@ -23,10 +22,10 @@ bool SponzaExe::LoadContent()
     auto bathRoom = CreateEntity("bathroom");
     bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/Sponza.obj", true);
     auto& trans = bathRoom.GetComponent<TransformComponent>();
-
+   
     trans.scale = { 0.015f, 0.015f, 0.015f };
     trans.pos = { 0.f, 0.f, -50.f };
-
+    /*
     meshManager.CreateCube();
     meshManager.CreateSphere();
     meshManager.CreateTorus();
@@ -58,7 +57,7 @@ bool SponzaExe::LoadContent()
     material.CreateMaterialInstance(L"DefaultMaterialInstance", matInfo);
     material.SetMaterial(materialID);
 
-    /*
+
     {
         auto ent = CreateEntity("DxCube");
         auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
@@ -67,7 +66,6 @@ bool SponzaExe::LoadContent()
         trans.scale = { 10.f, 10.f, 10.f };
         trans.pos = { 0.f, 0.f, 0.f };
     }
-    */
 
     float spacing = 10.f;
 
@@ -132,7 +130,7 @@ bool SponzaExe::LoadContent()
             //trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(45.f));
         }
     }
-    /*
+
     for (size_t i = 0; i < 50; i++)
     {
         {
@@ -145,7 +143,7 @@ bool SponzaExe::LoadContent()
             //trans.rot = DirectX::XMQuaternionRotationAxis({ 0.f, 1.f, 0.f }, XMConvertToRadians(rand() % 360));
         }
     }
-    */
+
     {
         auto ent = CreateEntity("DxCube");
         auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
@@ -211,6 +209,8 @@ bool SponzaExe::LoadContent()
     }
     }
     */
+
+
 	return true;
 }
 

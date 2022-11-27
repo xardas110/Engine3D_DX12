@@ -25,6 +25,8 @@ struct GFragment
     float roughness;
     float metallic;
     int shaderModel;
+    
+    float3 geometryNormal;
 };
 
 //Tighterpacking later, once stuff is working
@@ -35,10 +37,11 @@ struct GPackInfo
     float4 motionVector;
     float4 emissiveSM;
     float4 aoMetallicHeight;
+    float4 geometryNormal;
     float linearDepth;
 };
 
-GPackInfo PackGBuffer(in CameraCB camera, in ObjectCB objectCB, in SurfaceMaterial mat, in float3 fragPos, float depth)
+GPackInfo PackGBuffer(in CameraCB camera, in ObjectCB objectCB, in SurfaceMaterial mat, in float3 fragPos, float depth, in float3 geometryNormal)
 {
     GPackInfo OUT;
     
@@ -55,6 +58,8 @@ GPackInfo PackGBuffer(in CameraCB camera, in ObjectCB objectCB, in SurfaceMateri
     
     OUT.linearDepth = (camera.zNear * camera.zFar) / (camera.zFar + camera.zNear - depth * (camera.zFar - camera.zNear));
         
+    OUT.geometryNormal = float4(geometryNormal, 1.f);
+    
     return OUT;
 }
 
@@ -74,6 +79,8 @@ GFragment UnpackGBuffer(in Texture2D gBufferHeap[],
     float4 emissiveSMTex = gBufferHeap[GBUFFER_EMISSIVE_SHADER_MODEL].Sample(nearestSampler, texCoords);
     
     float4 aoMetallicHeight = gBufferHeap[GBUFFER_AO_METALLIC_HEIGHT].Sample(nearestSampler, texCoords);
+    
+    float4 geometryNormal = gBufferHeap[GBUFFER_GEOMETRY_NORMAL].Sample(nearestSampler, texCoords);
     
     float linearDepth = gBufferHeap[GBUFFER_LINEAR_DEPTH].Sample(nearestSampler, texCoords).r;
     
@@ -100,6 +107,8 @@ GFragment UnpackGBuffer(in Texture2D gBufferHeap[],
     fi.height = aoMetallicHeight.z;
     
     fi.depth = standardDepth;
+    
+    fi.geometryNormal = geometryNormal.rgb;
     
     return fi;
 }

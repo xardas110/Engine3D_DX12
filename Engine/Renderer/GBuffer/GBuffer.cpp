@@ -50,6 +50,10 @@ void GBuffer::CreateRenderTarget(int width, int height)
     linearDepthDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     linearDepthDesc.MipLevels = 1;
 
+    auto geometryNormDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height);
+    geometryNormDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    geometryNormDesc.MipLevels = 1;
+
     Texture albedo = Texture(albedoDesc, &ClearValue(albedoDesc.Format, {0.f, 0.f, 0.f, 0.f}),
         TextureUsage::RenderTarget,
         L"GBuffer albedo");
@@ -74,6 +78,10 @@ void GBuffer::CreateRenderTarget(int width, int height)
         TextureUsage::RenderTarget,
         L"GBuffer LinearDepth");
 
+    Texture geometryNormal = Texture(geometryNormDesc, &ClearValue(geometryNormDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
+        TextureUsage::RenderTarget,
+        L"GBuffer Geometry Normal");
+
     // Create a depth buffer for the HDR render target.
     auto depthDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, width, height);
     depthDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
@@ -93,6 +101,7 @@ void GBuffer::CreateRenderTarget(int width, int height)
     renderTarget.AttachTexture((AttachmentPoint)GBUFFER_EMISSIVE_SHADER_MODEL, emissive);
     renderTarget.AttachTexture((AttachmentPoint)GBUFFER_AO_METALLIC_HEIGHT, aoMetallicHeight);
     renderTarget.AttachTexture((AttachmentPoint)GBUFFER_LINEAR_DEPTH, linearDepth);
+    renderTarget.AttachTexture((AttachmentPoint)GBUFFER_GEOMETRY_NORMAL, geometryNormal);
     renderTarget.AttachTexture((AttachmentPoint)GBUFFER_STANDARD_DEPTH, depthTexture);
 }
 
@@ -253,6 +262,8 @@ void GBuffer::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
 
     commandlist.ClearTexture(renderTarget.GetTexture((AttachmentPoint)GBUFFER_LINEAR_DEPTH), skyClear);
 
+    commandlist.ClearTexture(renderTarget.GetTexture((AttachmentPoint)GBUFFER_GEOMETRY_NORMAL), zeroColor);
+
     commandlist.ClearDepthStencilTexture(renderTarget.GetTexture((AttachmentPoint)GBUFFER_STANDARD_DEPTH), D3D12_CLEAR_FLAG_DEPTH);
 }
 
@@ -288,6 +299,10 @@ D3D12_GPU_DESCRIPTOR_HANDLE GBuffer::CreateSRVViews()
     device->CreateShaderResourceView(
         GetTexture(GBUFFER_LINEAR_DEPTH).GetD3D12Resource().Get(), nullptr,
         m_SRVHeap.SetHandle(GBUFFER_LINEAR_DEPTH));
+
+    device->CreateShaderResourceView(
+        GetTexture(GBUFFER_GEOMETRY_NORMAL).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(GBUFFER_GEOMETRY_NORMAL));
 
     D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
     desc.Format = DXGI_FORMAT_R32_FLOAT;

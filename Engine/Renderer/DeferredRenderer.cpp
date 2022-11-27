@@ -166,7 +166,7 @@ void DeferredRenderer::Render(Window& window)
             directionalLight.data.direction = XMVector3Normalize(directionalLight.data.direction);
         }
     }
-    ImGui::SliderFloat("Lux", &directionalLight.data.color.m128_f32[3], 0, 5.f);
+    ImGui::SliderFloat("Lux", &directionalLight.data.color.m128_f32[3], 0, 20.f);
     ImGui::ColorPicker3("Color", &directionalLight.data.color.m128_f32[0], ImGuiColorEditFlags_Float);    
     ImGui::End();
 
@@ -264,6 +264,7 @@ void DeferredRenderer::Render(Window& window)
         commandList->TransitionBarrier(m_GBuffer.GetTexture(GBUFFER_MOTION_VECTOR), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         commandList->TransitionBarrier(m_GBuffer.GetTexture(GBUFFER_NORMAL_ROUGHNESS), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         commandList->TransitionBarrier(m_GBuffer.GetTexture(GBUFFER_STANDARD_DEPTH), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        commandList->TransitionBarrier(m_GBuffer.GetTexture(GBUFFER_GEOMETRY_NORMAL), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
@@ -478,6 +479,7 @@ void DeferredRenderer::Render(Window& window)
             "GBuffer Emissive & SM", 
             "GBuffer AO & Metallic & Height",
             "GBuffer LinearDepth", 
+            "GBuffer Geometry Normal",
             "LightBuffer Direct Light",
             "LightBuffer IndirectDiffuse", 
             "LightBuffer IndirectSpecular", 
@@ -501,6 +503,7 @@ void DeferredRenderer::Render(Window& window)
             &m_GBuffer.GetTexture(GBUFFER_EMISSIVE_SHADER_MODEL),
             &m_GBuffer.GetTexture(GBUFFER_AO_METALLIC_HEIGHT),
             &m_GBuffer.GetTexture(GBUFFER_LINEAR_DEPTH),
+            &m_GBuffer.GetTexture(GBUFFER_GEOMETRY_NORMAL),
             &m_LightPass.GetTexture(LIGHTBUFFER_DIRECT_LIGHT),
             &m_LightPass.GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE),
             &m_LightPass.GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR),

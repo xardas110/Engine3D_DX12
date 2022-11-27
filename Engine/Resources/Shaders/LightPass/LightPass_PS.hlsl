@@ -65,9 +65,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     }
         
     RayDesc ray;
-    ray.TMin = 0.1f;
+    ray.TMin = 0.f;
     ray.TMax = 1e10f;
-    ray.Origin = OffsetRay(fragPos, fi.normal);
+    ray.Origin = OffsetRay(fragPos, fi.geometryNormal);
     ray.Direction = normalize(fragPos.rgb - g_Camera.pos.rgb);
 
     float3 color = float3(1.f, 0.f, 0.f);   
@@ -75,7 +75,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float3 indirectDiffuse = float3(0.f, 0.f, 0.f);
     float3 indirectSpecular = float3(0.f, 0.f, 0.f);       
     float3 troughput = float3(1.f, 1.f, 1.f);
-    float3 geometryNormal = float3(0.f, 1.f, 0.f);
+    float3 geometryNormal = fi.geometryNormal;
         
     SurfaceMaterial currentMat;
     currentMat.albedo = fi.albedo;
@@ -85,23 +85,22 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     currentMat.metallic = fi.metallic;
     currentMat.roughness = fi.roughness;
     currentMat.normal = fi.normal;
-    geometryNormal = fi.normal;
-                  
+       
     float3 V = -ray.Direction;
     float3 L = -g_DirectionalLight.direction.rgb;    
                  
     RayDesc shadowRayDesc;             
-    shadowRayDesc.TMin = 0.1f;
+    shadowRayDesc.TMin = 0.f;
     shadowRayDesc.TMax = 1e10f;
     shadowRayDesc.Origin = ray.Origin;
     shadowRayDesc.Direction = L;
                 
-    shadowQuery.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
-    shadowQuery.Proceed();
+    query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
+    query.Proceed();
         
     BRDFData gBufferBRDF = PrepareBRDFData(currentMat.normal, L, V, currentMat);
         
-    if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+    if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
     {        
         float3 diffuse = troughput * EvaluateDiffuseBRDF(gBufferBRDF);
         float3 specular = troughput * EvaluateSpecularBRDF(gBufferBRDF);
@@ -180,8 +179,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
                 
         MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
-        //hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
-        hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
+        hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
+        //hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
         hitSurface.position = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
         geometryNormal = hitSurface.normal;
                 
@@ -219,9 +218,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         {
             hitSurfaceMaterial.normal = hitSurface.normal;    
         }
-                  
+     
         shadowRayDesc.TMin = 0.0f;
-        shadowRayDesc.Origin = OffsetRay(hitSurface.position, hitSurface.normal);
+        shadowRayDesc.Origin = OffsetRay(hitSurface.position, geometryNormal);
         shadowRayDesc.Direction = L;
                 
         shadowQuery.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
@@ -263,7 +262,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         return OUT;
     }
               
-    ray.TMin = 0.f;
+    ray.TMin = 0.0f;
     ray.Origin = g_Camera.pos;
     GetCameraDirectionFromUV(pixelCoords, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, ray.Direction);
         
