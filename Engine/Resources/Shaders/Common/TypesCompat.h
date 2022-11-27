@@ -187,7 +187,7 @@ struct ObjectCB
     UINT shaderModel COMPAT_FLOAT(1.f);
 
     XMMATRIX transposeInverseModel;
-    XMMATRIX invWorldToPrevWorld;
+    XMMATRIX prevModel;
 };
 
 struct MeshVertex

@@ -245,7 +245,7 @@ void DeferredRenderer::Render(Window& window)
             objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
             objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
             objectCB.meshId = mesh.id;
-            objectCB.invWorldToPrevWorld = XMMatrixInverse(nullptr, prevTrans[i++].GetTransform());
+            objectCB.prevModel = prevTrans[i++].GetTransform();
             objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
             globalMeshInfo[mesh.id].objRot = transform.rot;
 

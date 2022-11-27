@@ -17,6 +17,7 @@ struct VertexPositionNormalTexture
 struct VertexShaderOutput
 {
 	float4 PositionWS	: POSITION;
+    float4 PrevPositionWS : PREVPOS;
 	float3 NormalWS		: NORMAL;
 	float2 TexCoord		: TEXCOORD;
     float3 Tangent_N	: TANGENT_N;
@@ -30,6 +31,7 @@ VertexShaderOutput main(VertexPositionNormalTexture IN)
 	VertexShaderOutput OUT;
 	OUT.Position = mul(g_ObjectCB.mvp, float4(IN.Position, 1.0f));
 	OUT.PositionWS = mul(g_ObjectCB.model, float4(IN.Position, 1.f));
+    OUT.PrevPositionWS = mul(g_ObjectCB.prevModel, float4(IN.Position, 1.f));
 	OUT.NormalWS = mul((float3x3)g_ObjectCB.transposeInverseModel, IN.Normal);
 	OUT.NormalWS = normalize(OUT.NormalWS);
 	OUT.TexCoord = IN.TexCoord;

@@ -161,14 +161,16 @@ protected:
 
     std::shared_ptr<Window> m_pWindow;
     DirectionalLight m_DirectionalLight;
+
+
+    entt::registry registry;
+
 private:
 
     std::wstring m_Name;
     int m_Width;
     int m_Height;
     bool m_vSync;
-
-    entt::registry registry;
 
     //Window camera
     Camera m_Camera;
