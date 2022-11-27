@@ -54,7 +54,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);    
     fi.albedo = pow(fi.albedo, 2.2f);
         
-    float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj) + (fi.geometryNormal * 0.01f);
+    float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj) + (fi.normal * 0.1f);
                     
     if (fi.shaderModel == SM_SKY)
     {
@@ -99,6 +99,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     query.Proceed();
         
     BRDFData gBufferBRDF = PrepareBRDFData(currentMat.normal, L, V, currentMat);
+      
+    directRadiance += fi.emissive;
         
     if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
     {        
@@ -183,22 +185,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         //hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
         hitSurface.position = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
         geometryNormal = hitSurface.normal;
-                
-        if (brdfType == BRDF_TYPE_DIFFUSE)
-        {
-            if (i == 0)
-            {
-                firstDiffuseBounceDistance = query.CommittedRayT();
-            }
-        }
-        else
-        {
-            if (i == 0)
-            {
-                firstSpecularBounceDistance = query.CommittedRayT();
-            }
-        }
-                        
+                                      
         bool bMatHasNormal;
         SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
                
@@ -219,6 +206,28 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             hitSurfaceMaterial.normal = hitSurface.normal;    
         }
      
+            
+        if (brdfType == BRDF_TYPE_DIFFUSE)
+        {
+            if (i == 0)
+            {
+                firstDiffuseBounceDistance = query.CommittedRayT();
+            }
+                
+            indirectDiffuse += troughput * hitSurfaceMaterial.emissive;
+               
+        }
+        else
+        {
+            if (i == 0)
+            {
+                firstSpecularBounceDistance = query.CommittedRayT();
+            }
+                
+            indirectSpecular += troughput * hitSurfaceMaterial.emissive;
+        }
+            
+            
         shadowRayDesc.TMin = 0.0f;
         shadowRayDesc.Origin = OffsetRay(hitSurface.position, geometryNormal);
         shadowRayDesc.Direction = L;
