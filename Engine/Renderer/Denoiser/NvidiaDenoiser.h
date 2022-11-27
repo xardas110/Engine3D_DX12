@@ -58,6 +58,18 @@ struct NRITextures
 	nri::Format entryFormat = {};
 };
 
+struct DenoiserSettings
+{
+	DenoiserSettings()
+	{
+		settings.blurRadius = 60.f;
+	}
+
+	nrd::ReblurSettings settings = {};
+	nrd::CommonSettings commonSettings = {};
+
+};
+
 class NvidiaDenoiser
 {
 	friend class DeferredRenderer;
@@ -67,7 +79,9 @@ class NvidiaDenoiser
 	~NvidiaDenoiser();
 
 	void RenderFrame(CommandList& commandList, const CameraCB& cam, int currentBackbufferIndex, int width, int height);
-	
+	void OnGUI();
+
+
 	NrdIntegration NRD = NrdIntegration(3);
 
 	struct NriInterface
@@ -80,8 +94,6 @@ class NvidiaDenoiser
 
 	NriInterface NRI;
 
-	nrd::CommonSettings commonSettings = {};
-
 	nri::CommandBuffer* nriCommandBuffer = nullptr;
 
 	NRITextures nriTextures[nriTypes::size];
@@ -89,4 +101,5 @@ class NvidiaDenoiser
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> m_Adapter;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 
+	DenoiserSettings denoiserSettings;
 };
