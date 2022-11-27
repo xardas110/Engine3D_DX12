@@ -33,7 +33,8 @@ struct PixelShaderOutput
     float4 motionVector     : SV_TARGET2;
     float4 emissiveSM       : SV_TARGET3;
     float4 aoMetallicHeight : SV_TARGET4;
-    float linearDepth       : SV_TARGET5;     
+    float linearDepth       : SV_TARGET5;    
+    float4 geometryNormal : SV_TARGET6;
 };
 
 PixelShaderOutput main(PixelShaderInput IN)
@@ -54,7 +55,7 @@ PixelShaderOutput main(PixelShaderInput IN)
         surface.normal = IN.NormalWS;
     }
 
-    GPackInfo gPack = PackGBuffer(g_CameraCB, g_ObjectCB, surface, IN.PositionWS.rgb, IN.Position.z);
+    GPackInfo gPack = PackGBuffer(g_CameraCB, g_ObjectCB, surface, IN.PositionWS.rgb, IN.Position.z, IN.NormalWS);
     
     OUT.albedo = gPack.albedo;
     OUT.aoMetallicHeight = gPack.aoMetallicHeight;
@@ -62,6 +63,7 @@ PixelShaderOutput main(PixelShaderInput IN)
     OUT.linearDepth = gPack.linearDepth;
     OUT.motionVector = gPack.motionVector;
     OUT.normalRoughness = gPack.normalRough;
+    OUT.geometryNormal = gPack.geometryNormal;
         
     return OUT;
 }
