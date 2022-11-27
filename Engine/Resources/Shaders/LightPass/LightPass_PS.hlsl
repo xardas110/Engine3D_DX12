@@ -41,7 +41,6 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
     PixelShaderOutput OUT;
         
-    //float3 g_SkyColor = float3(0.4f, 0.6f, 0.9f);
     uint2 pixelCoords = g_Camera.resolution * TexCoord;
 
     RngStateType rngState = InitRNG(pixelCoords, g_Camera.resolution, g_RaytracingData.frameNumber);
@@ -59,7 +58,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         return OUT;
     }
     
-    RayQuery <  RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES   > query;
+    RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES > query;
+    RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > shadowQuery;
 
     uint ray_flags = 0; // Any this ray requires in addition those above.
     uint ray_instance_mask = 0xffffffff;
@@ -95,14 +95,14 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     shadowRayDesc.Origin = ray.Origin;
     shadowRayDesc.Direction = L;
                 
-    query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
-    query.Proceed();
+    shadowQuery.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
+    shadowQuery.Proceed();
         
     BRDFData gBufferBRDF = PrepareBRDFData(currentMat.normal, L, V, currentMat);
       
-    directRadiance += fi.emissive;
+   // directRadiance += fi.emissive;
         
-    if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+    if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
     {        
         float3 diffuse = troughput * EvaluateDiffuseBRDF(gBufferBRDF);
         float3 specular = troughput * EvaluateSpecularBRDF(gBufferBRDF);
@@ -214,7 +214,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 firstDiffuseBounceDistance = query.CommittedRayT();
             }
                 
-            indirectDiffuse += troughput * hitSurfaceMaterial.emissive;
+            //indirectDiffuse += troughput * hitSurfaceMaterial.emissive;
                
         }
         else
@@ -224,7 +224,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 firstSpecularBounceDistance = query.CommittedRayT();
             }
                 
-            indirectSpecular += troughput * hitSurfaceMaterial.emissive;
+            //indirectSpecular += troughput * hitSurfaceMaterial.emissive;
         }
             
             
@@ -232,9 +232,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         shadowRayDesc.Origin = OffsetRay(hitSurface.position, geometryNormal);
         shadowRayDesc.Direction = L;
                 
-        query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
-        query.Proceed();
-        if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+        shadowQuery.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
+        shadowQuery.Proceed();
+        if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {
             BRDFData data = PrepareBRDFData(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial);
             indirectDiffuse += troughput * (EvaluateDiffuseBRDF(data)) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;

@@ -84,7 +84,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
     float3 diffDemod = (1.f - fenv) * diffuseReflectance;
     float3 specDemod = fenv;
-    
+        
     denoisedIndirectDiffuse.rgb *= (diffDemod * 0.99f + 0.01f);
     denoisedIndirectSpecular.rgb *= specDemod;
 

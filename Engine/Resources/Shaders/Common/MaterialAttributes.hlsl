@@ -59,7 +59,7 @@ float GetRoughness(in MaterialInfo matInfo, in float2 texCoords, in SamplerState
         Texture2D roughness = globalTextureData[matInfo.roughness];
         return roughness.Sample(inSampler, texCoords).r;
     }
-    return 1.0f;
+    return 0.5f;
 }
 
 float GetMetallic(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[])
@@ -69,7 +69,7 @@ float GetMetallic(in MaterialInfo matInfo, in float2 texCoords, in SamplerState 
         Texture2D metallic = globalTextureData[matInfo.metallic];
         return metallic.Sample(inSampler, texCoords).r;
     }
-    return 0.f;
+    return 0.5f;
 }
 
 float GetHeight(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[])
