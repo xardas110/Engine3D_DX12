@@ -54,7 +54,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);    
     fi.albedo = pow(fi.albedo, 2.2f);
         
-    float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj);
+    float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj) + (fi.geometryNormal * 0.01f);
                     
     if (fi.shaderModel == SM_SKY)
     {
