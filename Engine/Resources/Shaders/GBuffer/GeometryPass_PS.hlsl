@@ -16,6 +16,7 @@ SamplerState                        g_LinearRepeatSampler       : register(s0);
 struct PixelShaderInput
 {
 	float4 PositionWS	:	POSITION;
+    float4 PrevPositionWS : PREVPOS;
 	float3 NormalWS		:	NORMAL;
 	float2 TexCoord		:	TEXCOORD;
     float3 Tangent_N    :   TANGENT_N;
@@ -64,6 +65,7 @@ PixelShaderOutput main(PixelShaderInput IN)
     OUT.motionVector = gPack.motionVector;
     OUT.normalRoughness = gPack.normalRough;
     OUT.geometryNormal = gPack.geometryNormal;
+    OUT.motionVector = float4(IN.PrevPositionWS.rgb - IN.PositionWS.rgb, 1.f);
         
     return OUT;
 }

@@ -28,5 +28,11 @@ protected:
      *  Update the game logic.
      */
     virtual void OnUpdate(UpdateEventArgs& e) override;
+
+    float moveAmount = 5.f;
+    float currentMove = 0.f;
+    int sign = 1;
+
+    std::vector<Transform> initalPositions;
 };
 

@@ -219,6 +219,13 @@ bool SponzaExe::LoadContent()
     */
 
 
+    auto& view = registry.view<TransformComponent, MeshComponent>();
+    int i = 0;
+    for (auto [entity, trans, mesh] : view.each())
+    {
+        initalPositions.push_back(trans);
+    }
+
 	return true;
 }
 
@@ -229,4 +236,18 @@ void SponzaExe::UnloadContent()
 void SponzaExe::OnUpdate(UpdateEventArgs& e)
 {
 	Game::OnUpdate(e);
+
+    int speed = 4;
+
+    if (moveAmount < currentMove) sign = -speed;
+    else if (-moveAmount > currentMove) sign = speed;
+
+    currentMove += e.ElapsedTime * sign;
+
+    auto& view = registry.view<TransformComponent, MeshComponent>();
+    int i = 0;
+    for (auto [entity, trans, mesh] : view.each())
+    {
+        trans.pos.m128_f32[1] = currentMove + initalPositions[i++].pos.m128_f32[1];
+    }
 }

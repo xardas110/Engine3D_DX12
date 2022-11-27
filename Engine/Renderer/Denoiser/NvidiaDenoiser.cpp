@@ -235,12 +235,8 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	memcpy(commonSettings.worldToViewMatrixPrev, &cam.prevView, sizeof(cam.prevView));
 	memcpy(commonSettings.viewToClipMatrixPrev, &cam.prevProj, sizeof(cam.prevProj));
 
-	commonSettings.motionVectorScale[0] = { 0 };
-	commonSettings.motionVectorScale[1] = { 0 };
-	commonSettings.motionVectorScale[2] = { 0 };
 	commonSettings.isMotionVectorInWorldSpace = true;
 
-	
 	NRD.SetMethodSettings(nrd::Method::REBLUR_DIFFUSE_SPECULAR, &settings);
 
 	NrdUserPool userPool = {};
