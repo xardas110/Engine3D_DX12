@@ -227,7 +227,6 @@ float GetBRDFProbability(in SurfaceMaterial material, in float3 V, in float3 sha
 
 float4 GetRotationToZAxis(in float3 input)
 {
-
 	// Handle special case when input is exact or near opposite of (0, 0, 1)
     if (input.z < -0.99999f)
         return float4(1.0f, 0.0f, 0.0f, 0.0f);

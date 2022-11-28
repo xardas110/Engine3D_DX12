@@ -139,7 +139,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 troughput /= (1.0f - brdfProbability);
             }
         }
-
+  
         float3 brdfWeight;
         float2 u = float2(Rand(rngState), Rand(rngState));               
         if (!EvaluateIndirectBRDF(u, currentMat.normal, geometryNormal, V, currentMat, brdfType, ray.Direction, brdfWeight))
@@ -204,8 +204,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         {
             hitSurfaceMaterial.normal = hitSurface.normal;    
         }
-     
-            
+
         if (brdfType == BRDF_TYPE_DIFFUSE)
         {
             if (i == 0)
@@ -243,6 +242,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         currentMat = hitSurfaceMaterial;
         ray.TMin = 0.0f;
         ray.Origin = shadowRayDesc.Origin;
+   
     }
     
     float3 fenv = ApproxSpecularIntegralGGX(gBufferBRDF.specularF0, gBufferBRDF.alpha, gBufferBRDF.NdotV);
