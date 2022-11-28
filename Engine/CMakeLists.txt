@@ -198,9 +198,12 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC Renderer/Debug
     PUBLIC Renderer/Lightpass
     PUBLIC Renderer/Denoiser
+    PUBLIC Libs/DLSS/include
     PUBLIC Lights
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
+
+ link_directories(Libs/DLSS/Lib)
 
  set ( TARGET_LINK_LIBS
     PUBLIC assimp
