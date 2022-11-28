@@ -81,6 +81,7 @@ using namespace DirectX;
 #define DEBUG_RAYTRACED_METALLIC 17
 #define DEBUG_RAYTRACED_HEIGHT 18
 #define DEBUG_RAYTRACED_EMISSIVE 19
+#define DEBUG_RAYTRACED_HIT_T 20
 //ShaderModels max 255 shader models
 #define SM_SKY 0
 #define SM_BRDF 1
