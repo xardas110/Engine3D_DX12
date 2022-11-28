@@ -4,7 +4,7 @@ message("Processing 'NRD'...")
 
 set(NRD_DXC_CUSTOM_PATH "custom/path/to/dxc" CACHE STRING "Custom DXC to use if Vulkan SDK is not installed")
 set(NRD_SHADER_OUTPUT_PATH "" CACHE STRING "Shader output path override")
-set(NRD_NORMAL_ENCODING "2" CACHE STRING "Normal encoding variant (0-4, matches nrd::NormalEncoding)")
+set(NRD_NORMAL_ENCODING "3" CACHE STRING "Normal encoding variant (0-4, matches nrd::NormalEncoding)")
 set(NRD_ROUGHNESS_ENCODING "1" CACHE STRING "Roughness encoding variant (0-2, matches nrd::RoughnessEncoding)")
 
 # Settings
