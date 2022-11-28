@@ -575,8 +575,8 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     Application::Get().Flush();
 #endif
 
-    m_Width = e.Width;
-    m_Height = e.Height;
+    m_Width = e.Width / 2;
+    m_Height = e.Height / 2;
 
     m_GBuffer.OnResize(m_Width, m_Height);
     m_LightPass.OnResize(m_Width, m_Height);

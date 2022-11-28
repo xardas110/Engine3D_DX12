@@ -241,5 +241,5 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::ve
 
 void Raytracing::OnMeshCreated(const Mesh& mesh)
 {
-    std::cout << "Mesh created " << std::endl;
+
 }
