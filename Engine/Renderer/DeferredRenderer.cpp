@@ -491,7 +491,8 @@ void DeferredRenderer::Render(Window& window)
             "Raytraced Roughness", 
             "Raytraced Metallic", 
             "Raytraced Height",
-            "Raytraced Emissive"
+            "Raytraced Emissive",
+            "Raytraced Hit T"
         };
 
         const Texture* texArray[] =
@@ -516,6 +517,7 @@ void DeferredRenderer::Render(Window& window)
             &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
             &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
             &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
+            &m_LightPass.GetTexture(LIGHTBUFFER_DIRECT_LIGHT)
         };
         ImGui::Begin("Select render buffer");
         ImGui::ListBox("listbox\n(single select)", &listbox_item_debug, listbox_items, IM_ARRAYSIZE(listbox_items));
@@ -527,7 +529,7 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->TransitionBarrier(m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE), D3D12_RESOURCE_STATE_PRESENT);
 
-        if (DEBUG_RAYTRACED_ALBEDO <= listbox_item_debug)
+        if (DEBUG_RAYTRACED_ALBEDO <= listbox_item_debug && listbox_item_debug != 20)
            SetRenderTexture(&m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG));
         else
             SetRenderTexture(&m_DebugTexturePass.renderTarget.GetTexture(AttachmentPoint::Color0));

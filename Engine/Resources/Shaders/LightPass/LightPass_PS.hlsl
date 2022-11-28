@@ -160,8 +160,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 firstDiffuseBounceDistance = 50001.f;
                 indirectDiffuse += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;      
             }
-            else
-                
+            else               
             {              
                 firstSpecularBounceDistance = 50001.f;
                 indirectSpecular += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;
@@ -340,7 +339,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         else if (DEBUG_RAYTRACED_EMISSIVE == g_RaytracingData.debugSettings)
         {
             color = hitSurfaceMaterial.emissive;
-        }            
+        }
+        else if (DEBUG_RAYTRACED_HIT_T == g_RaytracingData.debugSettings)
+        {
+            OUT.DirectDiffuse = float4(query.CommittedRayT(), query.CommittedRayT(), query.CommittedRayT(), 1.f);
+        }
     }
     else
     {
