@@ -202,6 +202,11 @@ NvidiaDenoiser::NvidiaDenoiser(int width, int height, DenoiserTextures& texs)
 		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE_STORAGE;
 		entryDesc.nextLayout = nri::TextureLayout::GENERAL;
 	};
+
+	std::cout << "-------------------------" << std::endl;
+	std::cout << "Denoiser Normal Encoding: "  << (int)nrd::GetLibraryDesc().normalEncoding << std::endl;
+	std::cout << "Denoiser roughness Encoding: " << (int)nrd::GetLibraryDesc().roughnessEncoding << std::endl;
+	std::cout << "-------------------------" << std::endl;
 }
 
 NvidiaDenoiser::~NvidiaDenoiser()
@@ -330,6 +335,10 @@ void NvidiaDenoiser::OnGUI()
 	ShowHelpMarker("[0; 1] - enables noisy input / denoised output comparison");
 	ImGui::SameLine();
 	ImGui::SliderFloat("splitScreen", &commonSettings.splitScreen, 0.f, 1.f);
+
+	ShowHelpMarker("(units) > 0 - use TLAS or tracing range (max value = NRD_FP16_MAX / NRD_FP16_VIEWZ_SCALE - 1 = 524031)");
+	ImGui::SameLine();
+	ImGui::SliderFloat("denoisingRange", &commonSettings.denoisingRange, 0.f, 500000.f);
 
 	ShowHelpMarker("Adds bias in case of badly defined signals, but tries to fight with fireflies");
 	ImGui::SameLine();

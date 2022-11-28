@@ -63,6 +63,7 @@ struct DenoiserSettings
 	DenoiserSettings()
 	{
 		settings.blurRadius = 60.f;
+		commonSettings.denoisingRange = 50000.f;
 	}
 
 	nrd::ReblurSettings settings = {};
