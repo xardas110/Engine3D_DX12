@@ -98,14 +98,15 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene)
     { // Materials
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
+        /*
         std::cout << "Loading material: " << material->GetName().C_Str() << std::endl;
-
         std::cout << "Num properties: " << material->mNumProperties << std::endl;
 
-       // for (size_t i = 0; i < material->mNumProperties; i++)
-       // {
-       //     material->mProperties[i]->
-       // }
+        for (size_t i = 0; i < material->mNumProperties; i++)
+        {
+            std::cout << "mat key: " << material->mProperties[i]->mKey.C_Str() << std::endl;
+        }
+        */
 
         GetTexturePath(aiTextureType::aiTextureType_AMBIENT, material, path, internalMesh.material.textures[AssimpMaterialType::Ambient].path);
 
