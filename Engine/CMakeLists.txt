@@ -72,7 +72,7 @@ set( HEADER_FILES
     "DX12/StaticDescriptorHeap.h" 
     "Renderer/CompositionPass/CompositionPass.h"
     "Renderer/Debug/DebugTexture.h"
- "Lights/DirectionalLight.h"  "Renderer/Denoiser/NvidiaDenoiser.h" "core/DX12Helper.h" "Renderer/Skybox/Skybox.h" "Renderer/HDR/HDR.h")
+ "Lights/DirectionalLight.h"  "Renderer/Denoiser/NvidiaDenoiser.h" "core/DX12Helper.h" "Renderer/Skybox/Skybox.h" "Renderer/HDR/HDR.h" "Renderer/DLSS/DLSS.h")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
@@ -121,7 +121,7 @@ set( SOURCE_FILES
     "Renderer/GBuffer/GBuffer.cpp" 
     "DX12/StaticDescriptorHeap.cpp" 
     "Renderer/CompositionPass/CompositionPass.cpp"
-    "Renderer/Debug/DebugTexture.cpp" "Lights/DirectionalLight.cpp"  "Renderer/Denoiser/NvidiaDenoiser.cpp" "Renderer/Skybox/Skybox.cpp" "Renderer/HDR/HDR.cpp")
+    "Renderer/Debug/DebugTexture.cpp" "Lights/DirectionalLight.cpp"  "Renderer/Denoiser/NvidiaDenoiser.cpp" "Renderer/Skybox/Skybox.cpp" "Renderer/HDR/HDR.cpp" "Renderer/DLSS/DLSS.cpp")
 
 set( IMGUI_HEADERS
     external/ImGui/imgui.h
@@ -203,12 +203,11 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
 
- link_directories(Libs/DLSS/Lib)
-
  set ( TARGET_LINK_LIBS
     PUBLIC assimp
     PUBLIC NRD
     PUBLIC NRI
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Libs/DLSS/Lib/Windows_x86_64/x86_64/nvsdk_ngx_d_dbg.lib
     PUBLIC DirectXTex
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib

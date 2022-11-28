@@ -12,6 +12,7 @@
 #include <NvidiaDenoiser.h>
 #include <Skybox/Skybox.h>
 #include <HDR/HDR.h>
+#include <DLSS/DLSS.h>
 
 class Game;
 class MeshTuple;
@@ -54,6 +55,7 @@ class DeferredRenderer
 	CompositionPass m_CompositionPass;
 	DebugTexturePass m_DebugTexturePass;	
 	std::unique_ptr<NvidiaDenoiser> m_NvidiaDenoiser;
+	std::unique_ptr<DLSS> m_DLSS;
 
 	CameraCB cameraCB;
 
