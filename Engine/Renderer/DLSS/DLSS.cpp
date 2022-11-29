@@ -19,6 +19,11 @@ DLSS::~DLSS()
 {
 }
 
+void DLSS::InitTexture(int width, int height)
+{
+
+}
+
 void DLSS::InitializeNGX(int width, int height)
 {
     NVSDK_NGX_Result Result = NVSDK_NGX_Result_Fail;

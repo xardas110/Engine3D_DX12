@@ -59,6 +59,8 @@ private:
 
 	void InitializeNGX(int width, int height);
 
+	void InitTexture(int width, int height);
+
 	void InitFeatures(
 		DirectX::XMUINT2 optimalRenderSize, 
 		DirectX::XMUINT2 outDisplaySize, 
@@ -92,6 +94,8 @@ private:
 	NVSDK_NGX_Handle* m_dlssFeature = nullptr;
 
 	DlssRecommendedSettings recommendedSettings;
+
+	Texture resolvedTexture;
 
 	Microsoft::WRL::ComPtr<ID3D12Device8> m_Device;
 };
