@@ -47,21 +47,6 @@ class DeferredRenderer
 
 	std::vector<MeshInstanceWrapper> GetMeshInstances(entt::registry& registry);
 
-	int m_Width, m_Height; //should be above the rest, cuz of initializing
-	int m_NativeWidth, m_NativeHeight;
-
-	D3D12_RECT m_ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
-	std::unique_ptr<Raytracing> m_Raytracer{nullptr};
-
-	GBuffer m_GBuffer;
-	LightPass m_LightPass; //Init before denoiser
-	CompositionPass m_CompositionPass;
-	DebugTexturePass m_DebugTexturePass;	
-	std::unique_ptr<NvidiaDenoiser> m_NvidiaDenoiser;
-	std::unique_ptr<DLSS> m_DLSS;
-
-	CameraCB cameraCB;
-
 	void SetRenderTexture(const Texture* texture)
 	{
 		renderTexture = texture;
@@ -80,5 +65,20 @@ class DeferredRenderer
 
 	std::unique_ptr<Skybox> m_Skybox;
 
+	int m_Width, m_Height; //should be above the rest, cuz of initializing
+	int m_NativeWidth, m_NativeHeight;
+
+	CameraCB cameraCB;
+
+	D3D12_RECT m_ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
+	std::unique_ptr<Raytracing> m_Raytracer{ nullptr };
+
+	std::unique_ptr<GBuffer> m_GBuffer;
+	std::unique_ptr<LightPass> m_LightPass; //Init before denoiser
+	std::unique_ptr<CompositionPass> m_CompositionPass;
+	std::unique_ptr<NvidiaDenoiser> m_NvidiaDenoiser;
+	std::unique_ptr<DLSS> m_DLSS;
+
+	std::unique_ptr<DebugTexturePass> m_DebugTexturePass;
 };
 

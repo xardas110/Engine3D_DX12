@@ -460,6 +460,6 @@ UINT Window::Present(const Texture & texture, GUI& m_GUI)
 
 const Texture& Window::GetDeferredRendererFinalTexture()
 {
-    return m_DeferredRenderer.m_GBuffer.renderTarget.GetTexture(AttachmentPoint::Color0);
+    return m_DeferredRenderer.m_GBuffer->renderTarget.GetTexture(AttachmentPoint::Color0);
 }
 
