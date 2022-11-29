@@ -48,6 +48,7 @@ class DeferredRenderer
 	std::vector<MeshInstanceWrapper> GetMeshInstances(entt::registry& registry);
 
 	int m_Width, m_Height; //should be above the rest, cuz of initializing
+	int m_NativeWidth, m_NativeHeight;
 
 	D3D12_RECT m_ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
 	std::unique_ptr<Raytracing> m_Raytracer{nullptr};
