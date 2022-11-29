@@ -49,7 +49,7 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_Raytracer = std::unique_ptr<Raytracing>(new Raytracing());
     m_Raytracer->Init();
 
-    m_DLSS = std::unique_ptr<DLSS>(new DLSS);
+    m_DLSS = std::unique_ptr<DLSS>(new DLSS(width, height));
 
     m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(width, height, GetDenoiserTextures()));
 
@@ -581,10 +581,17 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     m_Width = e.Width;
     m_Height = e.Height;
 
+    m_DLSS->OnResize(m_Width, m_Height);
+
     m_GBuffer.OnResize(m_Width, m_Height);
     m_LightPass.OnResize(m_Width, m_Height);
     m_CompositionPass.OnResize(m_Width, m_Height);
     m_DebugTexturePass.OnResize(m_Width, m_Height);
     
-    m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height, GetDenoiserTextures()));
+    m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height, GetDenoiserTextures()));   
+}
+
+void DeferredRenderer::Shutdown()
+{
+    m_DLSS->ShutDown();
 }

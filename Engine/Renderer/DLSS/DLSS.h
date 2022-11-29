@@ -1,9 +1,52 @@
 #pragma once
 
 #include <nvsdk_ngx.h>
-#include <nvsdk_ngx_helpers.h>
+#include <CommandList.h>
+#include <Texture.h>
 
 #define APP_ID 231313132
+
+// maximum HDR value in the scene
+#define NGX_HDRMax 1000.0f
+
+// when flickering is detected bigger value will use more history to suppress it
+#define NGX_FlickerFactor 0.5f
+
+// threshold to determine low vs high contrast. low contrast areas get more current frame than history
+#define NGX_ContrastFactor 0.05f
+
+// higher value includes more of the current frame in motion (which can result in sharper images but also flickering)
+#define NGX_MotionFactor 0.1f
+
+// bigger the value more current frame will be used vs history (sharper vs blurrier image)
+#define NGX_HistoryBlendFactor 0.15f
+
+// higher the value more sharpening applies (and more halo around high contrast areas)
+#define NGX_SharpenThreshold 0.3f
+
+// bigger the value more history gets rejected when motion delta is high (current vs previous frame) to avoid ghosting
+#define NGX_RejectFactor 0.02f
+
+struct DlssRecommendedSettings
+{
+	float     m_ngxRecommendedSharpness = 0.01f;
+	DirectX::XMUINT2 m_ngxRecommendedOptimalRenderSize = { ~(0u), ~(0u) };
+	DirectX::XMUINT2 m_ngxDynamicMaximumRenderSize = { ~(0u), ~(0u) };
+	DirectX::XMUINT2 m_ngxDynamicMinimumRenderSize = { ~(0u), ~(0u) };
+};
+
+struct DlssTextures
+{
+	//required textures
+	DlssTextures(const Texture* unresolvedColor, const Texture* resolvedColor, const Texture* motionVectors, const Texture* depth)
+		: unresolvedColor(unresolvedColor), resolvedColor(resolvedColor) , motionVectors(motionVectors) , depth(depth) {}
+
+	const Texture* unresolvedColor{ nullptr };
+	const Texture* resolvedColor{ nullptr };
+	const Texture* motionVectors{ nullptr };
+	const Texture* depth{ nullptr };
+	const Texture* exposure{ nullptr };
+};
 
 struct DLSS
 {
@@ -11,17 +54,44 @@ private:
 	friend class DeferredRenderer;
 	friend struct std::default_delete<DLSS>;
 
-	DLSS();
+	DLSS(int width, int height);
 	~DLSS();
 
-	void InitFeatures(DirectX::XMINT2 optimalRenderSize, 
-		DirectX::XMINT2 outDisplaySize, 
+	void InitializeNGX(int width, int height);
+
+	void InitFeatures(
+		DirectX::XMUINT2 optimalRenderSize, 
+		DirectX::XMUINT2 outDisplaySize, 
 		int isContentHDR, bool depthInverted, 
 		float depthScale, bool enableSharpening, 
 		bool enableAutoExposure, NVSDK_NGX_PerfQuality_Value qualValue);
+
+	void QueryOptimalSettings(
+		DirectX::XMUINT2 inDisplaySize, 
+		NVSDK_NGX_PerfQuality_Value inQualValue, 
+		DlssRecommendedSettings* outRecommendedSettings);
+
+	void EvaluateSuperSampling(
+		CommandList* commandList,
+		const DlssTextures& texs,
+		int width, int height,
+		bool bResetAccumulation = false,
+		float flSharpness = 0.0f,
+		bool bUseNgxSdkExtApi = false);
+
+
+	void InitWithRecommendedSettings(int width, int height);
+
+	DirectX::XMUINT2 OnResize(int width, int height);
+
+	void ReleaseDLSSFeatures();
 
 	void ShutDown();
 
 	NVSDK_NGX_Parameter* m_ngxParameters = nullptr;
 	NVSDK_NGX_Handle* m_dlssFeature = nullptr;
+
+	DlssRecommendedSettings recommendedSettings;
+
+	Microsoft::WRL::ComPtr<ID3D12Device8> m_Device;
 };

@@ -162,7 +162,7 @@ Application::~Application()
 
 Microsoft::WRL::ComPtr<IDXGIAdapter4> Application::GetAdapter(bool bUseWarp)
 {
-    ComPtr<IDXGIFactory4> dxgiFactory;
+    ComPtr<IDXGIFactory7> dxgiFactory;
     UINT createFactoryFlags = 0;
 #if defined(_DEBUG)
     createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
@@ -202,16 +202,16 @@ Microsoft::WRL::ComPtr<IDXGIAdapter4> Application::GetAdapter(bool bUseWarp)
 
     return dxgiAdapter4;
 }
-Microsoft::WRL::ComPtr<ID3D12Device5> Application::CreateDevice(Microsoft::WRL::ComPtr<IDXGIAdapter4> adapter)
+Microsoft::WRL::ComPtr<ID3D12Device8> Application::CreateDevice(Microsoft::WRL::ComPtr<IDXGIAdapter4> adapter)
 {
-    ComPtr<ID3D12Device5> d3d12Device5;
-    ThrowIfFailed(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12Device5)));
+    ComPtr<ID3D12Device8> d3d12Device8;
+    ThrowIfFailed(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12Device8)));
 //    NAME_D3D12_OBJECT(d3d12Device2);
 
     // Enable debug messages in debug mode.
 #if defined(_DEBUG)
     ComPtr<ID3D12InfoQueue> pInfoQueue;
-    if (SUCCEEDED(d3d12Device5.As(&pInfoQueue)))
+    if (SUCCEEDED(d3d12Device8.As(&pInfoQueue)))
     {
         pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
         pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
@@ -246,7 +246,7 @@ Microsoft::WRL::ComPtr<ID3D12Device5> Application::CreateDevice(Microsoft::WRL::
     }
 #endif
 
-    return d3d12Device5;
+    return d3d12Device8;
 }
 
 bool Application::CheckTearingSupport()
@@ -406,7 +406,7 @@ void Application::Quit(int exitCode)
     PostQuitMessage(exitCode);
 }
 
-Microsoft::WRL::ComPtr<ID3D12Device5> Application::GetDevice() const
+Microsoft::WRL::ComPtr<ID3D12Device8> Application::GetDevice() const
 {
     return m_d3d12Device;
 }

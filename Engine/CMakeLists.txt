@@ -386,3 +386,15 @@ add_custom_command(TARGET EngineBin POST_BUILD COMMAND
     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/WinPixEventRuntime/Bin
     ${CMAKE_BINARY_DIR}/bin
 )
+
+add_custom_command(TARGET Engine POST_BUILD COMMAND
+    ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/Libs/DLSS/lib/Windows_x86_64/dev
+    ${CMAKE_BINARY_DIR}/bin
+)
+
+add_custom_command(TARGET EngineBin POST_BUILD COMMAND
+    ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/Libs/DLSS/lib/Windows_x86_64/dev
+    ${CMAKE_BINARY_DIR}/bin
+)
