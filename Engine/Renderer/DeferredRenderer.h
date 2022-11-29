@@ -43,6 +43,8 @@ class DeferredRenderer
 
 	void OnResize(ResizeEventArgs& e);
 
+	void Shutdown();
+
 	std::vector<MeshInstanceWrapper> GetMeshInstances(entt::registry& registry);
 
 	int m_Width, m_Height; //should be above the rest, cuz of initializing
