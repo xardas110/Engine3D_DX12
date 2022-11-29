@@ -31,4 +31,13 @@ float3 GetWorldPosFromDepth(in float2 uv, float depth, in float4x4 invViewProj)
     return (wp / wp.w).xyz;
 }
 
+float2 UVToClip(float2 UV)
+{
+    return float2(UV.x * 2 - 1, 1 - UV.y * 2);
+}
+float2 ClipToUV(float2 ClipPos)
+{
+    return float2(ClipPos.x * 0.5 + 0.5, 0.5 - ClipPos.y * 0.5);
+}
+
 #endif

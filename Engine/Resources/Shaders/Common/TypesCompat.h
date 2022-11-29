@@ -47,6 +47,7 @@ using namespace DirectX;
 #define GBUFFER_AO_METALLIC_HEIGHT 4
 #define GBUFFER_LINEAR_DEPTH 5
 #define GBUFFER_GEOMETRY_NORMAL 6
+#define GBUFFER_GEOMETRY_MV2D 7
 #define GBUFFER_STANDARD_DEPTH 8
 
 //RenderTargets 0-7 color
@@ -82,6 +83,9 @@ using namespace DirectX;
 #define DEBUG_RAYTRACED_HEIGHT 18
 #define DEBUG_RAYTRACED_EMISSIVE 19
 #define DEBUG_RAYTRACED_HIT_T 20
+
+#define DEBUG_GBUFFER_MV2D 21
+
 //ShaderModels max 255 shader models
 #define SM_SKY 0
 #define SM_BRDF 1
@@ -189,6 +193,7 @@ struct ObjectCB
 
     XMMATRIX transposeInverseModel;
     XMMATRIX prevModel;
+    XMMATRIX prevMVP;
 };
 
 struct MeshVertex
