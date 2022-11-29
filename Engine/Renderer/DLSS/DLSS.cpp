@@ -8,10 +8,13 @@
 #include <nvsdk_ngx_helpers.h>
 #include <d3d12.h>
 
+#include <DX12Helper.h>
+
 const char g_ProjectID[] = "a0f57b54-1daf-4934-90ae-c4035c19df04";
 
 DLSS::DLSS(int width, int height)
 {
+    InitTexture(width, height);
     InitializeNGX(width, height);
 }
 
@@ -21,7 +24,13 @@ DLSS::~DLSS()
 
 void DLSS::InitTexture(int width, int height)
 {
+    auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM, width, height);
+    colorDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    colorDesc.MipLevels = 1;
 
+    resolvedTexture = Texture(colorDesc, nullptr,
+        TextureUsage::RenderTarget,
+        L"DLSS resolved Color");
 }
 
 void DLSS::InitializeNGX(int width, int height)
@@ -30,7 +39,7 @@ void DLSS::InitializeNGX(int width, int height)
 
     m_Device = Application::Get().GetDevice();
 
-    Result = NVSDK_NGX_D3D12_Init(APP_ID, L"Assets", m_Device.Get());
+    Result = NVSDK_NGX_D3D12_Init(APP_ID, L"", m_Device.Get());
 
     if (NVSDK_NGX_FAILED(Result)) throw std::exception("Failed to Init NGX dx12");
 
@@ -192,6 +201,7 @@ void DLSS::EvaluateSuperSampling(
     D3D12DlssEvalParams.Feature.pInOutput = texs.resolvedColor->GetD3D12Resource().Get();
     D3D12DlssEvalParams.pInDepth = texs.depth->GetD3D12Resource().Get();
     D3D12DlssEvalParams.pInMotionVectors = texs.motionVectors->GetD3D12Resource().Get();
+    D3D12DlssEvalParams.pInExposureTexture = nullptr;
 
     D3D12DlssEvalParams.InJitterOffsetX = 0.f;
     D3D12DlssEvalParams.InJitterOffsetY = 0.f;
@@ -207,22 +217,23 @@ void DLSS::EvaluateSuperSampling(
     D3D12DlssEvalParams.InDepthSubrectBase = { 0U,0U };
     D3D12DlssEvalParams.InTranslucencySubrectBase = { 0U,0U };
     D3D12DlssEvalParams.InMVSubrectBase = { 0U,0U };
-
+ 
     D3D12DlssEvalParams.InRenderSubrectDimensions = { 
-        recommendedSettings.m_ngxRecommendedOptimalRenderSize.x, 
-        recommendedSettings.m_ngxRecommendedOptimalRenderSize.y };
+        (unsigned)recommendedSettings.m_ngxRecommendedOptimalRenderSize.x, (unsigned)recommendedSettings.m_ngxRecommendedOptimalRenderSize.y };
 
     Result = NGX_D3D12_EVALUATE_DLSS_EXT(commandList->GetGraphicsCommandList().Get(), m_dlssFeature, m_ngxParameters, &D3D12DlssEvalParams);
 
     if (NVSDK_NGX_FAILED(Result))
     {
-        printf("Failed to NVSDK_NGX_D3D12_EvaluateFeature for DLSS, code = 0x%08x, info: %ls", Result, GetNGXResultAsString(Result));
+        printf("Failed to NVSDK_NGX_D3D12_EvaluateFeature for DLSS, code = 0x%08x, info: %ls\n", Result, GetNGXResultAsString(Result));
     }
 }
 
 DirectX::XMUINT2 DLSS::OnResize(int width, int height)
 {
     InitWithRecommendedSettings(width, height);
+
+    resolvedTexture.Resize(width, height);
 
     return recommendedSettings.m_ngxRecommendedOptimalRenderSize;
 }

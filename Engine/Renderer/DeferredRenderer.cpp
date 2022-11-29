@@ -42,6 +42,9 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_CompositionPass(m_Width, m_Height),
     m_DebugTexturePass(m_Width, m_Height)
 {
+    m_NativeWidth = width;
+    m_NativeHeight = height;
+
     //auto adapter = Application::Get().GetAdapter(false);  
     //assert(IsDirectXRaytracingSupported(adapter.Get()));
     std::cout << "DeferredRenderer: Raytracing is supported on the device" << std::endl;
@@ -54,6 +57,7 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(width, height, GetDenoiserTextures()));
 
     m_Skybox = std::unique_ptr<Skybox>(new Skybox(L"Assets/Textures/belfast_sunset_puresky_4k.hdr"));
+
 }
 
 DeferredRenderer::~DeferredRenderer()
@@ -469,8 +473,24 @@ void DeferredRenderer::Render(Window& window)
         commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::TonemapCB, HDR::GetTonemapCB());
 
         commandList->Draw(3);
+
+       // commandList->TransitionBarrier(m_CompositionPass.renderTarget.GetTexture(AttachmentPoint::Color0), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     } 
+    { //DLSS pass
+        DlssTextures dlssTextures
+        (
+            &m_CompositionPass.renderTarget.GetTexture(AttachmentPoint::Color0),
+            &m_DLSS->resolvedTexture,
+            &m_GBuffer.GetTexture(GBUFFER_GEOMETRY_MV2D),
+            &m_GBuffer.GetTexture(GBUFFER_STANDARD_DEPTH)
+        );
+
+        commandList->TransitionBarrier(m_DLSS->resolvedTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+        m_DLSS->EvaluateSuperSampling(commandList.get(), dlssTextures, m_NativeWidth, m_NativeHeight);
+    }
     { //Debug pass
         commandList->SetRenderTarget(m_DebugTexturePass.renderTarget);
         commandList->SetViewport(m_DebugTexturePass.renderTarget.GetViewport());
@@ -507,7 +527,7 @@ void DeferredRenderer::Render(Window& window)
 
         const Texture* texArray[] =
         {
-            &m_CompositionPass.renderTarget.GetTexture(AttachmentPoint::Color0),
+            &m_DLSS->resolvedTexture,
             &m_GBuffer.GetTexture(GBUFFER_ALBEDO),
             &m_GBuffer.GetTexture(GBUFFER_NORMAL_ROUGHNESS),
             &m_GBuffer.GetTexture(GBUFFER_MOTION_VECTOR),
@@ -536,6 +556,7 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->SetShaderResourceView(DebugTextureParam::texture, 0, *texArray[listbox_item_debug]);
 
+        /*
         commandList->Draw(3);
 
         commandList->TransitionBarrier(m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE), D3D12_RESOURCE_STATE_PRESENT);
@@ -544,6 +565,10 @@ void DeferredRenderer::Render(Window& window)
            SetRenderTexture(&m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG));
         else
             SetRenderTexture(&m_DebugTexturePass.renderTarget.GetTexture(AttachmentPoint::Color0));
+
+            */
+
+        SetRenderTexture(&m_DLSS->resolvedTexture);
     }
     { //Set UAV buffers back to present for denoising
         commandList->GetGraphicsCommandList()->ResourceBarrier(1,
@@ -586,17 +611,24 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     Application::Get().Flush();
 #endif
 
-    m_Width = e.Width;
-    m_Height = e.Height;
+    m_DLSS = std::unique_ptr<DLSS>(new DLSS(e.Width, e.Height));
+    auto dlssRes = m_DLSS->recommendedSettings.m_ngxRecommendedOptimalRenderSize;
 
-    m_DLSS->OnResize(m_Width, m_Height);
+    m_Width = dlssRes.x;
+    m_Height = dlssRes.y;
+
+    m_NativeWidth = e.Width;
+    m_NativeHeight = e.Height;
+
+    std::cout << "Native Res: " << e.Width << "x" << e.Height << std::endl;
+    std::cout << "Dlss prefered res: " << dlssRes.x << "x" << dlssRes.y << std::endl;
 
     m_GBuffer.OnResize(m_Width, m_Height);
     m_LightPass.OnResize(m_Width, m_Height);
     m_CompositionPass.OnResize(m_Width, m_Height);
     m_DebugTexturePass.OnResize(m_Width, m_Height);
     
-    m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height, GetDenoiserTextures()));   
+    m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height, GetDenoiserTextures()));
 }
 
 void DeferredRenderer::Shutdown()
