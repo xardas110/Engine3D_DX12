@@ -38,6 +38,10 @@ void GBuffer::CreateRenderTarget(int width, int height)
     motionDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     motionDesc.MipLevels = 1;
 
+    auto motionDesc2D = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16_FLOAT, width, height);
+    motionDesc2D.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    motionDesc2D.MipLevels = 1;
+
     auto aoMetallicHeightDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM, width, height);
     aoMetallicHeightDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     aoMetallicHeightDesc.MipLevels = 1;
@@ -65,6 +69,10 @@ void GBuffer::CreateRenderTarget(int width, int height)
     Texture motionVector = Texture(motionDesc, &ClearValue(motionDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
         TextureUsage::RenderTarget,
         L"GBuffer MotionVector");
+
+    Texture motionVector2D = Texture(motionDesc2D, &ClearValue(motionDesc2D.Format, { 0.f, 0.f, 0.f, 0.f }),
+        TextureUsage::RenderTarget,
+        L"GBuffer MotionVector2D");
 
     Texture emissive = Texture(emissiveSMDesc, &ClearValue(emissiveSMDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
         TextureUsage::RenderTarget,
@@ -102,6 +110,7 @@ void GBuffer::CreateRenderTarget(int width, int height)
     renderTarget.AttachTexture((AttachmentPoint)GBUFFER_AO_METALLIC_HEIGHT, aoMetallicHeight);
     renderTarget.AttachTexture((AttachmentPoint)GBUFFER_LINEAR_DEPTH, linearDepth);
     renderTarget.AttachTexture((AttachmentPoint)GBUFFER_GEOMETRY_NORMAL, geometryNormal);
+    renderTarget.AttachTexture((AttachmentPoint)GBUFFER_GEOMETRY_MV2D, motionVector2D);
     renderTarget.AttachTexture((AttachmentPoint)GBUFFER_STANDARD_DEPTH, depthTexture);
 }
 
@@ -264,6 +273,8 @@ void GBuffer::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
 
     commandlist.ClearTexture(renderTarget.GetTexture((AttachmentPoint)GBUFFER_GEOMETRY_NORMAL), zeroColor);
 
+    commandlist.ClearTexture(renderTarget.GetTexture((AttachmentPoint)GBUFFER_GEOMETRY_MV2D), zeroColor);
+
     commandlist.ClearDepthStencilTexture(renderTarget.GetTexture((AttachmentPoint)GBUFFER_STANDARD_DEPTH), D3D12_CLEAR_FLAG_DEPTH);
 }
 
@@ -303,6 +314,10 @@ D3D12_GPU_DESCRIPTOR_HANDLE GBuffer::CreateSRVViews()
     device->CreateShaderResourceView(
         GetTexture(GBUFFER_GEOMETRY_NORMAL).GetD3D12Resource().Get(), nullptr,
         m_SRVHeap.SetHandle(GBUFFER_GEOMETRY_NORMAL));
+
+    device->CreateShaderResourceView(
+        GetTexture(GBUFFER_GEOMETRY_MV2D).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(GBUFFER_GEOMETRY_MV2D));
 
     D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
     desc.Format = DXGI_FORMAT_R32_FLOAT;

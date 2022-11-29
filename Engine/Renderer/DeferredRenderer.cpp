@@ -245,11 +245,16 @@ void DeferredRenderer::Render(Window& window)
         for (auto [transform, mesh] : meshInstances)
         {       
             objectCB.model = transform.GetTransform();
+
             objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
+            objectCB.prevMVP = prevTrans[i].GetTransform() * cameraCB.prevView * cameraCB.prevProj;
+
             objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
             objectCB.meshId = mesh.id;
+
             objectCB.prevModel = prevTrans[i++].GetTransform();
             objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
+
             globalMeshInfo[mesh.id].objRot = transform.rot;
 
             auto matInstanceID = globalMeshInfo[mesh.id].materialInstanceID;
@@ -268,6 +273,7 @@ void DeferredRenderer::Render(Window& window)
         commandList->TransitionBarrier(m_GBuffer.GetTexture(GBUFFER_NORMAL_ROUGHNESS), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         commandList->TransitionBarrier(m_GBuffer.GetTexture(GBUFFER_STANDARD_DEPTH), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         commandList->TransitionBarrier(m_GBuffer.GetTexture(GBUFFER_GEOMETRY_NORMAL), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        commandList->TransitionBarrier(m_GBuffer.GetTexture(GBUFFER_GEOMETRY_MV2D), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
@@ -495,7 +501,8 @@ void DeferredRenderer::Render(Window& window)
             "Raytraced Metallic", 
             "Raytraced Height",
             "Raytraced Emissive",
-            "Raytraced Hit T"
+            "Raytraced Hit T",
+            "GBuffer MV2D"
         };
 
         const Texture* texArray[] =
@@ -520,7 +527,8 @@ void DeferredRenderer::Render(Window& window)
             &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
             &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
             &m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG),
-            &m_LightPass.GetTexture(LIGHTBUFFER_DIRECT_LIGHT)
+            &m_LightPass.GetTexture(LIGHTBUFFER_DIRECT_LIGHT),
+            &m_GBuffer.GetTexture(GBUFFER_GEOMETRY_MV2D)
         };
         ImGui::Begin("Select render buffer");
         ImGui::ListBox("listbox\n(single select)", &listbox_item_debug, listbox_items, IM_ARRAYSIZE(listbox_items));
@@ -532,7 +540,7 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->TransitionBarrier(m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE), D3D12_RESOURCE_STATE_PRESENT);
 
-        if (DEBUG_RAYTRACED_ALBEDO <= listbox_item_debug && listbox_item_debug != 20)
+        if (DEBUG_RAYTRACED_ALBEDO <= listbox_item_debug && listbox_item_debug  < DEBUG_RAYTRACED_HIT_T)
            SetRenderTexture(&m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG));
         else
             SetRenderTexture(&m_DebugTexturePass.renderTarget.GetTexture(AttachmentPoint::Color0));
