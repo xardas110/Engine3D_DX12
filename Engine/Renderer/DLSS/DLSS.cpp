@@ -180,7 +180,7 @@ void DLSS::InitWithRecommendedSettings(int width, int height)
         NVSDK_NGX_PerfQuality_Value::NVSDK_NGX_PerfQuality_Value_Balanced,
         &recommendedSettings);
 
-    InitFeatures(recommendedSettings.m_ngxRecommendedOptimalRenderSize, {(unsigned)width, (unsigned)height}, false, true, 1.f, false, false, NVSDK_NGX_PerfQuality_Value::NVSDK_NGX_PerfQuality_Value_Balanced);
+    InitFeatures(recommendedSettings.m_ngxRecommendedOptimalRenderSize, {(unsigned)width, (unsigned)height}, false, false, 1.f, false, false, NVSDK_NGX_PerfQuality_Value::NVSDK_NGX_PerfQuality_Value_Balanced);
 }
 
 void DLSS::EvaluateSuperSampling(
