@@ -406,6 +406,11 @@ const RenderTarget& Window::GetRenderTarget() const
     return m_RenderTarget;
 }
 
+int Window::GetBufferCount()
+{
+    return BufferCount;
+}
+
 #ifndef DEBUG_EDITOR
 UINT Window::Present( const Texture& texture )
 {

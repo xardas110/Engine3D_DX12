@@ -8,6 +8,7 @@
 
 #define APP_ID 231313132
 
+/*
 // maximum HDR value in the scene
 #define NGX_HDRMax 1000.0f
 
@@ -28,6 +29,7 @@
 
 // bigger the value more history gets rejected when motion delta is high (current vs previous frame) to avoid ghosting
 #define NGX_RejectFactor 0.02f
+*/
 
 struct DlssRecommendedSettings
 {
@@ -99,7 +101,7 @@ private:
 
 	void ShutDown();
 
-	bool bDlssOn = true;
+	bool bDlssOn = false;
 
 	Texture resolvedTexture;
 

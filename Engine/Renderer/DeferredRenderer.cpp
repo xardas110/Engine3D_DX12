@@ -214,6 +214,7 @@ void DeferredRenderer::Render(Window& window)
 
         PIXEndEvent(gfxCommandList.Get());
     }
+
     {// BUILD DXR STRUCTURE
         PIXBeginEvent(gfxCommandList.Get(), 0, L"Building DXR structure");    
 
@@ -826,11 +827,7 @@ void DeferredRenderer::Render(Window& window)
     }
     {//Graphics execute
         PIXBeginEvent(graphicsQueue->GetD3D12CommandQueue().Get(), 0, L"Graphics execute");
-        std::vector<std::shared_ptr<CommandList>> commandLists;
-        //commandLists.emplace_back(dxrCommandList);       
-        commandLists.emplace_back(commandList);   
-        //commandLists.emplace_back(commandList1);
-        graphicsQueue->ExecuteCommandLists(commandLists); 
+        graphicsQueue->ExecuteCommandList(commandList);
         PIXEndEvent(graphicsQueue->GetD3D12CommandQueue().Get());
     }  
 
