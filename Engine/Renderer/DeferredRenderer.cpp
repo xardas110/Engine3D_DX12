@@ -150,7 +150,9 @@ void DeferredRenderer::Render(Window& window)
     auto& meshInstance = assetManager->m_MeshManager.instanceData;
     auto& textures = assetManager->m_TextureManager.textureData.textures;
     auto meshInstances = GetMeshInstances(game->registry);
+
     prevTrans.resize(meshInstances.size());
+
     auto* camera = game->GetRenderCamera();
 
     ObjectCB objectCB; //todo move to cam
