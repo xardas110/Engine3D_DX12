@@ -225,9 +225,9 @@ void DLSS::EvaluateSuperSampling(
     D3D12DlssEvalParams.InJitterOffsetX = 0.f;
     D3D12DlssEvalParams.InJitterOffsetY = 0.f;
 
-    D3D12DlssEvalParams.Feature.InSharpness = flSharpness;
+   // D3D12DlssEvalParams.Feature.InSharpness = flSharpness;
 
-    D3D12DlssEvalParams.InReset = bResetAccumulation;
+    D3D12DlssEvalParams.InReset = true;
 
     D3D12DlssEvalParams.InMVScaleX = 1.f;
     D3D12DlssEvalParams.InMVScaleY = 1.f;
@@ -305,7 +305,7 @@ void DLSS::OnGUI()
         NVSDK_NGX_PerfQuality_Value_MaxQuality
     };
 
-    static int list_item = 1;
+    static int list_item = 0;
 
     int lastItemValue = list_item;
     ImGui::ListBox("listbox\n(single select)", &list_item, listbox_items, IM_ARRAYSIZE(listbox_items));

@@ -122,6 +122,10 @@ public:
      * will be performed. Use the Window::GetRenderTarget method to get a render
      * target for the window's color buffer. 
      */
+
+
+    static int GetBufferCount();
+
 #ifndef DEBUG_EDITOR
     UINT Present( const Texture& texture = Texture() );
 #else
