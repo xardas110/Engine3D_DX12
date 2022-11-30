@@ -45,8 +45,16 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_DLSS = std::unique_ptr<DLSS>(new DLSS(width, height));
     auto dlssRes = m_DLSS->recommendedSettings.m_ngxRecommendedOptimalRenderSize;
 
-    m_Width = dlssRes.x;
-    m_Height = dlssRes.y;
+    if (m_DLSS->bDlssOn)
+    {
+        m_Width = dlssRes.x;
+        m_Height = dlssRes.y;
+    }
+    else
+    {
+        m_Width = width;
+        m_Height = height;
+    }
 
     m_GBuffer = std::unique_ptr<GBuffer>(new GBuffer(m_Width, m_Height));
     m_LightPass = std::unique_ptr<LightPass>(new LightPass(m_Width, m_Height));
@@ -66,10 +74,14 @@ DeferredRenderer::DeferredRenderer(int width, int height)
 
     m_Skybox = std::unique_ptr<Skybox>(new Skybox(L"Assets/Textures/belfast_sunset_puresky_4k.hdr"));
 
+
+    m_DLSS->dlssChangeEvent.attach(&DeferredRenderer::OnDlssChanged, this);
+
 }
 
 DeferredRenderer::~DeferredRenderer()
 {
+    m_DLSS->dlssChangeEvent.detach(&DeferredRenderer::OnDlssChanged, this);
 }
 
 std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(entt::registry& registry)
@@ -117,6 +129,7 @@ void DeferredRenderer::Render(Window& window)
     if (!window.m_pGame.lock()) return;
     
     HDR::UpdateGUI();
+    m_DLSS->OnGUI();
 
     static int listbox_item_debug = 0;
 
@@ -490,35 +503,38 @@ void DeferredRenderer::Render(Window& window)
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     } 
     { //DLSS pass
-        PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"DLSS Pass");
-        DlssTextures dlssTextures
-        (
-            &m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0),
-            &m_DLSS->resolvedTexture,
-            &m_GBuffer->GetTexture(GBUFFER_GEOMETRY_MV2D),
-            &m_GBuffer->GetTexture(GBUFFER_STANDARD_DEPTH)
-        );
+        if (m_DLSS->bDlssOn)
+        { 
+            PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"DLSS Pass");
+            DlssTextures dlssTextures
+            (
+                &m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0),
+                &m_DLSS->resolvedTexture,
+                &m_GBuffer->GetTexture(GBUFFER_GEOMETRY_MV2D),
+                &m_GBuffer->GetTexture(GBUFFER_STANDARD_DEPTH)
+            );
 
-        dlssTextures.linearDepth = &m_GBuffer->GetTexture(GBUFFER_LINEAR_DEPTH);
-        dlssTextures.motionVectors3D = &m_GBuffer->GetTexture(GBUFFER_MOTION_VECTOR);
+            dlssTextures.linearDepth = &m_GBuffer->GetTexture(GBUFFER_LINEAR_DEPTH);
+            dlssTextures.motionVectors3D = &m_GBuffer->GetTexture(GBUFFER_MOTION_VECTOR);
 
-        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+            commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+                &CD3DX12_RESOURCE_BARRIER::Transition(
+                    m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
+                    D3D12_RESOURCE_STATE_RENDER_TARGET,
+                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
-        commandList->TransitionBarrier(m_DLSS->resolvedTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+            commandList->TransitionBarrier(m_DLSS->resolvedTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-        m_DLSS->EvaluateSuperSampling(commandList.get(), dlssTextures, m_NativeWidth, m_NativeHeight);
+            m_DLSS->EvaluateSuperSampling(commandList.get(), dlssTextures, m_NativeWidth, m_NativeHeight);
 
-        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_RENDER_TARGET));
+            commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+                &CD3DX12_RESOURCE_BARRIER::Transition(
+                    m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
+                    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                    D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-        PIXEndEvent(commandList->GetGraphicsCommandList().Get());
+            PIXEndEvent(commandList->GetGraphicsCommandList().Get());
+        }
     }
     { //HDR pass
         PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"HDR Pass");
@@ -530,7 +546,15 @@ void DeferredRenderer::Render(Window& window)
         commandList->SetGraphicsRootSignature(m_HDR->rootSignature);
         commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        commandList->SetShaderResourceView(HDRParam::ColorTexture, 0, m_DLSS->resolvedTexture);
+        if (m_DLSS->bDlssOn)
+        {
+            commandList->SetShaderResourceView(HDRParam::ColorTexture, 0, m_DLSS->resolvedTexture);
+        }
+        else
+        {
+            commandList->SetShaderResourceView(HDRParam::ColorTexture, 0, m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0));
+        }
+
         commandList->SetGraphicsDynamicConstantBuffer(HDRParam::TonemapCB, HDR::GetTonemapCB());
 
         commandList->Draw(3);
@@ -650,24 +674,40 @@ void DeferredRenderer::Render(Window& window)
     cameraCB.prevProj = cameraCB.proj;  
 }
 
+void DeferredRenderer::OnDlssChanged(const bool& bDlssOn, const NVSDK_NGX_PerfQuality_Value& qualityMode)
+{
+    std::cout << "Dlss change event" << std::endl;
+
+    ResizeEventArgs arg(m_NativeWidth, m_NativeHeight);
+    OnResize(arg);
+  
+}
+
 void DeferredRenderer::OnResize(ResizeEventArgs& e)
 {
-    if (m_Width == e.Width && m_Height == e.Height) return;
+ //   if (m_Width == e.Width && m_Height == e.Height) return;
 
 #ifdef DEBUG_EDITOR
     Application::Get().Flush();
 #endif
 
-    auto dlssRes = m_DLSS->OnResize(e.Width, e.Height);
-
-    m_Width = dlssRes.x;
-    m_Height = dlssRes.y;
+    Application::Get().Flush();
 
     m_NativeWidth = e.Width;
     m_NativeHeight = e.Height;
 
+    DirectX::XMUINT2 res((unsigned)e.Width, (unsigned)e.Height);
+
+    if (m_DLSS->bDlssOn)
+    {
+        res = m_DLSS->OnResize(e.Width, e.Height);
+    }
+
+    m_Width = res.x;
+    m_Height = res.y;
+
     std::cout << "Native Res: " << e.Width << "x" << e.Height << std::endl;
-    std::cout << "Dlss prefered res: " << dlssRes.x << "x" << dlssRes.y << std::endl;
+    std::cout << "Dlss prefered res: " << res.x << "x" << res.y << std::endl;
 
     m_GBuffer->OnResize(m_Width, m_Height);
     m_LightPass->OnResize(m_Width, m_Height);
