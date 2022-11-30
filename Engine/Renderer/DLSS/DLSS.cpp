@@ -9,6 +9,7 @@
 #include <d3d12.h>
 
 #include <DX12Helper.h>
+#include <imgui.h>
 
 const char g_ProjectID[] = "a0f57b54-1daf-4934-90ae-c4035c19df04";
 
@@ -250,6 +251,7 @@ void DLSS::ReleaseDLSSFeatures()
     if (NVSDK_NGX_FAILED(ResultDLSS))
     {
         printf("Failed to NVSDK_NGX_D3D12_ReleaseFeature, code = 0x%08x, info: %ls", ResultDLSS, GetNGXResultAsString(ResultDLSS));
+        throw std::exception();
     }
     m_dlssFeature = nullptr;
 }
@@ -265,4 +267,41 @@ void DLSS::ShutDown()
     NVSDK_NGX_D3D12_Shutdown();
 
     if (NVSDK_NGX_FAILED(result)) throw std::exception();
+}
+
+
+void DLSS::OnGUI()
+{
+    ImGui::Begin("DLSS settings");
+
+    const char* listbox_items[] =
+    { 
+       "Off",
+       "Max Performance",
+       "Balanced",
+       "Max Quality",
+    };
+
+    NVSDK_NGX_PerfQuality_Value prefValue[] =
+    {
+        NVSDK_NGX_PerfQuality_Value_MaxQuality,
+        NVSDK_NGX_PerfQuality_Value_MaxPerf,
+        NVSDK_NGX_PerfQuality_Value_Balanced,
+        NVSDK_NGX_PerfQuality_Value_MaxQuality
+    };
+
+    static int list_item = 1;
+
+    int lastItemValue = list_item;
+    ImGui::ListBox("listbox\n(single select)", &list_item, listbox_items, IM_ARRAYSIZE(listbox_items));
+
+    qualityMode = prefValue[list_item];
+
+    if (lastItemValue != list_item)
+    {
+        bDlssOn = list_item == 0 ? false : true;
+        dlssChangeEvent(bDlssOn, qualityMode);
+    }
+
+    ImGui::End();
 }

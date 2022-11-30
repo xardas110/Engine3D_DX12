@@ -43,6 +43,8 @@ class DeferredRenderer
 
 	void OnResize(ResizeEventArgs& e);
 
+	void OnDlssChanged(const bool& bDlssOn, const NVSDK_NGX_PerfQuality_Value& qualityMode);
+
 	void Shutdown();
 
 	std::vector<MeshInstanceWrapper> GetMeshInstances(entt::registry& registry);

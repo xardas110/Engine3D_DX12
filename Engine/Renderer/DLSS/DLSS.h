@@ -3,6 +3,7 @@
 #include <nvsdk_ngx.h>
 #include <CommandList.h>
 #include <Texture.h>
+#include <eventcpp/event.hpp>
 
 #define APP_ID 231313132
 
@@ -84,6 +85,8 @@ private:
 		bool bUseNgxSdkExtApi = false);
 
 
+	void OnGUI();
+
 	void InitWithRecommendedSettings(int width, int height);
 
 	DirectX::XMUINT2 OnResize(int width, int height);
@@ -99,7 +102,11 @@ private:
 
 	Texture resolvedTexture;
 
+	bool bDlssOn = false;
+
 	NVSDK_NGX_PerfQuality_Value qualityMode = NVSDK_NGX_PerfQuality_Value::NVSDK_NGX_PerfQuality_Value_MaxQuality;
 
 	Microsoft::WRL::ComPtr<ID3D12Device8> m_Device;
+
+	event::event<void(const bool&, const NVSDK_NGX_PerfQuality_Value&)> dlssChangeEvent;
 };
