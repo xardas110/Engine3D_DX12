@@ -290,15 +290,59 @@ void DeferredRenderer::Render(Window& window)
             meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);   
         }
 
-        commandList->TransitionBarrier(m_GBuffer->GetTexture(GBUFFER_ALBEDO), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        commandList->TransitionBarrier(m_GBuffer->GetTexture(GBUFFER_AO_METALLIC_HEIGHT), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        commandList->TransitionBarrier(m_GBuffer->GetTexture(GBUFFER_EMISSIVE_SHADER_MODEL), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        commandList->TransitionBarrier(m_GBuffer->GetTexture(GBUFFER_LINEAR_DEPTH), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        commandList->TransitionBarrier(m_GBuffer->GetTexture(GBUFFER_MOTION_VECTOR), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        commandList->TransitionBarrier(m_GBuffer->GetTexture(GBUFFER_NORMAL_ROUGHNESS), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        commandList->TransitionBarrier(m_GBuffer->GetTexture(GBUFFER_STANDARD_DEPTH), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        commandList->TransitionBarrier(m_GBuffer->GetTexture(GBUFFER_GEOMETRY_NORMAL), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        commandList->TransitionBarrier(m_GBuffer->GetTexture(GBUFFER_GEOMETRY_MV2D), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_ALBEDO).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_AO_METALLIC_HEIGHT).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_EMISSIVE_SHADER_MODEL).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_LINEAR_DEPTH).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_STANDARD_DEPTH).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_DEPTH_WRITE,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_MOTION_VECTOR).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_NORMAL_ROUGHNESS).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_GEOMETRY_NORMAL).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_GEOMETRY_MV2D).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
@@ -327,10 +371,8 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->SetGraphicsDynamicStructuredBuffer(LightPassParam::GlobalMeshInfo, globalMeshInfo);
 
-        auto gBufferHeap = m_GBuffer->CreateSRVViews();
-
         commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
-        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(LightPassParam::GBufferHeap, gBufferHeap);
+        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(LightPassParam::GBufferHeap, m_GBuffer->m_SRVHeap.GetGPUHandle(0));
 
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::CameraCB, cameraCB);
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::DirectionalLightCB, directionalLight);
@@ -341,24 +383,44 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->Draw(3);
 
-        commandList->TransitionBarrier(m_LightPass->GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        commandList->TransitionBarrier(m_LightPass->GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->GetTexture(LIGHTBUFFER_DIRECT_LIGHT).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->GetTexture(LIGHTBUFFER_RT_DEBUG).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->GetTexture(LIGHTBUFFER_ACCUM_BUFFER).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PRESENT,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
     {//Denoising 
         PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"Denoising Pass");
 
-        auto lightMapView = m_LightPass->CreateSRVViews();
-        auto uavViews = m_LightPass->CreateUAVViews();
-        auto gBufferView = m_GBuffer->CreateSRVViews();
-
-        auto lightMapHeap = m_LightPass->m_SRVHeap;
-        auto gBufferHeap = m_GBuffer->m_SRVHeap;
-
         DenoiserTextures dt = GetDenoiserTextures();
 
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gBufferHeap.heap.Get());
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
 
         commandList->GetGraphicsCommandList()->ResourceBarrier(1, 
             &CD3DX12_RESOURCE_BARRIER::Transition(
@@ -378,18 +440,18 @@ void DeferredRenderer::Render(Window& window)
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
                 D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
 
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, lightMapHeap.heap.Get());
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_LightPass->m_SRVHeap.heap.Get());
 
         commandList->GetGraphicsCommandList()->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
                 dt.inIndirectDiffuse.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
                 D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
 
         commandList->GetGraphicsCommandList()->ResourceBarrier(1, 
             &CD3DX12_RESOURCE_BARRIER::Transition(
             dt.inIndirectSpecular.GetD3D12Resource().Get(), 
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
                 D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
 
         commandList->GetGraphicsCommandList()->ResourceBarrier(1,
@@ -406,7 +468,7 @@ void DeferredRenderer::Render(Window& window)
 
         m_NvidiaDenoiser->RenderFrame(*commandList, cameraCB, window.m_CurrentBackBufferIndex, m_Width, m_Height);
 
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, gBufferHeap.heap.Get());
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
 
         commandList->GetGraphicsCommandList()->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
@@ -426,19 +488,19 @@ void DeferredRenderer::Render(Window& window)
                 D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, lightMapHeap.heap.Get());
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_LightPass->m_SRVHeap.heap.Get());
 
         commandList->GetGraphicsCommandList()->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
                 dt.inIndirectDiffuse.GetD3D12Resource().Get(),
                 D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_RENDER_TARGET));
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
         commandList->GetGraphicsCommandList()->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
                 dt.inIndirectSpecular.GetD3D12Resource().Get(), 
                 D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_RENDER_TARGET));
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
         commandList->GetGraphicsCommandList()->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
@@ -454,6 +516,7 @@ void DeferredRenderer::Render(Window& window)
 
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
+    /*
     {//Composition branch
         PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"CompositionPass");
 
@@ -563,16 +626,16 @@ void DeferredRenderer::Render(Window& window)
     }
 
     SetRenderTexture(&m_HDR->renderTarget.GetTexture(AttachmentPoint::Color0));
-
+    */
     { //Debug pass
         commandList->SetRenderTarget(m_DebugTexturePass->renderTarget);
         commandList->SetViewport(m_DebugTexturePass->renderTarget.GetViewport());
         commandList->SetScissorRect(m_ScissorRect);
         commandList->SetPipelineState(m_DebugTexturePass->pipeline);
-        commandList->SetGraphicsRootSignature(m_DebugTexturePass->rootSignature);
+        commandList->GetGraphicsCommandList()->SetGraphicsRootSignature(m_DebugTexturePass->rootSignature.GetRootSignature().Get());
 
         commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+        /*
         const char* listbox_items[] =
         {   "Final Color", 
             "GBuffer Albedo", 
@@ -626,12 +689,21 @@ void DeferredRenderer::Render(Window& window)
         ImGui::Begin("Select render buffer");
         ImGui::ListBox("listbox\n(single select)", &listbox_item_debug, listbox_items, IM_ARRAYSIZE(listbox_items));
         ImGui::End();
-
+        
         commandList->SetShaderResourceView(DebugTextureParam::texture, 0, *texArray[listbox_item_debug]);
+        */
 
-        /*
+        static int currentId = 0;
+
+        ImGui::InputInt("Select texture", &currentId, 0, 8);
+
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_LightPass->m_SRVHeap.heap.Get());
+        commandList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(DebugTextureParam::texture, m_LightPass->m_SRVHeap.GetGPUHandle(currentId));
         commandList->Draw(3);
 
+        SetRenderTexture(&m_DebugTexturePass->renderTarget.GetTexture(AttachmentPoint::Color0));
+
+        /*
         commandList->TransitionBarrier(m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE), D3D12_RESOURCE_STATE_PRESENT);
 
         if (DEBUG_RAYTRACED_ALBEDO <= listbox_item_debug && listbox_item_debug  < DEBUG_RAYTRACED_HIT_T)
@@ -654,6 +726,94 @@ void DeferredRenderer::Render(Window& window)
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
                 D3D12_RESOURCE_STATE_PRESENT));     
     }
+    { //Transition GBuffer back to RT
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_ALBEDO).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_AO_METALLIC_HEIGHT).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_EMISSIVE_SHADER_MODEL).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_LINEAR_DEPTH).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_STANDARD_DEPTH).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_DEPTH_WRITE));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_MOTION_VECTOR).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_NORMAL_ROUGHNESS).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_GEOMETRY_NORMAL).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_GBuffer->GetTexture(GBUFFER_GEOMETRY_MV2D).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+    }
+    { //LightPass Transitions
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->GetTexture(LIGHTBUFFER_DIRECT_LIGHT).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->GetTexture(LIGHTBUFFER_RT_DEBUG).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->GetTexture(LIGHTBUFFER_ACCUM_BUFFER).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_PRESENT));
+
+    }
     {//Graphics execute
         PIXBeginEvent(graphicsQueue->GetD3D12CommandQueue().Get(), 0, L"Graphics execute");
         std::vector<std::shared_ptr<CommandList>> commandLists;
@@ -663,7 +823,7 @@ void DeferredRenderer::Render(Window& window)
         graphicsQueue->ExecuteCommandLists(commandLists); 
         PIXEndEvent(graphicsQueue->GetD3D12CommandQueue().Get());
     }  
-   
+
     {//prev transform for motion vector
         int i = 0;
         for (auto& [transform, mesh] : meshInstances)
