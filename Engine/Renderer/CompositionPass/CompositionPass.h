@@ -2,6 +2,7 @@
 #include <RenderTarget.h>
 #include <RootSignature.h>
 #include <CommandList.h>
+#include <StaticDescriptorHeap.h>
 
 namespace CompositionPassParam
 {
@@ -35,6 +36,11 @@ private:
 	void ClearRendetTarget(CommandList& commandlist, float clearColor[4]);
 
 	void OnResize(int width, int height);
+
+	//Returns handle to heap start
+	D3D12_GPU_DESCRIPTOR_HANDLE CreateSRVViews();
+
+	SRVHeapData heap;
 
 	RenderTarget renderTarget;
 	RootSignature rootSignature;

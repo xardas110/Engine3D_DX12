@@ -38,6 +38,8 @@ void CompositionPass::CreateRenderTarget(int width, int height)
         L"Color buffer");
 
     renderTarget.AttachTexture(AttachmentPoint::Color0, color);
+
+    CreateSRVViews();
 }
 
 void CompositionPass::CreatePipeline()
@@ -75,19 +77,17 @@ void CompositionPass::CreatePipeline()
 
     CD3DX12_DESCRIPTOR_RANGE1 gBufferSRVHeap = {};
     gBufferSRVHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    gBufferSRVHeap.NumDescriptors = 20;
+    gBufferSRVHeap.NumDescriptors = GBUFFER_NUM;
     gBufferSRVHeap.BaseShaderRegister = 5;
     gBufferSRVHeap.RegisterSpace = 6;
     gBufferSRVHeap.OffsetInDescriptorsFromTableStart = 0;
-    gBufferSRVHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     CD3DX12_DESCRIPTOR_RANGE1 lightmapSRVHeap = {};
     lightmapSRVHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    lightmapSRVHeap.NumDescriptors = 20;
+    lightmapSRVHeap.NumDescriptors = LIGHTBUFFER_NUM;
     lightmapSRVHeap.BaseShaderRegister = 6;
     lightmapSRVHeap.RegisterSpace = 7;
     lightmapSRVHeap.OffsetInDescriptorsFromTableStart = 0;
-    lightmapSRVHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
     CD3DX12_DESCRIPTOR_RANGE1 cubemapSRVHeap = {};
     cubemapSRVHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -99,8 +99,8 @@ void CompositionPass::CreatePipeline()
 
     CD3DX12_ROOT_PARAMETER1 rootParameters[CompositionPassParam::Size];
     rootParameters[CompositionPassParam::AccelerationStructure].InitAsShaderResourceView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
-    rootParameters[CompositionPassParam::LightMapHeap].InitAsDescriptorTable(1, &lightmapSRVHeap);
-    rootParameters[CompositionPassParam::GBufferHeap].InitAsDescriptorTable(1, &gBufferSRVHeap);
+    rootParameters[CompositionPassParam::LightMapHeap].InitAsDescriptorTable(1, &lightmapSRVHeap, D3D12_SHADER_VISIBILITY_PIXEL);
+    rootParameters[CompositionPassParam::GBufferHeap].InitAsDescriptorTable(1, &gBufferSRVHeap, D3D12_SHADER_VISIBILITY_PIXEL);
     rootParameters[CompositionPassParam::GlobalHeapData].InitAsDescriptorTable(3, srvHeapRanges);
     rootParameters[CompositionPassParam::GlobalMeshInfo].InitAsShaderResourceView(2, 3);
     rootParameters[CompositionPassParam::GlobalMatInfo].InitAsShaderResourceView(3, 4);
@@ -156,11 +156,22 @@ void CompositionPass::CreatePipeline()
 void CompositionPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
 {
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color0), clearColor);
-    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color1), clearColor);
-    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color2), clearColor);
 }
 
 void CompositionPass::OnResize(int width, int height)
 {
     renderTarget.Resize(width, height);
+
+    CreateSRVViews();
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE CompositionPass::CreateSRVViews()
+{
+    auto device = Application::Get().GetDevice();
+
+    device->CreateShaderResourceView(
+        renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(), nullptr,
+        heap.SetHandle(0));
+
+    return heap.GetHandleAtStart();
 }
