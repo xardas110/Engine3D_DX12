@@ -202,10 +202,10 @@ void DLSS::EvaluateSuperSampling(
     D3D12DlssEvalParams.pInDepth = texs.depth->GetD3D12Resource().Get();
     D3D12DlssEvalParams.pInMotionVectors = texs.motionVectors->GetD3D12Resource().Get();
     D3D12DlssEvalParams.pInExposureTexture = nullptr;
-    D3D12DlssEvalParams.pInRayTracingHitDistance = texs.linearDepth->GetD3D12Resource().Get();
-    D3D12DlssEvalParams.pInMotionVectors3D = texs.motionVectors3D->GetD3D12Resource().Get();
+   // D3D12DlssEvalParams.pInRayTracingHitDistance = texs.linearDepth->GetD3D12Resource().Get();
+   // D3D12DlssEvalParams.pInMotionVectors3D = texs.motionVectors3D->GetD3D12Resource().Get();
 
-    D3D12DlssEvalParams.InToneMapperType = NVSDK_NGX_TONEMAPPER_REINHARD;
+  //  D3D12DlssEvalParams.InToneMapperType = NVSDK_NGX_TONEMAPPER_REINHARD;
 
     D3D12DlssEvalParams.InJitterOffsetX = 0.f;
     D3D12DlssEvalParams.InJitterOffsetY = 0.f;
@@ -235,6 +235,8 @@ void DLSS::EvaluateSuperSampling(
 
 DirectX::XMUINT2 DLSS::OnResize(int width, int height)
 {
+    ReleaseDLSSFeatures();
+
     InitWithRecommendedSettings(width, height);
 
     resolvedTexture.Resize(width, height);
