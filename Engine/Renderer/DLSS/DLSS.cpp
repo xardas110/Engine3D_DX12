@@ -24,7 +24,7 @@ DLSS::~DLSS()
 
 void DLSS::InitTexture(int width, int height)
 {
-    auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM, width, height);
+    auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height);
     colorDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     colorDesc.MipLevels = 1;
 
@@ -177,10 +177,10 @@ void DLSS::InitWithRecommendedSettings(int width, int height)
 {
     QueryOptimalSettings(
         { (unsigned)width, (unsigned)height },
-        NVSDK_NGX_PerfQuality_Value::NVSDK_NGX_PerfQuality_Value_Balanced,
+        qualityMode,
         &recommendedSettings);
 
-    InitFeatures(recommendedSettings.m_ngxRecommendedOptimalRenderSize, {(unsigned)width, (unsigned)height}, false, false, 1.f, false, false, NVSDK_NGX_PerfQuality_Value::NVSDK_NGX_PerfQuality_Value_Balanced);
+    InitFeatures(recommendedSettings.m_ngxRecommendedOptimalRenderSize, {(unsigned)width, (unsigned)height}, true, false, 1.f, false, false, qualityMode);
 }
 
 void DLSS::EvaluateSuperSampling(
@@ -202,6 +202,10 @@ void DLSS::EvaluateSuperSampling(
     D3D12DlssEvalParams.pInDepth = texs.depth->GetD3D12Resource().Get();
     D3D12DlssEvalParams.pInMotionVectors = texs.motionVectors->GetD3D12Resource().Get();
     D3D12DlssEvalParams.pInExposureTexture = nullptr;
+    D3D12DlssEvalParams.pInRayTracingHitDistance = texs.linearDepth->GetD3D12Resource().Get();
+    D3D12DlssEvalParams.pInMotionVectors3D = texs.motionVectors3D->GetD3D12Resource().Get();
+
+    D3D12DlssEvalParams.InToneMapperType = NVSDK_NGX_TONEMAPPER_REINHARD;
 
     D3D12DlssEvalParams.InJitterOffsetX = 0.f;
     D3D12DlssEvalParams.InJitterOffsetY = 0.f;

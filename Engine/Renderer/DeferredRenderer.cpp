@@ -43,11 +43,17 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_NativeHeight = height;
 
     m_DLSS = std::unique_ptr<DLSS>(new DLSS(width, height));
+    auto dlssRes = m_DLSS->recommendedSettings.m_ngxRecommendedOptimalRenderSize;
+
+    m_Width = dlssRes.x;
+    m_Height = dlssRes.y;
 
     m_GBuffer = std::unique_ptr<GBuffer>(new GBuffer(m_Width, m_Height));
     m_LightPass = std::unique_ptr<LightPass>(new LightPass(m_Width, m_Height));
     m_CompositionPass = std::unique_ptr<CompositionPass>(new CompositionPass(m_Width, m_Height));
     m_DebugTexturePass = std::unique_ptr<DebugTexturePass>(new DebugTexturePass(m_Width, m_Height));
+
+    m_HDR = std::unique_ptr<HDR>(new HDR(m_NativeWidth, m_NativeHeight));
 
     //auto adapter = Application::Get().GetAdapter(false);  
     //assert(IsDirectXRaytracingSupported(adapter.Get()));
@@ -56,7 +62,7 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_Raytracer = std::unique_ptr<Raytracing>(new Raytracing());
     m_Raytracer->Init();
 
-    m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(width, height, GetDenoiserTextures()));
+    m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height, GetDenoiserTextures()));
 
     m_Skybox = std::unique_ptr<Skybox>(new Skybox(L"Assets/Textures/belfast_sunset_puresky_4k.hdr"));
 
@@ -285,6 +291,7 @@ void DeferredRenderer::Render(Window& window)
     }
     {//LIGHT PASS
         PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"LightPass");
+
         commandList->SetRenderTarget(m_LightPass->renderTarget);
         commandList->SetViewport(m_LightPass->renderTarget.GetViewport());
         commandList->SetScissorRect(m_ScissorRect);
@@ -327,6 +334,8 @@ void DeferredRenderer::Render(Window& window)
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
     {//Denoising 
+        PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"Denoising Pass");
+
         auto lightMapView = m_LightPass->CreateSRVViews();
         auto uavViews = m_LightPass->CreateUAVViews();
         auto gBufferView = m_GBuffer->CreateSRVViews();
@@ -430,9 +439,11 @@ void DeferredRenderer::Render(Window& window)
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
+        PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
     {//Composition branch
         PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"CompositionPass");
+
         commandList->SetRenderTarget(m_CompositionPass->renderTarget);
         commandList->SetViewport(m_CompositionPass->renderTarget.GetViewport());
         commandList->SetScissorRect(m_ScissorRect);
@@ -476,11 +487,10 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->Draw(3);
 
-       // commandList->TransitionBarrier(m_CompositionPass.renderTarget.GetTexture(AttachmentPoint::Color0), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     } 
     { //DLSS pass
+        PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"DLSS Pass");
         DlssTextures dlssTextures
         (
             &m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0),
@@ -489,10 +499,46 @@ void DeferredRenderer::Render(Window& window)
             &m_GBuffer->GetTexture(GBUFFER_STANDARD_DEPTH)
         );
 
+        dlssTextures.linearDepth = &m_GBuffer->GetTexture(GBUFFER_LINEAR_DEPTH);
+        dlssTextures.motionVectors3D = &m_GBuffer->GetTexture(GBUFFER_MOTION_VECTOR);
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
         commandList->TransitionBarrier(m_DLSS->resolvedTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
         m_DLSS->EvaluateSuperSampling(commandList.get(), dlssTextures, m_NativeWidth, m_NativeHeight);
+
+        commandList->GetGraphicsCommandList()->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+        PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
+    { //HDR pass
+        PIXBeginEvent(commandList->GetGraphicsCommandList().Get(), 0, L"HDR Pass");
+
+        commandList->SetRenderTarget(m_HDR->renderTarget);
+        commandList->SetViewport(m_HDR->renderTarget.GetViewport());
+        commandList->SetScissorRect(m_ScissorRect);
+        commandList->SetPipelineState(m_HDR->pipeline);
+        commandList->SetGraphicsRootSignature(m_HDR->rootSignature);
+        commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+        commandList->SetShaderResourceView(HDRParam::ColorTexture, 0, m_DLSS->resolvedTexture);
+        commandList->SetGraphicsDynamicConstantBuffer(HDRParam::TonemapCB, HDR::GetTonemapCB());
+
+        commandList->Draw(3);
+
+        PIXEndEvent(commandList->GetGraphicsCommandList().Get());
+    }
+
+    SetRenderTexture(&m_HDR->renderTarget.GetTexture(AttachmentPoint::Color0));
+
     { //Debug pass
         commandList->SetRenderTarget(m_DebugTexturePass->renderTarget);
         commandList->SetViewport(m_DebugTexturePass->renderTarget.GetViewport());
@@ -569,8 +615,6 @@ void DeferredRenderer::Render(Window& window)
             SetRenderTexture(&m_DebugTexturePass.renderTarget.GetTexture(AttachmentPoint::Color0));
 
             */
-
-        SetRenderTexture(&m_DLSS->resolvedTexture);
     }
     { //Set UAV buffers back to present for denoising
         commandList->GetGraphicsCommandList()->ResourceBarrier(1,
@@ -631,6 +675,8 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     m_DebugTexturePass->OnResize(m_Width, m_Height);
     
     m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height, GetDenoiserTextures()));
+
+    m_HDR->OnResize(m_NativeWidth, m_NativeHeight);
 }
 
 void DeferredRenderer::Shutdown()

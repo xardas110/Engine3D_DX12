@@ -71,6 +71,7 @@ class DeferredRenderer
 	CameraCB cameraCB;
 
 	D3D12_RECT m_ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
+
 	std::unique_ptr<Raytracing> m_Raytracer{ nullptr };
 
 	std::unique_ptr<GBuffer> m_GBuffer;
@@ -78,6 +79,8 @@ class DeferredRenderer
 	std::unique_ptr<CompositionPass> m_CompositionPass;
 	std::unique_ptr<NvidiaDenoiser> m_NvidiaDenoiser;
 	std::unique_ptr<DLSS> m_DLSS;
+
+	std::unique_ptr<HDR> m_HDR;
 
 	std::unique_ptr<DebugTexturePass> m_DebugTexturePass;
 };
