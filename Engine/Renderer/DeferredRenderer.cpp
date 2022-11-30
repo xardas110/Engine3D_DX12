@@ -517,6 +517,7 @@ void DeferredRenderer::Render(Window& window)
                 m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
                 D3D12_RESOURCE_STATE_RENDER_TARGET));
+
         PIXEndEvent(commandList->GetGraphicsCommandList().Get());
     }
     { //HDR pass
@@ -657,8 +658,7 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     Application::Get().Flush();
 #endif
 
-    m_DLSS = std::unique_ptr<DLSS>(new DLSS(e.Width, e.Height));
-    auto dlssRes = m_DLSS->recommendedSettings.m_ngxRecommendedOptimalRenderSize;
+    auto dlssRes = m_DLSS->OnResize(e.Width, e.Height);
 
     m_Width = dlssRes.x;
     m_Height = dlssRes.y;
