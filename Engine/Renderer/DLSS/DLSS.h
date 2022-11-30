@@ -4,6 +4,7 @@
 #include <CommandList.h>
 #include <Texture.h>
 #include <eventcpp/event.hpp>
+#include <StaticDescriptorHeap.h>
 
 #define APP_ID 231313132
 
@@ -60,6 +61,9 @@ private:
 	DLSS(int width, int height);
 	~DLSS();
 
+	//Returns handle to heap start
+	D3D12_GPU_DESCRIPTOR_HANDLE CreateSRVViews();
+
 	void InitializeNGX(int width, int height);
 
 	void InitTexture(int width, int height);
@@ -70,6 +74,8 @@ private:
 		int isContentHDR, bool depthInverted, 
 		float depthScale, bool enableSharpening, 
 		bool enableAutoExposure, NVSDK_NGX_PerfQuality_Value qualValue);
+
+	void InitWithRecommendedSettings(int width, int height);
 
 	void QueryOptimalSettings(
 		DirectX::XMUINT2 inDisplaySize, 
@@ -87,26 +93,25 @@ private:
 
 	void OnGUI();
 
-	void InitWithRecommendedSettings(int width, int height);
-
 	DirectX::XMUINT2 OnResize(int width, int height);
 
 	void ReleaseDLSSFeatures();
 
 	void ShutDown();
 
+	bool bDlssOn = true;
+
+	Texture resolvedTexture;
+
+	SRVHeapData heap = SRVHeapData(1);
+
+	Microsoft::WRL::ComPtr<ID3D12Device8> m_Device;
+
 	NVSDK_NGX_Parameter* m_ngxParameters = nullptr;
 	NVSDK_NGX_Handle* m_dlssFeature = nullptr;
 
 	DlssRecommendedSettings recommendedSettings;
-
-	Texture resolvedTexture;
-
-	bool bDlssOn = false;
-
 	NVSDK_NGX_PerfQuality_Value qualityMode = NVSDK_NGX_PerfQuality_Value::NVSDK_NGX_PerfQuality_Value_MaxQuality;
-
-	Microsoft::WRL::ComPtr<ID3D12Device8> m_Device;
 
 	event::event<void(const bool&, const NVSDK_NGX_PerfQuality_Value&)> dlssChangeEvent;
 };

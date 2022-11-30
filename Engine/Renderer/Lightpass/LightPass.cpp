@@ -116,7 +116,7 @@ void LightPass::CreatePipeline()
  
     CD3DX12_DESCRIPTOR_RANGE1 gBufferSRVHeap = {};
     gBufferSRVHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    gBufferSRVHeap.NumDescriptors = 9;
+    gBufferSRVHeap.NumDescriptors = GBUFFER_NUM;
     gBufferSRVHeap.BaseShaderRegister = 5;
     gBufferSRVHeap.RegisterSpace = 6;
     gBufferSRVHeap.OffsetInDescriptorsFromTableStart = 0;
@@ -243,6 +243,10 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateSRVViews()
         GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR).GetD3D12Resource().Get(), nullptr,
         m_SRVHeap.SetHandle(LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR));
 
+    device->CreateShaderResourceView(
+        GetTexture(LIGHTBUFFER_ACCUM_BUFFER).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(LIGHTBUFFER_ACCUM_BUFFER));
+
     return m_SRVHeap.GetHandleAtStart();
 }
 
@@ -250,10 +254,12 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateUAVViews()
 {
     auto device = Application::Get().GetDevice();
 
+    /*
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
 
     device->CreateUnorderedAccessView(GetTexture(LIGHTBUFFER_ACCUM_BUFFER).GetD3D12Resource().Get(), nullptr, &uavDesc, m_SRVHeap.SetHandle(LIGHTBUFFER_ACCUM_BUFFER));
+    */
 
     return m_SRVHeap.GetHandleAtStart();
 }

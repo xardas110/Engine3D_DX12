@@ -23,6 +23,18 @@ DLSS::~DLSS()
 {
 }
 
+D3D12_GPU_DESCRIPTOR_HANDLE DLSS::CreateSRVViews()
+{
+    auto device = Application::Get().GetDevice();
+
+    device->CreateShaderResourceView(
+        resolvedTexture.GetD3D12Resource().Get(), nullptr,
+        heap.SetHandle(0));
+
+    return heap.GetHandleAtStart();
+}
+
+
 void DLSS::InitTexture(int width, int height)
 {
     auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height);
@@ -32,6 +44,8 @@ void DLSS::InitTexture(int width, int height)
     resolvedTexture = Texture(colorDesc, nullptr,
         TextureUsage::RenderTarget,
         L"DLSS resolved Color");
+
+    CreateSRVViews();
 }
 
 void DLSS::InitializeNGX(int width, int height)
@@ -241,6 +255,7 @@ DirectX::XMUINT2 DLSS::OnResize(int width, int height)
     InitWithRecommendedSettings(width, height);
 
     resolvedTexture.Resize(width, height);
+    CreateSRVViews();
 
     return recommendedSettings.m_ngxRecommendedOptimalRenderSize;
 }
