@@ -676,20 +676,14 @@ void DeferredRenderer::Render(Window& window)
 
 void DeferredRenderer::OnDlssChanged(const bool& bDlssOn, const NVSDK_NGX_PerfQuality_Value& qualityMode)
 {
-    std::cout << "Dlss change event" << std::endl;
-
     ResizeEventArgs arg(m_NativeWidth, m_NativeHeight);
-    OnResize(arg);
-  
+    OnResize(arg);  
 }
 
 void DeferredRenderer::OnResize(ResizeEventArgs& e)
 {
- //   if (m_Width == e.Width && m_Height == e.Height) return;
-
-#ifdef DEBUG_EDITOR
-    Application::Get().Flush();
-#endif
+    //This check happends via the window class
+    //if (m_Width == e.Width && m_Height == e.Height) return;
 
     Application::Get().Flush();
 
@@ -714,6 +708,7 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     m_CompositionPass->OnResize(m_Width, m_Height);
     m_DebugTexturePass->OnResize(m_Width, m_Height);
     
+    //Recreating the denoiser is the way to go (nvidia documentation)
     m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height, GetDenoiserTextures()));
 
     m_HDR->OnResize(m_NativeWidth, m_NativeHeight);
