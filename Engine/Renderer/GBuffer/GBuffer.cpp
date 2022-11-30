@@ -112,6 +112,8 @@ void GBuffer::CreateRenderTarget(int width, int height)
     renderTarget.AttachTexture((AttachmentPoint)GBUFFER_GEOMETRY_NORMAL, geometryNormal);
     renderTarget.AttachTexture((AttachmentPoint)GBUFFER_GEOMETRY_MV2D, motionVector2D);
     renderTarget.AttachTexture((AttachmentPoint)GBUFFER_STANDARD_DEPTH, depthTexture);
+
+    CreateSRVViews();
 }
 
 void GBuffer::CreatePipeline()
@@ -281,6 +283,7 @@ void GBuffer::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
 void GBuffer::OnResize(int width, int height)
 {
     renderTarget.Resize(width, height);
+    CreateSRVViews();
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE GBuffer::CreateSRVViews()
