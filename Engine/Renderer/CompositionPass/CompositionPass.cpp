@@ -19,7 +19,7 @@ CompositionPass::CompositionPass(const int& width, const int& height)
 
 void CompositionPass::CreateRenderTarget(int width, int height)
 {
-    DXGI_FORMAT colorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+    DXGI_FORMAT colorFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 
     // Create an off-screen render target with a single color buffer and a depth buffer.
     auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D(colorFormat, width, height);

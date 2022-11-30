@@ -2,6 +2,11 @@
 #include <HDR/HDR.h>
 #include <imgui.h>
 #include <Helpers.h>
+#include <Application.h>
+#include <DX12Helper.h>
+
+#include <HDR_VS.h>
+#include <HDR_PS.h>
 
 TonemapCB g_TonemapParameters;
 
@@ -139,4 +144,95 @@ void HDR::UpdateGUI()
 TonemapCB& HDR::GetTonemapCB()
 {
     return g_TonemapParameters;
+}
+
+
+HDR::HDR(int nativeWidth, int nativeHeight)
+{
+    CreateRenderTarget(nativeWidth, nativeHeight);
+    CreatePipeline();
+}
+
+void HDR::CreateRenderTarget(int nativeWidth, int nativeHeight)
+{
+    auto outputTextureDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM, nativeWidth, nativeHeight);
+    outputTextureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    outputTextureDesc.MipLevels = 1;
+
+    Texture outputTexture = Texture(outputTextureDesc, &ClearValue(outputTextureDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
+        TextureUsage::RenderTarget,
+        L"HDR output texture");
+
+    renderTarget.AttachTexture(AttachmentPoint::Color0, outputTexture);
+}
+
+void HDR::CreatePipeline()
+{
+    auto device = Application::Get().GetDevice();
+
+    D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
+    featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
+    if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
+    {
+        featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
+    }
+
+    CD3DX12_DESCRIPTOR_RANGE1 textureHeap = {};
+    textureHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    textureHeap.NumDescriptors = 1;
+    textureHeap.BaseShaderRegister = 0;
+    textureHeap.RegisterSpace = 0;
+    textureHeap.OffsetInDescriptorsFromTableStart = 0;
+    textureHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+
+    CD3DX12_ROOT_PARAMETER1 rootParameters[HDRParam::Size];
+    rootParameters[HDRParam::ColorTexture].InitAsDescriptorTable(1, &textureHeap);
+    rootParameters[HDRParam::TonemapCB].InitAsConstantBufferView(0, 0);
+
+    CD3DX12_STATIC_SAMPLER_DESC samplers[2];
+    samplers[0] = CD3DX12_STATIC_SAMPLER_DESC(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT);
+    samplers[1] = CD3DX12_STATIC_SAMPLER_DESC(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
+
+    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
+    rootSignatureDesc.Init_1_1(HDRParam::Size,
+        rootParameters, 2, samplers);
+
+    rootSignature.SetRootSignatureDesc(
+        rootSignatureDesc.Desc_1_1,
+        featureData.HighestVersion
+    );
+
+    struct PipelineStateStream
+    {
+        CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;
+        CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
+        CD3DX12_PIPELINE_STATE_STREAM_VS VS;
+        CD3DX12_PIPELINE_STATE_STREAM_PS PS;
+        CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER Rasterizer;
+        CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
+    } pipelineStateStream;
+
+    CD3DX12_RASTERIZER_DESC rasterizerDesc(D3D12_DEFAULT);
+    rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+    pipelineStateStream.Rasterizer = rasterizerDesc;
+
+    pipelineStateStream.pRootSignature = rootSignature.GetRootSignature().Get();
+
+    pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE::D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
+    pipelineStateStream.VS = { g_HDR_VS, sizeof(g_HDR_VS) };
+    pipelineStateStream.PS = { g_HDR_PS, sizeof(g_HDR_PS) };
+
+    pipelineStateStream.RTVFormats = renderTarget.GetRenderTargetFormats();
+
+    D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
+        sizeof(PipelineStateStream), &pipelineStateStream
+    };
+
+    ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&pipeline)));
+}
+
+void HDR::OnResize(int nativeWidth, int nativeHeight)
+{
+    renderTarget.Resize(nativeWidth, nativeHeight);
 }

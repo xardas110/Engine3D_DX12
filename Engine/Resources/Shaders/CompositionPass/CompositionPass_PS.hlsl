@@ -53,9 +53,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         GetCameraDirectionFromUV(pixelCoords, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, direction);
          
         float3 color = SampleSky(direction, g_Cubemap, g_LinearRepeatSampler).rgb;
-            
-        color = ApplyTonemap(color, g_TonemapCB);
-            
+              
         OUT.ColorTexture = float4(color, 1.f);
             
         return OUT;
@@ -90,7 +88,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
     float3 color = directDiffuse.rgb + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb;
        
-    color = ApplyTonemap(color, g_TonemapCB);
+    //color = ApplyTonemap(color, g_TonemapCB);
         
     OUT.ColorTexture = float4(color, 1.f);
 

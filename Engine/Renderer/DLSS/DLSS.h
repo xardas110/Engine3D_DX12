@@ -44,8 +44,10 @@ struct DlssTextures
 	const Texture* unresolvedColor{ nullptr };
 	const Texture* resolvedColor{ nullptr };
 	const Texture* motionVectors{ nullptr };
+	const Texture* motionVectors3D{ nullptr };
 	const Texture* depth{ nullptr };
 	const Texture* exposure{ nullptr };
+	const Texture* linearDepth{ nullptr };
 };
 
 struct DLSS
@@ -96,6 +98,8 @@ private:
 	DlssRecommendedSettings recommendedSettings;
 
 	Texture resolvedTexture;
+
+	NVSDK_NGX_PerfQuality_Value qualityMode = NVSDK_NGX_PerfQuality_Value::NVSDK_NGX_PerfQuality_Value_MaxQuality;
 
 	Microsoft::WRL::ComPtr<ID3D12Device8> m_Device;
 };

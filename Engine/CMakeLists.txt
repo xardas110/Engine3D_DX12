@@ -160,6 +160,8 @@ set( SHADER_FILES
     Resources/Shaders/CompositionPass/CompositionPass_PS.hlsl
     Resources/Shaders/Debug/DebugTexture_VS.hlsl
     Resources/Shaders/Debug/DebugTexture_PS.hlsl
+    Resources/Shaders/HDR/HDR_VS.hlsl
+    Resources/Shaders/HDR/HDR_PS.hlsl
 )
 
 set( RESOURCE_FILES 
@@ -346,6 +348,21 @@ set_source_files_properties( Resources/Shaders/Debug/DebugTexture_PS.hlsl
         VS_SHADER_VARIABLE_NAME g_DebugTexture_PS
         ShaderType "ps"
 )
+
+set_source_files_properties( Resources/Shaders/HDR/HDR_VS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Vertex
+        VS_SHADER_VARIABLE_NAME g_HDR_VS
+        ShaderType "vs"
+)
+
+set_source_files_properties( Resources/Shaders/HDR/HDR_PS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Pixel
+        VS_SHADER_VARIABLE_NAME g_HDR_PS
+        ShaderType "ps"
+)
+
 
 foreach(FILE ${SHADER_FILES})
   get_filename_component(FILE_WE ${FILE} NAME_WE)
