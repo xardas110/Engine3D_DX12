@@ -1,5 +1,6 @@
 #include <EnginePCH.h>
 #include <AssimpLoader.h>
+#include <TypesCompat.h>
 
 using namespace DirectX;
 
@@ -227,10 +228,54 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene)
 
                 matData.bHasMaterial = true;
             }
+            if (matKey == "$mat.twosided")
+            {
+                bool bTwoSided;
+                material->Get(AI_MATKEY_TWOSIDED, bTwoSided);
+
+                std::cout << "bTwoSided: " << bTwoSided << std::endl;
+
+                matData.bTwoSided = bTwoSided;
+
+                matData.bHasMaterial = true;
+            }
+            if (matKey == "$mat.gltf.alphaMode")
+            {
+                ai_int alphaMode;
+                material->Get("$mat.gltf.alphaMode", 0, 0, alphaMode);
+
+                std::cout << "alphaMode: " << alphaMode << std::endl;
+
+                matData.alphaMode = alphaMode;
+
+                matData.bHasMaterial = true;
+            }
+            if (matKey == "$mat.gltf.alphaCutoff")
+            {
+                float alphaCutoff;
+                material->Get("$mat.gltf.alphaCutoff", 0, 0, alphaCutoff);
+
+                std::cout << "alphaCutoff: " << alphaCutoff << std::endl;
+
+                matData.alphaCutoff = alphaCutoff;
+
+                matData.bHasMaterial = true;
+            }
         }
 
         if (matData.bHasMaterial)
         {        
+            if (matData.shininess > 0.f)
+            {
+                std::cout << "Converting Material Shininess: " << matData.name << " to roughness" << std::endl;
+
+                std::cout << "Shininess value: " << matData.shininess << std::endl;
+                
+                matData.roughness = BeckmannAlphaToOrenNayarRoughness(ShininessToBeckmannAlpha(matData.shininess));
+                
+                std::cout << "New Roughness Value: " << matData.roughness << std::endl;
+            }
+
             internalMesh.materialData = matData;
         }
 

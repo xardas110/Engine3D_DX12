@@ -33,7 +33,12 @@ private:
 		| aiProcess_FlipUVs
 		| aiProcess_GenSmoothNormals
 		| aiProcess_FlipWindingOrder
-		| aiProcess_OptimizeMeshes;
+		//| aiProcess_FindDegenerates
+		//| aiProcess_FindInvalidData
+		//| aiProcess_FixInfacingNormals
+		//| aiProcess_JoinIdenticalVertices
+		//| aiProcess_ValidateDataStructure
+		;
 
 	struct AssimpTexture
 	{
@@ -70,10 +75,14 @@ private:
 
 		float roughness = 0.5f;
 		float metallic = 0.5f;
-		float shininess = 1.f;
+		float shininess = 0.f;
 		float opacity = 1.f;
 
+		float alphaCutoff = 1.f;
+		int alphaMode = 0; //opaque, blend
+
 		bool bHasMaterial = false;
+		bool bTwoSided = false;
 	};
 
 	struct AssimpMesh

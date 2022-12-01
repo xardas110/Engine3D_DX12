@@ -372,7 +372,14 @@ void Editor::UpdateSelectedEntity()
                 auto mesh = MeshInstance(i);
 
                 const std::wstring& wMeshName = mesh.GetName();
-                std::string meshName = "Mesh Name: " + std::string(wMeshName.begin(), wMeshName.end());
+
+                const auto& wMatName = mesh.GetUserMaterialName();
+
+                auto nameIndex = wMatName.find_last_of('/') + 1;
+
+                std::string matString = std::string(wMatName.begin() + nameIndex, wMatName.end());
+
+                std::string meshName = "Mesh Name: " + std::string(wMeshName.begin(), wMeshName.end()) + "/" + matString;
 
                 bool bNodeOpen = ImGui::TreeNodeEx(
                     (void*)(intptr_t)index,
@@ -477,6 +484,7 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
         ImGui::ColorPicker3("Emissive", &material.emissive.x, ImGuiColorEditFlags_Float);
         ImGui::SliderFloat("Roughness", &material.roughness, 0.f, 1.f);
         ImGui::SliderFloat("Metallic", &material.metallic, 0.f, 1.f);
+        ImGui::SliderFloat("Opacity", &material.diffuse.w, 0.f, 1.f);
         ImGui::Spacing(); ImGui::Spacing();
         ImGui::Text("Material Textures: ");
         ImGui::Spacing();

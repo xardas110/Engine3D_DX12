@@ -99,6 +99,20 @@ using namespace DirectX;
 #define TM_ReinhardSq 2
 #define TM_ACESFilmic 3
 
+// Converts Phong's exponent (shininess) to Beckmann roughness (alpha)
+// Source: "Microfacet Models for Refraction through Rough Surfaces" by Walter et al.
+inline float ShininessToBeckmannAlpha(float shininess)
+{
+    return sqrt(2.0f / (shininess + 2.0f));
+}
+
+// Converts Beckmann roughness (alpha) to Oren-Nayar roughness (sigma)
+// Source: "Moving Frostbite to Physically Based Rendering" by Lagarde & de Rousiers
+inline float BeckmannAlphaToOrenNayarRoughness(float alpha)
+{
+    return 0.7071067f * atan(alpha);
+}
+
 struct TonemapCB
 {
     // The method to use to perform tonemapping.
@@ -132,7 +146,7 @@ struct Material
     XMFLOAT4 diffuse COMPAT_VEC4F(1.f, 0.f, 0.f, 1.f);
 
     //specular shininess
-    XMFLOAT4 specular COMPAT_VEC4F(1.f, 1.f, 1.f, 1.f);
+    XMFLOAT4 specular COMPAT_VEC4F(1.f, 1.f, 1.f, 0.f);
 
     XMFLOAT3 emissive COMPAT_VEC3F(1.f, 1.f, 1.f);
     float roughness COMPAT_FLOAT(0.5f);
