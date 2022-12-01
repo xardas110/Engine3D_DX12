@@ -127,7 +127,7 @@ DenoiserTextures DeferredRenderer::GetDenoiserTextures()
 void DeferredRenderer::Render(Window& window)
 {
     if (!window.m_pGame.lock()) return;
-    
+ 
     HDR::UpdateGUI();
     m_DLSS->OnGUI();
 
@@ -146,7 +146,6 @@ void DeferredRenderer::Render(Window& window)
     auto& globalMaterialInfo = assetManager->m_MaterialManager.instanceData.gpuInfo;
     auto& globalMaterialInfoCPU = assetManager->m_MaterialManager.instanceData.cpuInfo;
     auto& materials = assetManager->m_MaterialManager.materialData.materials;
-    auto& meshes = assetManager->m_MeshManager.meshData.meshes;
     auto& meshInstance = assetManager->m_MeshManager.instanceData;
     auto& textures = assetManager->m_TextureManager.textureData.textures;
     auto meshInstances = GetMeshInstances(game->registry);
@@ -215,6 +214,14 @@ void DeferredRenderer::Render(Window& window)
         PIXEndEvent(gfxCommandList.Get());
     }
 
+    graphicsQueue->ExecuteCommandList(commandList);
+
+    SetRenderTexture(&m_GBuffer->renderTarget.GetTexture(AttachmentPoint::Color0));
+
+    return;
+
+
+
     {// BUILD DXR STRUCTURE
         PIXBeginEvent(gfxCommandList.Get(), 0, L"Building DXR structure");    
 
@@ -230,6 +237,8 @@ void DeferredRenderer::Render(Window& window)
         }
         */
     }
+
+
     //DEPTH PREPASS
     {
         PIXBeginEvent(gfxCommandList.Get(), 0, L"zPrePass");
@@ -252,7 +261,7 @@ void DeferredRenderer::Render(Window& window)
 
             commandList->SetGraphicsDynamicConstantBuffer(DepthPrePassParam::ObjectCB, objectCB);
 
-            meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
+            assetManager->m_MeshManager.meshData.meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
         }
         PIXEndEvent(gfxCommandList.Get());
     }
@@ -292,7 +301,7 @@ void DeferredRenderer::Render(Window& window)
 
             commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
 
-            meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);   
+            assetManager->m_MeshManager.meshData.meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
         }
 
         gfxCommandList->ResourceBarrier(1,
@@ -883,5 +892,4 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
 
 void DeferredRenderer::Shutdown()
 {
-    m_DLSS->ShutDown();
 }

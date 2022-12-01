@@ -18,14 +18,7 @@ bool SponzaExe::LoadContent()
 
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-
-    
-    {
-        auto bathRoom = CreateEntity("Simple Room");
-        bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", true);
-        auto& trans = bathRoom.GetComponent<TransformComponent>();
-        trans.pos = { 70.f, 0.f, 0.f };
-    }
+/*
     {
         auto sponza = CreateEntity("sponza");
         sponza.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.obj", true);
@@ -33,6 +26,15 @@ bool SponzaExe::LoadContent()
         trans.scale = { 0.015f, 0.015f, 0.015f };
         trans.pos = { 0.f, 0.f, -70.f };
     }
+
+
+    {
+        auto bathRoom = CreateEntity("Simple Room");
+        bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", true);
+        auto& trans = bathRoom.GetComponent<TransformComponent>();
+        trans.pos = { 70.f, 0.f, 0.f };
+    }
+*/
 
     meshManager.CreateCube();
     meshManager.CreateSphere();
@@ -237,6 +239,7 @@ void SponzaExe::OnUpdate(UpdateEventArgs& e)
 {
 	Game::OnUpdate(e);
 
+    /*
     int speed = 4;
 
     if (moveAmount < currentMove) sign = -speed;
@@ -250,4 +253,5 @@ void SponzaExe::OnUpdate(UpdateEventArgs& e)
     {
         trans.pos.m128_f32[1] = currentMove + initalPositions[i++].pos.m128_f32[1];
     }
+    */
 }
