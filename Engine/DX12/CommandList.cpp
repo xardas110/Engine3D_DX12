@@ -893,6 +893,16 @@ void CommandList::SetShaderResourceView( uint32_t rootParameterIndex,
     TrackResource(resource);
 }
 
+void CommandList::SetShaderResourceView1(
+    uint32_t rootParameterIndex,
+    uint32_t descriptorOffset,
+    const Resource& resource)
+{
+    m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(rootParameterIndex, descriptorOffset, 1, resource.GetShaderResourceView(nullptr));
+
+    TrackResource(resource);
+}
+
 void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, 
                                           uint32_t descrptorOffset,
                                           const Resource& resource,

@@ -21,12 +21,13 @@ void DebugTexturePass::CreatePipeline()
     textureHeap.BaseShaderRegister = 0;
     textureHeap.RegisterSpace = 0;
     textureHeap.OffsetInDescriptorsFromTableStart = 0;
+    textureHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE;
 
     CD3DX12_ROOT_PARAMETER1 rootParameters[DebugTextureParam::Size];
-    rootParameters[DebugTextureParam::texture].InitAsDescriptorTable(1, &textureHeap, D3D12_SHADER_VISIBILITY_PIXEL);
+    rootParameters[DebugTextureParam::texture].InitAsDescriptorTable(1, &textureHeap);
 
     CD3DX12_STATIC_SAMPLER_DESC samplers[1];
-    samplers[0] = CD3DX12_STATIC_SAMPLER_DESC(0, D3D12_FILTER_COMPARISON_ANISOTROPIC);
+    samplers[0] = CD3DX12_STATIC_SAMPLER_DESC(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
 
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
     rootSignatureDesc.Init_1_1(DebugTextureParam::Size,
