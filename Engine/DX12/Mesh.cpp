@@ -81,6 +81,15 @@ const Texture* MeshInstance::GetTexture(MaterialType::Type type)
     return textureManager.GetTexture(textureID);
 }
 
+const std::wstring& MeshInstance::GetName()
+{
+    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
+
+    auto meshID = meshManager.instanceData.meshIds[id];
+
+    return meshManager.meshData.GetName(meshID);
+}
+
 const std::wstring& MeshInstance::GetMaterialName()
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
@@ -90,7 +99,7 @@ const std::wstring& MeshInstance::GetMaterialName()
     return materialManager.GetMaterialInstanceName(matInstanceID);
 }
 
-const Material& MeshInstance::GetUserMaterial()
+Material& MeshInstance::GetUserMaterial()
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;

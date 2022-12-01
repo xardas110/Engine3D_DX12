@@ -3,7 +3,7 @@
 
 #define hlsl 
 #include "TypesCompat.h"
-#include "../Common/Math.hlsl"
+#include "Math.hlsl"
 
 struct SurfaceMaterial
 {
@@ -16,7 +16,9 @@ struct SurfaceMaterial
     float3 emissive COMPAT_VEC3F(1.f, 0.f, 0.f);
     float opacity COMPAT_FLOAT(1.f);
     
+    float3 transparent COMPAT_VEC3F(1.f, 1.f, 1.f);
     float roughness COMPAT_FLOAT(1.f);
+    
     float metallic COMPAT_FLOAT(0.f);
 };
 
@@ -27,7 +29,7 @@ float4 GetAlbedo(in MaterialInfo matInfo, in float2 texCoords, in SamplerState i
         Texture2D albedo = globalTextureData[matInfo.albedo];
         return albedo.Sample(inSampler, texCoords);
     }
-    return float4(1.f, 0.f, 0.f, 1.f);
+    return float4(1.f, 1.f, 1.f, 1.f);
 }
 
 float3 GetNormal(in MaterialInfo matInfo, in float2 texCoords, out bool bMatHasNormal, in SamplerState inSampler, in Texture2D globalTextureData[])
@@ -117,6 +119,21 @@ SurfaceMaterial GetSurfaceMaterial(
     surface.normal = GetNormal(matInfo, texCoords, bMatHasNormal, inSampler, globalTextureData);
     
     return surface;
+}
+
+void ApplyMaterial(in MaterialInfo matInfo, inout SurfaceMaterial surfaceMat, in StructuredBuffer<Material> materials)
+{
+    if (matInfo.materialID == 0xffffffff)
+        return;
+    
+    Material mat = materials[matInfo.materialID];
+    
+    surfaceMat.albedo *= mat.diffuse.rgb;
+    surfaceMat.emissive = matInfo.emissive == 0xffffffff ? mat.emissive : (surfaceMat.emissive * mat.emissive);
+    surfaceMat.roughness = matInfo.roughness == 0xffffffff ? mat.roughness : (surfaceMat.roughness * mat.roughness);
+    surfaceMat.metallic = matInfo.metallic == 0xffffffff ? mat.metallic : (surfaceMat.metallic * mat.metallic);
+    surfaceMat.opacity = matInfo.opacity == 0xffffffff ? mat.diffuse.a : (surfaceMat.opacity * mat.diffuse.a);
+    surfaceMat.transparent = mat.transparent;
 }
 
 //Returns tangentNormal -> worldNormal

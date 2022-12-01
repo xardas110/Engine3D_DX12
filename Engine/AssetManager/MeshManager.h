@@ -54,6 +54,7 @@ private:
 		friend class Raytracing;
 		friend class DeferredRenderer;
 		friend class Editor;
+		friend class MeshInstance;
 
 		//Subscripe to this event to know about event creation
 		event::event<void(const Mesh&)> meshCreationEvent;
@@ -61,6 +62,8 @@ private:
 
 		//Warning: Using this function will increment ref counter
 		MeshID GetMeshID(const std::wstring& name);
+		const std::wstring& GetName(MeshID id);
+
 
 		void IncrementRef(const MeshID meshID);
 		void DecrementRef(const MeshID meshID);

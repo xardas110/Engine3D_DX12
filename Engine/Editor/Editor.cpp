@@ -313,25 +313,7 @@ void Editor::UpdateSceneGraph(entt::entity entity, const std::string& tag, Relat
 
 void Editor::UpdateMaterialManager()
 {
-    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-    ImGui::Begin("Material Editor");
 
-    for (auto& [name, materialID] : materialManager.materialData.map)
-    {
-        auto& material = materialManager.materialData.materials[materialID];
-
-        std::string nameStr = "Material: " + std::string(name.begin(), name.end());
-        ImGui::Text(nameStr.c_str());
-
-        ImGui::ColorPicker4("Color", &material.color.x, ImGuiColorEditFlags_Float);
-        ImGui::ColorPicker3("Transparency", &material.transparent.x, ImGuiColorEditFlags_Float);
-        ImGui::ColorPicker3("Emissive", &material.emissive.x, ImGuiColorEditFlags_Float);
-        ImGui::InputFloat("Roughness", &material.roughness);
-        ImGui::InputFloat("Metallic", &material.metallic);
-        ImGui::Spacing(); ImGui::Spacing();
-    }
-
-    ImGui::End();
 }
 
 void Editor::UpdateSelectedEntity()
@@ -369,10 +351,39 @@ void Editor::UpdateSelectedEntity()
         auto& meshManger = Application::Get().GetAssetManager()->m_MeshManager;
         auto& sm = reg.get<StaticMeshComponent>(selectedEntity);
 
+        unsigned selected = 0;
+
+         bool bNodeOpen = ImGui::TreeNodeEx(
+            (void*)(intptr_t)0,
+            0U == selected ? nodeFlags | selectedFlag : nodeFlags,
+            tag.GetTag().c_str(),
+             static_cast<uint32_t>(0));
+        
+        int index = 1;
         for (size_t i = sm.startOffset; i < sm.endOffset; i++)
         {
             auto mesh = MeshInstance(i);
-            UpdateMeshComponent(mesh);
+
+            const std::wstring& wMeshName = mesh.GetName();
+            std::string materialName = "Mesh Name: " + std::string(wMeshName.begin(), wMeshName.end());
+
+            bool bNodeOpen = ImGui::TreeNodeEx(
+                (void*)(intptr_t)index,
+                index == selected ? nodeFlags | selectedFlag : nodeFlags,
+                materialName.c_str(),
+                static_cast<uint32_t>(index));
+
+            if (ImGui::IsItemClicked())
+            {
+                selected = index;
+            }
+
+            if (bNodeOpen)
+            {
+                UpdateMeshComponent(mesh);
+                ImGui::TreePop();
+            }
+            index++;
         }     
     }
 
@@ -387,23 +398,22 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
 
     if (!mesh.IsValid()) return;
   
-    const std::wstring& wMaterialName = mesh.GetMaterialName();
-    std::string materialName = "Material Instance Name: " + std::string(wMaterialName.begin(), wMaterialName.end());
-    ImGui::Text(materialName.c_str());
-   
-    //auto& material = mesh.GetUserMaterial();
-  
     const auto& wMatName = mesh.GetUserMaterialName();
-    /*
-    std::string matName = "User Defined material: " +  std::string(wMatName.begin(), wMatName.end());
-    auto materialCopy = material;
-    ImGui::Text(matName.c_str());
-    ImGui::ColorEdit4("Color", &materialCopy.color.x);
-    ImGui::ColorEdit3("Transparency", &materialCopy.transparent.x);
-    ImGui::ColorEdit3("Emissive", &materialCopy.emissive.x);
-    ImGui::InputFloat("Roughness", &materialCopy.roughness);
-    ImGui::InputFloat("Metallic", &materialCopy.metallic);
-    */
+  
+    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
+
+    auto& material = mesh.GetUserMaterial();
+    auto matName = mesh.GetMaterialName();
+    std::string nameStr = "Material: " + std::string(matName.begin(), matName.end()) + std::to_string(mesh.GetInstanceID());
+
+    ImGui::Text(nameStr.c_str());
+    ImGui::ColorPicker4("Color", &material.diffuse.x, ImGuiColorEditFlags_Float);
+    ImGui::ColorPicker3("Transparency", &material.transparent.x, ImGuiColorEditFlags_Float);
+    ImGui::ColorPicker3("Emissive", &material.emissive.x, ImGuiColorEditFlags_Float);
+    ImGui::SliderFloat("Roughness", &material.roughness, 0.f, 1.f);
+    ImGui::SliderFloat("Metallic", &material.metallic, 0.f, 1.f);
+    ImGui::Spacing(); ImGui::Spacing();
+
     ImGui::Text("Material Textures: ");
     ImGui::Spacing();
 

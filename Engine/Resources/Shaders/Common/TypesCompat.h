@@ -129,14 +129,17 @@ struct TonemapCB
 struct Material
 {
     //Color with opacity
-    XMFLOAT4 color COMPAT_VEC4F(1.f, 1.f, 1.f, 1.f);
+    XMFLOAT4 diffuse COMPAT_VEC4F(1.f, 0.f, 0.f, 1.f);
+
+    //specular shininess
+    XMFLOAT4 specular COMPAT_VEC4F(1.f, 1.f, 1.f, 1.f);
 
     XMFLOAT3 emissive COMPAT_VEC3F(1.f, 1.f, 1.f);
-    float roughness COMPAT_FLOAT(1.f);
+    float roughness COMPAT_FLOAT(0.5f);
     
     //Color for transperent objects
     XMFLOAT3 transparent COMPAT_VEC3F(1.f, 1.f, 1.f);
-    float metallic COMPAT_FLOAT(1.f);
+    float metallic COMPAT_FLOAT(0.5f);
 };
 
 #ifndef hlsl

@@ -121,8 +121,10 @@ struct MeshInstance
 
     const Texture* GetTexture(MaterialType::Type type);
 
+    const std::wstring& GetName();
+
     const std::wstring& GetMaterialName();
-    const Material& GetUserMaterial();
+    Material& GetUserMaterial();
     const std::wstring& GetUserMaterialName();
 
     MeshInstanceID GetInstanceID() const

@@ -9,6 +9,7 @@ struct MaterialInstance
 {
 	friend class MaterialManager;
 	friend class DeferredRenderer;
+	friend class MeshManager;
 
 	MaterialInstance() = default;
 

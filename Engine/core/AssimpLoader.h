@@ -19,10 +19,6 @@ namespace AssimpMaterialType
 	};
 }
 
-/*
- Originally writted by me in Floof Engine
- My initial plans was to work with the floof team, but I had to change due to compulsory conflics.
-*/
 class AssimpLoader
 {
 public:
@@ -62,9 +58,28 @@ private:
 		AssimpTexture textures[AssimpMaterialType::Size];
 	};
 
+	struct AssimpMaterialData
+	{
+		std::string name;
+		int shadingModel{};
+		DirectX::XMFLOAT3 albedo{1.f, 1.f, 1.f};
+		DirectX::XMFLOAT3 specular{ 1.f, 1.f, 1.f };
+		DirectX::XMFLOAT3 emissive{ 0.f, 0.f, 0.f };
+		DirectX::XMFLOAT3 transparent{ 1.f, 1.f, 1.f };
+
+		float roughness = 0.5f;
+		float metallic = 0.5f;
+		float shininess = 1.f;
+		float opacity = 1.f;
+
+		bool bHasMaterial = false;
+	};
+
 	struct AssimpMesh
 	{
+		std::string name;
 		AssimpMaterial material;
+		AssimpMaterialData materialData;
 		VertexCollection vertices;
 		IndexCollection32 indices;
 	};

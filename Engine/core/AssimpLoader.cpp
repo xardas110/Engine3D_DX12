@@ -40,9 +40,19 @@ void AssimpLoader::ProcessNode(aiNode* node, const aiScene* scene)
     }
 }
 
+template<class A, class B>
+void AssToDX(A& a, B& b)
+{
+    a.x = b.r;
+    a.y = b.g;
+    a.z = b.b;
+}
+
 bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene)
 {
     AssimpLoader::AssimpMesh internalMesh;
+
+    internalMesh.name = mesh->mName.C_Str();
 
     for (auto i = 0; i < mesh->mNumVertices; i++)
     {
@@ -98,15 +108,131 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene)
     { // Materials
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-        /*
+        AssimpMaterialData matData;
+
         std::cout << "Loading material: " << material->GetName().C_Str() << std::endl;
         std::cout << "Num properties: " << material->mNumProperties << std::endl;
 
         for (size_t i = 0; i < material->mNumProperties; i++)
         {
-            std::cout << "mat key: " << material->mProperties[i]->mKey.C_Str() << std::endl;
+            std::cout << material->mProperties[i]->mKey.C_Str() << std::endl;
+
+            std::string matKey = material->mProperties[i]->mKey.C_Str();
+
+            if (matKey == "?mat.name")
+            {
+                aiString  matName;
+                material->Get(AI_MATKEY_NAME, matName);
+
+                std::cout << "MatName: ";
+                std::cout << matName.C_Str() << std::endl;
+
+                matData.name = matName.C_Str();
+            }
+            if (matKey == "$mat.shadingm")
+            {
+                ai_int  shadinggm;
+                material->Get(AI_MATKEY_SHADING_MODEL, shadinggm);
+
+                std::cout << "shadingmodel: ";
+                std::cout << shadinggm << std::endl;
+
+                matData.shadingModel = shadinggm;
+            }
+            if (matKey == "$clr.diffuse")
+            { 
+                aiColor3D color(0.f, 0.f, 0.f);
+                material->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+
+                AssToDX(matData.albedo, color);
+
+                std::cout << "Diffuse Color: " << color.r << " " << color.g << " " << color.b << std::endl;
+
+                matData.bHasMaterial = true;
+            }
+            if (matKey == "$clr.specular")
+            {
+                aiColor3D color(0.f, 0.f, 0.f);
+                material->Get(AI_MATKEY_SPECULAR_FACTOR, color);
+
+                AssToDX(matData.specular, color);
+
+                std::cout << "Specular Color: " << color.r << " " << color.g << " " << color.b << std::endl;
+
+                matData.bHasMaterial = true;
+            }
+            if (matKey == "$mat.roughnessFactor")
+            {
+                ai_real roughness;
+                material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
+
+                matData.roughness = roughness;
+
+                std::cout << "roughness: " << roughness << std::endl;
+
+                matData.bHasMaterial = true;
+            }
+            if (matKey == "$mat.metallicFactor")
+            {
+                ai_real metallic;
+                material->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
+
+                matData.metallic = metallic;
+
+                std::cout << "metallic: " << metallic << std::endl;
+
+                matData.bHasMaterial = true;
+            }
+            if (matKey == "$mat.shininess")
+            {
+                ai_real shininess;
+                material->Get(AI_MATKEY_SHININESS, shininess);
+
+                matData.shininess = shininess;
+
+                std::cout << "shininess: " << shininess << std::endl;
+
+                matData.bHasMaterial = true;
+            }
+            if (matKey == "$clr.emissive")
+            {
+                aiColor3D color(0.f, 0.f, 0.f);
+                material->Get(AI_MATKEY_COLOR_EMISSIVE, color);
+
+                AssToDX(matData.emissive, color);
+
+                std::cout << "Emissive Color: " << color.r << " " << color.g << " " << color.b << std::endl;
+
+                matData.bHasMaterial = true;
+            }
+            if (matKey == "$clr.transparent")
+            {
+                aiColor3D color(0.f, 0.f, 0.f);
+                material->Get(AI_MATKEY_COLOR_TRANSPARENT, color);
+
+                AssToDX(matData.transparent, color);
+
+                std::cout << "Transparent Color: " << color.r << " " << color.g << " " << color.b << std::endl;
+
+                matData.bHasMaterial = true;
+            }
+            if (matKey == "$mat.opacity")
+            {
+                ai_real opacity;
+                material->Get(AI_MATKEY_OPACITY, opacity);
+
+                matData.opacity = opacity;
+
+                std::cout << "Opacity: " << opacity << std::endl;
+
+                matData.bHasMaterial = true;
+            }
         }
-        */
+
+        if (matData.bHasMaterial)
+        {        
+            internalMesh.materialData = matData;
+        }
 
         GetTexturePath(aiTextureType::aiTextureType_AMBIENT, material, path, internalMesh.material.textures[AssimpMaterialType::Ambient].path);
 

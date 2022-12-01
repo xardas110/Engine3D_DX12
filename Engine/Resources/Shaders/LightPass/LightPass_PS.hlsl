@@ -100,7 +100,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
     BRDFData gBufferBRDF = PrepareBRDFData(currentMat.normal, L, V, currentMat);
       
-   // directRadiance += fi.emissive;
+    directRadiance += fi.emissive;
         
     if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
     {        
@@ -186,8 +186,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         geometryNormal = hitSurface.normal;
                                       
         bool bMatHasNormal;
-        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
-               
+        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);       
+        ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
+            
         hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
             
         if (bMatHasNormal == true)
@@ -212,7 +213,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 firstDiffuseBounceDistance = query.CommittedRayT();
             }
                 
-            //indirectDiffuse += troughput * hitSurfaceMaterial.emissive;
+            indirectDiffuse += troughput * hitSurfaceMaterial.emissive;
                
         }
         else
@@ -222,10 +223,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 firstSpecularBounceDistance = query.CommittedRayT();
             }
                 
-            //indirectSpecular += troughput * hitSurfaceMaterial.emissive;
+            indirectSpecular += troughput * hitSurfaceMaterial.emissive;
         }
-            
-            
+                        
         shadowRayDesc.TMin = 0.0f;
         shadowRayDesc.Origin = OffsetRay(hitSurface.position, geometryNormal);
         shadowRayDesc.Direction = L;
@@ -292,11 +292,14 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         MeshInfo meshInfo = g_GlobalMeshInfo[instanceIndex];
         MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
         MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
+            
         hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
-        hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
+        //hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
+            
         bool bMatHasNormal;
         SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
-               
+        ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
+            
         if (bMatHasNormal == true)
         {
             hitSurfaceMaterial.normal =

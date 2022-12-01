@@ -20,19 +20,20 @@ bool SponzaExe::LoadContent()
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
     {
+        auto bathRoom = CreateEntity("Simple Room");
+        bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", true);
+        auto& trans = bathRoom.GetComponent<TransformComponent>();
+        //trans.pos = { 70.f, 0.f, 0.f };
+    }
+
+
+    /*
+    {
         auto sponza = CreateEntity("sponza");
         sponza.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.obj", true);
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.scale = { 0.015f, 0.015f, 0.015f };
         trans.pos = { 0.f, 0.f, -70.f };
-    }
-
-
-    {
-        auto bathRoom = CreateEntity("Simple Room");
-        bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", true);
-        auto& trans = bathRoom.GetComponent<TransformComponent>();
-        trans.pos = { 70.f, 0.f, 0.f };
     }
 
     meshManager.CreateCube();
@@ -169,7 +170,7 @@ bool SponzaExe::LoadContent()
         trans.scale = { 50.f, 50.f, 2.f };
         trans.pos = { 0.f, 30.f, 0.f };
     }
-/*
+
     /*
     {
         auto ent = CreateEntity("DxCube");
