@@ -366,35 +366,34 @@ void Editor::UpdateSelectedEntity()
 
          if (bNodeOpen)
          {
-             ImGui::TreePop();
+            int index = 1;
+            for (size_t i = sm.startOffset; i < sm.endOffset; i++)
+            {
+                auto mesh = MeshInstance(i);
+
+                const std::wstring& wMeshName = mesh.GetName();
+                std::string meshName = "Mesh Name: " + std::string(wMeshName.begin(), wMeshName.end());
+
+                bool bNodeOpen = ImGui::TreeNodeEx(
+                    (void*)(intptr_t)index,
+                    index == selected ? nodeFlags | selectedFlag : nodeFlags,
+                    meshName.c_str(),
+                    static_cast<uint32_t>(index));
+
+                if (ImGui::IsItemClicked())
+                {
+                    selected = index;
+                }
+
+                if (bNodeOpen)
+                {
+                    UpdateMeshComponent(mesh);
+                    ImGui::TreePop();
+                }
+                index++;
+            }  
+            ImGui::TreePop();
          }
-
-        int index = 1;
-        for (size_t i = sm.startOffset; i < sm.endOffset; i++)
-        {
-            auto mesh = MeshInstance(i);
-
-            const std::wstring& wMeshName = mesh.GetName();
-            std::string meshName = "Mesh Name: " + std::string(wMeshName.begin(), wMeshName.end());
-
-            bool bNodeOpen = ImGui::TreeNodeEx(
-                (void*)(intptr_t)index,
-                index == selected ? nodeFlags | selectedFlag : nodeFlags,
-                meshName.c_str(),
-                static_cast<uint32_t>(index));
-
-            if (ImGui::IsItemClicked())
-            {
-                selected = index;
-            }
-
-            if (bNodeOpen)
-            {
-                UpdateMeshComponent(mesh);
-                ImGui::TreePop();
-            }
-            index++;
-        }     
     }
 
     ImGui::End();
@@ -413,11 +412,54 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
     const auto& wMatName = mesh.GetUserMaterialName();
     auto& material = mesh.GetUserMaterial();
 
-    std::string nameStr = "Material: " + std::string(wMatName.begin(), wMatName.end());
+    auto index = wMatName.find_last_of('/') + 1;
+    std::string matString = std::string(wMatName.begin() + index, wMatName.end());
+   
+    std::string nameStr = "Material: " + matString;
 
-    unsigned selected = 0;
+    unsigned selected = UINT_MAX;
 
-    bool bNodeOpen = ImGui::TreeNodeEx(
+    bool bNodeOpen = false;
+
+    for (size_t i = 0; i < MaterialType::NumMaterialTypes; i++)
+    {
+        const auto texture = mesh.GetTexture((MaterialType::Type)i);
+
+        if (texture)
+        {
+            bNodeOpen = ImGui::TreeNodeEx(
+                (void*)(intptr_t)i,
+                i == selected ? nodeFlags | selectedFlag : nodeFlags,
+                MaterialType::typeNames[(MaterialType::Type)i],
+                static_cast<uint32_t>(i));
+
+            if (ImGui::IsItemClicked())
+            {
+                selected = i;
+            }
+
+            if (bNodeOpen)
+            {           
+                UINT lastIndex;
+                auto srvCPU = gui.m_Heap.IncrementHandle(lastIndex);
+                device->CreateShaderResourceView(texture->GetD3D12Resource().Get(), nullptr, srvCPU);
+                auto srvGPU = gui.m_Heap.GetGPUHandle(lastIndex);
+
+                wchar_t name[128] = {};
+                UINT size = sizeof(name);
+                texture->GetD3D12Resource()->GetPrivateData(WKPDID_D3DDebugObjectNameW, &size, name);
+
+                std::wstring nameWStr = std::wstring(name);
+                std::string nameStr = std::string(nameWStr.begin(), nameWStr.end());
+                ImGui::Text(nameStr.c_str());
+                auto imgSize = ImVec2(128, 128);
+                ImGui::Image((ImTextureID)srvGPU.ptr, imgSize);
+                ImGui::TreePop();
+            }
+        }
+    }  
+
+    bNodeOpen = ImGui::TreeNodeEx(
         (void*)(intptr_t)0,
         0 == selected ? nodeFlags | selectedFlag : nodeFlags,
         nameStr.c_str(),
@@ -441,49 +483,6 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
 
         ImGui::TreePop();
     }
-
-    auto matName = mesh.GetMaterialName();
-
-    for (size_t i = 0; i < MaterialType::NumMaterialTypes; i++)
-    {
-        const auto texture = mesh.GetTexture((MaterialType::Type)i);
-
-        if (texture)
-        {
-            bNodeOpen = ImGui::TreeNodeEx(
-                (void*)(intptr_t)i,
-                i == selected ? nodeFlags | selectedFlag : nodeFlags,
-                MaterialType::typeNames[(MaterialType::Type)i],
-                static_cast<uint32_t>(i));
-
-            if (ImGui::IsItemClicked())
-            {
-                selected = i;
-            }
-
-            if (bNodeOpen)
-            {           
-                std::string matType = "Material Type: " + std::to_string(i);
-                ImGui::Text(matType.c_str());
-
-                UINT lastIndex;
-                auto srvCPU = gui.m_Heap.IncrementHandle(lastIndex);
-                device->CreateShaderResourceView(texture->GetD3D12Resource().Get(), nullptr, srvCPU);
-                auto srvGPU = gui.m_Heap.GetGPUHandle(lastIndex);
-
-                wchar_t name[128] = {};
-                UINT size = sizeof(name);
-                texture->GetD3D12Resource()->GetPrivateData(WKPDID_D3DDebugObjectNameW, &size, name);
-
-                std::wstring nameWStr = std::wstring(name);
-                std::string nameStr = std::string(nameWStr.begin(), nameWStr.end());
-                ImGui::Text(nameStr.c_str());
-                auto imgSize = ImVec2(128, 128);
-                ImGui::Image((ImTextureID)srvGPU.ptr, imgSize);
-                ImGui::TreePop();
-            }
-        }
-    }   
 }
 
 void Editor::SelectEntity(entt::entity entity)

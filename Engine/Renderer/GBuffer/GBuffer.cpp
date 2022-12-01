@@ -261,7 +261,7 @@ void GBuffer::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
     float zeroColor[] = { 0.f, 0.f, 0.f, 0.f };
     float skyClear[] = { 50001.f, 50001.f, 50001.f, 50001.f };
 
-    commandlist.ClearTexture(renderTarget.GetTexture((AttachmentPoint)GBUFFER_ALBEDO), clearColor);
+    commandlist.ClearTexture(renderTarget.GetTexture((AttachmentPoint)GBUFFER_ALBEDO), zeroColor);
 
     commandlist.ClearTexture(renderTarget.GetTexture((AttachmentPoint)GBUFFER_NORMAL_ROUGHNESS), zeroColor);
 

@@ -26,8 +26,6 @@ bool SponzaExe::LoadContent()
         //trans.pos = { 70.f, 0.f, 0.f };
     }
 
-
-    /*
     {
         auto sponza = CreateEntity("sponza");
         sponza.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.obj", true);
@@ -35,7 +33,7 @@ bool SponzaExe::LoadContent()
         trans.scale = { 0.015f, 0.015f, 0.015f };
         trans.pos = { 0.f, 0.f, -70.f };
     }
-
+    /*
     meshManager.CreateCube();
     meshManager.CreateSphere();
     meshManager.CreateTorus();

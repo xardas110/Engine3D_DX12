@@ -184,7 +184,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         //hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
         hitSurface.position = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
         geometryNormal = hitSurface.normal;
-                                      
+                       
         bool bMatHasNormal;
         SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);       
         ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
@@ -206,6 +206,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             hitSurfaceMaterial.normal = hitSurface.normal;    
         }
 
+        if (dot(geometryNormal, V) < 0.0f)
+            geometryNormal = -geometryNormal;
+        if (dot(geometryNormal, hitSurfaceMaterial.normal) < 0.0f)
+            hitSurfaceMaterial.normal = -hitSurfaceMaterial.normal;
+        
         if (brdfType == BRDF_TYPE_DIFFUSE)
         {
             if (i == 0)
@@ -215,7 +220,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 
             indirectDiffuse += troughput * hitSurfaceMaterial.emissive;
                
-        }
+        }       
         else
         {
             if (i == 0)
@@ -232,6 +237,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 
         shadowQuery.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
         shadowQuery.Proceed();
+        
         if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {
             BRDFData data = PrepareBRDFData(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial);

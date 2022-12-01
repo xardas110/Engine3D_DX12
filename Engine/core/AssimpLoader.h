@@ -32,7 +32,8 @@ private:
 		| aiProcess_GenUVCoords
 		| aiProcess_FlipUVs
 		| aiProcess_GenSmoothNormals
-		| aiProcess_FlipWindingOrder;
+		| aiProcess_FlipWindingOrder
+		| aiProcess_OptimizeMeshes;
 
 	struct AssimpTexture
 	{

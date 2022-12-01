@@ -16,7 +16,7 @@ const char g_ProjectID[] = "a0f57b54-1daf-4934-90ae-c4035c19df04";
 DLSS::DLSS(int width, int height)
 {
     InitTexture(width, height);
-  //  InitializeNGX(width, height);
+   // InitializeNGX(width, height);
 }
 
 DLSS::~DLSS()
