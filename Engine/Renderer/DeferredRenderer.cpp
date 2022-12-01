@@ -15,6 +15,7 @@
 #include <Components.h>
 #include <TypesCompat.h>
 #include <WinPixEventRuntime/pix3.h>
+#include <HighResolutionClock.h>
 
 //#include <NRIDescs.h>
 //#include <Extensions/NRIWrapperD3D12.h>
@@ -128,6 +129,8 @@ void DeferredRenderer::Render(Window& window)
 {
     if (!window.m_pGame.lock()) return;
  
+    auto clockNow = std::chrono::high_resolution_clock::now();
+
     HDR::UpdateGUI();
     m_DLSS->OnGUI();
 
@@ -340,7 +343,7 @@ void DeferredRenderer::Render(Window& window)
     }
     {//LIGHT PASS
         PIXBeginEvent(gfxCommandList.Get(), 0, L"LightPass");
-
+        
         commandList->SetRenderTarget(m_LightPass->renderTarget);
         commandList->SetViewport(m_LightPass->renderTarget.GetViewport());
         commandList->SetScissorRect(m_ScissorRect);
@@ -812,6 +815,13 @@ void DeferredRenderer::Render(Window& window)
     
     cameraCB.prevView = cameraCB.view;
     cameraCB.prevProj = cameraCB.proj;  
+
+    auto clockEnd = std::chrono::high_resolution_clock::now();
+
+    ImGui::Begin("RenderStats");
+    std::string elapsedTime = "CPU MS: " + std::to_string((clockEnd - clockNow).count() * 1e-6);
+    ImGui::Text(elapsedTime.c_str());
+    ImGui::End();
 }
 
 void DeferredRenderer::OnDlssChanged(const bool& bDlssOn, const NVSDK_NGX_PerfQuality_Value& qualityMode)
