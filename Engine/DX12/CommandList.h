@@ -323,6 +323,14 @@ public:
     );
 
     /**
+    * Set the SRV on the graphics pipeline without resource barriers.
+    */
+    void SetShaderResourceView1(
+        uint32_t rootParameterIndex,
+        uint32_t descriptorOffset,
+        const Resource& resource);
+
+    /**
      * Set the UAV on the graphics pipeline.
      */
     void SetUnorderedAccessView( 

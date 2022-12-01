@@ -288,6 +288,22 @@ void NvidiaDenoiser::OnGUI()
 	auto& settings = denoiserSettings.settings;
 	auto& commonSettings = denoiserSettings.commonSettings;
 
+	ShowHelpMarker("(0; 1] - hit distances are normalized");
+	ImGui::SameLine();
+	ImGui::SliderFloat("sensitivityToDarkness", &settings.antilagHitDistanceSettings.sensitivityToDarkness, 0.f, 1.f);
+
+	ShowHelpMarker("(> 0) - real delta is reduced by local variance multiplied by this value");
+	ImGui::SameLine();
+	ImGui::SliderFloat("sigmaScale", &settings.antilagHitDistanceSettings.sigmaScale, 0.f, 2.f);
+
+	ShowHelpMarker("(normalized %) - max > min, usually 2-4x times greater than min");
+	ImGui::SameLine();
+	ImGui::SliderFloat("thresholdMax", &settings.antilagHitDistanceSettings.thresholdMax, 0.f, 1.f);
+
+	ShowHelpMarker("(normalized %) - must almost ignore residual noise (boiling), default is tuned for 0.5rpp for the worst case");
+	ImGui::SameLine();
+	ImGui::SliderFloat("thresholdMin", &settings.antilagHitDistanceSettings.thresholdMin, 0.f, 1.f);
+
 	ShowHelpMarker("(pixels) - pre-accumulation spatial reuse pass blur radius (0 = disabled, must be used in case of probabilistic sampling)");
 	ImGui::SameLine();
 	ImGui::SliderFloat("Diffuse Prepass Blur Radius", &settings.diffusePrepassBlurRadius, 0.f, 100.f);

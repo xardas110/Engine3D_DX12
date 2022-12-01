@@ -413,6 +413,9 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
 
         if (texture)
         {
+            std::string matType = "Material Type: " + std::to_string(i);
+            ImGui::Text(matType.c_str());
+
             UINT lastIndex;
             auto srvCPU = gui.m_Heap.IncrementHandle(lastIndex);
             device->CreateShaderResourceView(texture->GetD3D12Resource().Get(), nullptr, srvCPU);

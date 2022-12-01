@@ -213,34 +213,12 @@ void DeferredRenderer::Render(Window& window)
 
         PIXEndEvent(gfxCommandList.Get());
     }
-
-    graphicsQueue->ExecuteCommandList(commandList);
-
-    SetRenderTexture(&m_GBuffer->renderTarget.GetTexture(AttachmentPoint::Color0));
-
-    return;
-
-
-
     {// BUILD DXR STRUCTURE
         PIXBeginEvent(gfxCommandList.Get(), 0, L"Building DXR structure");    
-
         m_Raytracer->BuildAccelerationStructure(*commandList, meshInstances, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);      
-
         PIXEndEvent(gfxCommandList.Get());
-        /* TODO: ASYNC COMPUTE
-        {//Compute execute
-            PIXBeginEvent(computeQueue->GetD3D12CommandQueue().Get(), 0, L"ComputeQue DXR execute");
-            //EXECUTING RTX STRUCTURE BUILDING
-            computeQueue->ExecuteCommandList(dxrCommandList);
-            PIXEndEvent(computeQueue->GetD3D12CommandQueue().Get());
-        }
-        */
-    }
-
-
-    //DEPTH PREPASS
-    {
+    }  
+    {//DEPTH PREPASS
         PIXBeginEvent(gfxCommandList.Get(), 0, L"zPrePass");
 
         commandList->SetRenderTarget(m_GBuffer->renderTarget);
@@ -645,10 +623,10 @@ void DeferredRenderer::Render(Window& window)
         commandList->SetViewport(m_DebugTexturePass->renderTarget.GetViewport());
         commandList->SetScissorRect(m_ScissorRect);
         commandList->SetPipelineState(m_DebugTexturePass->pipeline);
-        gfxCommandList->SetGraphicsRootSignature(m_DebugTexturePass->rootSignature.GetRootSignature().Get());
+        commandList->SetGraphicsRootSignature(m_DebugTexturePass->rootSignature);
 
         commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        /*
+
         const char* listbox_items[] =
         {   "Final Color", 
             "GBuffer Albedo", 
@@ -676,7 +654,7 @@ void DeferredRenderer::Render(Window& window)
 
         const Texture* texArray[] =
         {
-            &m_DLSS->resolvedTexture,
+            &m_HDR->renderTarget.GetTexture(AttachmentPoint::Color0),
             &m_GBuffer->GetTexture(GBUFFER_ALBEDO),
             &m_GBuffer->GetTexture(GBUFFER_NORMAL_ROUGHNESS),
             &m_GBuffer->GetTexture(GBUFFER_MOTION_VECTOR),
@@ -703,28 +681,14 @@ void DeferredRenderer::Render(Window& window)
         ImGui::ListBox("listbox\n(single select)", &listbox_item_debug, listbox_items, IM_ARRAYSIZE(listbox_items));
         ImGui::End();
         
-        commandList->SetShaderResourceView(DebugTextureParam::texture, 0, *texArray[listbox_item_debug]);
-        */
+        commandList->SetShaderResourceView1(DebugTextureParam::texture, 0, *texArray[listbox_item_debug]);
 
-        static int currentId = 0;
-
-        ImGui::InputInt("Select texture", &currentId, 0, 8);
-
-       // commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_DLSS->heap.heap.Get());
-      //  gfxCommandList->SetGraphicsRootDescriptorTable(DebugTextureParam::texture, m_DLSS->heap.GetGPUHandle(currentId));
-      //  commandList->Draw(3);
-
-        SetRenderTexture(&m_HDR->renderTarget.GetTexture(AttachmentPoint::Color0));
-
-        /*
-        commandList->TransitionBarrier(m_LightPass.GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE), D3D12_RESOURCE_STATE_PRESENT);
+        commandList->Draw(3);
 
         if (DEBUG_RAYTRACED_ALBEDO <= listbox_item_debug && listbox_item_debug  < DEBUG_RAYTRACED_HIT_T)
-           SetRenderTexture(&m_LightPass.GetTexture(LIGHTBUFFER_RT_DEBUG));
+           SetRenderTexture(&m_LightPass->GetTexture(LIGHTBUFFER_RT_DEBUG));
         else
-            SetRenderTexture(&m_DebugTexturePass.renderTarget.GetTexture(AttachmentPoint::Color0));
-
-            */
+            SetRenderTexture(&m_DebugTexturePass->renderTarget.GetTexture(AttachmentPoint::Color0));
     }
     { //Set UAV buffers back to present for denoising
         gfxCommandList->ResourceBarrier(1,

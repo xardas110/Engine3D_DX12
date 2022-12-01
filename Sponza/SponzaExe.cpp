@@ -18,7 +18,7 @@ bool SponzaExe::LoadContent()
 
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-/*
+
     {
         auto sponza = CreateEntity("sponza");
         sponza.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.obj", true);
@@ -34,7 +34,6 @@ bool SponzaExe::LoadContent()
         auto& trans = bathRoom.GetComponent<TransformComponent>();
         trans.pos = { 70.f, 0.f, 0.f };
     }
-*/
 
     meshManager.CreateCube();
     meshManager.CreateSphere();
