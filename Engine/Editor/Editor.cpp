@@ -359,18 +359,28 @@ void Editor::UpdateSelectedEntity()
             tag.GetTag().c_str(),
              static_cast<uint32_t>(0));
         
+         if (ImGui::IsItemClicked())
+         {
+             selected = 0;
+         }
+
+         if (bNodeOpen)
+         {
+             ImGui::TreePop();
+         }
+
         int index = 1;
         for (size_t i = sm.startOffset; i < sm.endOffset; i++)
         {
             auto mesh = MeshInstance(i);
 
             const std::wstring& wMeshName = mesh.GetName();
-            std::string materialName = "Mesh Name: " + std::string(wMeshName.begin(), wMeshName.end());
+            std::string meshName = "Mesh Name: " + std::string(wMeshName.begin(), wMeshName.end());
 
             bool bNodeOpen = ImGui::TreeNodeEx(
                 (void*)(intptr_t)index,
                 index == selected ? nodeFlags | selectedFlag : nodeFlags,
-                materialName.c_str(),
+                meshName.c_str(),
                 static_cast<uint32_t>(index));
 
             if (ImGui::IsItemClicked())
@@ -398,24 +408,41 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
 
     if (!mesh.IsValid()) return;
   
-    const auto& wMatName = mesh.GetUserMaterialName();
-  
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-
+  
+    const auto& wMatName = mesh.GetUserMaterialName();
     auto& material = mesh.GetUserMaterial();
+
+    std::string nameStr = "Material: " + std::string(wMatName.begin(), wMatName.end());
+
+    unsigned selected = 0;
+
+    bool bNodeOpen = ImGui::TreeNodeEx(
+        (void*)(intptr_t)0,
+        0 == selected ? nodeFlags | selectedFlag : nodeFlags,
+        nameStr.c_str(),
+        static_cast<uint32_t>(0));
+
+    if (ImGui::IsItemClicked())
+    {
+        selected = 0;
+    }
+
+    if (bNodeOpen)
+    {
+        ImGui::ColorPicker4("Color", &material.diffuse.x, ImGuiColorEditFlags_Float);
+        ImGui::ColorPicker3("Transparency", &material.transparent.x, ImGuiColorEditFlags_Float);
+        ImGui::ColorPicker3("Emissive", &material.emissive.x, ImGuiColorEditFlags_Float);
+        ImGui::SliderFloat("Roughness", &material.roughness, 0.f, 1.f);
+        ImGui::SliderFloat("Metallic", &material.metallic, 0.f, 1.f);
+        ImGui::Spacing(); ImGui::Spacing();
+        ImGui::Text("Material Textures: ");
+        ImGui::Spacing();
+
+        ImGui::TreePop();
+    }
+
     auto matName = mesh.GetMaterialName();
-    std::string nameStr = "Material: " + std::string(matName.begin(), matName.end()) + std::to_string(mesh.GetInstanceID());
-
-    ImGui::Text(nameStr.c_str());
-    ImGui::ColorPicker4("Color", &material.diffuse.x, ImGuiColorEditFlags_Float);
-    ImGui::ColorPicker3("Transparency", &material.transparent.x, ImGuiColorEditFlags_Float);
-    ImGui::ColorPicker3("Emissive", &material.emissive.x, ImGuiColorEditFlags_Float);
-    ImGui::SliderFloat("Roughness", &material.roughness, 0.f, 1.f);
-    ImGui::SliderFloat("Metallic", &material.metallic, 0.f, 1.f);
-    ImGui::Spacing(); ImGui::Spacing();
-
-    ImGui::Text("Material Textures: ");
-    ImGui::Spacing();
 
     for (size_t i = 0; i < MaterialType::NumMaterialTypes; i++)
     {
@@ -423,27 +450,40 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
 
         if (texture)
         {
-            std::string matType = "Material Type: " + std::to_string(i);
-            ImGui::Text(matType.c_str());
+            bNodeOpen = ImGui::TreeNodeEx(
+                (void*)(intptr_t)i,
+                i == selected ? nodeFlags | selectedFlag : nodeFlags,
+                MaterialType::typeNames[(MaterialType::Type)i],
+                static_cast<uint32_t>(i));
 
-            UINT lastIndex;
-            auto srvCPU = gui.m_Heap.IncrementHandle(lastIndex);
-            device->CreateShaderResourceView(texture->GetD3D12Resource().Get(), nullptr, srvCPU);
-            auto srvGPU = gui.m_Heap.GetGPUHandle(lastIndex);
+            if (ImGui::IsItemClicked())
+            {
+                selected = i;
+            }
 
-            wchar_t name[128] = {};
-            UINT size = sizeof(name);
-            texture->GetD3D12Resource()->GetPrivateData(WKPDID_D3DDebugObjectNameW, &size, name);
+            if (bNodeOpen)
+            {           
+                std::string matType = "Material Type: " + std::to_string(i);
+                ImGui::Text(matType.c_str());
 
-            std::wstring nameWStr = std::wstring(name);
-            std::string nameStr = std::string(nameWStr.begin(), nameWStr.end());
-            ImGui::Text(nameStr.c_str());
-            auto imgSize = ImVec2(128, 128);
-            ImGui::Image((ImTextureID)srvGPU.ptr, imgSize);
+                UINT lastIndex;
+                auto srvCPU = gui.m_Heap.IncrementHandle(lastIndex);
+                device->CreateShaderResourceView(texture->GetD3D12Resource().Get(), nullptr, srvCPU);
+                auto srvGPU = gui.m_Heap.GetGPUHandle(lastIndex);
 
+                wchar_t name[128] = {};
+                UINT size = sizeof(name);
+                texture->GetD3D12Resource()->GetPrivateData(WKPDID_D3DDebugObjectNameW, &size, name);
+
+                std::wstring nameWStr = std::wstring(name);
+                std::string nameStr = std::string(nameWStr.begin(), nameWStr.end());
+                ImGui::Text(nameStr.c_str());
+                auto imgSize = ImVec2(128, 128);
+                ImGui::Image((ImTextureID)srvGPU.ptr, imgSize);
+                ImGui::TreePop();
+            }
         }
-    }
-    
+    }   
 }
 
 void Editor::SelectEntity(entt::entity entity)

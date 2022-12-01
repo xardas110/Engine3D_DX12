@@ -142,14 +142,20 @@ struct Material
     float metallic COMPAT_FLOAT(0.5f);
 };
 
-#ifndef hlsl
+#ifndef HLSL
     namespace MaterialType
     {
         enum Type
         {
             ao, albedo, normal, roughness, metallic, opacity, emissive, lightmap, height, NumMaterialTypes
         };
+
+        inline const char* typeNames[NumMaterialTypes] =
+        {
+            "ao", "albedo", "normal", "roughness", "metallic", "opacity", "emissive", "lightmap", "height"
+        };
     }
+   
 #endif // !hlsl
 
 struct MaterialInfo
