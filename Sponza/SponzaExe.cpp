@@ -19,16 +19,15 @@ bool SponzaExe::LoadContent()
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
-    /*
+    
     {
         auto bathRoom = CreateEntity("Simple Room");
         bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", true);
         auto& trans = bathRoom.GetComponent<TransformComponent>();
-        //trans.pos = { 70.f, 0.f, 0.f };
+        trans.pos = { 70.f, 0.f, 0.f };
     }
-    */   
     {
-        auto mcLaren = CreateEntity("MC Laren");
+        auto mcLaren = CreateEntity("Mercedes");
         mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", false);
         auto& trans = mcLaren.GetComponent<TransformComponent>();
 

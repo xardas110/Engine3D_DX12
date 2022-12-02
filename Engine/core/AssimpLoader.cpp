@@ -263,22 +263,25 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene)
                 matData.bHasMaterial = true;
             }
         }
-
+        
         if (matData.bHasMaterial)
-        {        
+        {     
+          /*
             if (matData.shininess > 0.f && !matData.bHasRoughness)
             {
                 std::cout << "Converting Material Shininess: " << matData.name << " to roughness" << std::endl;
 
                 std::cout << "Shininess value: " << matData.shininess << std::endl;
                 
-                matData.roughness = BeckmannAlphaToOrenNayarRoughness(ShininessToBeckmannAlpha(matData.shininess));
+                matData.roughness = sqrt(ShininessToBeckmannAlpha(matData.shininess));
                 
                 std::cout << "New Roughness Value: " << matData.roughness << std::endl;
             }
+            */
 
             internalMesh.materialData = matData;
         }
+        
 
         GetTexturePath(aiTextureType::aiTextureType_AMBIENT, material, path, internalMesh.material.textures[AssimpMaterialType::Ambient].path);
 

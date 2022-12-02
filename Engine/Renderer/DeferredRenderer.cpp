@@ -266,7 +266,11 @@ void DeferredRenderer::Render(Window& window)
         int i = 0;
         for (auto [transform, mesh] : meshInstances)
         {       
-            if (mesh.HasOpacity()) continue;
+            if (mesh.HasOpacity())
+            {
+                i++;
+                continue;
+            }
 
             objectCB.model = transform.GetTransform();
 
@@ -276,7 +280,7 @@ void DeferredRenderer::Render(Window& window)
             objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
             objectCB.meshId = mesh.id;
 
-            objectCB.prevModel = prevTrans[i++].GetTransform();
+            objectCB.prevModel = prevTrans[i].GetTransform();
             objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
 
             globalMeshInfo[mesh.id].objRot = transform.rot;
@@ -287,6 +291,8 @@ void DeferredRenderer::Render(Window& window)
             commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
 
             assetManager->m_MeshManager.meshData.meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
+
+            i++;
         }
 
         gfxCommandList->ResourceBarrier(1,
