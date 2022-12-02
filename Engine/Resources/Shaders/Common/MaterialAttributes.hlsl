@@ -128,7 +128,7 @@ void ApplyMaterial(in MaterialInfo matInfo, inout SurfaceMaterial surfaceMat, in
     
     Material mat = materials[matInfo.materialID];
     
-    surfaceMat.albedo *= mat.diffuse.rgb;
+    surfaceMat.albedo = matInfo.albedo == 0xffffffff ? mat.diffuse.rgb : (surfaceMat.albedo * mat.diffuse.rgb);
     surfaceMat.emissive = matInfo.emissive == 0xffffffff ? mat.emissive : (surfaceMat.emissive * mat.emissive);
     surfaceMat.roughness = matInfo.roughness == 0xffffffff ? mat.roughness : (surfaceMat.roughness * mat.roughness);
     surfaceMat.metallic = matInfo.metallic == 0xffffffff ? mat.metallic : (surfaceMat.metallic * mat.metallic);

@@ -83,6 +83,7 @@ private:
 
 		bool bHasMaterial = false;
 		bool bTwoSided = false;
+		bool bHasRoughness = false;
 	};
 
 	struct AssimpMesh

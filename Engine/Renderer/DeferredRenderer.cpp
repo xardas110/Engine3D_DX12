@@ -231,7 +231,9 @@ void DeferredRenderer::Render(Window& window)
         commandList->SetGraphicsRootSignature(m_GBuffer->zPrePassRS);
 
         for (auto [transform, mesh] : meshInstances)
-        {       
+        {     
+            if (mesh.HasOpacity()) continue;
+
             objectCB.model = transform.GetTransform();
             objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
             objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
@@ -264,6 +266,8 @@ void DeferredRenderer::Render(Window& window)
         int i = 0;
         for (auto [transform, mesh] : meshInstances)
         {       
+            if (mesh.HasOpacity()) continue;
+
             objectCB.model = transform.GetTransform();
 
             objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;

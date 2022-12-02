@@ -172,6 +172,7 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene)
                 std::cout << "roughness: " << roughness << std::endl;
 
                 matData.bHasMaterial = true;
+                matData.bHasRoughness = true;
             }
             if (matKey == "$mat.metallicFactor")
             {
@@ -265,7 +266,7 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene)
 
         if (matData.bHasMaterial)
         {        
-            if (matData.shininess > 0.f)
+            if (matData.shininess > 0.f && !matData.bHasRoughness)
             {
                 std::cout << "Converting Material Shininess: " << matData.name << " to roughness" << std::endl;
 

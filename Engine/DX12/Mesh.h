@@ -136,6 +136,20 @@ struct MeshInstance
     {
         return id != UINT_MAX;
     }
+
+    bool HasOpacity()
+    {
+        const auto* tex = GetTexture(MaterialType::opacity);
+
+        if (tex) return true;
+
+        auto& mat = GetUserMaterial();
+       
+        if (mat.diffuse.w >= 1.f) return false;
+
+        return true;
+    }
+
 private:
     MeshInstance() = default;
     MeshInstance(MeshInstanceID id) :id(id) {};
