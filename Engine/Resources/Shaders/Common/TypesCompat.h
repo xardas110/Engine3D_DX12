@@ -249,7 +249,7 @@ struct CameraCB
     XMMATRIX viewProj;
     XMMATRIX invViewProj;
     XMFLOAT3 pos;
-    float pad;
+    float pad COMPAT_FLOAT(0.f); //Temp, might move 
     XMFLOAT2 resolution; //native res
     float zNear;
     float zFar;

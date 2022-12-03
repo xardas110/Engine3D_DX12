@@ -48,6 +48,22 @@
 using MeshID = UINT;
 using MeshInstanceID = UINT;
 
+namespace MeshImport
+{
+    enum Flags
+    {
+        None = 0,
+        HeightAsNormal = 1 << 0,
+        IgnoreUserMaterial = 1 << 1,
+        IgnoreUserMaterialAlbedoOnly = 1 << 2
+    };
+}
+
+inline MeshImport::Flags operator|(MeshImport::Flags a, MeshImport::Flags b)
+{
+    return static_cast<MeshImport::Flags>(static_cast<int>(a) | static_cast<int>(b));
+}
+
 // Vertex struct holding position, normal vector, and texture mapping information.
 struct VertexPositionNormalTexture
 {
@@ -210,7 +226,7 @@ class StaticMesh
 
 public:
     StaticMesh() = default;
-    StaticMesh(const std::string& path, bool bHeightAsNormal = false);
+    StaticMesh(const std::string& path, MeshImport::Flags flags = MeshImport::None);
 private:
     std::uint32_t startOffset{0};
     std::uint32_t endOffset{0};

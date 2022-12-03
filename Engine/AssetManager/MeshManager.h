@@ -22,7 +22,7 @@ struct MeshManager
 
 	void CreateTorus(const std::wstring& name = L"DefaultTorus");
 
-	void LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh, bool bHeightAsNormal = false);
+	void LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh, MeshImport::Flags flags = MeshImport::None);
 private:
 	MeshManager(const SRVHeapData& srvHeapData);
 

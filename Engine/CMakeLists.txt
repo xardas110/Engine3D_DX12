@@ -72,7 +72,7 @@ set( HEADER_FILES
     "DX12/StaticDescriptorHeap.h" 
     "Renderer/CompositionPass/CompositionPass.h"
     "Renderer/Debug/DebugTexture.h"
- "Lights/DirectionalLight.h"  "Renderer/Denoiser/NvidiaDenoiser.h" "core/DX12Helper.h" "Renderer/Skybox/Skybox.h" "Renderer/HDR/HDR.h" "Renderer/DLSS/DLSS.h")
+ "Lights/DirectionalLight.h"  "Renderer/Denoiser/NvidiaDenoiser.h" "core/DX12Helper.h" "Renderer/Skybox/Skybox.h" "Renderer/HDR/HDR.h" "Renderer/DLSS/DLSS.h" "core/Logger.h")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"

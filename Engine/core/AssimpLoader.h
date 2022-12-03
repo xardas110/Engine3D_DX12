@@ -22,7 +22,7 @@ namespace AssimpMaterialType
 class AssimpLoader
 {
 public:
-	AssimpLoader(const std::string& path);
+	AssimpLoader(const std::string& path, MeshImport::Flags flags);
 private:
 	
 	std::string path = "";
@@ -105,9 +105,12 @@ private:
 		std::vector<AssimpMesh> meshes;
 	} staticMesh;
 
-	void ProcessNode(aiNode* node, const aiScene* scene);
-	bool LoadMesh(aiMesh* mesh, const aiScene* scene);
-	void LoadModel(const std::string& path);
+	 //inoutMatData
+	void AssimpLoader::LoadUserMaterial(aiMaterial* material, AssimpMaterialData& matData, MeshImport::Flags flags);
+
+	void ProcessNode(aiNode* node, const aiScene* scene, MeshImport::Flags flags);
+	bool LoadMesh(aiMesh* mesh, const aiScene* scene, MeshImport::Flags flags);
+	void LoadModel(const std::string& path, MeshImport::Flags flags);
 
 public:
 	const AssimpStaticMesh& GetAssimpStaticMesh() const

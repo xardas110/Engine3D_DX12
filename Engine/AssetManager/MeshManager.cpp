@@ -90,14 +90,14 @@ void MeshManager::CreateTorus(const std::wstring& name)
 	meshData.CreateMesh(name, tuple, m_SrvHeapData);
 }
 
-void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh, bool bHeightAsNormal)
+void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh, MeshImport::Flags flags)
 {
 	auto commandQueue = Application::Get().GetCommandQueue();
 	auto commandList = commandQueue->GetCommandList();
 	auto rtCommandList = commandQueue->GetCommandList();
 	auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
 
-	AssimpLoader loader(path);
+	AssimpLoader loader(path, flags);
 
 	auto sm = loader.GetAssimpStaticMesh();
 	outStaticMesh.startOffset = instanceData.meshInfo.size();
@@ -159,7 +159,7 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Height).path;
 			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
 			
-			if (bHeightAsNormal)
+			if (MeshImport::HeightAsNormal == flags)
 			{ 
 				matInfo.normal = tex.GetTextureID();
 			}

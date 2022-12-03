@@ -186,7 +186,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         geometryNormal = hitSurface.normal;
                        
         bool bMatHasNormal;
-        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);       
+        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
         ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
             
         hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
