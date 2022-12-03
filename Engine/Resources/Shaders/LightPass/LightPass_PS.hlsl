@@ -157,12 +157,16 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         {                
             if (brdfType == BRDF_TYPE_DIFFUSE)
             {     
-                firstDiffuseBounceDistance = 50001.f;
+                if (i == 0)
+                    firstDiffuseBounceDistance = 50000.f;
+                
                 indirectDiffuse += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;      
             }
             else               
-            {              
-                firstSpecularBounceDistance = 50001.f;
+            {       
+                if (i == 0)
+                    firstSpecularBounceDistance = 50000.f;
+                
                 indirectSpecular += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;
             }           
             break;
@@ -205,12 +209,12 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         {
             hitSurfaceMaterial.normal = hitSurface.normal;    
         }
-
+/*
         if (dot(geometryNormal, V) < 0.0f)
             geometryNormal = -geometryNormal;
         if (dot(geometryNormal, hitSurfaceMaterial.normal) < 0.0f)
             hitSurfaceMaterial.normal = -hitSurfaceMaterial.normal;
-        
+*/  
         if (brdfType == BRDF_TYPE_DIFFUSE)
         {
             if (i == 0)
@@ -256,7 +260,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float3 specDemod = fenv;
     
     indirectDiffuse.rgb /= (diffDemod * 0.99f + 0.01f);
-    indirectSpecular.rgb /= specDemod;
+    indirectSpecular.rgb /= (specDemod * 0.99f + 0.01f);
         
     OUT.IndirectDiffuse = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectDiffuse, firstDiffuseBounceDistance);
     OUT.IndirectSpecular = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectSpecular, firstSpecularBounceDistance);

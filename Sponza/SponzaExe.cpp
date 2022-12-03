@@ -21,18 +21,23 @@ bool SponzaExe::LoadContent()
 
     {
         auto bathRoom = CreateEntity("Simple Room");
-        bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", MeshImport::HeightAsNormal);
+        auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", MeshImport::HeightAsNormal);
         auto& trans = bathRoom.GetComponent<TransformComponent>();
         trans.pos = { 70.f, 0.f, 0.f };
+
+        if (auto mat = sm.FindMaterialByName(L"TVScreen"))
+        {
+            mat->roughness = 0.f;
+            mat->metallic = 1.f;
+        }
     }
   
     {
         auto mcLaren = CreateEntity("Mercedes");
-        mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::None);
+        auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::None);
         auto& trans = mcLaren.GetComponent<TransformComponent>();
 
-        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(270.f), DirectX::XMConvertToRadians(90.f), 0.f);
-        
+        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(270.f), DirectX::XMConvertToRadians(90.f), 0.f);      
     }   
     {
         auto sponza = CreateEntity("sponza");

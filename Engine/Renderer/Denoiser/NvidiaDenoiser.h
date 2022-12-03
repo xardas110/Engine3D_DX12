@@ -63,13 +63,16 @@ struct DenoiserSettings
 	DenoiserSettings()
 	{
 		settings.blurRadius = 60.f;
-		commonSettings.denoisingRange = 50000.f;
-		settings.hitDistanceReconstructionMode = nrd::HitDistanceReconstructionMode::AREA_5X5;
+		commonSettings.denoisingRange = 50002.f;
+		settings.hitDistanceReconstructionMode = nrd::HitDistanceReconstructionMode::AREA_3X3;
+		settings.antilagHitDistanceSettings.enable = true;
+		//settings.antilagIntensitySettings.enable = true;	
+		//settings.hitDistanceParameters.A = 1.f;
+		//settings.hitDistanceParameters.B = 0.f;
 	}
 
 	nrd::ReblurSettings settings = {};
 	nrd::CommonSettings commonSettings = {};
-
 };
 
 class NvidiaDenoiser
@@ -103,5 +106,6 @@ class NvidiaDenoiser
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> m_Adapter;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 
+	const int width, height;
 	DenoiserSettings denoiserSettings;
 };

@@ -316,6 +316,19 @@ void Editor::UpdateMaterialManager()
 
 }
 
+void UpdateMaterial(Material& material)
+{
+    ImGui::ColorPicker4("Color", &material.diffuse.x, ImGuiColorEditFlags_Float);
+    ImGui::ColorPicker3("Transparency", &material.transparent.x, ImGuiColorEditFlags_Float);
+    ImGui::ColorPicker3("Emissive", &material.emissive.x, ImGuiColorEditFlags_Float);
+    ImGui::SliderFloat("Roughness", &material.roughness, 0.f, 1.f);
+    ImGui::SliderFloat("Metallic", &material.metallic, 0.f, 1.f);
+    ImGui::SliderFloat("Opacity", &material.diffuse.w, 0.f, 1.f);
+    ImGui::Spacing(); ImGui::Spacing();
+    ImGui::Text("Material Textures: ");
+    ImGui::Spacing();
+}
+
 void Editor::UpdateSelectedEntity()
 {
     if (selectedEntity == entt::null) return;
@@ -350,6 +363,30 @@ void Editor::UpdateSelectedEntity()
     {
         auto& meshManger = Application::Get().GetAssetManager()->m_MeshManager;
         auto& sm = reg.get<StaticMeshComponent>(selectedEntity);
+
+
+        char buffer[40]{};
+        static Material* matFound = nullptr;
+        if (ImGui::InputText("Find Material", buffer, 40, ImGuiInputTextFlags_EnterReturnsTrue))
+        { 
+            std::string searchName = buffer;
+            std::wstring searchMat = std::wstring(searchName.begin(), searchName.end());
+
+            matFound = sm.FindMaterialByName(searchMat);
+        }
+
+        if (matFound)
+        {
+            if (ImGui::Button("Close"))
+                matFound = nullptr;
+            
+            if (matFound)
+                UpdateMaterial(*matFound);
+        }
+        else
+        {
+            ImGui::Text("Not Found!");
+        }
 
         unsigned selected = 0;
 
@@ -479,16 +516,7 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
 
     if (bNodeOpen)
     {
-        ImGui::ColorPicker4("Color", &material.diffuse.x, ImGuiColorEditFlags_Float);
-        ImGui::ColorPicker3("Transparency", &material.transparent.x, ImGuiColorEditFlags_Float);
-        ImGui::ColorPicker3("Emissive", &material.emissive.x, ImGuiColorEditFlags_Float);
-        ImGui::SliderFloat("Roughness", &material.roughness, 0.f, 1.f);
-        ImGui::SliderFloat("Metallic", &material.metallic, 0.f, 1.f);
-        ImGui::SliderFloat("Opacity", &material.diffuse.w, 0.f, 1.f);
-        ImGui::Spacing(); ImGui::Spacing();
-        ImGui::Text("Material Textures: ");
-        ImGui::Spacing();
-
+        UpdateMaterial(material);
         ImGui::TreePop();
     }
 }

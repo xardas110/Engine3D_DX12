@@ -12,6 +12,7 @@ struct MeshManager
 	friend class Raytracing;
 	friend class DeferredRenderer;
 	friend class Editor;
+	friend class StaticMesh;
 
 	bool CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID);
 
@@ -34,6 +35,7 @@ private:
 		friend class Raytracing;
 		friend class DeferredRenderer;
 		friend class Editor;
+		friend class StaticMesh;
 	private:
 
 		MeshInstanceID CreateInstance(MeshID meshID, const MeshInfo& meshInfo);
@@ -55,6 +57,7 @@ private:
 		friend class DeferredRenderer;
 		friend class Editor;
 		friend class MeshInstance;
+		friend class StaticMesh;
 
 		//Subscripe to this event to know about event creation
 		event::event<void(const Mesh&)> meshCreationEvent;

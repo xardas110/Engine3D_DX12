@@ -84,7 +84,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float3 specDemod = fenv;
         
     denoisedIndirectDiffuse.rgb *= (diffDemod * 0.99f + 0.01f);
-    denoisedIndirectSpecular.rgb *= specDemod;
+    denoisedIndirectSpecular.rgb *= (specDemod * 0.99f + 0.01f);
 
     float3 color = directDiffuse.rgb + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb;
        
@@ -96,7 +96,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     }
     else if (g_RaytracingData.debugSettings == DEBUG_LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR)
     {
-         OUT.ColorTexture = float4(denoisedIndirectSpecular.rgb / specDemod, 1.f);   
+        OUT.ColorTexture = float4(denoisedIndirectSpecular.rgb / (specDemod * 0.99f + 0.01f), 1.f);
     }
     return OUT;
 }

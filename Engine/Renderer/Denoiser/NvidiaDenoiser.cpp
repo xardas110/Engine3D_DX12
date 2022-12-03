@@ -41,6 +41,7 @@ void NRDERRORCHECK(nri::Result result)
 }
 
 NvidiaDenoiser::NvidiaDenoiser(int width, int height, DenoiserTextures& texs)
+	:width(width), height(height)
 {
 	auto device = Application::Get().GetDevice();
 	auto cq = Application::Get().GetCommandQueue();
@@ -102,7 +103,7 @@ NvidiaDenoiser::NvidiaDenoiser(int width, int height, DenoiserTextures& texs)
 		auto& current = nriTextures[nriTypes::inNormalRoughness];
 
 		nriTextures[nriTypes::inNormalRoughness].entryFormat =
-			nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R10G10B10A2_UNORM);
+			nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R16G16B16A16_UNORM);
 
 		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, normalRoughDesc, current.texture));
 
@@ -285,96 +286,150 @@ void NvidiaDenoiser::OnGUI()
 {
 	ImGui::Begin("Denoiser Settings");
 
-	auto& settings = denoiserSettings.settings;
-	auto& commonSettings = denoiserSettings.commonSettings;
+	auto* settings = &denoiserSettings.settings;
+	auto* commonSettings = &denoiserSettings.commonSettings;
+
+	ImGui::Text("Anti-Lag Hit Settings --------------------");
+
+	ImGui::Checkbox("Enabled", &settings->antilagHitDistanceSettings.enable);
 
 	ShowHelpMarker("(0; 1] - hit distances are normalized");
 	ImGui::SameLine();
-	ImGui::SliderFloat("sensitivityToDarkness", &settings.antilagHitDistanceSettings.sensitivityToDarkness, 0.f, 1.f);
+	ImGui::SliderFloat("sensitivityToDarkness", &settings->antilagHitDistanceSettings.sensitivityToDarkness, 0.f, 1.f);
 
 	ShowHelpMarker("(> 0) - real delta is reduced by local variance multiplied by this value");
 	ImGui::SameLine();
-	ImGui::SliderFloat("sigmaScale", &settings.antilagHitDistanceSettings.sigmaScale, 0.f, 2.f);
+	ImGui::SliderFloat("sigmaScale", &settings->antilagHitDistanceSettings.sigmaScale, 0.f, 2.f);
 
 	ShowHelpMarker("(normalized %) - max > min, usually 2-4x times greater than min");
 	ImGui::SameLine();
-	ImGui::SliderFloat("thresholdMax", &settings.antilagHitDistanceSettings.thresholdMax, 0.f, 1.f);
+	ImGui::SliderFloat("thresholdMax", &settings->antilagHitDistanceSettings.thresholdMax, 0.f, 1.f);
 
 	ShowHelpMarker("(normalized %) - must almost ignore residual noise (boiling), default is tuned for 0.5rpp for the worst case");
 	ImGui::SameLine();
-	ImGui::SliderFloat("thresholdMin", &settings.antilagHitDistanceSettings.thresholdMin, 0.f, 1.f);
+	ImGui::SliderFloat("thresholdMin", &settings->antilagHitDistanceSettings.thresholdMin, 0.f, 1.f);
+
+	ImGui::Text("-----------------------------------------");
+
+	ImGui::NewLine();
+
+	ImGui::Text("Anti-Lag Itensity Settings --------------------");
+
+	ImGui::Checkbox("Enabled", &settings->antilagIntensitySettings.enable);
+
+	ShowHelpMarker("(0; 1] - hit distances are normalized");
+	ImGui::SameLine();
+	ImGui::SliderFloat("sensitivityToDarkness", &settings->antilagIntensitySettings.sensitivityToDarkness, 0.f, 1.f);
+
+	ShowHelpMarker("(> 0) - real delta is reduced by local variance multiplied by this value");
+	ImGui::SameLine();
+	ImGui::SliderFloat("sigmaScale", &settings->antilagIntensitySettings.sigmaScale, 0.f, 2.f);
+
+	ShowHelpMarker("(normalized %) - max > min, usually 2-4x times greater than min");
+	ImGui::SameLine();
+	ImGui::SliderFloat("thresholdMax", &settings->antilagIntensitySettings.thresholdMax, 0.f, 1.f);
+
+	ShowHelpMarker("(normalized %) - must almost ignore residual noise (boiling), default is tuned for 0.5rpp for the worst case");
+	ImGui::SameLine();
+	ImGui::SliderFloat("thresholdMin", &settings->antilagIntensitySettings.thresholdMin, 0.f, 1.f);
+
+	ImGui::Text("-----------------------------------------");
+
+	ImGui::NewLine();
+
+	ImGui::Text("HIT DISTANCE PARAMETERS --------------------");
+
+	ShowHelpMarker("(units) - constant value IMPORTANT: if your unit is not meter, you must convert it from meters to units manually!");
+	ImGui::SameLine();
+	ImGui::SliderFloat("hitDistanceParameters.A", &settings->hitDistanceParameters.A, 0.1f, 100.f);
+
+	ShowHelpMarker("(> 0) - viewZ based linear scale (1 m - 10 cm, 10 m - 1 m, 100 m - 10 m)");
+	ImGui::SameLine();
+	ImGui::SliderFloat("hitDistanceParameters.B", &settings->hitDistanceParameters.B, 0.f, 100.f);
+
+	ShowHelpMarker("(>= 1) - roughness based scale, use values > 1 to get bigger hit distance for low roughness");
+	ImGui::SameLine();
+	ImGui::SliderFloat("hitDistanceParameters.C", &settings->hitDistanceParameters.C, 1.f, 100.f);
+
+	ShowHelpMarker("(<= 0) - absolute value should be big enough to collapse exp2(D * roughness ^ 2) to ~0 for roughness = 1");
+	ImGui::SameLine();
+	ImGui::SliderFloat("hitDistanceParameters.D", &settings->hitDistanceParameters.D, -100.f, 100.f);
+
+	ImGui::Text("-----------------------------------------");
+
+	ImGui::NewLine();
 
 	ShowHelpMarker("(pixels) - pre-accumulation spatial reuse pass blur radius (0 = disabled, must be used in case of probabilistic sampling)");
 	ImGui::SameLine();
-	ImGui::SliderFloat("Diffuse Prepass Blur Radius", &settings.diffusePrepassBlurRadius, 0.f, 100.f);
+	ImGui::SliderFloat("Diffuse Prepass Blur Radius", &settings->diffusePrepassBlurRadius, 0.f, 100.f);
 
 	ShowHelpMarker("(pixels) - pre-accumulation spatial reuse pass blur radius (0 = disabled, must be used in case of probabilistic sampling)");
 	ImGui::SameLine();
-	ImGui::SliderFloat("Specular Prepass Blur Radius", &settings.specularPrepassBlurRadius, 0.f, 100.f);
+	ImGui::SliderFloat("Specular Prepass Blur Radius", &settings->specularPrepassBlurRadius, 0.f, 100.f);
 	
 	ShowHelpMarker("(pixels) - base denoising radius (30 is a baseline for 1440p)");
 	ImGui::SameLine();
-	ImGui::SliderFloat("Blur radius", &settings.blurRadius, 0.f, 100.f);
+	ImGui::SliderFloat("Blur radius", &settings->blurRadius, 0.f, 100.f);
 
 	ShowHelpMarker("(pixels) - base stride between samples in history reconstruction pass");
 	ImGui::SameLine();
-	ImGui::SliderFloat("historyFixStrideBetweenSamples", &settings.historyFixStrideBetweenSamples, 0.f, 100.f);
+	ImGui::SliderFloat("historyFixStrideBetweenSamples", &settings->historyFixStrideBetweenSamples, 0.f, 100.f);
 
 	ShowHelpMarker("(normalized %) - base fraction of diffuse or specular lobe angle used to drive normal based rejection");
 	ImGui::SameLine();
-	ImGui::SliderFloat("lobeAngleFraction", &settings.lobeAngleFraction, 0.f, 1.f);
+	ImGui::SliderFloat("lobeAngleFraction", &settings->lobeAngleFraction, 0.f, 1.f);
 
 	ShowHelpMarker("(normalized %) - base fraction of center roughness used to drive roughness based rejection");
 	ImGui::SameLine();
-	ImGui::SliderFloat("roughnessFraction", &settings.roughnessFraction, 0.f, 1.f);
+	ImGui::SliderFloat("roughnessFraction", &settings->roughnessFraction, 0.f, 1.f);
 
 	ShowHelpMarker("[0; 1] - if roughness < this, temporal accumulation becomes responsive and driven by roughness (useful for animated water)");
 	ImGui::SameLine();
-	ImGui::SliderFloat("responsiveAccumulationRoughnessThreshold", &settings.responsiveAccumulationRoughnessThreshold, 0.f, 1.f);
+	ImGui::SliderFloat("responsiveAccumulationRoughnessThreshold", &settings->responsiveAccumulationRoughnessThreshold, 0.f, 1.f);
 
 	ShowHelpMarker("(normalized %) - stabilizes output, more stabilization improves antilag (clean signals can use lower values)");
 	ImGui::SameLine();
-	ImGui::SliderFloat("stabilizationStrength", &settings.stabilizationStrength, 0.f, 1.f);
+	ImGui::SliderFloat("stabilizationStrength", &settings->stabilizationStrength, 0.f, 1.f);
 
 	ShowHelpMarker("(normalized %) - represents maximum allowed deviation from local tangent plane");
 	ImGui::SameLine();
-	ImGui::SliderFloat("planeDistanceSensitivity", &settings.planeDistanceSensitivity, 0.f, 1.f);
+	ImGui::SliderFloat("planeDistanceSensitivity", &settings->planeDistanceSensitivity, 0.f, 1.f);
 
 	ShowHelpMarker("(normalized %) - if relative distance difference is greater than threshold, history gets reset (0.5-2.5% works well)");
 	ImGui::SameLine();
-	ImGui::SliderFloat("disocclusionThreshold", &commonSettings.disocclusionThreshold, 0.f, 1.f);
+	ImGui::SliderFloat("disocclusionThreshold", &commonSettings->disocclusionThreshold, 0.f, 1.f);
 
 	ShowHelpMarker("(normalized %) - alternative disocclusion threshold, which is mixed to based on IN_DISOCCLUSION_THRESHOLD_MIX");
 	ImGui::SameLine();
-	ImGui::SliderFloat("disocclusionThresholdAlternate", &commonSettings.disocclusionThresholdAlternate, 0.f, 1.f);
+	ImGui::SliderFloat("disocclusionThresholdAlternate", &commonSettings->disocclusionThresholdAlternate, 0.f, 1.f);
 
 	ShowHelpMarker("[0; 1] - enables noisy input / denoised output comparison");
 	ImGui::SameLine();
-	ImGui::SliderFloat("splitScreen", &commonSettings.splitScreen, 0.f, 1.f);
+	ImGui::SliderFloat("splitScreen", &commonSettings->splitScreen, 0.f, 1.f);
 
 	ShowHelpMarker("(units) > 0 - use TLAS or tracing range (max value = NRD_FP16_MAX / NRD_FP16_VIEWZ_SCALE - 1 = 524031)");
 	ImGui::SameLine();
-	ImGui::SliderFloat("denoisingRange", &commonSettings.denoisingRange, 0.f, 500000.f);
+	ImGui::SliderFloat("denoisingRange", &commonSettings->denoisingRange, 0.f, 500000.f);
 
 	ShowHelpMarker("Adds bias in case of badly defined signals, but tries to fight with fireflies");
 	ImGui::SameLine();
-	ImGui::Checkbox("enableAntiFirefly", &settings.enableAntiFirefly);
+	ImGui::Checkbox("enableAntiFirefly", &settings->enableAntiFirefly);
 
 	ShowHelpMarker("Turns off spatial filtering and virtual motion based specular tracking");
 	ImGui::SameLine();
-	ImGui::Checkbox("enableReferenceAccumulation", &settings.enableReferenceAccumulation);
+	ImGui::Checkbox("enableReferenceAccumulation", &settings->enableReferenceAccumulation);
 
 	ShowHelpMarker("Boosts performance by sacrificing IQ");
 	ImGui::SameLine();
-	ImGui::Checkbox("enablePerformanceMode", &settings.enablePerformanceMode);
+	ImGui::Checkbox("enablePerformanceMode", &settings->enablePerformanceMode);
 
 	ShowHelpMarker("Spatial passes do optional material index comparison as: ( materialEnabled ? material[ center ] == material[ sample ] : 1 )");
 	ImGui::SameLine();
-	ImGui::Checkbox("enableMaterialTestForDiffuse", &settings.enableMaterialTestForDiffuse);
+	ImGui::Checkbox("enableMaterialTestForDiffuse", &settings->enableMaterialTestForDiffuse);
 
 	ShowHelpMarker("Spatial passes do optional material index comparison as: ( materialEnabled ? material[ center ] == material[ sample ] : 1 )");
 	ImGui::SameLine();
-	ImGui::Checkbox("enableMaterialTestForSpecular", &settings.enableMaterialTestForSpecular);
+	ImGui::Checkbox("enableMaterialTestForSpecular", &settings->enableMaterialTestForSpecular);
 
 	if (ImGui::Button("Reset to default"))
 		denoiserSettings = DenoiserSettings();

@@ -579,3 +579,25 @@ StaticMesh::StaticMesh(const std::string& path, MeshImport::Flags flags)
     auto& mm = Application::Get().GetAssetManager()->m_MeshManager;
     mm.LoadStaticMesh(path, *this, flags);
 }
+
+Material* StaticMesh::FindMaterialByName(const std::wstring& materialName)
+{
+    auto& mm = Application::Get().GetAssetManager()->m_MeshManager;
+
+    for (size_t i = startOffset; i < endOffset; i++)
+    {
+        MeshInstance inst((MeshInstanceID)i);
+
+        auto& path = inst.GetUserMaterialName();
+        auto index = path.find_last_of('/') + 1;
+
+        auto name = std::wstring(path.begin() + index, path.end());
+
+        if (name == materialName)
+        {
+            return &inst.GetUserMaterial();
+        }
+    }
+
+    return nullptr;
+}
