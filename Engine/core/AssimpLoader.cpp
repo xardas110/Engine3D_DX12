@@ -322,7 +322,7 @@ void AssimpLoader::LoadUserMaterial(aiMaterial* material, AssimpMaterialData& ma
 
     if (matData.bHasMaterial)
     {
-        /*
+        if (flags & MeshImport::ConvertShininiessToAlpha)
           if (matData.shininess > 0.f && !matData.bHasRoughness)
           {
               std::cout << "Converting Material Shininess: " << matData.name << " to roughness" << std::endl;
@@ -332,8 +332,7 @@ void AssimpLoader::LoadUserMaterial(aiMaterial* material, AssimpMaterialData& ma
               matData.roughness = sqrt(ShininessToBeckmannAlpha(matData.shininess));
 
               std::cout << "New Roughness Value: " << matData.roughness << std::endl;
-          }
-          */
+          }         
     }
 
     std::cout << "-------------------------" << std::endl;

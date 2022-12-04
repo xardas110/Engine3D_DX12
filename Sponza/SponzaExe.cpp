@@ -44,7 +44,7 @@ bool SponzaExe::LoadContent()
         auto sponza = CreateEntity("sponza");
       
         sponza.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.obj", 
-            MeshImport::HeightAsNormal | MeshImport::IgnoreUserMaterialAlbedoOnly);
+            MeshImport::HeightAsNormal | MeshImport::IgnoreUserMaterial);
 
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.scale = { 0.015f, 0.015f, 0.015f };

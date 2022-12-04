@@ -44,7 +44,7 @@ private:
 		std::string path;
 		bool IsValid() const
 		{
-			return path.size() > 3;
+			return !path.empty();
 		}
 	};
 

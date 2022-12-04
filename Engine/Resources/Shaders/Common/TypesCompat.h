@@ -101,6 +101,7 @@ using namespace DirectX;
 #define TM_Reinhard   1
 #define TM_ReinhardSq 2
 #define TM_ACESFilmic 3
+#define TM_Uncharted 4
 
 // Converts Phong's exponent (shininess) to Beckmann roughness (alpha)
 // Source: "Microfacet Models for Refraction through Rough Surfaces" by Walter et al.
