@@ -116,14 +116,20 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 //Direct Lighting END-------------
   
 //Indirect Lighting BEGIN----------        
-    float firstDiffuseBounceDistance = 0.f;
-    float firstSpecularBounceDistance = 0.f;
+    float firstDiffuseBounceDistance = 999999.f;
+    float firstSpecularBounceDistance = 999999.f;
+    float viewZ = 999999.f;
+    
     for (int i = 0; i < g_RaytracingData.numBounces; i++)
     {                            
         int brdfType;
+        float diffuseWeight = 0.f;
+        float specWeight = 0.f;
+        
         if (currentMat.metallic == 1.f && currentMat.roughness == 0.f)
         {
             brdfType = BRDF_TYPE_SPECULAR;
+            specWeight = 1.f;
         }
         else
         {
@@ -133,16 +139,15 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             {
                 brdfType = BRDF_TYPE_SPECULAR;
                 troughput /= brdfProbability;
+                specWeight = 1.f;
             }
             else
             {
                 brdfType = BRDF_TYPE_DIFFUSE;
                 troughput /= (1.0f - brdfProbability);
+                diffuseWeight = 1.f;
             }
         }
-        
-        float diffuseWeight = float(brdfType == BRDF_TYPE_DIFFUSE);
-        float specWeight = float(brdfType == BRDF_TYPE_SPECULAR);
         
         if (dot(geometryNormal, V) < 0.0f)
             geometryNormal = -geometryNormal;
@@ -164,12 +169,6 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
         if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {                
-            if (i == 0)
-            {                          
-                firstDiffuseBounceDistance = 50000.f;
-                firstSpecularBounceDistance = 50000.f;
-            }
-                
             indirectRadiance += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;      
      
             indirectDiffuse += indirectRadiance * diffuseWeight;
@@ -218,8 +217,15 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
         if (i == 0)
         {
-            firstDiffuseBounceDistance = query.CommittedRayT();
-            firstSpecularBounceDistance = query.CommittedRayT();
+            firstDiffuseBounceDistance = query.CommittedRayT() * brdfWeight * diffuseWeight;
+            firstSpecularBounceDistance = query.CommittedRayT() * brdfWeight * specWeight;
+            
+            float4 hitSettings = float4(0.03f, 0.2f, 1.f, 0.1f);
+            viewZ = mul(g_Camera.view, hitSurface.position).z;
+            
+            firstDiffuseBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstDiffuseBounceDistance, viewZ, hitSettings, hitSurfaceMaterial.roughness);
+            firstSpecularBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstSpecularBounceDistance, viewZ, hitSettings, hitSurfaceMaterial.roughness);
+    
         }
                         
         shadowRayDesc.TMin = 0.0f;
@@ -248,7 +254,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     
     indirectDiffuse.rgb /= (diffDemod * 0.99f + 0.01f);
     indirectSpecular.rgb /= (specDemod * 0.99f + 0.01f);
-        
+      
     OUT.IndirectDiffuse = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectDiffuse, firstDiffuseBounceDistance);
     OUT.IndirectSpecular = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectSpecular, firstSpecularBounceDistance);
     OUT.DirectDiffuse = float4(directRadiance, 1.f);
