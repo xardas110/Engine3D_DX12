@@ -46,7 +46,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     RngStateType rngState = InitRNG(pixelCoords, g_Camera.resolution, g_RaytracingData.frameNumber);
     
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);    
-    fi.albedo = pow(fi.albedo, 2.2f);
+    fi.albedo = pow(fi.albedo, 2.2f); //pow(fi.albedo, 2.2f);
     
     float3 pixelWS = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj);
     float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj) + (fi.normal * 0.1f);
@@ -197,7 +197,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
         ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
             
-        hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
+        hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f); //pow(hitSurfaceMaterial.albedo, 2.2f);
             
         if (bMatHasNormal == true)
         {         

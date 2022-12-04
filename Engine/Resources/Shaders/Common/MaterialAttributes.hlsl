@@ -22,6 +22,94 @@ struct SurfaceMaterial
     float metallic COMPAT_FLOAT(0.f);
 };
 
+//https://github.com/NVIDIAGameWorks/RayTracingDenoiser
+float Pow(float x, float y)
+{
+    return pow(abs(x), y);
+}
+
+float2 Pow(float2 x, float y)
+{
+    return pow(abs(x), y);
+}
+
+float2 Pow(float2 x, float2 y)
+{
+    return pow(abs(x), y);
+}
+
+float3 Pow(float3 x, float y)
+{
+    return pow(abs(x), y);
+}
+
+float3 Pow(float3 x, float3 y)
+{
+    return pow(abs(x), y);
+}
+
+float4 Pow(float4 x, float y)
+{
+    return pow(abs(x), y);
+}
+
+float4 Pow(float4 x, float4 y)
+{
+    return pow(abs(x), y);
+}
+
+ // Pow for values in range [0; 1]
+float Pow01(float x, float y)
+{
+    return pow(saturate(x), y);
+}
+
+float2 Pow01(float2 x, float y)
+{
+    return pow(saturate(x), y);
+}
+
+float2 Pow01(float2 x, float2 y)
+{
+    return pow(saturate(x), y);
+}
+
+float3 Pow01(float3 x, float y)
+{
+    return pow(saturate(x), y);
+}
+
+float3 Pow01(float3 x, float3 y)
+{
+    return pow(saturate(x), y);
+}
+
+float4 Pow01(float4 x, float y)
+{
+    return pow(saturate(x), y);
+}
+
+float4 Pow01(float4 x, float4 y)
+{
+    return pow(saturate(x), y);
+}
+
+float3 LinearToSrgb(float3 color)
+{
+    const float4 consts = float4(1.055, 0.41666, -0.055, 12.92);
+    color = saturate(color);
+
+    return lerp(consts.x * Pow(color, consts.yyy) + consts.zzz, consts.w * color, color < 0.0031308);
+}
+
+float3 SrgbToLinear(float3 color)
+{
+    const float4 consts = float4(1.0 / 12.92, 1.0 / 1.055, 0.055 / 1.055, 2.4);
+    color = saturate(color);
+
+    return lerp(color * consts.x, Pow(color * consts.y + consts.zzz, consts.www), color > 0.04045);
+}
+
 float4 GetAlbedo(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float mipLevel = 0.f)
 {
     if (matInfo.albedo != 0xffffffff)
