@@ -214,8 +214,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
         if (i == 0)
         {
-            firstDiffuseBounceDistance = query.CommittedRayT();
-            firstSpecularBounceDistance = query.CommittedRayT();
+            firstDiffuseBounceDistance = query.CommittedRayT(); /// (1.0f - brdfProbability) * brdfWeight;
+            firstSpecularBounceDistance = query.CommittedRayT(); /// brdfProbability * brdfWeight;
             
             float viewZ = mul(g_Camera.view, pixelWS).z;
             
@@ -345,7 +345,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         }
         else if (DEBUG_RAYTRACED_HIT_T == g_RaytracingData.debugSettings)
         {
-            OUT.DirectDiffuse = float4(query.CommittedRayT(), query.CommittedRayT(), query.CommittedRayT(), 1.f);
+            OUT.DirectDiffuse = float4(firstSpecularBounceDistance, firstSpecularBounceDistance, firstSpecularBounceDistance, 1.f);
         }
     }
     else

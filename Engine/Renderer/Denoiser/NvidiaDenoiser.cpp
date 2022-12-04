@@ -368,7 +368,7 @@ void NvidiaDenoiser::OnGUI()
 
 	ShowHelpMarker("(> 0) - viewZ based linear scale (1 m - 10 cm, 10 m - 1 m, 100 m - 10 m)");
 	ImGui::SameLine();
-	ImGui::SliderFloat("hitDistanceParameters.B", &settings->hitDistanceParameters.B, 0.f, 100.f);
+	ImGui::SliderFloat("hitDistanceParameters.B", &settings->hitDistanceParameters.B, 0.f, 1.f);
 
 	ShowHelpMarker("(>= 1) - roughness based scale, use values > 1 to get bigger hit distance for low roughness");
 	ImGui::SameLine();
