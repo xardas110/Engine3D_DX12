@@ -31,8 +31,7 @@ private:
 		| aiProcess_Triangulate
 		| aiProcess_GenUVCoords
 		| aiProcess_FlipUVs
-		//| aiProcess_GenSmoothNormals
-		//| aiProcess_FlipWindingOrder
+		| aiProcess_GenSmoothNormals
 		//| aiProcess_FindDegenerates
 		//| aiProcess_FindInvalidData
 		//| aiProcess_FixInfacingNormals

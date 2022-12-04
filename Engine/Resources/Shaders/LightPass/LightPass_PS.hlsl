@@ -101,7 +101,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     BRDFData gBufferBRDF = PrepareBRDFData(currentMat.normal, L, V, currentMat);
       
     //directRadiance += fi.emissive;
-        
+       
     if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
     {        
         float3 diffuse = troughput * EvaluateDiffuseBRDF(gBufferBRDF);
@@ -140,6 +140,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             }
         }
   
+        if (dot(geometryNormal, V) < 0.0f)
+            geometryNormal = -geometryNormal;
+        if (dot(geometryNormal, currentMat.normal) < 0.0f)
+            currentMat.normal = -currentMat.normal;
+        
         float3 brdfWeight;
         float2 u = float2(Rand(rngState), Rand(rngState));               
         if (!EvaluateIndirectBRDF(u, currentMat.normal, geometryNormal, V, currentMat, brdfType, ray.Direction, brdfWeight))
@@ -209,12 +214,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         {
             hitSurfaceMaterial.normal = hitSurface.normal;    
         }
-/*
-        if (dot(geometryNormal, V) < 0.0f)
-            geometryNormal = -geometryNormal;
-        if (dot(geometryNormal, hitSurfaceMaterial.normal) < 0.0f)
-            hitSurfaceMaterial.normal = -hitSurfaceMaterial.normal;
-*/  
+
         if (brdfType == BRDF_TYPE_DIFFUSE)
         {
             if (i == 0)

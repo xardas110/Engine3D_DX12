@@ -57,6 +57,7 @@ bool SponzaExe::LoadContent()
             MeshImport::HeightAsNormal);
 
         auto& trans = modelEnt.GetComponent<TransformComponent>();
+        trans.scale = { 5.f, 5.f, 5.f, 0.f };
     }
 
     /*
