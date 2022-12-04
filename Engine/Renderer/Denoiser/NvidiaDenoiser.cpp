@@ -224,8 +224,6 @@ NvidiaDenoiser::~NvidiaDenoiser()
 
 void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, int currentBackbufferIndex, int width, int height)
 {
-	OnGUI();
-
 	auto& commonSettings = denoiserSettings.commonSettings;
 	auto& settings = denoiserSettings.settings;
 
@@ -288,7 +286,6 @@ void NvidiaDenoiser::OnGUI()
 
 	auto* settings = &denoiserSettings.settings;
 	auto* commonSettings = &denoiserSettings.commonSettings;
-
 
 	ImGui::Text("Frame History Settings --------------------");
 

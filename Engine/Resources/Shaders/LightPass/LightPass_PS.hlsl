@@ -116,9 +116,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 //Indirect Lighting BEGIN----------        
     float firstDiffuseBounceDistance = 999999.f;
     float firstSpecularBounceDistance = 999999.f;
-   
-    float4 hitSettings = float4(0.03f, 0.2f, 1.f, 0.1f);
-                   
+             
     for (int i = 0; i < g_RaytracingData.numBounces; i++)
     {                            
         int brdfType;
@@ -223,8 +221,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             
             float w = NRD_GetSampleWeight(indirectRadiance);
             
-            firstDiffuseBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstDiffuseBounceDistance, viewZ, hitSettings, 1.f) * diffuseWeight * w;
-            firstSpecularBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstSpecularBounceDistance, viewZ, hitSettings, fi.roughness) * specWeight * w;
+            firstDiffuseBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstDiffuseBounceDistance, viewZ, g_RaytracingData.hitParams, 1.f) * diffuseWeight * w;
+            firstSpecularBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstSpecularBounceDistance, viewZ, g_RaytracingData.hitParams, fi.roughness) * specWeight * w;
         }
                         
         shadowRayDesc.TMin = 0.0f;

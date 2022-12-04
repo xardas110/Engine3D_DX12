@@ -32,13 +32,15 @@ bool SponzaExe::LoadContent()
         }
     }
 
+    /*
     {
         auto mcLaren = CreateEntity("Mercedes");
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::None);
         auto& trans = mcLaren.GetComponent<TransformComponent>();
 
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(270.f), DirectX::XMConvertToRadians(90.f), 0.f);      
-    }   
+    }  
+
     {
         auto sponza = CreateEntity("sponza");
       
@@ -59,7 +61,7 @@ bool SponzaExe::LoadContent()
         trans.pos = { -10.f, 0.f, 0.f, 0.f };
         trans.scale = { 5.f, 5.f, 5.f, 0.f };
     }
-
+    */
     /*
     */
     /*

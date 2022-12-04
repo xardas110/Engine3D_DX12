@@ -133,6 +133,7 @@ void DeferredRenderer::Render(Window& window)
 
     HDR::UpdateGUI();
     m_DLSS->OnGUI();
+    m_NvidiaDenoiser->OnGUI();
 
     static int listbox_item_debug = 0;
 
@@ -176,6 +177,8 @@ void DeferredRenderer::Render(Window& window)
     RaytracingDataCB rtData;
     rtData.frameNumber = Application::GetFrameCount();
     rtData.debugSettings = listbox_item_debug;
+    auto& hitParams = m_NvidiaDenoiser->denoiserSettings.settings.hitDistanceParameters;
+    rtData.hitParams = { hitParams.A, hitParams.B, hitParams.C, hitParams.D};
 
     static int numBounces = 2;
 

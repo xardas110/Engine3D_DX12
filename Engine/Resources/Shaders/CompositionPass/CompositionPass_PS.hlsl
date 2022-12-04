@@ -92,11 +92,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
     if (g_RaytracingData.debugSettings == DEBUG_LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE)
     {
-        OUT.ColorTexture = float4(denoisedIndirectDiffuse.rgb / (diffDemod * 0.99f + 0.01f), 1.f);
+        OUT.ColorTexture = float4(denoisedIndirectDiffuse.rgb, 1.f);
     }
     else if (g_RaytracingData.debugSettings == DEBUG_LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR)
     {
-        OUT.ColorTexture = float4(denoisedIndirectSpecular.rgb / (specDemod * 0.99f + 0.01f), 1.f);
+        OUT.ColorTexture = float4(denoisedIndirectSpecular.rgb, 1.f);
     }
     return OUT;
 }

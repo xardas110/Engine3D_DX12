@@ -265,7 +265,7 @@ struct RaytracingDataCB
     int pad1;
     int pad2;
     int pad3;
-
+    XMFLOAT4 hitParams;
 };
 
 #endif
