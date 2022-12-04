@@ -289,6 +289,32 @@ void NvidiaDenoiser::OnGUI()
 	auto* settings = &denoiserSettings.settings;
 	auto* commonSettings = &denoiserSettings.commonSettings;
 
+
+	ImGui::Text("Frame History Settings --------------------");
+
+	ShowHelpMarker("[0; REBLUR_MAX_HISTORY_FRAME_NUM] - maximum number of linearly accumulated frames (= FPS * time of accumulation)");
+	ImGui::SameLine();
+
+	static int i1 = settings->maxAccumulatedFrameNum;
+	ImGui::SliderInt("maxAccumulatedFrameNum", &i1, 0, 60);
+	settings->maxAccumulatedFrameNum = i1;
+
+	ShowHelpMarker("[0; REBLUR_MAX_HISTORY_FRAME_NUM] - maximum number of linearly accumulated frames in fast history (less than maxAccumulatedFrameNum)");
+	ImGui::SameLine();
+
+	static int i2 = settings->maxFastAccumulatedFrameNum;
+	ImGui::SliderInt("maxFastAccumulatedFrameNum", &i2, 0, 60);
+	settings->maxFastAccumulatedFrameNum = i2;
+
+	ShowHelpMarker("[0; REBLUR_MAX_HISTORY_FRAME_NUM] - number of reconstructed frames after history reset (less than maxFastAccumulatedFrameNum)");
+	ImGui::SameLine();
+
+	static int i3 = settings->historyFixFrameNum;
+	ImGui::SliderInt("historyFixFrameNum", &i3, 0, 60);
+	settings->historyFixFrameNum = i3;
+
+	ImGui::Text("-----------------------------------------");
+
 	ImGui::Text("Anti-Lag Hit Settings --------------------");
 
 	ImGui::Checkbox("Enabled", &settings->antilagHitDistanceSettings.enable);

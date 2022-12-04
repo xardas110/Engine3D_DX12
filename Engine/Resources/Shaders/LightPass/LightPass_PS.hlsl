@@ -72,6 +72,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
     float3 color = float3(1.f, 0.f, 0.f);   
     float3 directRadiance = float3(0.f, 0.f, 0.f);
+    float3 indirectRadiance = float3(0.f, 0.f, 0.f);
     float3 indirectDiffuse = float3(0.f, 0.f, 0.f);
     float3 indirectSpecular = float3(0.f, 0.f, 0.f);       
     float3 troughput = float3(1.f, 1.f, 1.f);
@@ -139,7 +140,10 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                 troughput /= (1.0f - brdfProbability);
             }
         }
-  
+        
+        float diffuseWeight = float(brdfType == BRDF_TYPE_DIFFUSE);
+        float specWeight = float(brdfType == BRDF_TYPE_SPECULAR);
+        
         if (dot(geometryNormal, V) < 0.0f)
             geometryNormal = -geometryNormal;
         if (dot(geometryNormal, currentMat.normal) < 0.0f)
@@ -160,20 +164,17 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
         if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {                
-            if (brdfType == BRDF_TYPE_DIFFUSE)
-            {     
-                if (i == 0)
-                    firstDiffuseBounceDistance = 50000.f;
-                
-                indirectDiffuse += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;      
+            if (i == 0)
+            {                          
+                firstDiffuseBounceDistance = 50000.f;
+                firstSpecularBounceDistance = 50000.f;
             }
-            else               
-            {       
-                if (i == 0)
-                    firstSpecularBounceDistance = 50000.f;
                 
-                indirectSpecular += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;
-            }           
+            indirectRadiance += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;      
+     
+            indirectDiffuse += indirectRadiance * diffuseWeight;
+            indirectSpecular += indirectRadiance * specWeight;
+  
             break;
         }
                      
@@ -215,24 +216,10 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             hitSurfaceMaterial.normal = hitSurface.normal;    
         }
 
-        if (brdfType == BRDF_TYPE_DIFFUSE)
+        if (i == 0)
         {
-            if (i == 0)
-            {
-                firstDiffuseBounceDistance = query.CommittedRayT();
-            }
-                
-            indirectDiffuse += troughput * hitSurfaceMaterial.emissive;
-               
-        }       
-        else
-        {
-            if (i == 0)
-            {
-                firstSpecularBounceDistance = query.CommittedRayT();
-            }
-                
-            indirectSpecular += troughput * hitSurfaceMaterial.emissive;
+            firstDiffuseBounceDistance = query.CommittedRayT();
+            firstSpecularBounceDistance = query.CommittedRayT();
         }
                         
         shadowRayDesc.TMin = 0.0f;
@@ -244,15 +231,15 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
         if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {
-            BRDFData data = PrepareBRDFData(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial);
-            indirectDiffuse += troughput * (EvaluateDiffuseBRDF(data)) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
-            indirectSpecular += troughput * (EvaluateSpecularBRDF(data)) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+            indirectRadiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
         }
-                        
+                
+        indirectDiffuse += indirectRadiance * diffuseWeight;
+        indirectSpecular += indirectRadiance * specWeight;
+        
         currentMat = hitSurfaceMaterial;
         ray.TMin = 0.0f;
-        ray.Origin = shadowRayDesc.Origin;
-   
+        ray.Origin = shadowRayDesc.Origin;  
     }
     
     float3 fenv = ApproxSpecularIntegralGGX(gBufferBRDF.specularF0, gBufferBRDF.alpha, gBufferBRDF.NdotV);
