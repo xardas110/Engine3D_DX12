@@ -100,7 +100,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
     BRDFData gBufferBRDF = PrepareBRDFData(currentMat.normal, L, V, currentMat);
       
-    directRadiance += fi.emissive;
+    //directRadiance += fi.emissive;
         
     if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
     {        

@@ -55,7 +55,8 @@ namespace MeshImport
         None = 0,
         HeightAsNormal = 1 << 0,
         IgnoreUserMaterial = 1 << 1,
-        IgnoreUserMaterialAlbedoOnly = 1 << 2
+        IgnoreUserMaterialAlbedoOnly = 1 << 2,
+        LHCoords = 1 << 3
     };
 }
 
