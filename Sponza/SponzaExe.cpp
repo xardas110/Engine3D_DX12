@@ -31,7 +31,8 @@ bool SponzaExe::LoadContent()
             mat->metallic = 1.f;
         }
     }
-  
+
+    /*
     {
         auto mcLaren = CreateEntity("Mercedes");
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::None);
@@ -48,7 +49,15 @@ bool SponzaExe::LoadContent()
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.scale = { 0.015f, 0.015f, 0.015f };
     }
+    */
+    {
+        auto modelEnt = CreateEntity("Mirror");
 
+        modelEnt.AddComponent<StaticMeshComponent>("Assets/Models/Mirrors/mirror.gltf",
+            MeshImport::HeightAsNormal);
+
+        auto& trans = modelEnt.GetComponent<TransformComponent>();
+    }
 
     /*
     */
