@@ -240,6 +240,7 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 	memcpy(commonSettings.viewToClipMatrixPrev, &cam.prevProj, sizeof(cam.prevProj));
 
 	commonSettings.isMotionVectorInWorldSpace = true;
+	commonSettings.frameIndex = Application::GetFrameCount();
 
 	NRD.SetMethodSettings(nrd::Method::REBLUR_DIFFUSE_SPECULAR, &settings);
 

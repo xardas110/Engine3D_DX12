@@ -64,12 +64,17 @@ struct DenoiserSettings
 	{
 		settings.blurRadius = 60.f;
 		commonSettings.denoisingRange = 50002.f;
-		//settings.hitDistanceReconstructionMode = nrd::HitDistanceReconstructionMode::AREA_3X3;
+		//settings.hitDistanceReconstructionMode = nrd::HitDistanceReconstructionMode::AREA_5X5;
 		settings.antilagHitDistanceSettings.enable = true;
 		//settings.antilagIntensitySettings.enable = true;	
 		//settings.antilagIntensitySettings.sensitivityToDarkness = 0.1f;
 		//settings.hitDistanceParameters.A = 1.f;
-		//settings.hitDistanceParameters.B = 0.f;
+		//settings.hitDistanceParameters.B = 1.f;
+		//settings.maxAccumulatedFrameNum = 30;
+		//settings.maxFastAccumulatedFrameNum = 30;
+		//settings.historyFixFrameNum = 15;
+		settings.diffusePrepassBlurRadius = 0.f;
+		settings.specularPrepassBlurRadius = 0.f;
 	}
 
 	nrd::ReblurSettings settings = {};

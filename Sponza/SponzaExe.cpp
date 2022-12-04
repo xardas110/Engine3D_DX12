@@ -32,7 +32,6 @@ bool SponzaExe::LoadContent()
         }
     }
 
-    /*
     {
         auto mcLaren = CreateEntity("Mercedes");
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::None);
@@ -58,10 +57,10 @@ bool SponzaExe::LoadContent()
             MeshImport::HeightAsNormal);
 
         auto& trans = modelEnt.GetComponent<TransformComponent>();
-        trans.pos = { -10.f, 0.f, 0.f, 0.f };
-        trans.scale = { 5.f, 5.f, 5.f, 0.f };
+        trans.pos = { -15.f, 0.f, 0.f, 0.f };
+        trans.scale = { 10.f, 10.f, 10.f, 0.f };
     }
-    */
+    
     /*
     */
     /*

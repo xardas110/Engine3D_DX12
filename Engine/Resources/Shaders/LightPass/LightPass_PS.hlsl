@@ -116,7 +116,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 //Indirect Lighting BEGIN----------        
     float firstDiffuseBounceDistance = 999999.f;
     float firstSpecularBounceDistance = 999999.f;
-             
+    float viewZ = mul(g_Camera.view, pixelWS).z;
+                                          
     for (int i = 0; i < g_RaytracingData.numBounces; i++)
     {                            
         int brdfType;
@@ -214,15 +215,13 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
         if (i == 0)
         {
-            firstDiffuseBounceDistance = query.CommittedRayT(); /// (1.0f - brdfProbability) * brdfWeight;
-            firstSpecularBounceDistance = query.CommittedRayT(); /// brdfProbability * brdfWeight;
-            
-            float viewZ = mul(g_Camera.view, pixelWS).z;
-            
+            firstDiffuseBounceDistance = query.CommittedRayT();
+            firstSpecularBounceDistance = query.CommittedRayT();
+
             float w = NRD_GetSampleWeight(indirectRadiance);
             
-            firstDiffuseBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstDiffuseBounceDistance, viewZ, g_RaytracingData.hitParams, 1.f) * diffuseWeight * w;
-            firstSpecularBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstSpecularBounceDistance, viewZ, g_RaytracingData.hitParams, fi.roughness) * specWeight * w;
+            firstDiffuseBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstDiffuseBounceDistance, viewZ, g_RaytracingData.hitParams, fi.roughness) * w * diffuseWeight;
+            firstSpecularBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstSpecularBounceDistance, viewZ, g_RaytracingData.hitParams, fi.roughness) * w * specWeight;
         }
                         
         shadowRayDesc.TMin = 0.0f;
