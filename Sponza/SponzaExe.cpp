@@ -50,6 +50,7 @@ bool SponzaExe::LoadContent()
         trans.scale = { 0.015f, 0.015f, 0.015f };
     }
 
+    /*
     {
         auto modelEnt = CreateEntity("Mirror");
 
@@ -60,7 +61,7 @@ bool SponzaExe::LoadContent()
         trans.pos = { -15.f, 0.f, 0.f, 0.f };
         trans.scale = { 10.f, 10.f, 10.f, 0.f };
     }
-    
+    */
     /*
     */
     /*

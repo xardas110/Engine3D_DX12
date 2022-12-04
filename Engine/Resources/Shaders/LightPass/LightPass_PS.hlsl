@@ -63,7 +63,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > shadowQuery;
 
     uint ray_flags = 0; // Any this ray requires in addition those above.
-    uint ray_instance_mask = 0xffffffff;
+    uint ray_instance_mask = INSTANCE_OPAQUE;
         
     RayDesc ray;
     ray.TMin = 0.f;

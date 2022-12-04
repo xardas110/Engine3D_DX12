@@ -18,6 +18,9 @@ using namespace DirectX;
 #define DEFAULT_NULL
 #endif // !HLSL
 
+#define INSTANCE_OPAQUE (1<<0)
+#define INSTANCE_TRANSLUCENT (1<<1)
+
 #ifndef HLSL
 #define COMPAT_ONE = 1;
 #define COMPAT_VEC3F_ONE = XMFLOAT3(1.f, 1.f, 1.f)
