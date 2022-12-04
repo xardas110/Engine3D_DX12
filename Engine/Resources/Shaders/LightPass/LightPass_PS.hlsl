@@ -47,7 +47,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);    
     fi.albedo = pow(fi.albedo, 2.2f);
-        
+    
+    float3 pixelWS = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj);
     float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj) + (fi.normal * 0.1f);
                     
     if (fi.shaderModel == SM_SKY)
@@ -105,10 +106,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
        
     if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
     {        
-        float3 diffuse = troughput * EvaluateDiffuseBRDF(gBufferBRDF);
-        float3 specular = troughput * EvaluateSpecularBRDF(gBufferBRDF);
-            
-        directRadiance += (diffuse + specular) * g_DirectionalLight.color.w  * g_DirectionalLight.color.rgb;
+        directRadiance += troughput * EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
     }
       
     OUT.DirectDiffuse = float4(directRadiance, 1.f);
@@ -118,13 +116,15 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 //Indirect Lighting BEGIN----------        
     float firstDiffuseBounceDistance = 999999.f;
     float firstSpecularBounceDistance = 999999.f;
-    float viewZ = 999999.f;
-    
+   
+    float4 hitSettings = float4(0.03f, 0.2f, 1.f, 0.1f);
+                   
     for (int i = 0; i < g_RaytracingData.numBounces; i++)
     {                            
         int brdfType;
         float diffuseWeight = 0.f;
         float specWeight = 0.f;
+        float brdfProbability = 1.f;
         
         if (currentMat.metallic == 1.f && currentMat.roughness == 0.f)
         {
@@ -133,7 +133,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         }
         else
         {
-            float brdfProbability = GetBRDFProbability(currentMat, V, currentMat.normal);
+            brdfProbability = GetBRDFProbability(currentMat, V, currentMat.normal);
 
             if (Rand(rngState) < brdfProbability)
             {
@@ -173,7 +173,6 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
      
             indirectDiffuse += indirectRadiance * diffuseWeight;
             indirectSpecular += indirectRadiance * specWeight;
-  
             break;
         }
                      
@@ -217,15 +216,15 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
         if (i == 0)
         {
-            firstDiffuseBounceDistance = query.CommittedRayT() * brdfWeight * diffuseWeight;
-            firstSpecularBounceDistance = query.CommittedRayT() * brdfWeight * specWeight;
+            firstDiffuseBounceDistance = query.CommittedRayT();
+            firstSpecularBounceDistance = query.CommittedRayT();
             
-            float4 hitSettings = float4(0.03f, 0.2f, 1.f, 0.1f);
-            viewZ = mul(g_Camera.view, hitSurface.position).z;
+            float viewZ = mul(g_Camera.view, pixelWS).z;
             
-            firstDiffuseBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstDiffuseBounceDistance, viewZ, hitSettings, hitSurfaceMaterial.roughness);
-            firstSpecularBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstSpecularBounceDistance, viewZ, hitSettings, hitSurfaceMaterial.roughness);
-    
+            float w = NRD_GetSampleWeight(indirectRadiance);
+            
+            firstDiffuseBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstDiffuseBounceDistance, viewZ, hitSettings, 1.f) * diffuseWeight * w;
+            firstSpecularBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstSpecularBounceDistance, viewZ, hitSettings, fi.roughness) * specWeight * w;
         }
                         
         shadowRayDesc.TMin = 0.0f;
@@ -239,7 +238,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         {
             indirectRadiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
         }
-                
+         
         indirectDiffuse += indirectRadiance * diffuseWeight;
         indirectSpecular += indirectRadiance * specWeight;
         
