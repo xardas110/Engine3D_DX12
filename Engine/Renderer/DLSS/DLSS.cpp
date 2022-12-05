@@ -306,7 +306,7 @@ void DLSS::OnGUI()
         NVSDK_NGX_PerfQuality_Value_MaxQuality
     };
 
-    static int list_item = 0;
+    static int list_item = 2;
 
     int lastItemValue = list_item;
     ImGui::ListBox("listbox\n(single select)", &list_item, listbox_items, IM_ARRAYSIZE(listbox_items));

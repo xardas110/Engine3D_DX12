@@ -60,7 +60,7 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_GBuffer = std::unique_ptr<GBuffer>(new GBuffer(m_Width, m_Height));
     m_LightPass = std::unique_ptr<LightPass>(new LightPass(m_Width, m_Height));
     m_CompositionPass = std::unique_ptr<CompositionPass>(new CompositionPass(m_Width, m_Height));
-    m_DebugTexturePass = std::unique_ptr<DebugTexturePass>(new DebugTexturePass(m_Width, m_Height));
+    m_DebugTexturePass = std::unique_ptr<DebugTexturePass>(new DebugTexturePass(m_NativeWidth, m_NativeHeight));
 
     m_HDR = std::unique_ptr<HDR>(new HDR(m_NativeWidth, m_NativeHeight));
 

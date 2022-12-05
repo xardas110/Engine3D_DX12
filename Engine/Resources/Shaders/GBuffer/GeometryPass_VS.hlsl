@@ -24,6 +24,7 @@ struct VertexShaderOutput
     float3 BiTangent_N	: BiTangent_N;
     float3 NormalLS_N	: NORMALLS_N;
     float4 PrevPosition : PREVPOS_CLIP;
+    float4 PositionClip : POS_CLIP;
 	float4 Position		: SV_Position;
 };
 
@@ -31,6 +32,8 @@ VertexShaderOutput main(VertexPositionNormalTexture IN)
 {  
 	VertexShaderOutput OUT;
 	OUT.Position = mul(g_ObjectCB.mvp, float4(IN.Position, 1.0f));
+    OUT.PositionClip = OUT.Position;
+	
     OUT.PrevPosition = mul(g_ObjectCB.prevMVP, float4(IN.Position, 1.f));
 		
 	OUT.PositionWS = mul(g_ObjectCB.model, float4(IN.Position, 1.f));

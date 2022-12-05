@@ -101,7 +101,7 @@ private:
 
 	void ShutDown();
 
-	bool bDlssOn = false;
+	bool bDlssOn = true;
 
 	Texture resolvedTexture;
 
@@ -113,7 +113,7 @@ private:
 	NVSDK_NGX_Handle* m_dlssFeature = nullptr;
 
 	DlssRecommendedSettings recommendedSettings;
-	NVSDK_NGX_PerfQuality_Value qualityMode = NVSDK_NGX_PerfQuality_Value::NVSDK_NGX_PerfQuality_Value_MaxQuality;
+	NVSDK_NGX_PerfQuality_Value qualityMode = NVSDK_NGX_PerfQuality_Value::NVSDK_NGX_PerfQuality_Value_Balanced;
 
 	event::event<void(const bool&, const NVSDK_NGX_PerfQuality_Value&)> dlssChangeEvent;
 };

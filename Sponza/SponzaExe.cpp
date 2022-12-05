@@ -19,7 +19,7 @@ bool SponzaExe::LoadContent()
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
-    
+
     {
         auto bathRoom = CreateEntity("Simple Room");
         auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", MeshImport::HeightAsNormal);
@@ -59,7 +59,7 @@ bool SponzaExe::LoadContent()
             MeshImport::HeightAsNormal);
 
         auto& trans = modelEnt.GetComponent<TransformComponent>();
-        trans.pos = { -15.f, 0.f, 0.f, 0.f };
+        trans.pos = { 0.f, 50.f, 0.f, 0.f };
         trans.scale = { 10.f, 10.f, 10.f, 0.f };
     }
     */

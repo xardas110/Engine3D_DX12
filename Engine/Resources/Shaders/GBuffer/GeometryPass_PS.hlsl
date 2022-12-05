@@ -22,7 +22,8 @@ struct PixelShaderInput
     float3 Tangent_N    :   TANGENT_N;
     float3 BiTangent_N  :   BiTangent_N;
     float3 NormalLS_N   :   NORMALLS_N;
-    float4 PrevPosition : PREVPOS_CLIP;
+    float4 PrevPosition :   PREVPOS_CLIP;
+    float4 PositionClip :   POS_CLIP;
     float4 Position		:   SV_Position;
 };
 
@@ -70,7 +71,13 @@ PixelShaderOutput main(PixelShaderInput IN)
     OUT.normalRoughness = gPack.normalRough;
     OUT.geometryNormal = gPack.geometryNormal;
     OUT.motionVector = float4(IN.PrevPositionWS.rgb - IN.PositionWS.rgb, 1.f);
-    OUT.motion2D = (ClipToUV(IN.PrevPosition.xy / IN.PrevPosition.w) * g_CameraCB.resolution) - IN.Position.xy;
+       
+    float2 res = float2(g_CameraCB.resolution.x, g_CameraCB.resolution.y);
+    
+    float2 uv1 = ClipToUV(IN.PrevPosition.xy / IN.PrevPosition.w);
+    float2 uv2 = ClipToUV(IN.PositionClip.xy / IN.PositionClip.w);
+
+    OUT.motion2D = (uv1 * res) - (uv2 * res);
         
     return OUT;
 }
