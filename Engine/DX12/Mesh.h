@@ -48,24 +48,6 @@
 using MeshID = UINT;
 using MeshInstanceID = UINT;
 
-namespace MeshImport
-{
-    enum Flags
-    {
-        None = 0,
-        HeightAsNormal = 1 << 0,
-        IgnoreUserMaterial = 1 << 1,
-        IgnoreUserMaterialAlbedoOnly = 1 << 2,
-        LHCoords = 1 << 3,
-        ConvertShininiessToAlpha = 1 << 4,
-    };
-}
-
-inline MeshImport::Flags operator|(MeshImport::Flags a, MeshImport::Flags b)
-{
-    return static_cast<MeshImport::Flags>(static_cast<int>(a) | static_cast<int>(b));
-}
-
 // Vertex struct holding position, normal vector, and texture mapping information.
 struct VertexPositionNormalTexture
 {
@@ -132,7 +114,6 @@ struct MeshInstance
     friend class MeshManager;
     friend class Raytracing;
     friend class Editor;
-    friend class StaticMesh;
 
     //Path or name
     MeshInstance(const std::wstring& path);
@@ -140,10 +121,8 @@ struct MeshInstance
 
     const Texture* GetTexture(MaterialType::Type type);
 
-    const std::wstring& GetName();
-
     const std::wstring& GetMaterialName();
-    Material& GetUserMaterial();
+    const Material& GetUserMaterial();
     const std::wstring& GetUserMaterialName();
 
     MeshInstanceID GetInstanceID() const
@@ -155,20 +134,6 @@ struct MeshInstance
     {
         return id != UINT_MAX;
     }
-
-    bool HasOpacity()
-    {
-        const auto* tex = GetTexture(MaterialType::opacity);
-
-        if (tex) return true;
-
-        auto& mat = GetUserMaterial();
-       
-        if (mat.diffuse.w >= 1.f) return false;
-
-        return true;
-    }
-
 private:
     MeshInstance() = default;
     MeshInstance(MeshInstanceID id) :id(id) {};
@@ -229,10 +194,7 @@ class StaticMesh
 
 public:
     StaticMesh() = default;
-    StaticMesh(const std::string& path, MeshImport::Flags flags = MeshImport::None);
-
-    //IMPORTANT: Can cost performance in runtime!
-    Material* FindMaterialByName(const std::wstring& materialName);
+    StaticMesh(const std::string& path, bool bHeightAsNormal = false);
 private:
     std::uint32_t startOffset{0};
     std::uint32_t endOffset{0};

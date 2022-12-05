@@ -70,21 +70,21 @@ GFragment UnpackGBuffer(in Texture2D gBufferHeap[],
 {
     GFragment fi;
     
-    float4 albedoTex = gBufferHeap[GBUFFER_ALBEDO].Sample(nearestSampler, texCoords, 0.f);
+    float4 albedoTex = gBufferHeap[GBUFFER_ALBEDO].Sample(nearestSampler, texCoords);
     
-    float4 normalRoughTex = NRD_FrontEnd_UnpackNormalAndRoughness(gBufferHeap[GBUFFER_NORMAL_ROUGHNESS].Sample(nearestSampler, texCoords, 0.f));
+    float4 normalRoughTex = NRD_FrontEnd_UnpackNormalAndRoughness(gBufferHeap[GBUFFER_NORMAL_ROUGHNESS].Sample(nearestSampler, texCoords));
     
-    float4 motionVector = gBufferHeap[GBUFFER_MOTION_VECTOR].Sample(nearestSampler, texCoords, 0.f);
+    float4 motionVector = gBufferHeap[GBUFFER_MOTION_VECTOR].Sample(nearestSampler, texCoords);
     
-    float4 emissiveSMTex = gBufferHeap[GBUFFER_EMISSIVE_SHADER_MODEL].Sample(nearestSampler, texCoords, 0.f);
+    float4 emissiveSMTex = gBufferHeap[GBUFFER_EMISSIVE_SHADER_MODEL].Sample(nearestSampler, texCoords);
     
-    float4 aoMetallicHeight = gBufferHeap[GBUFFER_AO_METALLIC_HEIGHT].Sample(nearestSampler, texCoords, 0.f);
+    float4 aoMetallicHeight = gBufferHeap[GBUFFER_AO_METALLIC_HEIGHT].Sample(nearestSampler, texCoords);
     
-    float4 geometryNormal = gBufferHeap[GBUFFER_GEOMETRY_NORMAL].Sample(nearestSampler, texCoords, 0.f);
+    float4 geometryNormal = gBufferHeap[GBUFFER_GEOMETRY_NORMAL].Sample(nearestSampler, texCoords);
     
-    float linearDepth = gBufferHeap[GBUFFER_LINEAR_DEPTH].Sample(nearestSampler, texCoords, 0.f).r;
+    float linearDepth = gBufferHeap[GBUFFER_LINEAR_DEPTH].Sample(nearestSampler, texCoords).r;
     
-    float standardDepth = gBufferHeap[GBUFFER_STANDARD_DEPTH].Sample(nearestSampler, texCoords, 0.f).r;
+    float standardDepth = gBufferHeap[GBUFFER_STANDARD_DEPTH].Sample(nearestSampler, texCoords).r;
     
     fi.albedo = albedoTex.rgb;
     

@@ -72,7 +72,7 @@ set( HEADER_FILES
     "DX12/StaticDescriptorHeap.h" 
     "Renderer/CompositionPass/CompositionPass.h"
     "Renderer/Debug/DebugTexture.h"
- "Lights/DirectionalLight.h"  "Renderer/Denoiser/NvidiaDenoiser.h" "core/DX12Helper.h" "Renderer/Skybox/Skybox.h" "Renderer/HDR/HDR.h" "Renderer/DLSS/DLSS.h" "core/Logger.h")
+ "Lights/DirectionalLight.h"  "Renderer/Denoiser/NvidiaDenoiser.h" "core/DX12Helper.h" "Renderer/Skybox/Skybox.h" "Renderer/HDR/HDR.h" "Renderer/DLSS/DLSS.h")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
@@ -209,7 +209,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC assimp
     PUBLIC NRD
     PUBLIC NRI
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Libs/DLSS/Lib/Windows_x86_64/x86_64/nvsdk_ngx_d_dbg.lib
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Libs/DLSS/Lib/Windows_x86_64/x86_64/nvsdk_ngx_d.lib
     PUBLIC DirectXTex
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib

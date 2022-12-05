@@ -81,15 +81,6 @@ const Texture* MeshInstance::GetTexture(MaterialType::Type type)
     return textureManager.GetTexture(textureID);
 }
 
-const std::wstring& MeshInstance::GetName()
-{
-    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
-
-    auto meshID = meshManager.instanceData.meshIds[id];
-
-    return meshManager.meshData.GetName(meshID);
-}
-
 const std::wstring& MeshInstance::GetMaterialName()
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
@@ -99,7 +90,7 @@ const std::wstring& MeshInstance::GetMaterialName()
     return materialManager.GetMaterialInstanceName(matInstanceID);
 }
 
-Material& MeshInstance::GetUserMaterial()
+const Material& MeshInstance::GetUserMaterial()
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
@@ -503,7 +494,7 @@ static void ReverseWinding(IndexCollection32& indices, VertexCollection& vertice
 void Mesh::Initialize(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords)
 {
     if (vertices.size() >= UINT_MAX)
-        throw std::exception("Too many vertices for 32-bit index buffer");
+        throw std::exception("Too many vertices for 16-bit index buffer");
 
     if (!rhcoords)
         ReverseWinding(indices, vertices);
@@ -574,30 +565,8 @@ void Mesh::InitializeBlas(CommandList& commandList)
     commandList.GetGraphicsCommandList()->BuildRaytracingAccelerationStructure(&blasDesc, 0, nullptr);
 }
 
-StaticMesh::StaticMesh(const std::string& path, MeshImport::Flags flags)
+StaticMesh::StaticMesh(const std::string& path, bool bHeightAsNormal)
 {
     auto& mm = Application::Get().GetAssetManager()->m_MeshManager;
-    mm.LoadStaticMesh(path, *this, flags);
-}
-
-Material* StaticMesh::FindMaterialByName(const std::wstring& materialName)
-{
-    auto& mm = Application::Get().GetAssetManager()->m_MeshManager;
-
-    for (size_t i = startOffset; i < endOffset; i++)
-    {
-        MeshInstance inst((MeshInstanceID)i);
-
-        auto& path = inst.GetUserMaterialName();
-        auto index = path.find_last_of('/') + 1;
-
-        auto name = std::wstring(path.begin() + index, path.end());
-
-        if (name == materialName)
-        {
-            return &inst.GetUserMaterial();
-        }
-    }
-
-    return nullptr;
+    mm.LoadStaticMesh(path, *this, bHeightAsNormal);
 }

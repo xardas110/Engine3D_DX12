@@ -5,9 +5,6 @@
 #include <CommandList.h>
 #include <CommandQueue.h>
 #include <AssimpLoader.h>
-#include <Material.h>
-
-const std::wstring g_NoName = L"No Name";
 
 MeshManager::MeshManager(const SRVHeapData& srvHeapData)
 	:m_SrvHeapData(srvHeapData)
@@ -90,14 +87,14 @@ void MeshManager::CreateTorus(const std::wstring& name)
 	meshData.CreateMesh(name, tuple, m_SrvHeapData);
 }
 
-void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh, MeshImport::Flags flags)
+void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh, bool bHeightAsNormal)
 {
 	auto commandQueue = Application::Get().GetCommandQueue();
 	auto commandList = commandQueue->GetCommandList();
 	auto rtCommandList = commandQueue->GetCommandList();
 	auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
 
-	AssimpLoader loader(path, flags);
+	AssimpLoader loader(path);
 
 	auto sm = loader.GetAssimpStaticMesh();
 	outStaticMesh.startOffset = instanceData.meshInfo.size();
@@ -107,17 +104,18 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 	int num = 0; 
 	for (auto& mesh : sm.meshes)
 	{		
-		std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(num++) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
+		std::wstring currentName = std::wstring(path.begin(), path.end()) + std::to_wstring(num++);
 
 		MeshTuple tuple;
-		tuple.mesh = std::move(*Mesh::CreateMesh(*commandList, mesh.vertices, mesh.indices, !(MeshImport::LHCoords & flags)));
+		tuple.mesh = std::move(*Mesh::CreateMesh(*commandList, mesh.vertices, mesh.indices, false));
 		tuple.mesh.InitializeBlas(*rtCommandList);
 		
 		meshData.CreateMesh(currentName, tuple, m_SrvHeapData);
 
 		MeshInstance meshInstance(currentName);
-		MaterialInfo matInfo;
 
+		MaterialInfo matInfo;
+		
 		if (mesh.material.HasTexture(AssimpMaterialType::Albedo))
 		{
 			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Albedo).path;
@@ -159,7 +157,7 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Height).path;
 			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
 			
-			if (MeshImport::HeightAsNormal == flags)
+			if (bHeightAsNormal)
 			{ 
 				matInfo.normal = tex.GetTextureID();
 			}
@@ -185,21 +183,6 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 		}
 
 		MaterialInstance matInstance(currentName, matInfo);
-
-		if (mesh.materialData.bHasMaterial)
-		{
-			Material materialData;
-			materialData.diffuse = { mesh.materialData.albedo.x, mesh.materialData.albedo.y, mesh.materialData.albedo.z,  mesh.materialData.opacity };
-			materialData.specular = { mesh.materialData.specular.x, mesh.materialData.specular.y, mesh.materialData.specular.z,  mesh.materialData.shininess };
-			materialData.transparent = mesh.materialData.transparent;
-			materialData.metallic = mesh.materialData.metallic;
-			materialData.roughness = mesh.materialData.roughness;
-			materialData.emissive = mesh.materialData.emissive;
-
-			auto inst = MaterialInstance::CreateMaterial(currentName + L"/" + std::wstring(mesh.materialData.name.begin(), mesh.materialData.name.end()), materialData);
-			matInstance.SetMaterial(inst);
-		}
-
 		meshInstance.SetMaterialInstance(matInstance);				
 	}
 
@@ -235,16 +218,6 @@ MeshID MeshManager::MeshData::GetMeshID(const std::wstring& name)
 	const auto id = map[name];
 	IncrementRef(id);
 	return id;
-}
-
-const std::wstring& MeshManager::MeshData::GetName(MeshID id)
-{
-	for (const auto& [name, mId] : map)
-	{
-		if (id == mId) return name;
-	}
-
-	return g_NoName;
 }
 
 void MeshManager::MeshData::IncrementRef(const MeshID meshID)

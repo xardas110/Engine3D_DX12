@@ -103,6 +103,7 @@ bool MaterialManager::GetMaterialInstance(const std::wstring& name, MaterialInst
 
 MaterialID MaterialManager::CreateMaterial(const std::wstring& name, const Material& material)
 {
+	
 	assert(materialData.map.find(name) == materialData.map.end());
 	if (materialData.map.find(name) != materialData.map.end()) return UINT_MAX;
 	
@@ -185,7 +186,7 @@ const std::wstring& MaterialManager::GetMaterialName(MaterialInstanceID matInsta
 	return g_NoMaterial;
 }
 
-Material& MaterialManager::GetUserDefinedMaterial(MaterialInstanceID matInstanceId)
+const Material& MaterialManager::GetUserDefinedMaterial(MaterialInstanceID matInstanceId) const
 {
 	auto materialID = instanceData.cpuInfo[matInstanceId].materialID;
 	

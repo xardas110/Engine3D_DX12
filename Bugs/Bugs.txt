@@ -1,0 +1,2 @@
+-Some triangles seem inverted in the indirect diffuse / specular lightpass
+-Denoising History is not reset with reflections due to motionvectors only working with direct view.

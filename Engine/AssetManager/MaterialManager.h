@@ -25,7 +25,7 @@ struct MaterialManager
 	const std::wstring& GetMaterialInstanceName(MaterialInstanceID matInstanceId) const;
 	const std::wstring& GetMaterialName(MaterialInstanceID matInstanceId) const;
 
-	Material& GetUserDefinedMaterial(MaterialInstanceID matInstanceId);
+	const Material& GetUserDefinedMaterial(MaterialInstanceID matInstanceId) const;
 private:
 	MaterialManager(const TextureManager& textureData);
 

@@ -18,9 +18,6 @@ using namespace DirectX;
 #define DEFAULT_NULL
 #endif // !HLSL
 
-#define INSTANCE_OPAQUE (1<<0)
-#define INSTANCE_TRANSLUCENT (1<<1)
-
 #ifndef HLSL
 #define COMPAT_ONE = 1;
 #define COMPAT_VEC3F_ONE = XMFLOAT3(1.f, 1.f, 1.f)
@@ -101,21 +98,6 @@ using namespace DirectX;
 #define TM_Reinhard   1
 #define TM_ReinhardSq 2
 #define TM_ACESFilmic 3
-#define TM_Uncharted 4
-
-// Converts Phong's exponent (shininess) to Beckmann roughness (alpha)
-// Source: "Microfacet Models for Refraction through Rough Surfaces" by Walter et al.
-inline float ShininessToBeckmannAlpha(float shininess)
-{
-    return sqrt(2.0f / (shininess + 2.0f));
-}
-
-// Converts Beckmann roughness (alpha) to Oren-Nayar roughness (sigma)
-// Source: "Moving Frostbite to Physically Based Rendering" by Lagarde & de Rousiers
-inline float BeckmannAlphaToOrenNayarRoughness(float alpha)
-{
-    return 0.7071067f * atan(alpha);
-}
 
 struct TonemapCB
 {
@@ -147,33 +129,24 @@ struct TonemapCB
 struct Material
 {
     //Color with opacity
-    XMFLOAT4 diffuse COMPAT_VEC4F(1.f, 0.f, 0.f, 1.f);
-
-    //specular shininess
-    XMFLOAT4 specular COMPAT_VEC4F(1.f, 1.f, 1.f, 0.f);
+    XMFLOAT4 color COMPAT_VEC4F(1.f, 1.f, 1.f, 1.f);
 
     XMFLOAT3 emissive COMPAT_VEC3F(1.f, 1.f, 1.f);
-    float roughness COMPAT_FLOAT(0.5f);
+    float roughness COMPAT_FLOAT(1.f);
     
     //Color for transperent objects
     XMFLOAT3 transparent COMPAT_VEC3F(1.f, 1.f, 1.f);
-    float metallic COMPAT_FLOAT(0.5f);
+    float metallic COMPAT_FLOAT(1.f);
 };
 
-#ifndef HLSL
+#ifndef hlsl
     namespace MaterialType
     {
         enum Type
         {
             ao, albedo, normal, roughness, metallic, opacity, emissive, lightmap, height, NumMaterialTypes
         };
-
-        inline const char* typeNames[NumMaterialTypes] =
-        {
-            "ao", "albedo", "normal", "roughness", "metallic", "opacity", "emissive", "lightmap", "height"
-        };
     }
-   
 #endif // !hlsl
 
 struct MaterialInfo
@@ -253,7 +226,7 @@ struct CameraCB
     XMMATRIX viewProj;
     XMMATRIX invViewProj;
     XMFLOAT3 pos;
-    float pad COMPAT_FLOAT(0.f); //Temp, might move 
+    float pad;
     XMFLOAT2 resolution; //native res
     float zNear;
     float zFar;
@@ -269,7 +242,7 @@ struct RaytracingDataCB
     int pad1;
     int pad2;
     int pad3;
-    XMFLOAT4 hitParams;
+
 };
 
 #endif
