@@ -16,7 +16,7 @@ const char g_ProjectID[] = "a0f57b54-1daf-4934-90ae-c4035c19df04";
 DLSS::DLSS(int width, int height)
 {
     InitTexture(width, height);
-   // InitializeNGX(width, height);
+    InitializeNGX(width, height);
 }
 
 DLSS::~DLSS()
@@ -220,18 +220,19 @@ void DLSS::EvaluateSuperSampling(
    // D3D12DlssEvalParams.pInRayTracingHitDistance = texs.linearDepth->GetD3D12Resource().Get();
    // D3D12DlssEvalParams.pInMotionVectors3D = texs.motionVectors3D->GetD3D12Resource().Get();
 
-  //  D3D12DlssEvalParams.InToneMapperType = NVSDK_NGX_TONEMAPPER_REINHARD;
+    D3D12DlssEvalParams.InToneMapperType = NVSDK_NGX_TONEMAPPER_REINHARD;
 
     D3D12DlssEvalParams.InJitterOffsetX = 0.f;
     D3D12DlssEvalParams.InJitterOffsetY = 0.f;
 
    // D3D12DlssEvalParams.Feature.InSharpness = flSharpness;
 
-    D3D12DlssEvalParams.InReset = true;
+    //D3D12DlssEvalParams.InReset = true;
+    D3D12DlssEvalParams.InExposureScale = 0;
+    D3D12DlssEvalParams.InPreExposure = 0.f;
 
     D3D12DlssEvalParams.InMVScaleX = 1.f;
     D3D12DlssEvalParams.InMVScaleY = 1.f;
-
     D3D12DlssEvalParams.InColorSubrectBase = { 0U,0U };
     D3D12DlssEvalParams.InDepthSubrectBase = { 0U,0U };
     D3D12DlssEvalParams.InTranslucencySubrectBase = { 0U,0U };

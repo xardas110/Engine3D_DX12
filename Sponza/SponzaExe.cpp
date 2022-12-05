@@ -19,6 +19,7 @@ bool SponzaExe::LoadContent()
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
+    
     {
         auto bathRoom = CreateEntity("Simple Room");
         auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", MeshImport::HeightAsNormal);
@@ -39,7 +40,7 @@ bool SponzaExe::LoadContent()
 
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(270.f), DirectX::XMConvertToRadians(90.f), 0.f);      
     }  
-
+    
     {
         auto sponza = CreateEntity("sponza");
       

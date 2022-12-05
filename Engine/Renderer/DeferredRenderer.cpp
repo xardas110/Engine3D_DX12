@@ -869,7 +869,7 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     m_GBuffer->OnResize(m_Width, m_Height);
     m_LightPass->OnResize(m_Width, m_Height);
     m_CompositionPass->OnResize(m_Width, m_Height);
-    m_DebugTexturePass->OnResize(m_Width, m_Height);
+    m_DebugTexturePass->OnResize(m_NativeWidth, m_NativeHeight);
     
     //Recreating the denoiser is the way to go (nvidia documentation)
     m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height, GetDenoiserTextures()));
