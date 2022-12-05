@@ -313,25 +313,20 @@ void Editor::UpdateSceneGraph(entt::entity entity, const std::string& tag, Relat
 
 void Editor::UpdateMaterialManager()
 {
-    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-    ImGui::Begin("Material Editor");
 
-    for (auto& [name, materialID] : materialManager.materialData.map)
-    {
-        auto& material = materialManager.materialData.materials[materialID];
+}
 
-        std::string nameStr = "Material: " + std::string(name.begin(), name.end());
-        ImGui::Text(nameStr.c_str());
-
-        ImGui::ColorPicker4("Color", &material.color.x, ImGuiColorEditFlags_Float);
-        ImGui::ColorPicker3("Transparency", &material.transparent.x, ImGuiColorEditFlags_Float);
-        ImGui::ColorPicker3("Emissive", &material.emissive.x, ImGuiColorEditFlags_Float);
-        ImGui::InputFloat("Roughness", &material.roughness);
-        ImGui::InputFloat("Metallic", &material.metallic);
-        ImGui::Spacing(); ImGui::Spacing();
-    }
-
-    ImGui::End();
+void UpdateMaterial(Material& material)
+{
+    ImGui::ColorPicker4("Color", &material.diffuse.x, ImGuiColorEditFlags_Float);
+    ImGui::ColorPicker3("Transparency", &material.transparent.x, ImGuiColorEditFlags_Float);
+    ImGui::ColorPicker3("Emissive", &material.emissive.x, ImGuiColorEditFlags_Float);
+    ImGui::SliderFloat("Roughness", &material.roughness, 0.f, 1.f);
+    ImGui::SliderFloat("Metallic", &material.metallic, 0.f, 1.f);
+    ImGui::SliderFloat("Opacity", &material.diffuse.w, 0.f, 1.f);
+    ImGui::Spacing(); ImGui::Spacing();
+    ImGui::Text("Material Textures: ");
+    ImGui::Spacing();
 }
 
 void Editor::UpdateSelectedEntity()
@@ -369,11 +364,80 @@ void Editor::UpdateSelectedEntity()
         auto& meshManger = Application::Get().GetAssetManager()->m_MeshManager;
         auto& sm = reg.get<StaticMeshComponent>(selectedEntity);
 
-        for (size_t i = sm.startOffset; i < sm.endOffset; i++)
+
+        char buffer[40]{};
+        static Material* matFound = nullptr;
+        if (ImGui::InputText("Find Material", buffer, 40, ImGuiInputTextFlags_EnterReturnsTrue))
+        { 
+            std::string searchName = buffer;
+            std::wstring searchMat = std::wstring(searchName.begin(), searchName.end());
+
+            matFound = sm.FindMaterialByName(searchMat);
+        }
+
+        if (matFound)
         {
-            auto mesh = MeshInstance(i);
-            UpdateMeshComponent(mesh);
-        }     
+            if (ImGui::Button("Close"))
+                matFound = nullptr;
+            
+            if (matFound)
+                UpdateMaterial(*matFound);
+        }
+        else
+        {
+            ImGui::Text("Not Found!");
+        }
+
+        unsigned selected = 0;
+
+         bool bNodeOpen = ImGui::TreeNodeEx(
+            (void*)(intptr_t)0,
+            0U == selected ? nodeFlags | selectedFlag : nodeFlags,
+            tag.GetTag().c_str(),
+             static_cast<uint32_t>(0));
+        
+         if (ImGui::IsItemClicked())
+         {
+             selected = 0;
+         }
+
+         if (bNodeOpen)
+         {
+            int index = 1;
+            for (size_t i = sm.startOffset; i < sm.endOffset; i++)
+            {
+                auto mesh = MeshInstance(i);
+
+                const std::wstring& wMeshName = mesh.GetName();
+
+                const auto& wMatName = mesh.GetUserMaterialName();
+
+                auto nameIndex = wMatName.find_last_of('/') + 1;
+
+                std::string matString = std::string(wMatName.begin() + nameIndex, wMatName.end());
+
+                std::string meshName = "Mesh Name: " + std::string(wMeshName.begin(), wMeshName.end()) + "/" + matString;
+
+                bool bNodeOpen = ImGui::TreeNodeEx(
+                    (void*)(intptr_t)index,
+                    index == selected ? nodeFlags | selectedFlag : nodeFlags,
+                    meshName.c_str(),
+                    static_cast<uint32_t>(index));
+
+                if (ImGui::IsItemClicked())
+                {
+                    selected = index;
+                }
+
+                if (bNodeOpen)
+                {
+                    UpdateMeshComponent(mesh);
+                    ImGui::TreePop();
+                }
+                index++;
+            }  
+            ImGui::TreePop();
+         }
     }
 
     ImGui::End();
@@ -387,25 +451,19 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
 
     if (!mesh.IsValid()) return;
   
-    const std::wstring& wMaterialName = mesh.GetMaterialName();
-    std::string materialName = "Material Instance Name: " + std::string(wMaterialName.begin(), wMaterialName.end());
-    ImGui::Text(materialName.c_str());
-   
-    //auto& material = mesh.GetUserMaterial();
+    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
   
     const auto& wMatName = mesh.GetUserMaterialName();
-    /*
-    std::string matName = "User Defined material: " +  std::string(wMatName.begin(), wMatName.end());
-    auto materialCopy = material;
-    ImGui::Text(matName.c_str());
-    ImGui::ColorEdit4("Color", &materialCopy.color.x);
-    ImGui::ColorEdit3("Transparency", &materialCopy.transparent.x);
-    ImGui::ColorEdit3("Emissive", &materialCopy.emissive.x);
-    ImGui::InputFloat("Roughness", &materialCopy.roughness);
-    ImGui::InputFloat("Metallic", &materialCopy.metallic);
-    */
-    ImGui::Text("Material Textures: ");
-    ImGui::Spacing();
+    auto& material = mesh.GetUserMaterial();
+
+    auto index = wMatName.find_last_of('/') + 1;
+    std::string matString = std::string(wMatName.begin() + index, wMatName.end());
+   
+    std::string nameStr = "Material: " + matString;
+
+    unsigned selected = UINT_MAX;
+
+    bool bNodeOpen = false;
 
     for (size_t i = 0; i < MaterialType::NumMaterialTypes; i++)
     {
@@ -413,27 +471,54 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
 
         if (texture)
         {
-            std::string matType = "Material Type: " + std::to_string(i);
-            ImGui::Text(matType.c_str());
+            bNodeOpen = ImGui::TreeNodeEx(
+                (void*)(intptr_t)i,
+                i == selected ? nodeFlags | selectedFlag : nodeFlags,
+                MaterialType::typeNames[(MaterialType::Type)i],
+                static_cast<uint32_t>(i));
 
-            UINT lastIndex;
-            auto srvCPU = gui.m_Heap.IncrementHandle(lastIndex);
-            device->CreateShaderResourceView(texture->GetD3D12Resource().Get(), nullptr, srvCPU);
-            auto srvGPU = gui.m_Heap.GetGPUHandle(lastIndex);
+            if (ImGui::IsItemClicked())
+            {
+                selected = i;
+            }
 
-            wchar_t name[128] = {};
-            UINT size = sizeof(name);
-            texture->GetD3D12Resource()->GetPrivateData(WKPDID_D3DDebugObjectNameW, &size, name);
+            if (bNodeOpen)
+            {           
+                UINT lastIndex;
+                auto srvCPU = gui.m_Heap.IncrementHandle(lastIndex);
+                device->CreateShaderResourceView(texture->GetD3D12Resource().Get(), nullptr, srvCPU);
+                auto srvGPU = gui.m_Heap.GetGPUHandle(lastIndex);
 
-            std::wstring nameWStr = std::wstring(name);
-            std::string nameStr = std::string(nameWStr.begin(), nameWStr.end());
-            ImGui::Text(nameStr.c_str());
-            auto imgSize = ImVec2(128, 128);
-            ImGui::Image((ImTextureID)srvGPU.ptr, imgSize);
+                wchar_t name[128] = {};
+                UINT size = sizeof(name);
+                texture->GetD3D12Resource()->GetPrivateData(WKPDID_D3DDebugObjectNameW, &size, name);
 
+                std::wstring nameWStr = std::wstring(name);
+                std::string nameStr = std::string(nameWStr.begin(), nameWStr.end());
+                ImGui::Text(nameStr.c_str());
+                auto imgSize = ImVec2(128, 128);
+                ImGui::Image((ImTextureID)srvGPU.ptr, imgSize);
+                ImGui::TreePop();
+            }
         }
+    }  
+
+    bNodeOpen = ImGui::TreeNodeEx(
+        (void*)(intptr_t)0,
+        0 == selected ? nodeFlags | selectedFlag : nodeFlags,
+        nameStr.c_str(),
+        static_cast<uint32_t>(0));
+
+    if (ImGui::IsItemClicked())
+    {
+        selected = 0;
     }
-    
+
+    if (bNodeOpen)
+    {
+        UpdateMaterial(material);
+        ImGui::TreePop();
+    }
 }
 
 void Editor::SelectEntity(entt::entity entity)

@@ -151,13 +151,38 @@ void LightPass::CreatePipeline()
     rootParameters[LightPassParam::AccumBuffer].InitAsDescriptorTable(1, &gAccumBuffer);
     rootParameters[LightPassParam::Cubemap].InitAsDescriptorTable(1, &cubemapSRVHeap);
 
-    CD3DX12_STATIC_SAMPLER_DESC samplers[2];
-    samplers[0] = CD3DX12_STATIC_SAMPLER_DESC(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT);
-    samplers[1] = CD3DX12_STATIC_SAMPLER_DESC(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
-    
+    D3D12_STATIC_SAMPLER_DESC staticSampler[2] = {};
+    staticSampler[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    staticSampler[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSampler[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSampler[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSampler[0].MipLODBias = 0.f;
+    staticSampler[0].MaxAnisotropy = 1;
+    staticSampler[0].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    staticSampler[0].BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+    staticSampler[0].MinLOD = 0.f;
+    staticSampler[0].MaxLOD = D3D12_FLOAT32_MAX;
+    staticSampler[0].ShaderRegister = 0;
+    staticSampler[0].RegisterSpace = 0;
+    staticSampler[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    staticSampler[1].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    staticSampler[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSampler[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSampler[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSampler[1].MipLODBias = 0.f;
+    staticSampler[1].MaxAnisotropy = 1;
+    staticSampler[1].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    staticSampler[1].BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+    staticSampler[1].MinLOD = 0.f;
+    staticSampler[1].MaxLOD = D3D12_FLOAT32_MAX;
+    staticSampler[1].ShaderRegister = 1;
+    staticSampler[1].RegisterSpace = 0;
+    staticSampler[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
     rootSignatureDesc.Init_1_1(LightPassParam::Size,
-        rootParameters, 2, samplers);
+        rootParameters, 2, staticSampler);
 
     rootSignature.SetRootSignatureDesc(
         rootSignatureDesc.Desc_1_1,

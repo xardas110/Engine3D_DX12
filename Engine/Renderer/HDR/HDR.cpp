@@ -96,10 +96,11 @@ void HDR::UpdateGUI()
             "Linear",
             "Reinhard",
             "Reinhard Squared",
-            "ACES Filmic"
+            "ACES Filmic",
+            "Uncharted"
         };
 
-        ImGui::Combo("Tonemapping Methods", (int*)(&g_TonemapParameters.TonemapMethod), toneMappingMethods, 4);
+        ImGui::Combo("Tonemapping Methods", (int*)(&g_TonemapParameters.TonemapMethod), toneMappingMethods, sizeof(toneMappingMethods) / sizeof(toneMappingMethods[0]));
 
         switch (g_TonemapParameters.TonemapMethod)
         {

@@ -46,8 +46,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     RngStateType rngState = InitRNG(pixelCoords, g_Camera.resolution, g_RaytracingData.frameNumber);
     
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);    
-    fi.albedo = pow(fi.albedo, 2.2f);
-        
+    fi.albedo = pow(fi.albedo, 2.2f); //pow(fi.albedo, 2.2f);
+    
+    float3 pixelWS = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj);
     float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj) + (fi.normal * 0.1f);
                     
     if (fi.shaderModel == SM_SKY)
@@ -62,7 +63,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > shadowQuery;
 
     uint ray_flags = 0; // Any this ray requires in addition those above.
-    uint ray_instance_mask = 0xffffffff;
+    uint ray_instance_mask = INSTANCE_OPAQUE;
         
     RayDesc ray;
     ray.TMin = 0.f;
@@ -72,6 +73,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
     float3 color = float3(1.f, 0.f, 0.f);   
     float3 directRadiance = float3(0.f, 0.f, 0.f);
+    float3 indirectRadiance = float3(0.f, 0.f, 0.f);
     float3 indirectDiffuse = float3(0.f, 0.f, 0.f);
     float3 indirectSpecular = float3(0.f, 0.f, 0.f);       
     float3 troughput = float3(1.f, 1.f, 1.f);
@@ -100,14 +102,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
     BRDFData gBufferBRDF = PrepareBRDFData(currentMat.normal, L, V, currentMat);
       
-   // directRadiance += fi.emissive;
-        
+    //directRadiance += fi.emissive;
+       
     if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
     {        
-        float3 diffuse = troughput * EvaluateDiffuseBRDF(gBufferBRDF);
-        float3 specular = troughput * EvaluateSpecularBRDF(gBufferBRDF);
-            
-        directRadiance += (diffuse + specular) * g_DirectionalLight.color.w  * g_DirectionalLight.color.rgb;
+        directRadiance += troughput * EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
     }
       
     OUT.DirectDiffuse = float4(directRadiance, 1.f);
@@ -115,31 +114,45 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 //Direct Lighting END-------------
   
 //Indirect Lighting BEGIN----------        
-    float firstDiffuseBounceDistance = 0.f;
-    float firstSpecularBounceDistance = 0.f;
+    float firstDiffuseBounceDistance = 999999.f;
+    float firstSpecularBounceDistance = 999999.f;
+    float viewZ = mul(g_Camera.view, pixelWS).z;
+                                          
     for (int i = 0; i < g_RaytracingData.numBounces; i++)
     {                            
         int brdfType;
+        float diffuseWeight = 0.f;
+        float specWeight = 0.f;
+        float brdfProbability = 1.f;
+        
         if (currentMat.metallic == 1.f && currentMat.roughness == 0.f)
         {
             brdfType = BRDF_TYPE_SPECULAR;
+            specWeight = 1.f;
         }
         else
         {
-            float brdfProbability = GetBRDFProbability(currentMat, V, currentMat.normal);
+            brdfProbability = GetBRDFProbability(currentMat, V, currentMat.normal);
 
             if (Rand(rngState) < brdfProbability)
             {
                 brdfType = BRDF_TYPE_SPECULAR;
                 troughput /= brdfProbability;
+                specWeight = 1.f;
             }
             else
             {
                 brdfType = BRDF_TYPE_DIFFUSE;
                 troughput /= (1.0f - brdfProbability);
+                diffuseWeight = 1.f;
             }
         }
-  
+        
+        if (dot(geometryNormal, V) < 0.0f)
+            geometryNormal = -geometryNormal;
+        if (dot(geometryNormal, currentMat.normal) < 0.0f)
+            currentMat.normal = -currentMat.normal;
+        
         float3 brdfWeight;
         float2 u = float2(Rand(rngState), Rand(rngState));               
         if (!EvaluateIndirectBRDF(u, currentMat.normal, geometryNormal, V, currentMat, brdfType, ray.Direction, brdfWeight))
@@ -155,16 +168,10 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
         if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {                
-            if (brdfType == BRDF_TYPE_DIFFUSE)
-            {     
-                firstDiffuseBounceDistance = 50001.f;
-                indirectDiffuse += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;      
-            }
-            else               
-            {              
-                firstSpecularBounceDistance = 50001.f;
-                indirectSpecular += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;
-            }           
+            indirectRadiance += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;      
+     
+            indirectDiffuse += indirectRadiance * diffuseWeight;
+            indirectSpecular += indirectRadiance * specWeight;
             break;
         }
                      
@@ -184,11 +191,12 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         //hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
         hitSurface.position = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
         geometryNormal = hitSurface.normal;
-                                      
+                       
         bool bMatHasNormal;
         SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
-               
-        hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
+        ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
+            
+        hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f); //pow(hitSurfaceMaterial.albedo, 2.2f);
             
         if (bMatHasNormal == true)
         {         
@@ -205,44 +213,35 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             hitSurfaceMaterial.normal = hitSurface.normal;    
         }
 
-        if (brdfType == BRDF_TYPE_DIFFUSE)
+        if (i == 0)
         {
-            if (i == 0)
-            {
-                firstDiffuseBounceDistance = query.CommittedRayT();
-            }
-                
-            //indirectDiffuse += troughput * hitSurfaceMaterial.emissive;
-               
-        }
-        else
-        {
-            if (i == 0)
-            {
-                firstSpecularBounceDistance = query.CommittedRayT();
-            }
-                
-            //indirectSpecular += troughput * hitSurfaceMaterial.emissive;
-        }
+            firstDiffuseBounceDistance = query.CommittedRayT();
+            firstSpecularBounceDistance = query.CommittedRayT();
+
+            float w = NRD_GetSampleWeight(indirectRadiance);
             
-            
+            firstDiffuseBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstDiffuseBounceDistance, viewZ, g_RaytracingData.hitParams, fi.roughness) * w * diffuseWeight;
+            firstSpecularBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstSpecularBounceDistance, viewZ, g_RaytracingData.hitParams, fi.roughness) * w * specWeight;
+        }
+                        
         shadowRayDesc.TMin = 0.0f;
         shadowRayDesc.Origin = OffsetRay(hitSurface.position, geometryNormal);
         shadowRayDesc.Direction = L;
                 
         shadowQuery.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
         shadowQuery.Proceed();
+        
         if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
         {
-            BRDFData data = PrepareBRDFData(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial);
-            indirectDiffuse += troughput * (EvaluateDiffuseBRDF(data)) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
-            indirectSpecular += troughput * (EvaluateSpecularBRDF(data)) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+            indirectRadiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
         }
-                        
+         
+        indirectDiffuse += indirectRadiance * diffuseWeight;
+        indirectSpecular += indirectRadiance * specWeight;
+        
         currentMat = hitSurfaceMaterial;
         ray.TMin = 0.0f;
-        ray.Origin = shadowRayDesc.Origin;
-   
+        ray.Origin = shadowRayDesc.Origin;  
     }
     
     float3 fenv = ApproxSpecularIntegralGGX(gBufferBRDF.specularF0, gBufferBRDF.alpha, gBufferBRDF.NdotV);
@@ -250,8 +249,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float3 specDemod = fenv;
     
     indirectDiffuse.rgb /= (diffDemod * 0.99f + 0.01f);
-    indirectSpecular.rgb /= specDemod;
-        
+    indirectSpecular.rgb /= (specDemod * 0.99f + 0.01f);
+      
     OUT.IndirectDiffuse = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectDiffuse, firstDiffuseBounceDistance);
     OUT.IndirectSpecular = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectSpecular, firstSpecularBounceDistance);
     OUT.DirectDiffuse = float4(directRadiance, 1.f);
@@ -292,11 +291,14 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         MeshInfo meshInfo = g_GlobalMeshInfo[instanceIndex];
         MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
         MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
+            
         hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
-        hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
+        //hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
+            
         bool bMatHasNormal;
         SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
-               
+        ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
+            
         if (bMatHasNormal == true)
         {
             hitSurfaceMaterial.normal =
@@ -342,7 +344,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         }
         else if (DEBUG_RAYTRACED_HIT_T == g_RaytracingData.debugSettings)
         {
-            OUT.DirectDiffuse = float4(query.CommittedRayT(), query.CommittedRayT(), query.CommittedRayT(), 1.f);
+            OUT.DirectDiffuse = float4(firstSpecularBounceDistance, firstSpecularBounceDistance, firstSpecularBounceDistance, 1.f);
         }
     }
     else

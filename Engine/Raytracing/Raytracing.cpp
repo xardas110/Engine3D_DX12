@@ -206,7 +206,11 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::ve
         instanceDesc.Transform[1][3] = transform.r[3].m128_f32[1];
         instanceDesc.Transform[2][3] = transform.r[3].m128_f32[2];
 
-        instanceDesc.InstanceMask = 1;
+        if (mesh.HasOpacity())
+            instanceDesc.InstanceMask = INSTANCE_TRANSLUCENT;
+        else
+            instanceDesc.InstanceMask = INSTANCE_OPAQUE;
+
         instanceDesc.AccelerationStructure = internalMesh.mesh.blas->GetGPUVirtualAddress();
         instanceDescs.emplace_back(instanceDesc);
     }

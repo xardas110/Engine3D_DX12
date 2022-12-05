@@ -30,7 +30,7 @@ void GBuffer::CreateRenderTarget(int width, int height)
     albedoDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     albedoDesc.MipLevels = 1;
 
-    auto normalRoughDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R10G10B10A2_UNORM, width, height);
+    auto normalRoughDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_UNORM, width, height);
     normalRoughDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     normalRoughDesc.MipLevels = 1;
 
@@ -150,11 +150,24 @@ void GBuffer::CreatePipeline()
     rootParameters[GBufferParam::GlobalMatInfo].InitAsShaderResourceView(3, 4);
     rootParameters[GBufferParam::GlobalMaterials].InitAsShaderResourceView(4, 5);
 
-    CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR);
+    D3D12_STATIC_SAMPLER_DESC staticSampler = {};
+    staticSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    staticSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSampler.MipLODBias = 0.f;
+    staticSampler.MaxAnisotropy = 1;
+    staticSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    staticSampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+    staticSampler.MinLOD = 0.f;
+    staticSampler.MaxLOD = D3D12_FLOAT32_MAX;
+    staticSampler.ShaderRegister = 0;
+    staticSampler.RegisterSpace = 0;
+    staticSampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
     rootSignatureDesc.Init_1_1(GBufferParam::Size,
-        rootParameters, 1, &linearRepeatSampler,
+        rootParameters, 1, &staticSampler,
         rootSignatureFlags);
 
     rootSignature.SetRootSignatureDesc(
@@ -172,7 +185,13 @@ void GBuffer::CreatePipeline()
         CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
         CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormats;
         CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL DS;
+        CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER Rasterizer;
     } pipelineStateStream;
+
+    //TODO:FIX
+    CD3DX12_RASTERIZER_DESC rasterizerDesc(D3D12_DEFAULT);
+    rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+    pipelineStateStream.Rasterizer = rasterizerDesc;
 
     CD3DX12_DEPTH_STENCIL_DESC dsDesc{};
     dsDesc.DepthEnable = true;
@@ -261,7 +280,7 @@ void GBuffer::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
     float zeroColor[] = { 0.f, 0.f, 0.f, 0.f };
     float skyClear[] = { 50001.f, 50001.f, 50001.f, 50001.f };
 
-    commandlist.ClearTexture(renderTarget.GetTexture((AttachmentPoint)GBUFFER_ALBEDO), clearColor);
+    commandlist.ClearTexture(renderTarget.GetTexture((AttachmentPoint)GBUFFER_ALBEDO), zeroColor);
 
     commandlist.ClearTexture(renderTarget.GetTexture((AttachmentPoint)GBUFFER_NORMAL_ROUGHNESS), zeroColor);
 

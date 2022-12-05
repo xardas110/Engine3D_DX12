@@ -20,21 +20,51 @@ bool SponzaExe::LoadContent()
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
     {
-        auto sponza = CreateEntity("sponza");
-        sponza.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.obj", true);
-        auto& trans = sponza.GetComponent<TransformComponent>();
-        trans.scale = { 0.015f, 0.015f, 0.015f };
-        trans.pos = { 0.f, 0.f, -70.f };
-    }
-
-
-    {
         auto bathRoom = CreateEntity("Simple Room");
-        bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", true);
+        auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", MeshImport::HeightAsNormal);
         auto& trans = bathRoom.GetComponent<TransformComponent>();
         trans.pos = { 70.f, 0.f, 0.f };
+
+        if (auto mat = sm.FindMaterialByName(L"TVScreen"))
+        {
+            mat->roughness = 0.f;
+            mat->metallic = 1.f;
+        }
     }
 
+    {
+        auto mcLaren = CreateEntity("Mercedes");
+        auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::None);
+        auto& trans = mcLaren.GetComponent<TransformComponent>();
+
+        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(270.f), DirectX::XMConvertToRadians(90.f), 0.f);      
+    }  
+
+    {
+        auto sponza = CreateEntity("sponza");
+      
+        sponza.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.obj", 
+            MeshImport::HeightAsNormal | MeshImport::IgnoreUserMaterial);
+
+        auto& trans = sponza.GetComponent<TransformComponent>();
+        trans.scale = { 0.015f, 0.015f, 0.015f };
+    }
+
+    /*
+    {
+        auto modelEnt = CreateEntity("Mirror");
+
+        modelEnt.AddComponent<StaticMeshComponent>("Assets/Models/Mirrors/mirror.gltf",
+            MeshImport::HeightAsNormal);
+
+        auto& trans = modelEnt.GetComponent<TransformComponent>();
+        trans.pos = { -15.f, 0.f, 0.f, 0.f };
+        trans.scale = { 10.f, 10.f, 10.f, 0.f };
+    }
+    */
+    /*
+    */
+    /*
     meshManager.CreateCube();
     meshManager.CreateSphere();
     meshManager.CreateTorus();
@@ -169,7 +199,7 @@ bool SponzaExe::LoadContent()
         trans.scale = { 50.f, 50.f, 2.f };
         trans.pos = { 0.f, 30.f, 0.f };
     }
-/*
+
     /*
     {
         auto ent = CreateEntity("DxCube");

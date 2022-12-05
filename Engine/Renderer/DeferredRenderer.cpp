@@ -133,6 +133,7 @@ void DeferredRenderer::Render(Window& window)
 
     HDR::UpdateGUI();
     m_DLSS->OnGUI();
+    m_NvidiaDenoiser->OnGUI();
 
     static int listbox_item_debug = 0;
 
@@ -176,6 +177,8 @@ void DeferredRenderer::Render(Window& window)
     RaytracingDataCB rtData;
     rtData.frameNumber = Application::GetFrameCount();
     rtData.debugSettings = listbox_item_debug;
+    auto& hitParams = m_NvidiaDenoiser->denoiserSettings.settings.hitDistanceParameters;
+    rtData.hitParams = { hitParams.A, hitParams.B, hitParams.C, hitParams.D};
 
     static int numBounces = 2;
 
@@ -231,7 +234,9 @@ void DeferredRenderer::Render(Window& window)
         commandList->SetGraphicsRootSignature(m_GBuffer->zPrePassRS);
 
         for (auto [transform, mesh] : meshInstances)
-        {       
+        {     
+            if (mesh.HasOpacity()) continue;
+
             objectCB.model = transform.GetTransform();
             objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
             objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
@@ -264,6 +269,12 @@ void DeferredRenderer::Render(Window& window)
         int i = 0;
         for (auto [transform, mesh] : meshInstances)
         {       
+            if (mesh.HasOpacity())
+            {
+                i++;
+                continue;
+            }
+
             objectCB.model = transform.GetTransform();
 
             objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
@@ -272,7 +283,7 @@ void DeferredRenderer::Render(Window& window)
             objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
             objectCB.meshId = mesh.id;
 
-            objectCB.prevModel = prevTrans[i++].GetTransform();
+            objectCB.prevModel = prevTrans[i].GetTransform();
             objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
 
             globalMeshInfo[mesh.id].objRot = transform.rot;
@@ -283,6 +294,8 @@ void DeferredRenderer::Render(Window& window)
             commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
 
             assetManager->m_MeshManager.meshData.meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
+
+            i++;
         }
 
         gfxCommandList->ResourceBarrier(1,

@@ -58,6 +58,8 @@ PixelShaderOutput main(PixelShaderInput IN)
         surface.normal = IN.NormalWS;
     }
 
+    ApplyMaterial(matInfo, surface, g_GlobalMaterials);
+        
     GPackInfo gPack = PackGBuffer(g_CameraCB, g_ObjectCB, surface, IN.PositionWS.rgb, IN.Position.z, IN.NormalWS);
     
     OUT.albedo = gPack.albedo;

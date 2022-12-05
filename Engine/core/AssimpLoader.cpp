@@ -1,5 +1,7 @@
 #include <EnginePCH.h>
 #include <AssimpLoader.h>
+#include <TypesCompat.h>
+#include <Logger.h>
 
 using namespace DirectX;
 
@@ -21,28 +23,38 @@ void GetTexturePath(aiTextureType type, aiMaterial* material, const std::string&
     }
 }
 
-AssimpLoader::AssimpLoader(const std::string& path)
+AssimpLoader::AssimpLoader(const std::string& path, MeshImport::Flags flags)
 {
-    LoadModel(path);
+    LoadModel(path, flags);
 }
 
-void AssimpLoader::ProcessNode(aiNode* node, const aiScene* scene)
+void AssimpLoader::ProcessNode(aiNode* node, const aiScene* scene, MeshImport::Flags flags)
 {
     for (auto i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        if (!LoadMesh(mesh, scene))
+        if (!LoadMesh(mesh, scene, flags))
             std::cerr << "failed to load mesh: " << path << std::endl;
     }
     for (auto i = 0; i < node->mNumChildren; i++)
     {
-        ProcessNode(node->mChildren[i], scene);
+        ProcessNode(node->mChildren[i], scene, flags);
     }
 }
 
-bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene)
+template<class A, class B>
+void AssToDX(A& a, B& b)
+{
+    a.x = b.r;
+    a.y = b.g;
+    a.z = b.b;
+}
+
+bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene, MeshImport::Flags flags)
 {
     AssimpLoader::AssimpMesh internalMesh;
+
+    internalMesh.name = mesh->mName.C_Str();
 
     for (auto i = 0; i < mesh->mNumVertices; i++)
     {
@@ -96,18 +108,9 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene)
         }
     }
     { // Materials
+      
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-
-        /*
-        std::cout << "Loading material: " << material->GetName().C_Str() << std::endl;
-        std::cout << "Num properties: " << material->mNumProperties << std::endl;
-
-        for (size_t i = 0; i < material->mNumProperties; i++)
-        {
-            std::cout << "mat key: " << material->mProperties[i]->mKey.C_Str() << std::endl;
-        }
-        */
-
+      
         GetTexturePath(aiTextureType::aiTextureType_AMBIENT, material, path, internalMesh.material.textures[AssimpMaterialType::Ambient].path);
 
         GetTexturePath(aiTextureType::aiTextureType_DIFFUSE, material, path, internalMesh.material.textures[AssimpMaterialType::Diffuse].path);
@@ -125,14 +128,18 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene)
         GetTexturePath(aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS, material, path, internalMesh.material.textures[AssimpMaterialType::Roughness].path);
 
         GetTexturePath(aiTextureType::aiTextureType_OPACITY, material, path, internalMesh.material.textures[AssimpMaterialType::Opacity].path);
-        
+     
+        if (!(flags & MeshImport::IgnoreUserMaterial))
+        {
+            LoadUserMaterial(material, internalMesh.materialData, flags);
+        }
     }
 
     staticMesh.meshes.emplace_back(internalMesh);
     return true;
 }
 
-void AssimpLoader::LoadModel(const std::string& path)
+void AssimpLoader::LoadModel(const std::string& path, MeshImport::Flags flags)
 {
     Assimp::Importer importer;
     const aiScene* scene;
@@ -154,5 +161,179 @@ void AssimpLoader::LoadModel(const std::string& path)
 
     this->path = path;
 
-    ProcessNode(scene->mRootNode, scene);
+    ProcessNode(scene->mRootNode, scene, flags);
+}
+
+void AssimpLoader::LoadUserMaterial(aiMaterial* material, AssimpMaterialData& matData, MeshImport::Flags flags)
+{
+    LOG( "-------------------------" );
+    LOG( "Loading material: " << material->GetName().C_Str() );
+    LOG( "Num properties: " << material->mNumProperties );
+
+    for (size_t i = 0; i < material->mNumProperties; i++)
+    {
+        LOG( material->mProperties[i]->mKey.C_Str() );
+
+        std::string matKey = material->mProperties[i]->mKey.C_Str();
+
+        if (matKey == "?mat.name")
+        {
+            aiString  matName;
+            material->Get(AI_MATKEY_NAME, matName);
+
+            std::cout << "MatName: ";
+            std::cout << matName.C_Str() << std::endl;
+
+            matData.name = matName.C_Str();
+        }
+        if (matKey == "$mat.shadingm")
+        {
+            ai_int  shadinggm;
+            material->Get(AI_MATKEY_SHADING_MODEL, shadinggm);
+
+            std::cout << "shadingmodel: ";
+            std::cout << shadinggm << std::endl;
+
+            matData.shadingModel = shadinggm;
+        }
+        if (matKey == "$clr.diffuse" && !(flags & MeshImport::IgnoreUserMaterialAlbedoOnly))
+        {
+            aiColor3D color(0.f, 0.f, 0.f);
+            material->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+
+            AssToDX(matData.albedo, color);
+
+            std::cout << "Diffuse Color: " << color.r << " " << color.g << " " << color.b << std::endl;
+
+            matData.bHasMaterial = true;
+        }
+        if (matKey == "$clr.specular")
+        {
+            aiColor3D color(0.f, 0.f, 0.f);
+            material->Get(AI_MATKEY_SPECULAR_FACTOR, color);
+
+            AssToDX(matData.specular, color);
+
+            std::cout << "Specular Color: " << color.r << " " << color.g << " " << color.b << std::endl;
+
+            matData.bHasMaterial = true;
+        }
+        if (matKey == "$mat.roughnessFactor")
+        {
+            ai_real roughness;
+            material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
+
+            matData.roughness = roughness;
+
+            std::cout << "roughness: " << roughness << std::endl;
+
+            matData.bHasMaterial = true;
+            matData.bHasRoughness = true;
+        }
+        if (matKey == "$mat.metallicFactor")
+        {
+            ai_real metallic;
+            material->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
+
+            matData.metallic = metallic;
+
+            std::cout << "metallic: " << metallic << std::endl;
+
+            matData.bHasMaterial = true;
+        }
+        if (matKey == "$mat.shininess")
+        {
+            ai_real shininess;
+            material->Get(AI_MATKEY_SHININESS, shininess);
+
+            matData.shininess = shininess;
+
+            std::cout << "shininess: " << shininess << std::endl;
+
+            matData.bHasMaterial = true;
+        }
+        if (matKey == "$clr.emissive")
+        {
+            aiColor3D color(0.f, 0.f, 0.f);
+            material->Get(AI_MATKEY_COLOR_EMISSIVE, color);
+
+            AssToDX(matData.emissive, color);
+
+            std::cout << "Emissive Color: " << color.r << " " << color.g << " " << color.b << std::endl;
+
+            matData.bHasMaterial = true;
+        }
+        if (matKey == "$clr.transparent")
+        {
+            aiColor3D color(0.f, 0.f, 0.f);
+            material->Get(AI_MATKEY_COLOR_TRANSPARENT, color);
+
+            AssToDX(matData.transparent, color);
+
+            std::cout << "Transparent Color: " << color.r << " " << color.g << " " << color.b << std::endl;
+
+            matData.bHasMaterial = true;
+        }
+        if (matKey == "$mat.opacity")
+        {
+            ai_real opacity;
+            material->Get(AI_MATKEY_OPACITY, opacity);
+
+            matData.opacity = opacity;
+
+            std::cout << "Opacity: " << opacity << std::endl;
+
+            matData.bHasMaterial = true;
+        }
+        if (matKey == "$mat.twosided")
+        {
+            bool bTwoSided;
+            material->Get(AI_MATKEY_TWOSIDED, bTwoSided);
+
+            std::cout << "bTwoSided: " << bTwoSided << std::endl;
+
+            matData.bTwoSided = bTwoSided;
+
+            matData.bHasMaterial = true;
+        }
+        if (matKey == "$mat.gltf.alphaMode")
+        {
+            ai_int alphaMode;
+            material->Get("$mat.gltf.alphaMode", 0, 0, alphaMode);
+
+            std::cout << "alphaMode: " << alphaMode << std::endl;
+
+            matData.alphaMode = alphaMode;
+
+            matData.bHasMaterial = true;
+        }
+        if (matKey == "$mat.gltf.alphaCutoff")
+        {
+            float alphaCutoff;
+            material->Get("$mat.gltf.alphaCutoff", 0, 0, alphaCutoff);
+
+            std::cout << "alphaCutoff: " << alphaCutoff << std::endl;
+
+            matData.alphaCutoff = alphaCutoff;
+
+            matData.bHasMaterial = true;
+        }
+    }
+
+    if (matData.bHasMaterial)
+    {
+        if (flags & MeshImport::ConvertShininiessToAlpha)
+          if (matData.shininess > 0.f && !matData.bHasRoughness)
+          {
+              std::cout << "Converting Material Shininess: " << matData.name << " to roughness" << std::endl;
+
+              std::cout << "Shininess value: " << matData.shininess << std::endl;
+
+              matData.roughness = sqrt(ShininessToBeckmannAlpha(matData.shininess));
+
+              std::cout << "New Roughness Value: " << matData.roughness << std::endl;
+          }         
+    }
+
+    std::cout << "-------------------------" << std::endl;
 }
