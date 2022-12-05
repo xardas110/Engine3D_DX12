@@ -114,21 +114,25 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 //Direct Lighting END-------------
   
 //Indirect Lighting BEGIN----------        
-    float firstDiffuseBounceDistance = 999999.f;
-    float firstSpecularBounceDistance = 999999.f;
+    float firstDiffuseBounceDistance = 0.f;
+    float firstSpecularBounceDistance = 0.f;
     float viewZ = mul(g_Camera.view, pixelWS).z;
-                                          
+          
+    float diffuseWeight = 0.f;
+    float specWeight = 0.f;
+    
     for (int i = 0; i < g_RaytracingData.numBounces; i++)
     {                            
         int brdfType;
-        float diffuseWeight = 0.f;
-        float specWeight = 0.f;
+
         float brdfProbability = 1.f;
         
         if (currentMat.metallic == 1.f && currentMat.roughness == 0.f)
         {
             brdfType = BRDF_TYPE_SPECULAR;
-            specWeight = 1.f;
+            
+            if (i == 0)
+                specWeight = 1.f;
         }
         else
         {
@@ -138,13 +142,16 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             {
                 brdfType = BRDF_TYPE_SPECULAR;
                 troughput /= brdfProbability;
-                specWeight = 1.f;
+                if (i == 0)
+                    specWeight = 1.f;
             }
             else
             {
                 brdfType = BRDF_TYPE_DIFFUSE;
                 troughput /= (1.0f - brdfProbability);
-                diffuseWeight = 1.f;
+                
+                if (i == 0)
+                    diffuseWeight = 1.f;
             }
         }
         
@@ -172,6 +179,12 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
      
             indirectDiffuse += indirectRadiance * diffuseWeight;
             indirectSpecular += indirectRadiance * specWeight;
+            
+            if (i == 0)
+            {           
+                firstDiffuseBounceDistance = 999999.f * diffuseWeight;
+                firstSpecularBounceDistance = 999999.f * specWeight;
+            }
             break;
         }
                      
@@ -344,7 +357,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         }
         else if (DEBUG_RAYTRACED_HIT_T == g_RaytracingData.debugSettings)
         {
-            OUT.DirectDiffuse = float4(firstSpecularBounceDistance, firstSpecularBounceDistance, firstSpecularBounceDistance, 1.f);
+            OUT.DirectDiffuse = float4(firstDiffuseBounceDistance, firstDiffuseBounceDistance, firstDiffuseBounceDistance, 1.f);
         }
     }
     else
