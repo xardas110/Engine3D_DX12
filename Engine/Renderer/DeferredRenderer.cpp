@@ -83,6 +83,7 @@ DeferredRenderer::DeferredRenderer(int width, int height)
 DeferredRenderer::~DeferredRenderer()
 {
     m_DLSS->dlssChangeEvent.detach(&DeferredRenderer::OnDlssChanged, this);
+    Application::Get().m_DLSS = std::move(m_DLSS);
 }
 
 std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(entt::registry& registry)

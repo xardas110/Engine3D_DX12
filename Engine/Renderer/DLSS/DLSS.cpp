@@ -21,6 +21,8 @@ DLSS::DLSS(int width, int height)
 
 DLSS::~DLSS()
 {
+    ShutDown();
+    resolvedTexture.Reset();
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE DLSS::CreateSRVViews()
@@ -50,11 +52,10 @@ void DLSS::InitTexture(int width, int height)
 
 void DLSS::InitializeNGX(int width, int height)
 {
+    
     NVSDK_NGX_Result Result = NVSDK_NGX_Result_Fail;
 
-    m_Device = Application::Get().GetDevice();
-
-    Result = NVSDK_NGX_D3D12_Init(APP_ID, L"", m_Device.Get());
+    Result = NVSDK_NGX_D3D12_Init(345646, L"", Application::Get().GetDevice().Get());
 
     if (NVSDK_NGX_FAILED(Result)) throw std::exception("Failed to Init NGX dx12");
 
@@ -70,6 +71,7 @@ void DLSS::InitializeNGX(int width, int height)
 
         throw std::exception(errorMsg.c_str());
     }
+
 
     // If NGX Successfully initialized then it should set those flags in return
     int needsUpdatedDriver = 0;
@@ -117,6 +119,7 @@ void DLSS::InitializeNGX(int width, int height)
         throw std::exception("NVIDIA DLSS not available on this hardware/platform, see console for more information");
     }
 
+
     InitWithRecommendedSettings(width, height);
 }
 
@@ -126,7 +129,7 @@ void DLSS::QueryOptimalSettings(DirectX::XMUINT2 inDisplaySize, NVSDK_NGX_PerfQu
     outRecommendedSettings->m_ngxDynamicMaximumRenderSize = inDisplaySize;
     outRecommendedSettings->m_ngxDynamicMinimumRenderSize = inDisplaySize;
     outRecommendedSettings->m_ngxRecommendedSharpness = 0.0f;
-
+   
     NVSDK_NGX_Result Result = NGX_DLSS_GET_OPTIMAL_SETTINGS(m_ngxParameters,
         inDisplaySize.x, inDisplaySize.y, inQualValue,
         &outRecommendedSettings->m_ngxRecommendedOptimalRenderSize.x, &outRecommendedSettings->m_ngxRecommendedOptimalRenderSize.y,
@@ -152,6 +155,10 @@ void DLSS::InitFeatures(DirectX::XMUINT2 optimalRenderSize, DirectX::XMUINT2 out
     auto commandQueue = Application::Get().GetCommandQueue();
     auto commandList = commandQueue->GetCommandList();
 
+    ReleaseDLSSFeatures();
+
+    if (m_dlssFeature) throw std::exception();
+
     unsigned int CreationNodeMask = 1;
     unsigned int VisibilityNodeMask = 1;
     NVSDK_NGX_Result ResultDLSS = NVSDK_NGX_Result_Fail;
@@ -175,6 +182,7 @@ void DLSS::InitFeatures(DirectX::XMUINT2 optimalRenderSize, DirectX::XMUINT2 out
     DlssCreateParams.Feature.InTargetHeight = outDisplaySize.y;
     DlssCreateParams.Feature.InPerfQualityValue = qualValue;
     DlssCreateParams.InFeatureCreateFlags = DlssCreateFeatureFlags;
+    
 
     ResultDLSS = NGX_D3D12_CREATE_DLSS_EXT(commandList->GetGraphicsCommandList().Get(), CreationNodeMask, VisibilityNodeMask, &m_dlssFeature, m_ngxParameters, &DlssCreateParams);
 
@@ -251,8 +259,6 @@ void DLSS::EvaluateSuperSampling(
 
 DirectX::XMUINT2 DLSS::OnResize(int width, int height)
 {
-    ReleaseDLSSFeatures();
-
     InitWithRecommendedSettings(width, height);
 
     resolvedTexture.Resize(width, height);
@@ -275,12 +281,13 @@ void DLSS::ReleaseDLSSFeatures()
 void DLSS::ShutDown()
 {
     ReleaseDLSSFeatures();
-  
+
     auto result = NVSDK_NGX_D3D12_DestroyParameters(m_ngxParameters);
 
     if (NVSDK_NGX_FAILED(result)) throw std::exception();
+    m_ngxParameters = nullptr;
 
-    NVSDK_NGX_D3D12_Shutdown();
+    result = NVSDK_NGX_D3D12_Shutdown();
 
     if (NVSDK_NGX_FAILED(result)) throw std::exception();
 }

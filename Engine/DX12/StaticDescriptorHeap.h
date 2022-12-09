@@ -2,8 +2,6 @@
 #include <d3d12.h>
 #include <wrl.h>
 
-//Textures and Meshes will be in the same heap
-//Due to global shader access for inline DXR
 struct SRVHeapData
 {
 	friend class TextureManager;

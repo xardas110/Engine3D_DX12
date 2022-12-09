@@ -13,12 +13,17 @@
 #include <Editor.h>
 #include <SponzaExe.h>
 
+using namespace Microsoft::WRL;
+
 void ReportLiveObjects()
 {
     IDXGIDebug1* dxgiDebug;
     DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug));
 
-    dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL);
+    HRESULT hrResult = dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_DETAIL);
+
+    ThrowIfFailed(hrResult);
+
     dxgiDebug->Release();
 }
 

@@ -150,6 +150,8 @@ void Application::Destroy()
         assert( gs_Windows.empty() && gs_WindowByName.empty() && 
             "All windows should be destroyed before destroying the application instance.");
 
+        gs_pSingelton->m_d3d12Device->Release();
+
         delete gs_pSingelton;
         gs_pSingelton = nullptr;
     }

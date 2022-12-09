@@ -40,6 +40,7 @@
 #include <string>
 #include <AssetManager.h>
 #include <Events.h>
+#include <DLSS/DLSS.h>
 
 
 class CommandQueue;
@@ -157,6 +158,9 @@ public:
 
     AssetManager* GetAssetManager();
     //PipelineManager* GetPipelineManager();
+
+    std::unique_ptr<DLSS> m_DLSS = nullptr;
+
 protected:
 
     // Create an application instance.
@@ -192,6 +196,7 @@ private:
 
     //Contains all assets(Meshes, textures, materials) for game objects
     std::unique_ptr<AssetManager> m_AssetManager{nullptr};
+
 
 #ifdef DEBUG_EDITOR
     void UpdateEditor(UpdateEventArgs& e);

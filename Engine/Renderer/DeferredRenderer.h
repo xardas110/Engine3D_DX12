@@ -86,5 +86,6 @@ class DeferredRenderer
 	std::unique_ptr<Raytracing> m_Raytracer;
 
 	std::unique_ptr<DebugTexturePass> m_DebugTexturePass;
+
 };
 

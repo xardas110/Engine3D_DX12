@@ -19,7 +19,7 @@ bool SponzaExe::LoadContent()
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
-
+    /*
     {
         auto bathRoom = CreateEntity("Simple Room");
         auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", MeshImport::HeightAsNormal);
@@ -32,7 +32,7 @@ bool SponzaExe::LoadContent()
             mat->metallic = 1.f;
         }
     }
-
+    */
     {
         auto mcLaren = CreateEntity("Mercedes");
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::None);
@@ -40,7 +40,7 @@ bool SponzaExe::LoadContent()
 
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(270.f), DirectX::XMConvertToRadians(90.f), 0.f);      
     }  
-    
+    /*
     {
         auto sponza = CreateEntity("sponza");
       
@@ -50,7 +50,7 @@ bool SponzaExe::LoadContent()
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.scale = { 0.015f, 0.015f, 0.015f };
     }
-
+    */
     /*
     {
         auto modelEnt = CreateEntity("Mirror");

@@ -107,8 +107,6 @@ private:
 
 	SRVHeapData heap = SRVHeapData(1);
 
-	Microsoft::WRL::ComPtr<ID3D12Device8> m_Device;
-
 	NVSDK_NGX_Parameter* m_ngxParameters = nullptr;
 	NVSDK_NGX_Handle* m_dlssFeature = nullptr;
 
