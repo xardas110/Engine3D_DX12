@@ -62,7 +62,7 @@ PixelShaderOutput main(PixelShaderInput IN)
     ApplyMaterial(matInfo, surface, g_GlobalMaterials);
         
     GPackInfo gPack = PackGBuffer(g_CameraCB, g_ObjectCB, surface, IN.PositionWS.rgb, IN.Position.z, IN.NormalWS);
-    
+      
     OUT.albedo = gPack.albedo;
     OUT.aoMetallicHeight = gPack.aoMetallicHeight;
     OUT.emissiveSM = gPack.emissiveSM;

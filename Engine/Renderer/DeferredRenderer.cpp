@@ -269,7 +269,7 @@ void DeferredRenderer::Render(Window& window)
 
         int i = 0;
         for (auto [transform, mesh] : meshInstances)
-        {       
+        {  
             if (mesh.HasOpacity())
             {
                 i++;

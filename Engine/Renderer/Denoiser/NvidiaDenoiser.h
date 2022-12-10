@@ -64,7 +64,7 @@ struct DenoiserSettings
 	{
 		settings.blurRadius = 60.f;
 		commonSettings.denoisingRange = 50002.f;
-		settings.hitDistanceReconstructionMode = nrd::HitDistanceReconstructionMode::AREA_5X5;
+		//settings.hitDistanceReconstructionMode = nrd::HitDistanceReconstructionMode::AREA_5X5;
 		settings.antilagHitDistanceSettings.enable = true;
 		//settings.antilagIntensitySettings.enable = true;	
 		//settings.antilagIntensitySettings.sensitivityToDarkness = 0.1f;

@@ -101,7 +101,7 @@ private:
 
 	void ShutDown();
 
-	bool bDlssOn = true;
+	bool bDlssOn = false;
 
 	Texture resolvedTexture;
 

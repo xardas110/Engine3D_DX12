@@ -182,7 +182,6 @@ void DLSS::InitFeatures(DirectX::XMUINT2 optimalRenderSize, DirectX::XMUINT2 out
     DlssCreateParams.Feature.InTargetHeight = outDisplaySize.y;
     DlssCreateParams.Feature.InPerfQualityValue = qualValue;
     DlssCreateParams.InFeatureCreateFlags = DlssCreateFeatureFlags;
-    
 
     ResultDLSS = NGX_D3D12_CREATE_DLSS_EXT(commandList->GetGraphicsCommandList().Get(), CreationNodeMask, VisibilityNodeMask, &m_dlssFeature, m_ngxParameters, &DlssCreateParams);
 
@@ -203,7 +202,7 @@ void DLSS::InitWithRecommendedSettings(int width, int height)
         qualityMode,
         &recommendedSettings);
 
-    InitFeatures(recommendedSettings.m_ngxRecommendedOptimalRenderSize, {(unsigned)width, (unsigned)height}, true, false, 1.f, false, false, qualityMode);
+    InitFeatures(recommendedSettings.m_ngxRecommendedOptimalRenderSize, {(unsigned)width, (unsigned)height}, true, false, 1.f, true, false, qualityMode);
 }
 
 void DLSS::EvaluateSuperSampling(
@@ -225,29 +224,21 @@ void DLSS::EvaluateSuperSampling(
     D3D12DlssEvalParams.pInDepth = texs.depth->GetD3D12Resource().Get();
     D3D12DlssEvalParams.pInMotionVectors = texs.motionVectors->GetD3D12Resource().Get();
     D3D12DlssEvalParams.pInExposureTexture = nullptr;
-   // D3D12DlssEvalParams.pInRayTracingHitDistance = texs.linearDepth->GetD3D12Resource().Get();
-   // D3D12DlssEvalParams.pInMotionVectors3D = texs.motionVectors3D->GetD3D12Resource().Get();
 
-    D3D12DlssEvalParams.InToneMapperType = NVSDK_NGX_TONEMAPPER_REINHARD;
-
-    D3D12DlssEvalParams.InJitterOffsetX = 0.f;
-    D3D12DlssEvalParams.InJitterOffsetY = 0.f;
-
-   // D3D12DlssEvalParams.Feature.InSharpness = flSharpness;
+    D3D12DlssEvalParams.Feature.InSharpness = flSharpness;
 
     //D3D12DlssEvalParams.InReset = true;
-    D3D12DlssEvalParams.InExposureScale = 0;
-    D3D12DlssEvalParams.InPreExposure = 0.f;
+    //D3D12DlssEvalParams.InExposureScale = 1.f;
+    //D3D12DlssEvalParams.InPreExposure = 0.f;
+
+    unsigned baseWidth = (unsigned)recommendedSettings.m_ngxRecommendedOptimalRenderSize.x;
+    unsigned baseHeight = (unsigned)recommendedSettings.m_ngxRecommendedOptimalRenderSize.y;
 
     D3D12DlssEvalParams.InMVScaleX = 1.f;
     D3D12DlssEvalParams.InMVScaleY = 1.f;
-    D3D12DlssEvalParams.InColorSubrectBase = { 0U,0U };
-    D3D12DlssEvalParams.InDepthSubrectBase = { 0U,0U };
-    D3D12DlssEvalParams.InTranslucencySubrectBase = { 0U,0U };
-    D3D12DlssEvalParams.InMVSubrectBase = { 0U,0U };
- 
+
     D3D12DlssEvalParams.InRenderSubrectDimensions = { 
-        (unsigned)recommendedSettings.m_ngxRecommendedOptimalRenderSize.x, (unsigned)recommendedSettings.m_ngxRecommendedOptimalRenderSize.y };
+        baseWidth, baseHeight };
 
     Result = NGX_D3D12_EVALUATE_DLSS_EXT(commandList->GetGraphicsCommandList().Get(), m_dlssFeature, m_ngxParameters, &D3D12DlssEvalParams);
 
@@ -313,7 +304,7 @@ void DLSS::OnGUI()
         NVSDK_NGX_PerfQuality_Value_MaxQuality
     };
 
-    static int list_item = 2;
+    static int list_item = 0;
 
     int lastItemValue = list_item;
     ImGui::ListBox("listbox\n(single select)", &list_item, listbox_items, IM_ARRAYSIZE(listbox_items));

@@ -180,11 +180,6 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             indirectDiffuse += indirectRadiance * diffuseWeight;
             indirectSpecular += indirectRadiance * specWeight;
             
-            if (i == 0)
-            {           
-                firstDiffuseBounceDistance = 999999.f * diffuseWeight;
-                firstSpecularBounceDistance = 999999.f * specWeight;
-            }
             break;
         }
                      
