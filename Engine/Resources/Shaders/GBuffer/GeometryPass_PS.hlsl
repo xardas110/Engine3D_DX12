@@ -47,18 +47,14 @@ PixelShaderOutput main(PixelShaderInput IN)
     
     MaterialInfo matInfo = g_GlobalMaterialInfo[g_ObjectCB.materialGPUID];   
            
-    bool bMatHasNormal;
-    SurfaceMaterial surface = GetSurfaceMaterial(matInfo, IN.TexCoord, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
-        
-    if (bMatHasNormal == true)
-    {    
-        surface.normal = TangentToWorldNormal(IN.Tangent_N, IN.BiTangent_N, IN.NormalLS_N, surface.normal, g_ObjectCB.model);
-    }
-    else
-    {
-        surface.normal = IN.NormalWS;
-    }
+    MeshVertex vert;
+    vert.textureCoordinate = IN.TexCoord;
+    vert.normal = IN.NormalLS_N;
+    vert.tangent = IN.Tangent_N;
+    vert.bitangent = IN.BiTangent_N;
+    vert.position = IN.PositionClip;
 
+    SurfaceMaterial surface = GetSurfaceMaterial(matInfo, vert, g_ObjectCB.model, g_ObjectCB.objRotQuat, g_LinearRepeatSampler, g_GlobalTextureData);
     ApplyMaterial(matInfo, surface, g_GlobalMaterials);
         
     GPackInfo gPack = PackGBuffer(g_CameraCB, g_ObjectCB, surface, IN.PositionWS.rgb, IN.Position.z, IN.NormalWS);

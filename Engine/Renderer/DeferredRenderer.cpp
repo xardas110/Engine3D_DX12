@@ -244,6 +244,8 @@ void DeferredRenderer::Render(Window& window)
             objectCB.meshId = mesh.id;
 
             objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
+
+            objectCB.objRotQuat = transform.rot;
             globalMeshInfo[mesh.id].objRot = transform.rot;
 
             commandList->SetGraphicsDynamicConstantBuffer(DepthPrePassParam::ObjectCB, objectCB);
@@ -286,6 +288,7 @@ void DeferredRenderer::Render(Window& window)
 
             objectCB.prevModel = prevTrans[i].GetTransform();
             objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
+            objectCB.objRotQuat = transform.rot;
 
             globalMeshInfo[mesh.id].objRot = transform.rot;
 

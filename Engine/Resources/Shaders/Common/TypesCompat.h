@@ -223,6 +223,7 @@ struct ObjectCB
     XMMATRIX transposeInverseModel;
     XMMATRIX prevModel;
     XMMATRIX prevMVP;
+    XMVECTOR objRotQuat;
 };
 
 struct MeshVertex

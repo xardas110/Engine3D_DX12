@@ -192,20 +192,34 @@ float GetOpacity(in MaterialInfo matInfo, in float2 texCoords, in SamplerState i
     return 1.f;
 }
 
+//Returns tangentNormal -> worldNormal
+float3 TangentToWorldNormal(in float3 localTangent, in float3 localBiTangent, in float3 localNormal, in float3 tangentNormal, in float3x4 model)
+{
+    float3x3 TBN = ConstructTBN(model, localTangent, localBiTangent, normalize(localNormal));
+    return GetWorldNormal(tangentNormal, TBN);
+}
+
 SurfaceMaterial GetSurfaceMaterial(
-    in MaterialInfo matInfo, in float2 texCoords, out bool bMatHasNormal,
+    in MaterialInfo matInfo, in MeshVertex v, in float3x4 model, in float4 objRotQuat,
     in SamplerState inSampler, in Texture2D globalTextureData[], float mipLevel = 0.f)
 {
     SurfaceMaterial surface;    
-    surface.ao = GetAO(matInfo, texCoords, inSampler, globalTextureData, mipLevel);
-    surface.albedo = GetAlbedo(matInfo, texCoords, inSampler, globalTextureData, mipLevel); //* surface.ao;
-    surface.emissive = GetEmissive(matInfo, texCoords, inSampler, globalTextureData, mipLevel);
-    surface.height = GetHeight(matInfo, texCoords, inSampler, globalTextureData, mipLevel);
-    surface.roughness = GetRoughness(matInfo, texCoords, inSampler, globalTextureData, mipLevel);
-    surface.metallic = GetMetallic(matInfo, texCoords, inSampler, globalTextureData, mipLevel);
-    surface.opacity = GetOpacity(matInfo, texCoords, inSampler, globalTextureData, mipLevel);
-    surface.normal = GetNormal(matInfo, texCoords, bMatHasNormal, inSampler, globalTextureData, mipLevel);
+    surface.ao = GetAO(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel);
+    surface.albedo = GetAlbedo(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel); //* surface.ao;
+    surface.emissive = GetEmissive(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel);
+    surface.height = GetHeight(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel);
+    surface.roughness = GetRoughness(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel);
+    surface.metallic = GetMetallic(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel);
+    surface.opacity = GetOpacity(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel);
     
+    bool bMatHasNormal;
+    surface.normal = GetNormal(matInfo, v.textureCoordinate, bMatHasNormal, inSampler, globalTextureData, mipLevel);
+    
+    if (bMatHasNormal == true)
+        surface.normal = TangentToWorldNormal(v.tangent, v.bitangent, v.normal, surface.normal, model);                    
+    else
+        surface.normal = RotatePoint(objRotQuat, v.normal);
+
     return surface;
 }
 
@@ -222,13 +236,6 @@ void ApplyMaterial(in MaterialInfo matInfo, inout SurfaceMaterial surfaceMat, in
     surfaceMat.metallic = matInfo.metallic == 0xffffffff ? mat.metallic : (surfaceMat.metallic * mat.metallic);
     surfaceMat.opacity = matInfo.opacity == 0xffffffff ? mat.diffuse.a : (surfaceMat.opacity * mat.diffuse.a);
     surfaceMat.transparent = mat.transparent;
-}
-
-//Returns tangentNormal -> worldNormal
-float3 TangentToWorldNormal(in float3 localTangent, in float3 localBiTangent, in float3 localNormal, in float3 tangentNormal, in float3x4 model)
-{
-    float3x3 TBN = ConstructTBN(model, localTangent, localBiTangent, normalize(localNormal));
-    return GetWorldNormal(tangentNormal, TBN);
 }
 
 #endif

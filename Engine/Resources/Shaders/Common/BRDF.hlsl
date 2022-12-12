@@ -234,13 +234,6 @@ float4 GetRotationToZAxis(in float3 input)
     return normalize(float4(input.y, -input.x, 0.0f, 1.0f + input.z));
 }
 
-// Source: https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
-float3 RotatePoint(float4 q, float3 v)
-{
-    const float3 qAxis = float3(q.x, q.y, q.z);
-    return 2.0f * dot(qAxis, v) * qAxis + (q.w * q.w - dot(qAxis, qAxis)) * v + 2.0f * q.w * cross(qAxis, v);
-}
-
 float3 SampleHemisphere(float2 u, out float pdf) 
 {
     float a = sqrt(u.x);

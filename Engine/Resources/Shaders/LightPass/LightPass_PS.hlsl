@@ -181,34 +181,17 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
         MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
                 
-        MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
-        hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
-        hitSurface.position = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
-        geometryNormal = hitSurface.normal;
-                       
-        bool bMatHasNormal;
-        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
-        ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
-            
-        hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
-            
-        float3 rayHitPos = OffsetRay(hitSurface.position, geometryNormal);
+        MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);           
+        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData);
         
-        if (bMatHasNormal == true)
-        {         
-            hitSurfaceMaterial.normal =
-            TangentToWorldNormal(hitSurface.tangent,
-            hitSurface.bitangent,
-            hitSurface.normal,
-            hitSurfaceMaterial.normal,
-            hit.objToWorld
-            );
-        }
-        else
-        {
-            hitSurfaceMaterial.normal = hitSurface.normal;    
-        }
-
+        float3 rayHit = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
+        geometryNormal = RotatePoint(meshInfo.objRot, hitSurface.normal);
+        
+        float3 rayHitOffset = OffsetRay(rayHit, geometryNormal);
+                
+        ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);           
+        hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
+          
         if (i == 0)
         {
             firstDiffuseBounceDistance = hit.minT;
@@ -222,7 +205,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
                
         shadowRayDesc.TMin = 0.f;
         shadowRayDesc.TMax = 10000.f;
-        shadowRayDesc.Origin = rayHitPos;
+        shadowRayDesc.Origin = rayHitOffset;
         shadowRayDesc.Direction = L;
         
         shadowRayInfo.desc = shadowRayDesc;
@@ -236,8 +219,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         indirectSpecular += indirectRadiance * specWeight;
         
         currentMat = hitSurfaceMaterial;
-        ray.TMin = 0.0f;
-        ray.Origin = rayHitPos;
+        ray.Origin = rayHitOffset;
     }
     
     float3 fenv = ApproxSpecularIntegralGGX(gBufferBRDF.specularF0, gBufferBRDF.alpha, gBufferBRDF.NdotV);

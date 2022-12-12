@@ -1,6 +1,14 @@
 #ifndef MATH_H
 #define MATH_H
 
+// Source: https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
+float3 RotatePoint(float4 q, float3 v)
+{
+    const float3 qAxis = float3(q.x, q.y, q.z);
+    return 2.0f * dot(qAxis, v) * qAxis + (q.w * q.w - dot(qAxis, qAxis)) * v + 2.0f * q.w * cross(qAxis, v);
+}
+
+
 float3x3 ConstructTBN(
     in float3x3 model, 
     in float3 tangent, 
