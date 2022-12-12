@@ -115,26 +115,24 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float specWeight = 0.f;
     
     for (int i = 0; i < g_RaytracingData.numBounces; i++)
-    {                            
+    {       
         int brdfType;
-
-        float brdfProbability = 1.f;
-        
         if (currentMat.metallic == 1.f && currentMat.roughness == 0.f)
         {
-            brdfType = BRDF_TYPE_SPECULAR;
+            brdfType = BRDF_TYPE_SPECULAR; 
             
             if (i == 0)
                 specWeight = 1.f;
         }
         else
         {
-            brdfProbability = GetBRDFProbability(currentMat, V, currentMat.normal);
+            float brdfProbability = GetBRDFProbability(currentMat, V, currentMat.normal);
 
             if (Rand(rngState) < brdfProbability)
             {
                 brdfType = BRDF_TYPE_SPECULAR;
                 troughput /= brdfProbability;
+                
                 if (i == 0)
                     specWeight = 1.f;
             }
@@ -194,13 +192,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
           
         if (i == 0)
         {
-            firstDiffuseBounceDistance = hit.minT;
-            firstSpecularBounceDistance = hit.minT;
-
-            float w = NRD_GetSampleWeight(indirectRadiance);
-            
-            firstDiffuseBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstDiffuseBounceDistance, viewZ, g_RaytracingData.hitParams, fi.roughness) * w * diffuseWeight;
-            firstSpecularBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstSpecularBounceDistance, viewZ, g_RaytracingData.hitParams, fi.roughness) * w * specWeight;
+            float w = NRD_GetSampleWeight(indirectRadiance);           
+            firstDiffuseBounceDistance = REBLUR_FrontEnd_GetNormHitDist(hit.minT, viewZ, g_RaytracingData.hitParams, fi.roughness) * w * diffuseWeight;
+            firstSpecularBounceDistance = REBLUR_FrontEnd_GetNormHitDist(hit.minT, viewZ, g_RaytracingData.hitParams, fi.roughness) * w * specWeight;
         }
                
         shadowRayDesc.TMin = 0.f;
