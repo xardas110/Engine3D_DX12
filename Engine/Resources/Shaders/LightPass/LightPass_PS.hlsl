@@ -46,11 +46,10 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     RngStateType rngState = InitRNG(pixelCoords, g_Camera.resolution, g_RaytracingData.frameNumber);
     
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);    
-    fi.albedo = pow(fi.albedo, 2.2f); //pow(fi.albedo, 2.2f);
+    fi.albedo = pow(fi.albedo, 2.2f); 
     
     float3 pixelWS = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj);
-    float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj) + (fi.normal * 0.1f);
-                    
+                 
     if (fi.shaderModel == SM_SKY)
     {
         OUT.DirectDiffuse = float4(0.f, 0.f, 0.f, 0.f);
@@ -58,21 +57,21 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         OUT.IndirectSpecular = float4(0.f, 0.f, 0.f, 0.f);
         return OUT;
     }
-       
-    RayDesc ray;
-    ray.TMin = 0.f;
-    ray.TMax = 1e10f;
-    ray.Origin = OffsetRay(fragPos, fi.geometryNormal);
-    ray.Direction = normalize(fragPos.rgb - g_Camera.pos.rgb);
-
-    float3 color = float3(1.f, 0.f, 0.f);   
+     
+    float3 color = float3(1.f, 0.f, 0.f);
     float3 directRadiance = float3(0.f, 0.f, 0.f);
     float3 indirectRadiance = float3(0.f, 0.f, 0.f);
     float3 indirectDiffuse = float3(0.f, 0.f, 0.f);
-    float3 indirectSpecular = float3(0.f, 0.f, 0.f);       
+    float3 indirectSpecular = float3(0.f, 0.f, 0.f);
     float3 troughput = float3(1.f, 1.f, 1.f);
     float3 geometryNormal = fi.geometryNormal;
-        
+          
+    RayDesc ray;
+    ray.TMin = 0.f;
+    ray.TMax = 1e10f;
+    ray.Origin = OffsetRay(pixelWS, geometryNormal) + geometryNormal * 0.1f;
+    ray.Direction = normalize(pixelWS.rgb - g_Camera.pos.rgb);
+
     SurfaceMaterial currentMat;
     currentMat.albedo = fi.albedo;
     currentMat.ao = fi.ao;
@@ -81,7 +80,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     currentMat.metallic = fi.metallic;
     currentMat.roughness = fi.roughness;
     currentMat.normal = fi.normal;
-       
+
     float3 V = -ray.Direction;
     float3 L = -g_DirectionalLight.direction.rgb;    
                  
@@ -89,6 +88,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     
     RayInfo shadowRayInfo;   
     RayDesc shadowRayDesc;
+    
     shadowRayDesc.TMin = 0.f;
     shadowRayDesc.TMax = 1e10f;
     shadowRayDesc.Origin = ray.Origin;
@@ -106,7 +106,6 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     OUT.DirectDiffuse = float4(directRadiance, 1.f);
    
 //Direct Lighting END-------------
-  
 //Indirect Lighting BEGIN----------        
     float firstDiffuseBounceDistance = 0.f;
     float firstSpecularBounceDistance = 0.f;
@@ -163,8 +162,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
            
         troughput *= brdfWeight;
         V = -ray.Direction;
-                
-       
+                     
         RayInfo opaqueRay;
         opaqueRay.desc = ray;
         opaqueRay.flags = 0;

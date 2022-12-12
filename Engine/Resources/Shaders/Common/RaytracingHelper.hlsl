@@ -3,6 +3,7 @@
 
 #define hlsl 
 #include "TypesCompat.h"
+#include "MaterialAttributes.hlsl"
 
 struct HitAttributes
 {
