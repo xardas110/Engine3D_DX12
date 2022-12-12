@@ -58,12 +58,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         OUT.IndirectSpecular = float4(0.f, 0.f, 0.f, 0.f);
         return OUT;
     }
-    
-    RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES > query;
-
-    uint ray_flags = 0; // Any this ray requires in addition those above.
-    uint ray_instance_mask = INSTANCE_OPAQUE;
-        
+       
     RayDesc ray;
     ray.TMin = 0.f;
     ray.TMax = 1e10f;
@@ -98,6 +93,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     shadowRayDesc.TMax = 1e10f;
     shadowRayDesc.Origin = ray.Origin;
     shadowRayDesc.Direction = L;
+    
     shadowRayInfo.desc = shadowRayDesc;
     shadowRayInfo.flags = 0;
     shadowRayInfo.instanceMask = INSTANCE_OPAQUE;
@@ -168,33 +164,27 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         troughput *= brdfWeight;
         V = -ray.Direction;
                 
-        query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, ray);
-        query.Proceed();
-        
-        if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+       
+        RayInfo opaqueRay;
+        opaqueRay.desc = ray;
+        opaqueRay.flags = 0;
+        opaqueRay.instanceMask = INSTANCE_OPAQUE;
+           
+        HitAttributes hit;   
+        if (!CastRay(opaqueRay, g_Scene, hit))
         {                
-            indirectRadiance += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;      
-     
+            indirectRadiance += troughput * SampleSky(ray.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;          
             indirectDiffuse += indirectRadiance * diffuseWeight;
             indirectSpecular += indirectRadiance * specWeight;
             
             break;
         }
                      
-        HitAttributes hit;
-        hit.bFrontFaced = query.CommittedTriangleFrontFace();
-        int instanceIndex = query.CommittedInstanceID();
-        hit.primitiveIndex = query.CommittedPrimitiveIndex();
-        hit.geometryIndex = query.CommittedGeometryIndex();     
-        hit.barycentrics = query.CommittedTriangleBarycentrics();
-        hit.objToWorld = query.CommittedObjectToWorld3x4();
-                         
-        MeshInfo meshInfo = g_GlobalMeshInfo[instanceIndex];
+        MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
         MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
                 
         MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
         hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
-        //hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
         hitSurface.position = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
         geometryNormal = hitSurface.normal;
                        
@@ -202,8 +192,10 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
         ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
             
-        hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f); //pow(hitSurfaceMaterial.albedo, 2.2f);
+        hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
             
+        float3 rayHitPos = OffsetRay(hitSurface.position, geometryNormal);
+        
         if (bMatHasNormal == true)
         {         
             hitSurfaceMaterial.normal =
@@ -221,19 +213,22 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
         if (i == 0)
         {
-            firstDiffuseBounceDistance = query.CommittedRayT();
-            firstSpecularBounceDistance = query.CommittedRayT();
+            firstDiffuseBounceDistance = hit.minT;
+            firstSpecularBounceDistance = hit.minT;
 
             float w = NRD_GetSampleWeight(indirectRadiance);
             
             firstDiffuseBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstDiffuseBounceDistance, viewZ, g_RaytracingData.hitParams, fi.roughness) * w * diffuseWeight;
             firstSpecularBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstSpecularBounceDistance, viewZ, g_RaytracingData.hitParams, fi.roughness) * w * specWeight;
         }
-                        
-        shadowRayInfo.desc.TMin = 0.f;
-        shadowRayInfo.desc.Origin = OffsetRay(hitSurface.position, geometryNormal);
+               
+        shadowRayDesc.TMin = 0.f;
+        shadowRayDesc.TMax = 10000.f;
+        shadowRayDesc.Origin = rayHitPos;
         shadowRayDesc.Direction = L;
-                
+        
+        shadowRayInfo.desc = shadowRayDesc;
+
         if (TraceVisibility(shadowRayInfo, g_Scene))
         {
             indirectRadiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
@@ -244,7 +239,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
         currentMat = hitSurfaceMaterial;
         ray.TMin = 0.0f;
-        ray.Origin = shadowRayInfo.desc.Origin;
+        ray.Origin = rayHitPos;
     }
     
     float3 fenv = ApproxSpecularIntegralGGX(gBufferBRDF.specularF0, gBufferBRDF.alpha, gBufferBRDF.NdotV);
@@ -257,7 +252,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     OUT.IndirectDiffuse = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectDiffuse, firstDiffuseBounceDistance);
     OUT.IndirectSpecular = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectSpecular, firstSpecularBounceDistance);
     OUT.DirectDiffuse = float4(directRadiance, 1.f);
-        
+ 
+    /*
+    
     if (DEBUG_LIGHTBUFFER_INDIRECT_DIFFUSE == g_RaytracingData.debugSettings)
     {
         OUT.IndirectDiffuse = float4(indirectDiffuse, 1.f);
@@ -356,6 +353,6 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     }
         
     OUT.rtDebug = float4(color, 1.f);
-    
+    */
     return OUT;
 };
