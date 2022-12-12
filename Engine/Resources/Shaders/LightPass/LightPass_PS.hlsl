@@ -60,7 +60,6 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     }
     
     RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES > query;
-    RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > shadowQuery;
 
     uint ray_flags = 0; // Any this ray requires in addition those above.
     uint ray_instance_mask = INSTANCE_OPAQUE;
@@ -91,20 +90,19 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float3 V = -ray.Direction;
     float3 L = -g_DirectionalLight.direction.rgb;    
                  
-    RayDesc shadowRayDesc;             
+    BRDFData gBufferBRDF = PrepareBRDFData(currentMat.normal, L, V, currentMat);
+    
+    RayInfo shadowRayInfo;   
+    RayDesc shadowRayDesc;
     shadowRayDesc.TMin = 0.f;
     shadowRayDesc.TMax = 1e10f;
     shadowRayDesc.Origin = ray.Origin;
     shadowRayDesc.Direction = L;
-                
-    shadowQuery.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
-    shadowQuery.Proceed();
-        
-    BRDFData gBufferBRDF = PrepareBRDFData(currentMat.normal, L, V, currentMat);
-      
-    //directRadiance += fi.emissive;
-       
-    if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+    shadowRayInfo.desc = shadowRayDesc;
+    shadowRayInfo.flags = 0;
+    shadowRayInfo.instanceMask = INSTANCE_OPAQUE;
+    
+    if (TraceVisibility(shadowRayInfo, g_Scene))
     {        
         directRadiance += troughput * EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
     }
@@ -232,14 +230,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             firstSpecularBounceDistance = REBLUR_FrontEnd_GetNormHitDist(firstSpecularBounceDistance, viewZ, g_RaytracingData.hitParams, fi.roughness) * w * specWeight;
         }
                         
-        shadowRayDesc.TMin = 0.0f;
-        shadowRayDesc.Origin = OffsetRay(hitSurface.position, geometryNormal);
+        shadowRayInfo.desc.TMin = 0.f;
+        shadowRayInfo.desc.Origin = OffsetRay(hitSurface.position, geometryNormal);
         shadowRayDesc.Direction = L;
                 
-        shadowQuery.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, shadowRayDesc);
-        shadowQuery.Proceed();
-        
-        if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+        if (TraceVisibility(shadowRayInfo, g_Scene))
         {
             indirectRadiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
         }
@@ -249,7 +244,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
         currentMat = hitSurfaceMaterial;
         ray.TMin = 0.0f;
-        ray.Origin = shadowRayDesc.Origin;  
+        ray.Origin = shadowRayInfo.desc.Origin;
     }
     
     float3 fenv = ApproxSpecularIntegralGGX(gBufferBRDF.specularF0, gBufferBRDF.alpha, gBufferBRDF.NdotV);

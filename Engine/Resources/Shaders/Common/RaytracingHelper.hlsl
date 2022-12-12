@@ -13,6 +13,22 @@ struct HitAttributes
     bool bFrontFaced;
 };
 
+struct RayInfo
+{
+    RayDesc desc;
+    uint instanceMask;
+    uint flags;
+};
+
+bool TraceVisibility(RayInfo ray, RaytracingAccelerationStructure scene)
+{
+    RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > query;    
+    query.TraceRayInline(scene, ray.flags, ray.instanceMask, ray.desc);
+    query.Proceed();
+    
+    return query.CommittedStatus() != COMMITTED_TRIANGLE_HIT;
+}
+
 float2 BaryInterp2(in float2 v0, in float2 v1, in float2 v2, in float3 bary)
 {
     return bary.x * v0 + bary.y * v1 + bary.z * v2;;
