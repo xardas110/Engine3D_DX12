@@ -151,7 +151,7 @@ void LightPass::CreatePipeline()
     rootParameters[LightPassParam::AccumBuffer].InitAsDescriptorTable(1, &gAccumBuffer);
     rootParameters[LightPassParam::Cubemap].InitAsDescriptorTable(1, &cubemapSRVHeap);
 
-    D3D12_STATIC_SAMPLER_DESC staticSampler[2] = {};
+    D3D12_STATIC_SAMPLER_DESC staticSampler[3] = {};
     staticSampler[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
     staticSampler[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     staticSampler[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -180,9 +180,23 @@ void LightPass::CreatePipeline()
     staticSampler[1].RegisterSpace = 0;
     staticSampler[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
+    staticSampler[2].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    staticSampler[2].AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+    staticSampler[2].AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+    staticSampler[2].AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+    staticSampler[2].MipLODBias = 0.f;
+    staticSampler[2].MaxAnisotropy = 1;
+    staticSampler[2].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    staticSampler[2].BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+    staticSampler[2].MinLOD = 0.f;
+    staticSampler[2].MaxLOD = D3D12_FLOAT32_MAX;
+    staticSampler[2].ShaderRegister = 2;
+    staticSampler[2].RegisterSpace = 0;
+    staticSampler[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
     rootSignatureDesc.Init_1_1(LightPassParam::Size,
-        rootParameters, 2, staticSampler);
+        rootParameters, 3, staticSampler);
 
     rootSignature.SetRootSignatureDesc(
         rootSignatureDesc.Desc_1_1,

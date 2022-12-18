@@ -22,6 +22,7 @@ TextureCube<float4>             g_Cubemap                   : register(t7, space
     
 SamplerState                    g_NearestRepeatSampler      : register(s0);
 SamplerState                    g_LinearRepeatSampler       : register(s1);
+SamplerState                    g_LinearClampSampler        : register(s2);
 
 ConstantBuffer<DirectionalLightCB> g_DirectionalLight       : register(b0);
 ConstantBuffer<CameraCB>           g_Camera                 : register(b1);
@@ -37,6 +38,96 @@ struct PixelShaderOutput
     float4 rtDebug          : SV_TARGET3;
 };
   
+void TestRT(RayDesc ray, inout float3 debugColor);
+
+bool TraceTranslucency(RayInfo ray, inout float3 troughput, inout float3 radiance)
+{      
+    RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES > query;
+    query.TraceRayInline(g_Scene, ray.flags, ray.instanceMask, ray.desc);
+    
+    while (query.Proceed())
+    {
+        HitAttributes hit;
+        hit.bFrontFaced = query.CandidateTriangleFrontFace();
+        hit.instanceIndex = query.CandidateInstanceID();
+        hit.primitiveIndex = query.CandidatePrimitiveIndex();
+        hit.geometryIndex = query.CandidateGeometryIndex();
+        hit.barycentrics = query.CandidateTriangleBarycentrics();
+        hit.objToWorld = query.CandidateObjectToWorld3x4();
+        hit.minT = query.CandidateTriangleRayT();
+
+        MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
+        MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
+        
+           
+        MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
+        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearClampSampler, g_GlobalTextureData);
+           
+        float3 rayHit = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
+        float3 geometryNormal = RotatePoint(meshInfo.objRot, hitSurface.normal);
+        
+        float3 V = -ray.desc.Direction;
+        float3 L = -g_DirectionalLight.direction.rgb;
+        float3 X = rayHit;
+         
+        if (dot(geometryNormal, V) < 0.0f)
+            geometryNormal = -geometryNormal;
+        if (dot(geometryNormal, hitSurfaceMaterial.normal) < 0.0f)
+            hitSurfaceMaterial.normal = -hitSurfaceMaterial.normal;
+             
+        float3 rayHitOffset = OffsetRay(rayHit, geometryNormal);
+                
+        ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
+        hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
+    
+        RayInfo shadowRayInfo;
+        RayDesc shadowRayDesc;
+    
+        shadowRayDesc.TMin = 0.f;
+        shadowRayDesc.TMax = 1e10f;
+        shadowRayDesc.Origin = X;
+        shadowRayDesc.Direction = L;
+    
+        shadowRayInfo.desc = shadowRayDesc;
+        shadowRayInfo.flags = 0;
+        shadowRayInfo.instanceMask = INSTANCE_OPAQUE;
+    
+      //  if (TraceVisibility(shadowRayInfo, g_Scene))
+       // {
+            float3 color = EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+            radiance = lerp(radiance, hitSurfaceMaterial.albedo, hitSurfaceMaterial.opacity);
+            
+     //   }        
+    };
+    
+    return query.CommittedStatus() != COMMITTED_NOTHING;
+}
+
+// Generates a primary ray for pixel given in NDC space using pinhole camera
+RayDesc GeneratePinholeCameraRay(float2 pixel, float depth)
+{
+    float4x4 view = transpose(g_Camera.invView);
+    
+	// Setup the ray
+    RayDesc ray;
+    ray.Origin = view[3].xyz;
+    ray.TMin = 0.1f;
+    ray.TMax = depth;
+    
+	// Extract the aspect ratio and field of view from the projection matrix
+    float aspect = g_Camera.proj[1][1] / g_Camera.proj[0][0];
+    float tanHalfFovY = 1.0f / g_Camera.proj[1][1];
+
+	// Compute the ray direction for this pixel
+    ray.Direction = normalize(
+		(pixel.x * view[0].xyz * tanHalfFovY * aspect) -
+		(pixel.y * view[1].xyz * tanHalfFovY) +
+			view[2].xyz);
+
+    return ray;
+}
+
+
 PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
     PixelShaderOutput OUT;
@@ -58,12 +149,14 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         return OUT;
     }
      
-    float3 color = float3(1.f, 0.f, 0.f);
     float3 directRadiance = float3(0.f, 0.f, 0.f);
     float3 indirectRadiance = float3(0.f, 0.f, 0.f);
+    
     float3 indirectDiffuse = float3(0.f, 0.f, 0.f);
     float3 indirectSpecular = float3(0.f, 0.f, 0.f);
+    
     float3 troughput = float3(1.f, 1.f, 1.f);
+    
     float3 geometryNormal = fi.geometryNormal;
           
     RayDesc ray;
@@ -80,10 +173,10 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     currentMat.metallic = fi.metallic;
     currentMat.roughness = fi.roughness;
     currentMat.normal = fi.normal;
-
+    
     float3 V = -ray.Direction;
     float3 L = -g_DirectionalLight.direction.rgb;    
-                 
+             
     BRDFData gBufferBRDF = PrepareBRDFData(currentMat.normal, L, V, currentMat);
     
     RayInfo shadowRayInfo;   
@@ -103,13 +196,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         directRadiance += troughput * EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
     }
       
-    OUT.DirectDiffuse = float4(directRadiance, 1.f);
-   
 //Direct Lighting END-------------
 //Indirect Lighting BEGIN----------        
     float firstDiffuseBounceDistance = 0.f;
     float firstSpecularBounceDistance = 0.f;
-    float viewZ = mul(g_Camera.view, pixelWS).z;
+    float viewZ = g_GBufferHeap[GBUFFER_LINEAR_DEPTH].Sample(g_NearestRepeatSampler, TexCoord).r;
           
     float diffuseWeight = 0.f;
     float specWeight = 0.f;
@@ -222,111 +313,103 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     
     indirectDiffuse.rgb /= (diffDemod * 0.99f + 0.01f);
     indirectSpecular.rgb /= (specDemod * 0.99f + 0.01f);
-      
+    
+    //Translucency 
+    float3 translucentTroughput = float3(1.f, 1.f, 1.f);
+
+    ray.TMin = g_Camera.zNear;
+    ray.TMax = viewZ;
+    ray.Origin = g_Camera.pos;    
+    GetCameraDirectionFromUV(pixelCoords, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, ray.Direction);
+
+    RayInfo tranclucentRay;
+    tranclucentRay.desc = GeneratePinholeCameraRay(TexCoord * 2.f - 1.f, viewZ);
+    tranclucentRay.flags = 0;
+    tranclucentRay.instanceMask = INSTANCE_TRANSLUCENT | INSTANCE_OPAQUE;
+    
+    bool bHit = TraceTranslucency(tranclucentRay, translucentTroughput, directRadiance);
+    
+    OUT.DirectDiffuse = float4(directRadiance, 1.f);
     OUT.IndirectDiffuse = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectDiffuse, firstDiffuseBounceDistance);
     OUT.IndirectSpecular = REBLUR_FrontEnd_PackRadianceAndNormHitDist(indirectSpecular, firstSpecularBounceDistance);
-    OUT.DirectDiffuse = float4(directRadiance, 1.f);
- 
-    /*
     
-    if (DEBUG_LIGHTBUFFER_INDIRECT_DIFFUSE == g_RaytracingData.debugSettings)
-    {
-        OUT.IndirectDiffuse = float4(indirectDiffuse, 1.f);
-    }
-    else if (DEBUG_LIGHTBUFFER_INDIRECT_SPECULAR == g_RaytracingData.debugSettings)
-    {
-        OUT.IndirectSpecular = float4(indirectSpecular, 1.f);
-    }
-        
     if (DEBUG_FINAL_COLOR == g_RaytracingData.debugSettings)
-    {           
+    {
         return OUT;
     }
-              
-    ray.TMin = 0.0f;
-    ray.Origin = g_Camera.pos;
-    GetCameraDirectionFromUV(pixelCoords, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, ray.Direction);
-        
-    query.TraceRayInline(g_Scene, ray_flags, ray_instance_mask, ray);
-    query.Proceed();
-                  
-    if (query.CommittedStatus() == COMMITTED_TRIANGLE_HIT)
+    
+    ray.TMax = 10000.f;
+    
+    float3 rtDebugColor = float3(0.f, 0.f, 0.f);
+    TestRT(ray, rtDebugColor);
+    
+    if (DEBUG_RAYTRACED_HIT_T == g_RaytracingData.debugSettings)
     {
-        HitAttributes hit;
-        hit.bFrontFaced = query.CandidateTriangleFrontFace();
-        
-        int instanceIndex = query.CandidateInstanceID();
-        hit.primitiveIndex = query.CandidatePrimitiveIndex();
-        hit.geometryIndex = query.CandidateGeometryIndex();
-        
-        hit.barycentrics = query.CandidateTriangleBarycentrics();
-        hit.objToWorld = query.CandidateObjectToWorld3x4();
-        
-        MeshInfo meshInfo = g_GlobalMeshInfo[instanceIndex];
-        MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
-        MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
-            
-        hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
-        //hitSurface.normal = normalize(mul(hit.objToWorld, float4(hitSurface.normal, 0.0f)).xyz);
-            
-        bool bMatHasNormal;
-        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface.textureCoordinate, bMatHasNormal, g_LinearRepeatSampler, g_GlobalTextureData);
-        ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
-            
-        if (bMatHasNormal == true)
-        {
-            hitSurfaceMaterial.normal =
-            TangentToWorldNormal(hitSurface.tangent,
-            hitSurface.bitangent,
-            hitSurface.normal,
-            hitSurfaceMaterial.normal,
-            hit.objToWorld
-            );
-        }
-        else
-        {
-            hitSurfaceMaterial.normal = hitSurface.normal;
-        }
-            
-        if (DEBUG_RAYTRACED_ALBEDO == g_RaytracingData.debugSettings)
-        {
-            color = hitSurfaceMaterial.albedo;
-        }
-        else if (DEBUG_RAYTRACED_NORMAL == g_RaytracingData.debugSettings)
-        {
-            color = hitSurfaceMaterial.normal.rgb;
-        }
-        else if (DEBUG_RAYTRACED_AO == g_RaytracingData.debugSettings)
-        {
-            color = float3(hitSurfaceMaterial.ao, hitSurfaceMaterial.ao, hitSurfaceMaterial.ao);
-        }
-        else if (DEBUG_RAYTRACED_ROUGHNESS == g_RaytracingData.debugSettings)
-        {
-            color = float3(hitSurfaceMaterial.roughness, hitSurfaceMaterial.roughness, hitSurfaceMaterial.roughness);
-        }
-        else if (DEBUG_RAYTRACED_METALLIC == g_RaytracingData.debugSettings)
-        {
-            color = float3(hitSurfaceMaterial.metallic, hitSurfaceMaterial.metallic, hitSurfaceMaterial.metallic);
-        }
-        else if (DEBUG_RAYTRACED_HEIGHT == g_RaytracingData.debugSettings)
-        {
-            color = float3(hitSurfaceMaterial.height, hitSurfaceMaterial.height, hitSurfaceMaterial.height);
-        }
-        else if (DEBUG_RAYTRACED_EMISSIVE == g_RaytracingData.debugSettings)
-        {
-            color = hitSurfaceMaterial.emissive;
-        }
-        else if (DEBUG_RAYTRACED_HIT_T == g_RaytracingData.debugSettings)
-        {
-            OUT.DirectDiffuse = float4(firstDiffuseBounceDistance, firstDiffuseBounceDistance, firstDiffuseBounceDistance, 1.f);
-        }
-    }
-    else
-    {
-        color = float4(1.f, 0.f, 0.f, 1.f);
-    }
-        
-    OUT.rtDebug = float4(color, 1.f);
-    */
+        rtDebugColor = float3(firstDiffuseBounceDistance, firstDiffuseBounceDistance, firstDiffuseBounceDistance);
+    } 
+  
+    OUT.rtDebug = float4(rtDebugColor, 1.f);
+    
     return OUT;
 };
+
+void TestRT(RayDesc ray, inout float3 debugColor)
+{
+    RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES > query;
+    query.TraceRayInline(g_Scene, 0, INSTANCE_OPAQUE, ray);
+    
+    while (query.Proceed())
+    {
+    }
+                  
+    if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+        return;
+    
+    HitAttributes hit;
+    hit.bFrontFaced = query.CandidateTriangleFrontFace();
+        
+    hit.instanceIndex = query.CandidateInstanceID();
+    hit.primitiveIndex = query.CandidatePrimitiveIndex();
+    hit.geometryIndex = query.CandidateGeometryIndex();
+        
+    hit.barycentrics = query.CandidateTriangleBarycentrics();
+    hit.objToWorld = query.CandidateObjectToWorld3x4();
+        
+    MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
+    MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
+    MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
+
+    SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData);
+    ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
+            
+    hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
+        
+    if (DEBUG_RAYTRACED_ALBEDO == g_RaytracingData.debugSettings)
+    {
+        debugColor = hitSurfaceMaterial.albedo;
+    }
+    else if (DEBUG_RAYTRACED_NORMAL == g_RaytracingData.debugSettings)
+    {
+        debugColor = hitSurfaceMaterial.normal.rgb;
+    }
+    else if (DEBUG_RAYTRACED_AO == g_RaytracingData.debugSettings)
+    {
+        debugColor = float3(hitSurfaceMaterial.ao, hitSurfaceMaterial.ao, hitSurfaceMaterial.ao);
+    }
+    else if (DEBUG_RAYTRACED_ROUGHNESS == g_RaytracingData.debugSettings)
+    {
+        debugColor = float3(hitSurfaceMaterial.roughness, hitSurfaceMaterial.roughness, hitSurfaceMaterial.roughness);
+    }
+    else if (DEBUG_RAYTRACED_METALLIC == g_RaytracingData.debugSettings)
+    {
+        debugColor = float3(hitSurfaceMaterial.metallic, hitSurfaceMaterial.metallic, hitSurfaceMaterial.metallic);
+    }
+    else if (DEBUG_RAYTRACED_HEIGHT == g_RaytracingData.debugSettings)
+    {
+        debugColor = float3(hitSurfaceMaterial.height, hitSurfaceMaterial.height, hitSurfaceMaterial.height);
+    }
+    else if (DEBUG_RAYTRACED_EMISSIVE == g_RaytracingData.debugSettings)
+    {
+        debugColor = hitSurfaceMaterial.emissive;
+    }
+}

@@ -57,12 +57,12 @@ PixelShaderOutput main(PixelShaderInput IN)
     SurfaceMaterial surface = GetSurfaceMaterial(matInfo, vert, g_ObjectCB.model, g_ObjectCB.objRotQuat, g_LinearRepeatSampler, g_GlobalTextureData);
     ApplyMaterial(matInfo, surface, g_GlobalMaterials);
         
-    GPackInfo gPack = PackGBuffer(g_CameraCB, g_ObjectCB, surface, IN.PositionWS.rgb, IN.Position.z, IN.NormalWS);
+    GPackInfo gPack = PackGBuffer(g_CameraCB, g_ObjectCB, surface, IN.PositionWS.rgb, IN.PositionClip.z, IN.NormalWS);
       
     OUT.albedo = gPack.albedo;
     OUT.aoMetallicHeight = gPack.aoMetallicHeight;
     OUT.emissiveSM = gPack.emissiveSM;
-    OUT.linearDepth = gPack.linearDepth;
+    OUT.linearDepth = IN.PositionClip.z;
     OUT.motionVector = gPack.motionVector;
     OUT.normalRoughness = gPack.normalRough;
     OUT.geometryNormal = gPack.geometryNormal;

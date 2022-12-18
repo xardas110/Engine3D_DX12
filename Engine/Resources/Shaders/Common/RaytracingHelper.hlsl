@@ -32,6 +32,7 @@ bool CastRay(RayInfo ray, RaytracingAccelerationStructure scene, inout HitAttrib
     
     while (query.Proceed())
     {
+        query.CommitNonOpaqueTriangleHit();
     };
   
     hit.bFrontFaced = query.CommittedTriangleFrontFace();
@@ -49,7 +50,11 @@ bool TraceVisibility(RayInfo ray, RaytracingAccelerationStructure scene)
 {
     RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > shadowQuery;    
     shadowQuery.TraceRayInline(scene, ray.flags, ray.instanceMask, ray.desc);
-    shadowQuery.Proceed();
+      
+    while (shadowQuery.Proceed())
+    {
+        shadowQuery.CommitNonOpaqueTriangleHit();
+    }
     
     return shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT;
 }

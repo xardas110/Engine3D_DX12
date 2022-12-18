@@ -28,3 +28,10 @@ void MaterialInstance::SetMaterial(MaterialID materialId)
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 	materialManager.SetMaterial(materialInstanceID, materialId);
 }
+
+void MaterialInstance::SetFlags(UINT flags)
+{
+	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
+	materialManager.instanceData.gpuInfo[materialInstanceID].flags = flags;
+	materialManager.instanceData.cpuInfo[materialInstanceID].flags = flags;
+}

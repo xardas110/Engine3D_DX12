@@ -185,7 +185,7 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 		}
 
 		MaterialInstance matInstance(currentName, matInfo);
-
+				
 		if (mesh.materialData.bHasMaterial)
 		{
 			Material materialData;
