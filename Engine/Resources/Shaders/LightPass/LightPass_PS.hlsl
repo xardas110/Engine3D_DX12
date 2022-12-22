@@ -104,9 +104,6 @@ void TraceTranslucency(RayInfo ray, RngStateType rng, inout float3 troughput, in
         float3 directLight = EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb * shadowFactor;
         float3 ambientLight = hitSurfaceMaterial.albedo * reflectiveAmbient * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
         
-        if (i == 0)
-            ambientLight = float3(0.f, 0.f, 0.f);
-        
         radiance.rgb += troughput * (directLight + ambientLight);
 
         int brdfType;
@@ -187,7 +184,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     tranclucentRay.instanceMask = INSTANCE_TRANSLUCENT | INSTANCE_OPAQUE;
     
     float3 directRadiance = float3(0.f, 0.f, 0.f);
-    float4 translucentRadiance = float4(0.f, 0.f, 0.f, 1.f);
+    float4 translucentRadiance = float4(0.f, 0.f, 0.f, 0.f);
     float3 indirectRadiance = float3(0.f, 0.f, 0.f);
     float3 translucentTroughput = float3(1.f, 1.f, 1.f);
     float3 troughput = float3(1.f, 1.f, 1.f);
