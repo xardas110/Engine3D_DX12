@@ -34,13 +34,21 @@ bool SponzaExe::LoadContent()
         auto& trans = mcLaren.GetComponent<TransformComponent>();
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(270.f), DirectX::XMConvertToRadians(90.f), 0.f);      
     } 
-
-   
+    /*
+    {
+        auto mcLaren = CreateEntity("Lambo");
+        auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/lambo/scene.gltf", MeshImport::None);
+        auto& trans = mcLaren.GetComponent<TransformComponent>();
+        trans.pos = { 10.f, 0.f, 0.f };
+        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
+    }
+  
+   */
     {
         auto sponza = CreateEntity("sponza");
       
         sponza.AddComponent<StaticMeshComponent>("Assets/Models/sponza/sponza.fbx", 
-            MeshImport::HeightAsNormal);
+            MeshImport::HeightAsNormal | MeshImport::AmbientAsMetallic);
 
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.scale = { 0.015f, 0.015f, 0.015f };
@@ -59,19 +67,40 @@ bool SponzaExe::LoadContent()
     */
     /*
     */
-    /*
-    meshManager.CreateCube();
+   /*
+   // meshManager.CreateCube();
     meshManager.CreateSphere();
-    meshManager.CreateTorus();
-    meshManager.CreateCone();
+   // meshManager.CreateTorus();
+   // meshManager.CreateCone();
 
     std::cout << "game init" << std::endl;
 
-    Material materialRed;
-    materialRed.color = { 1.f, 1.f, 1.f, 1.f };
+    Material materialEmissive;
+    materialEmissive.diffuse = { 1.f, 0.f, 0.f, 1.f };
+    materialEmissive.emissive = { 0.f, 50.f, 0.f };
+   
+    auto materialID = MaterialInstance::CreateMaterial(L"DefaultEmissiveRed", materialEmissive);
 
-    auto materialID = MaterialInstance::CreateMaterial(L"DefaultMaterial", materialRed);
+    MaterialInstance material;
+    MaterialInfo matInfo;
+    material.CreateMaterialInstance(L"DefaultMaterialInstance", matInfo);
+    material.SetMaterial(materialID);
 
+    for (size_t i = 0; i < 10; i++)
+    {
+        auto ent = CreateEntity("testSphere: " + std::to_string(i));
+        auto& sm = ent.AddComponent<MeshComponent>(L"DefaultSphere");
+        sm.SetMaterialInstance(material);
+        auto& trans = ent.GetComponent<TransformComponent>();
+        trans.scale = { 2.f, 2.f, 2.f };
+        float x = (rand() % 30) - 15;
+        float y = (rand() % 15);
+        float z = (rand() % 30) - 15;
+        trans.pos = { x, y, z };
+        lights.emplace_back((std::uint32_t)ent.GetId());
+    }
+    */
+    /*
     TextureInstance spaceAlbedo(L"Assets/Textures/SpaceBall/space-cruiser-panels2_albedo.png");
     TextureInstance spaceNormal(L"Assets/Textures/SpaceBall/space-cruiser-panels2_normal-dx.png");
     TextureInstance spaceAO(L"Assets/Textures/SpaceBall/space-cruiser-panels2_ao.png");
@@ -233,14 +262,7 @@ bool SponzaExe::LoadContent()
     }
 
     {
-    {
-        auto ent = CreateEntity("testSphere");
-        auto& sm = ent.AddComponent<MeshComponent>(L"DefaultSphere");
-        sm.SetMaterialInstance(material);
-        auto& trans = ent.GetComponent<TransformComponent>();
-        trans.scale = { 2.f, 2.f, 2.f };
-        trans.pos = { 3.f, 10.f, 0.f };       
-    }
+
     }
     */
 
@@ -262,20 +284,23 @@ void SponzaExe::UnloadContent()
 void SponzaExe::OnUpdate(UpdateEventArgs& e)
 {
 	Game::OnUpdate(e);
+/*
+    static float startY = 0.f;
+    static float endY = 10.f;
+    static float currentY = 0;
+    static int sign = 1;
 
-    /*
-    int speed = 4;
+    currentY += e.ElapsedTime * sign;
 
-    if (moveAmount < currentMove) sign = -speed;
-    else if (-moveAmount > currentMove) sign = speed;
+    if (currentY > endY) sign = -1;
+    else if (currentY < startY) sign = 1;
 
-    currentMove += e.ElapsedTime * sign;
-
-    auto& view = registry.view<TransformComponent, MeshComponent>();
-    int i = 0;
-    for (auto [entity, trans, mesh] : view.each())
+    for (size_t i = 0; i < lights.size(); i++)
     {
-        trans.pos.m128_f32[1] = currentMove + initalPositions[i++].pos.m128_f32[1];
+        entt::entity ent = (entt::entity)lights[i];
+
+        auto& trans = registry.get<TransformComponent>(ent);
+        trans.pos.m128_f32[1] = currentY;
     }
     */
 }

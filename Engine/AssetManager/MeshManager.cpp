@@ -128,7 +128,16 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 		{
 			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Ambient).path;
 			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-			matInfo.ao = tex.GetTextureID();
+			
+
+			if (MeshImport::AmbientAsMetallic & flags)
+			{
+				matInfo.metallic = tex.GetTextureID();
+			}
+			else
+			{
+				matInfo.ao = tex.GetTextureID();
+			}
 		}
 		if (mesh.material.HasTexture(AssimpMaterialType::Normal))
 		{
@@ -159,7 +168,7 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Height).path;
 			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
 			
-			if (MeshImport::HeightAsNormal == flags)
+			if (MeshImport::HeightAsNormal & flags)
 			{ 
 				matInfo.normal = tex.GetTextureID();
 			}

@@ -71,7 +71,8 @@ private:
 		DirectX::XMFLOAT3 specular{ 1.f, 1.f, 1.f };
 		DirectX::XMFLOAT3 emissive{ 0.f, 0.f, 0.f };
 		DirectX::XMFLOAT3 transparent{ 1.f, 1.f, 1.f };
-
+		DirectX::XMFLOAT3 ambient{ 1.f, 1.f, 1.f };
+		
 		float roughness = 0.5f;
 		float metallic = 0.5f;
 		float shininess = 0.f;
@@ -79,6 +80,9 @@ private:
 
 		float alphaCutoff = 1.f;
 		int alphaMode = 0; //opaque, blend
+		int blendMode = 0;
+
+		float bumpScale = 1.f;
 
 		bool bHasMaterial = false;
 		bool bTwoSided = false;

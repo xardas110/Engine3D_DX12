@@ -112,16 +112,20 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene, MeshImport::Flag
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
       
         GetTexturePath(aiTextureType::aiTextureType_AMBIENT, material, path, internalMesh.material.textures[AssimpMaterialType::Ambient].path);
+        GetTexturePath(aiTextureType::aiTextureType_AMBIENT_OCCLUSION, material, path, internalMesh.material.textures[AssimpMaterialType::Ambient].path);
 
         GetTexturePath(aiTextureType::aiTextureType_DIFFUSE, material, path, internalMesh.material.textures[AssimpMaterialType::Diffuse].path);
+        GetTexturePath(aiTextureType::aiTextureType_BASE_COLOR, material, path, internalMesh.material.textures[AssimpMaterialType::Diffuse].path);
 
         GetTexturePath(aiTextureType::aiTextureType_SPECULAR, material, path, internalMesh.material.textures[AssimpMaterialType::Specular].path);
 
         GetTexturePath(aiTextureType::aiTextureType_EMISSIVE, material, path, internalMesh.material.textures[AssimpMaterialType::Emissive].path);
+        GetTexturePath(aiTextureType::aiTextureType_EMISSION_COLOR, material, path, internalMesh.material.textures[AssimpMaterialType::Emissive].path);
 
         GetTexturePath(aiTextureType::aiTextureType_HEIGHT, material, path, internalMesh.material.textures[AssimpMaterialType::Height].path);
 
         GetTexturePath(aiTextureType::aiTextureType_NORMALS, material, path, internalMesh.material.textures[AssimpMaterialType::Normal].path);
+        GetTexturePath(aiTextureType::aiTextureType_NORMAL_CAMERA, material, path, internalMesh.material.textures[AssimpMaterialType::Normal].path);
 
         GetTexturePath(aiTextureType::aiTextureType_METALNESS, material, path, internalMesh.material.textures[AssimpMaterialType::Metallic].path);
 
@@ -164,6 +168,27 @@ void AssimpLoader::LoadModel(const std::string& path, MeshImport::Flags flags)
     ProcessNode(scene->mRootNode, scene, flags);
 }
 
+int ParseAsInt(const std::string& matkey, aiMaterial* material)
+{
+    ai_int  val;
+    material->Get(matkey.c_str(), 0, 0, val);
+    return val;
+}
+
+float ParseAsFloat(const std::string& matkey, aiMaterial* material)
+{
+    ai_real  val;
+    material->Get(matkey.c_str(), 0, 0, val);
+    return (float)val;
+}
+
+XMFLOAT3 PaseAsVec3(const std::string& matkey, aiMaterial* material)
+{
+    aiColor3D  val;
+    material->Get(matkey.c_str(), 0, 0, val);
+    return XMFLOAT3(val.r, val.b, val.g);
+}
+
 void AssimpLoader::LoadUserMaterial(aiMaterial* material, AssimpMaterialData& matData, MeshImport::Flags flags)
 {
     LOG( "-------------------------" );
@@ -185,7 +210,31 @@ void AssimpLoader::LoadUserMaterial(aiMaterial* material, AssimpMaterialData& ma
             std::cout << matName.C_Str() << std::endl;
 
             matData.name = matName.C_Str();
+        }        
+        if (matKey == "$mat.bumpscaling")
+        {
+            matData.bumpScale =  ParseAsFloat("$mat.bumpscaling", material);
+
+            std::cout << "bumpscaling: " << matData.bumpScale << std::endl;
+        }  
+        if (matKey == "$mat.blend")
+        {
+            matData.blendMode = ParseAsInt("$mat.blend", material);
+
+            std::cout << "blendMode: " << matData.blendMode << std::endl;
         }
+        if (matKey == "$clr.ambient")
+        {
+            matData.ambient = PaseAsVec3("$clr.ambient", material);
+
+            std::cout << "ambient Color: " << matData.ambient.x << " " << matData.ambient.y << " " << matData.ambient.z << std::endl;
+        }
+        if (matKey == "$mat.transparencyfactor")
+        {
+            matData.alphaCutoff = ParseAsFloat("$mat.transparencyfactor", material);
+
+            std::cout << "transparencyfactor: " << matData.alphaCutoff << std::endl;
+        }       
         if (matKey == "$mat.shadingm")
         {
             ai_int  shadinggm;

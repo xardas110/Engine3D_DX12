@@ -58,6 +58,7 @@ namespace MeshImport
         IgnoreUserMaterialAlbedoOnly = 1 << 2,
         LHCoords = 1 << 3,
         ConvertShininiessToAlpha = 1 << 4,
+        AmbientAsMetallic = 1 << 5
     };
 }
 

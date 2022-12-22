@@ -1,0 +1,11 @@
+Model Information:
+* title:	Furnari Scafati GT
+* source:	https://sketchfab.com/3d-models/furnari-scafati-gt-0770b1eb9bdf420d8fa1202a46b552ec
+* author:	All-Wide (https://sketchfab.com/dsm350)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Furnari Scafati GT" (https://sketchfab.com/3d-models/furnari-scafati-gt-0770b1eb9bdf420d8fa1202a46b552ec) by All-Wide (https://sketchfab.com/dsm350) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

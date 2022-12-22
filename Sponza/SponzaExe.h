@@ -34,5 +34,6 @@ protected:
     int sign = 1;
 
     std::vector<Transform> initalPositions;
+    std::vector<std::uint32_t> lights;
 };
 

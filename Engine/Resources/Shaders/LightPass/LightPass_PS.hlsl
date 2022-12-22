@@ -43,6 +43,76 @@ struct PixelShaderOutput
   
 void TestRT(RayDesc ray, inout float3 debugColor);
 
+bool TestOpacity(in HitAttributes hit)
+{
+    MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
+    MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
+            
+    MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
+    SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData);             
+    ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
+
+    if (hitSurfaceMaterial.opacity < 0.5f)
+        return true;
+    
+    return false;
+}
+
+bool CastRay(RayInfo ray, RaytracingAccelerationStructure scene, inout HitAttributes hit)
+{
+    RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES > query;
+    
+    query.TraceRayInline(scene, ray.flags, ray.instanceMask, ray.desc);
+    
+    while (query.Proceed())
+    {
+        hit.bFrontFaced = query.CandidateTriangleFrontFace();
+        hit.instanceIndex = query.CandidateInstanceID();
+        hit.primitiveIndex = query.CandidatePrimitiveIndex();
+        hit.geometryIndex = query.CandidateGeometryIndex();
+        hit.barycentrics = query.CandidateTriangleBarycentrics();
+        hit.objToWorld = query.CandidateObjectToWorld3x4();
+        hit.minT = query.CandidateTriangleRayT();
+        
+        if (!TestOpacity(hit))      
+            query.CommitNonOpaqueTriangleHit();
+    };
+  
+    hit.bFrontFaced = query.CommittedTriangleFrontFace();
+    hit.instanceIndex = query.CommittedInstanceID();
+    hit.primitiveIndex = query.CommittedPrimitiveIndex();
+    hit.geometryIndex = query.CommittedGeometryIndex();
+    hit.barycentrics = query.CommittedTriangleBarycentrics();
+    hit.objToWorld = query.CommittedObjectToWorld3x4();
+    hit.minT = query.CommittedRayT();
+    
+    return query.CommittedStatus() == COMMITTED_TRIANGLE_HIT;
+}
+
+bool TraceVisibility(RayInfo ray, RaytracingAccelerationStructure scene)
+{
+    RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > shadowQuery;
+    shadowQuery.TraceRayInline(scene, ray.flags, ray.instanceMask, ray.desc);
+      
+    while (shadowQuery.Proceed())
+    {
+        HitAttributes hit;
+        
+        hit.bFrontFaced = shadowQuery.CandidateTriangleFrontFace();
+        hit.instanceIndex = shadowQuery.CandidateInstanceID();
+        hit.primitiveIndex = shadowQuery.CandidatePrimitiveIndex();
+        hit.geometryIndex = shadowQuery.CandidateGeometryIndex();
+        hit.barycentrics = shadowQuery.CandidateTriangleBarycentrics();
+        hit.objToWorld = shadowQuery.CandidateObjectToWorld3x4();
+        hit.minT = shadowQuery.CandidateTriangleRayT();
+        
+        if (!TestOpacity(hit))      
+            shadowQuery.CommitNonOpaqueTriangleHit();
+    }
+    
+    return shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT;
+}
+
 void TraceTranslucency(RayInfo ray, RngStateType rng, inout float3 troughput, inout float4 radiance)
 {  
     for (int i = 0; i < 2; i++)
@@ -67,12 +137,20 @@ void TraceTranslucency(RayInfo ray, RngStateType rng, inout float3 troughput, in
                      
         MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
         SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData);
-           
+              
+        ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
+        hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
+ 
         float3 rayHit = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
         float3 geometryNormal = RotatePoint(meshInfo.objRot, hitSurface.normal);
         
-                      
         float3 V = normalize(-ray.desc.Direction);
+        
+        if (dot(geometryNormal, V) < 0.0f)
+            geometryNormal = -geometryNormal;
+        if (dot(geometryNormal, hitSurfaceMaterial.normal) < 0.0f)
+            hitSurfaceMaterial.normal = -hitSurfaceMaterial.normal;
+                          
         float3 L = -g_DirectionalLight.direction.rgb;
         float3 X = rayHit;
               
@@ -80,9 +158,6 @@ void TraceTranslucency(RayInfo ray, RngStateType rng, inout float3 troughput, in
 
         ray.desc.TMin = 0.0f;
         ray.desc.Origin = rayHitOffset + hitSurfaceMaterial.normal * 0.1f;
-    
-        ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
-        hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
 
         RayInfo shadowRayInfo;
         RayDesc shadowRayDesc;
@@ -94,7 +169,7 @@ void TraceTranslucency(RayInfo ray, RngStateType rng, inout float3 troughput, in
     
         shadowRayInfo.desc = shadowRayDesc;
         shadowRayInfo.flags = 0;
-        shadowRayInfo.instanceMask = INSTANCE_OPAQUE;
+        shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
         
         float shadowFactor = TraceVisibility(shadowRayInfo, g_Scene)? 1.f:0.f;
 
@@ -104,28 +179,17 @@ void TraceTranslucency(RayInfo ray, RngStateType rng, inout float3 troughput, in
         float3 directLight = EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb * shadowFactor;
         float3 ambientLight = hitSurfaceMaterial.albedo * reflectiveAmbient * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
         
-        radiance.rgb += troughput * (directLight + ambientLight);
+        radiance.rgb += troughput * (directLight + ambientLight + hitSurfaceMaterial.emissive);
 
         int brdfType;
-        if (hitSurfaceMaterial.metallic == 1.f && hitSurfaceMaterial.roughness == 0.f)
+        if (hitSurfaceMaterial.metallic > 0.9f && hitSurfaceMaterial.roughness < 0.1f)
         {
             brdfType = BRDF_TYPE_SPECULAR;
             
         }
         else
         {
-            float brdfProbability = GetBRDFProbability(hitSurfaceMaterial, V, hitSurfaceMaterial.normal);
-
-            if (Rand(rng) < brdfProbability)
-            {
-                brdfType = BRDF_TYPE_SPECULAR;
-                troughput /= brdfProbability;               
-            }
-            else
-            {
-                brdfType = BRDF_TYPE_DIFFUSE;
-                troughput /= (1.0f - brdfProbability);
-            }
+            break;
         }
         
         float3 brdfWeight;
@@ -237,10 +301,12 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     
     shadowRayInfo.desc = shadowRayDesc;
     shadowRayInfo.flags = 0;
-    shadowRayInfo.instanceMask = INSTANCE_OPAQUE;
+    shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
    
     TraceTranslucency(tranclucentRay, rngState, translucentTroughput, translucentRadiance);
  
+    directRadiance += currentMat.emissive * troughput;
+    
     if (TraceVisibility(shadowRayInfo, g_Scene))
     {        
         directRadiance += troughput * EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
@@ -345,6 +411,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
         shadowRayInfo.desc = shadowRayDesc;
 
+        indirectRadiance += currentMat.emissive * troughput;
+        
         if (TraceVisibility(shadowRayInfo, g_Scene))
         {
             indirectRadiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
