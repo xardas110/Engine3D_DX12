@@ -20,6 +20,10 @@ void LightPass::CreateRenderTarget(int width, int height)
     directDiffuseDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     directDiffuseDesc.MipLevels = 1;
 
+    auto transparentColorDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height);
+    transparentColorDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    transparentColorDesc.MipLevels = 1;
+
     auto indirectDiffuseDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height);
     indirectDiffuseDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     indirectDiffuseDesc.MipLevels = 1;
@@ -47,6 +51,10 @@ void LightPass::CreateRenderTarget(int width, int height)
     Texture directDiffuse = Texture(directDiffuseDesc, &ClearValue(directDiffuseDesc.Format, {0.f, 0.f, 0.f, 0.f}),
         TextureUsage::RenderTarget,
         L"LightPass DirectDiffuse");
+
+    Texture transparentColor = Texture(transparentColorDesc, &ClearValue(transparentColorDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
+        TextureUsage::RenderTarget,
+        L"LightPass TransparentColor");
 
     Texture indirectDiffuse = Texture(indirectDiffuseDesc, &ClearValue(indirectDiffuseDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
         TextureUsage::RenderTarget,
@@ -76,6 +84,7 @@ void LightPass::CreateRenderTarget(int width, int height)
     renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_INDIRECT_DIFFUSE, indirectDiffuse);
     renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_INDIRECT_SPECULAR, indirectSpecular);
     renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_RT_DEBUG, rtDebug);
+    renderTarget.AttachTexture(AttachmentPoint::Color4, transparentColor);
 
     CreateSRVViews();
     CreateUAVViews();
@@ -238,6 +247,7 @@ void LightPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
     float clearValue[] = { 0.f, 0.f, 0.f, 0.f };
 
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_DIRECT_LIGHT), clearValue);
+    commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color4), clearValue);
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE), clearValue);
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR), clearValue);
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_RT_DEBUG), clearColor);
@@ -285,6 +295,10 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateSRVViews()
     device->CreateShaderResourceView(
         GetTexture(LIGHTBUFFER_ACCUM_BUFFER).GetD3D12Resource().Get(), nullptr,
         m_SRVHeap.SetHandle(LIGHTBUFFER_ACCUM_BUFFER));
+
+    device->CreateShaderResourceView(
+        renderTarget.GetTexture(AttachmentPoint::Color4).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(LIGHTBUFFER_TRANSPARENT_COLOR));
 
     return m_SRVHeap.GetHandleAtStart();
 }

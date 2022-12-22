@@ -44,7 +44,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);       
     fi.albedo = pow(fi.albedo, 2.2f); //pow(fi.albedo, 2.2f);
-        
+   
+    /*
     if (fi.shaderModel == SM_SKY)
     {
         uint2 pixelCoords = TexCoord * g_Camera.resolution;
@@ -58,11 +59,13 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
             
         return OUT;
     }
-        
+    */
+    
     float4 directDiffuse = g_LightMapHeap[LIGHTBUFFER_DIRECT_LIGHT].Sample(g_NearestRepeatSampler, TexCoord);
     float4 denoisedIndirectDiffuse = g_LightMapHeap[LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE].Sample(g_NearestRepeatSampler, TexCoord);
     float4 denoisedIndirectSpecular = g_LightMapHeap[LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR].Sample(g_NearestRepeatSampler, TexCoord);
-   
+    float4 transparentColor = g_LightMapHeap[LIGHTBUFFER_TRANSPARENT_COLOR].Sample(g_NearestRepeatSampler, TexCoord);
+    
     denoisedIndirectDiffuse = REBLUR_BackEnd_UnpackRadianceAndNormHitDist(denoisedIndirectDiffuse);
     denoisedIndirectSpecular = REBLUR_BackEnd_UnpackRadianceAndNormHitDist(denoisedIndirectSpecular);
          
@@ -88,6 +91,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
     float3 color = directDiffuse.rgb + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb;
        
+    color = lerp(transparentColor.rgb, color, transparentColor.a);
+    
     OUT.ColorTexture = float4(color, 1.f);
 
     if (g_RaytracingData.debugSettings == DEBUG_LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE)

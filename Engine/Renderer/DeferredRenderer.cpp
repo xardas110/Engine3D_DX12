@@ -236,7 +236,6 @@ void DeferredRenderer::Render(Window& window)
 
         for (auto [transform, mesh] : meshInstances)
         {     
-            if (mesh.HasOpacity()) continue;
 
             objectCB.model = transform.GetTransform();
             objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
@@ -249,6 +248,8 @@ void DeferredRenderer::Render(Window& window)
             globalMeshInfo[mesh.id].objRot = transform.rot;
 
             commandList->SetGraphicsDynamicConstantBuffer(DepthPrePassParam::ObjectCB, objectCB);
+
+            if (mesh.HasOpacity()) continue;
 
             assetManager->m_MeshManager.meshData.meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
         }
@@ -272,12 +273,6 @@ void DeferredRenderer::Render(Window& window)
         int i = 0;
         for (auto [transform, mesh] : meshInstances)
         {  
-            if (mesh.HasOpacity())
-            {
-                i++;
-                continue;
-            }
-
             objectCB.model = transform.GetTransform();
 
             objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
@@ -296,6 +291,12 @@ void DeferredRenderer::Render(Window& window)
             objectCB.materialGPUID = matInstanceID;
 
             commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
+
+            if (mesh.HasOpacity())
+            {
+                i++;
+                continue;
+            }
 
             assetManager->m_MeshManager.meshData.meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
 
@@ -398,6 +399,12 @@ void DeferredRenderer::Render(Window& window)
         gfxCommandList->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
                 m_LightPass->GetTexture(LIGHTBUFFER_DIRECT_LIGHT).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        gfxCommandList->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->renderTarget.GetTexture(AttachmentPoint::Color4).GetD3D12Resource().Get(),
                 D3D12_RESOURCE_STATE_RENDER_TARGET,
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
@@ -669,7 +676,8 @@ void DeferredRenderer::Render(Window& window)
             "Raytraced Height",
             "Raytraced Emissive",
             "Raytraced Hit T",
-            "GBuffer MV2D"
+            "GBuffer MV2D",
+            "LightBuffer Translucent"
         };
 
         const Texture* texArray[] =
@@ -695,7 +703,8 @@ void DeferredRenderer::Render(Window& window)
             &m_LightPass->GetTexture(LIGHTBUFFER_RT_DEBUG),
             &m_LightPass->GetTexture(LIGHTBUFFER_RT_DEBUG),
             &m_LightPass->GetTexture(LIGHTBUFFER_DIRECT_LIGHT),
-            &m_GBuffer->GetTexture(GBUFFER_GEOMETRY_MV2D)
+            &m_GBuffer->GetTexture(GBUFFER_GEOMETRY_MV2D),
+            &m_LightPass->renderTarget.GetTexture(AttachmentPoint::Color4)
         };
         ImGui::Begin("Select render buffer");
         ImGui::ListBox("listbox\n(single select)", &listbox_item_debug, listbox_items, IM_ARRAYSIZE(listbox_items));
@@ -783,6 +792,12 @@ void DeferredRenderer::Render(Window& window)
         gfxCommandList->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
                 m_LightPass->GetTexture(LIGHTBUFFER_DIRECT_LIGHT).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        gfxCommandList->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->renderTarget.GetTexture(AttachmentPoint::Color4).GetD3D12Resource().Get(),
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
                 D3D12_RESOURCE_STATE_RENDER_TARGET));
 

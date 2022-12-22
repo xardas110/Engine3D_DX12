@@ -18,7 +18,7 @@ bool SponzaExe::LoadContent()
 
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-
+/*
     {
         auto bathRoom = CreateEntity("Simple Room");
         auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", MeshImport::HeightAsNormal);
@@ -26,19 +26,21 @@ bool SponzaExe::LoadContent()
         trans.pos = { 70.f, 0.f, 0.f };
 
     }
+*/
+
     {
         auto mcLaren = CreateEntity("Mercedes");
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::None);
         auto& trans = mcLaren.GetComponent<TransformComponent>();
-
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(270.f), DirectX::XMConvertToRadians(90.f), 0.f);      
     } 
 
+   
     {
         auto sponza = CreateEntity("sponza");
       
-        sponza.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.obj", 
-            MeshImport::HeightAsNormal | MeshImport::IgnoreUserMaterial);
+        sponza.AddComponent<StaticMeshComponent>("Assets/Models/sponza/sponza.fbx", 
+            MeshImport::HeightAsNormal);
 
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.scale = { 0.015f, 0.015f, 0.015f };

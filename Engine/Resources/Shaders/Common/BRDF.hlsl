@@ -462,4 +462,28 @@ float4 SampleSky(in float3 dir, in TextureCube<float4> cubemap, in SamplerState 
     return cubemap.Sample(linearSampler, dir);
 }
 
+void ReflectionDirection(float3 I, float3 N, inout float3 R)
+{
+    R = I - 2 * dot(I, N) * N;
+}
+
+
+bool TransmissionDirection(float n1, float n2, float3 I, float3 N, inout float3 T)
+{
+    float eta = n1 / n2; /* relative index of refraction */
+
+    float c1 = -dot(I, N); /* cos(theta1) */
+
+    float w = eta * c1;
+
+    float c2m = (w - eta) * (w + eta); /* cos^2(theta2) - 1 */
+    
+    if (c2m < -1.0f)
+        return false; /* total internal reflection */
+    
+    T = eta*I + (w-sqrt(1.0f+c2m))* N;
+    
+    return true;
+}
+
 #endif

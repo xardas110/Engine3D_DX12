@@ -268,7 +268,7 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
         {
             ThrowIfFailed( LoadFromWICFile( 
                 fileName.c_str(), 
-                WIC_FLAGS_NONE, 
+                WIC_FLAGS_FORCE_RGB,
                 &metadata, 
                 scratchImage ) );
         }

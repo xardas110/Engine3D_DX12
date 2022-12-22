@@ -32,7 +32,7 @@ bool CastRay(RayInfo ray, RaytracingAccelerationStructure scene, inout HitAttrib
     
     while (query.Proceed())
     {
-        query.CommitNonOpaqueTriangleHit();
+       // query.CommitNonOpaqueTriangleHit();
     };
   
     hit.bFrontFaced = query.CommittedTriangleFrontFace();

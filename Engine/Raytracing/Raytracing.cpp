@@ -209,12 +209,12 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::ve
 
         if (mesh.HasOpacity())
         {
-            instanceDesc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_FORCE_NON_OPAQUE;
+            //instanceDesc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_FORCE_NON_OPAQUE;
             instanceDesc.InstanceMask |= INSTANCE_TRANSLUCENT;
         }         
         else
         {
-            instanceDesc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_FORCE_OPAQUE;
+            //instanceDesc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_FORCE_OPAQUE;
             instanceDesc.InstanceMask |= INSTANCE_OPAQUE;
         }
 
