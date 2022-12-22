@@ -43,7 +43,7 @@ struct PixelShaderOutput
   
 void TestRT(RayDesc ray, inout float3 debugColor);
 
-bool TestOpacity(in HitAttributes hit)
+bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.4f)
 {
     MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
     MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
@@ -52,7 +52,9 @@ bool TestOpacity(in HitAttributes hit)
     SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData);             
     ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
 
-    if (hitSurfaceMaterial.opacity < 0.5f)
+    opacity = hitSurfaceMaterial.opacity;
+    
+    if (hitSurfaceMaterial.opacity < cutOff)
         return true;
     
     return false;
@@ -74,7 +76,8 @@ bool CastRay(RayInfo ray, RaytracingAccelerationStructure scene, inout HitAttrib
         hit.objToWorld = query.CandidateObjectToWorld3x4();
         hit.minT = query.CandidateTriangleRayT();
         
-        if (!TestOpacity(hit))      
+        float opacity;
+        if (!TestOpacity(hit, opacity))      
             query.CommitNonOpaqueTriangleHit();
     };
   
@@ -89,15 +92,17 @@ bool CastRay(RayInfo ray, RaytracingAccelerationStructure scene, inout HitAttrib
     return query.CommittedStatus() == COMMITTED_TRIANGLE_HIT;
 }
 
-bool TraceVisibility(RayInfo ray, RaytracingAccelerationStructure scene)
+float TraceVisibility(RayInfo ray, RaytracingAccelerationStructure scene)
 {
     RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > shadowQuery;
     shadowQuery.TraceRayInline(scene, ray.flags, ray.instanceMask, ray.desc);
-      
+    
+    float visibility = 1.f;
+    HitAttributes hit;
+        
     while (shadowQuery.Proceed())
     {
-        HitAttributes hit;
-        
+
         hit.bFrontFaced = shadowQuery.CandidateTriangleFrontFace();
         hit.instanceIndex = shadowQuery.CandidateInstanceID();
         hit.primitiveIndex = shadowQuery.CandidatePrimitiveIndex();
@@ -106,11 +111,26 @@ bool TraceVisibility(RayInfo ray, RaytracingAccelerationStructure scene)
         hit.objToWorld = shadowQuery.CandidateObjectToWorld3x4();
         hit.minT = shadowQuery.CandidateTriangleRayT();
         
-        if (!TestOpacity(hit))      
+        float opacity;
+        if (!TestOpacity(hit, opacity, 1.f))      
             shadowQuery.CommitNonOpaqueTriangleHit();
+
+        visibility *= 1.f - opacity;       
     }
     
-    return shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT;
+    hit.bFrontFaced = shadowQuery.CommittedTriangleFrontFace();
+    hit.instanceIndex = shadowQuery.CommittedInstanceID();
+    hit.primitiveIndex = shadowQuery.CommittedPrimitiveIndex();
+    hit.geometryIndex = shadowQuery.CommittedGeometryIndex();
+    hit.barycentrics = shadowQuery.CommittedTriangleBarycentrics();
+    hit.objToWorld = shadowQuery.CommittedObjectToWorld3x4();
+    hit.minT = shadowQuery.CommittedRayT();
+    
+    float opacity;
+    TestOpacity(hit, opacity, 1.f);
+    visibility *= 1.f - opacity;
+    
+    return visibility;
 }
 
 void TraceTranslucency(RayInfo ray, RngStateType rng, inout float3 troughput, inout float4 radiance)
@@ -171,7 +191,7 @@ void TraceTranslucency(RayInfo ray, RngStateType rng, inout float3 troughput, in
         shadowRayInfo.flags = 0;
         shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
         
-        float shadowFactor = TraceVisibility(shadowRayInfo, g_Scene)? 1.f:0.f;
+        float shadowFactor = TraceVisibility(shadowRayInfo, g_Scene);
 
         if (i==0)
             radiance.a = hitSurfaceMaterial.opacity;
@@ -274,7 +294,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     RayDesc ray;
     ray.TMin = 0.f;
     ray.TMax = 1e10f;
-    ray.Origin = OffsetRay(pixelWS, geometryNormal) + geometryNormal * 0.1f;
+    ray.Origin = OffsetRay(pixelWS, geometryNormal) + geometryNormal * 0.2f;
     ray.Direction = normalize(pixelWS.rgb - g_Camera.pos.rgb);
 
     SurfaceMaterial currentMat;
@@ -307,11 +327,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
  
     directRadiance += currentMat.emissive * troughput;
     
-    if (TraceVisibility(shadowRayInfo, g_Scene))
-    {        
-        directRadiance += troughput * EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
-    }
-
+    float shadowFactor = TraceVisibility(shadowRayInfo, g_Scene);
+    directRadiance += troughput * EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb * shadowFactor;
+    
 //Direct Lighting END-------------
 //Indirect Lighting BEGIN----------        
     float firstDiffuseBounceDistance = 0.f;
@@ -413,11 +431,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
         indirectRadiance += currentMat.emissive * troughput;
         
-        if (TraceVisibility(shadowRayInfo, g_Scene))
-        {
-            indirectRadiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
-        }
-         
+        float shadowFactor = TraceVisibility(shadowRayInfo, g_Scene);
+        indirectRadiance += troughput * EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb * shadowFactor;
+
         indirectDiffuse += indirectRadiance * diffuseWeight;
         indirectSpecular += indirectRadiance * specWeight;
         
