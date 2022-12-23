@@ -41,12 +41,17 @@ struct PixelShaderOutput
     float2 motion2D         : SV_TARGET7;
 };
 
+static float alphaCutoff = 0.5f;
+
 PixelShaderOutput main(PixelShaderInput IN)
 {
     PixelShaderOutput OUT;
     
     MaterialInfo matInfo = g_GlobalMaterialInfo[g_ObjectCB.materialGPUID];   
-           
+       
+    if (matInfo.flags & INSTANCE_ALPHA_BLEND)
+        discard;
+    
     MeshVertex vert;
     vert.textureCoordinate = IN.TexCoord;
     vert.normal = IN.NormalLS_N;
@@ -57,6 +62,9 @@ PixelShaderOutput main(PixelShaderInput IN)
     SurfaceMaterial surface = GetSurfaceMaterial(matInfo, vert, g_ObjectCB.model, g_ObjectCB.objRotQuat, g_LinearRepeatSampler, g_GlobalTextureData);
     ApplyMaterial(matInfo, surface, g_GlobalMaterials);
         
+    if (surface.opacity < alphaCutoff)
+        discard;
+    
     GPackInfo gPack = PackGBuffer(g_CameraCB, g_ObjectCB, surface, IN.PositionWS.rgb, IN.PositionClip.z, IN.NormalWS);
       
     OUT.albedo = gPack.albedo;

@@ -18,11 +18,6 @@ struct MaterialInstance
 	MaterialInstance(const std::wstring& name, const MaterialInfo& textureIDs)
 	{
 		materialInstanceID = CreateMaterialInstance(name, textureIDs);
-
-		if (textureIDs.opacity == 0xffffffff)
-			SetFlags(INSTANCE_OPAQUE);
-		else
-			SetFlags(INSTANCE_TRANSLUCENT);
 	}
 
 	MaterialInstanceID CreateMaterialInstance(const std::wstring& name, const MaterialInfo& textureIDs);
@@ -33,6 +28,8 @@ struct MaterialInstance
 	void SetMaterial(MaterialID materialId);
 	
 	void SetFlags(UINT flags);
+
+	void AddFlag(UINT flag);
 
 	MaterialInstanceID GetMaterialInstanceID() const 
 	{

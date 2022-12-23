@@ -127,14 +127,6 @@ void MaterialManager::SetMaterial(MaterialID materialId, MaterialInstanceID matI
 	//Error checking with subscript error
 	instanceData.cpuInfo[matInstanceID].materialID = materialId;
 	instanceData.gpuInfo[matInstanceID].materialID = materialId;
-
-	auto& mat = materialData.materials[materialId];
-	
-	if (mat.diffuse.w < 1.f)
-	{
-		instanceData.cpuInfo[matInstanceID].flags = INSTANCE_TRANSLUCENT;
-		instanceData.gpuInfo[matInstanceID].flags = INSTANCE_TRANSLUCENT;
-	}
 }
 
 TextureID MaterialManager::GetTextureID(MaterialType::Type type, MaterialInstanceID matInstanceId)

@@ -30,7 +30,7 @@ bool SponzaExe::LoadContent()
 
     {
         auto mcLaren = CreateEntity("Mercedes");
-        auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::None);
+        auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::ForceAlphaBlend);
         auto& trans = mcLaren.GetComponent<TransformComponent>();
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(270.f), DirectX::XMConvertToRadians(90.f), 0.f);      
     } 
@@ -43,16 +43,18 @@ bool SponzaExe::LoadContent()
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
     }
   
-   */
+  
+    */
     {
         auto sponza = CreateEntity("sponza");
       
         sponza.AddComponent<StaticMeshComponent>("Assets/Models/sponza/sponza.fbx", 
-            MeshImport::HeightAsNormal | MeshImport::AmbientAsMetallic);
+            MeshImport::HeightAsNormal | MeshImport::AmbientAsMetallic | MeshImport::ForceAlphaCutoff);
 
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.scale = { 0.015f, 0.015f, 0.015f };
     }
+     
     /*
     {
         auto modelEnt = CreateEntity("Mirror");
@@ -68,7 +70,7 @@ bool SponzaExe::LoadContent()
     /*
     */
 
-   // meshManager.CreateCube();
+    meshManager.CreateCube();
     meshManager.CreateSphere();
    // meshManager.CreateTorus();
    // meshManager.CreateCone();
@@ -76,8 +78,9 @@ bool SponzaExe::LoadContent()
     std::cout << "game init" << std::endl;
 
     Material materialEmissive;
-    materialEmissive.diffuse = { 0.f, 2.f, 0.f, 1.f };
-    materialEmissive.emissive = { 0.f, 2.f, 0.f };
+    materialEmissive.diffuse = { 0.f, 1.f, 0.f, 1.f };
+    materialEmissive.diffuse.w = 0.6f;
+    materialEmissive.emissive = { 0.f, 0.f, 0.f };
    
     auto materialID = MaterialInstance::CreateMaterial(L"DefaultEmissiveRed", materialEmissive);
 
@@ -85,8 +88,9 @@ bool SponzaExe::LoadContent()
     MaterialInfo matInfo;
     material.CreateMaterialInstance(L"DefaultMaterialInstance", matInfo);
     material.SetMaterial(materialID);
+    material.SetFlags(INSTANCE_TRANSLUCENT | INSTANCE_ALPHA_BLEND);
 
-    for (size_t i = 0; i < 10; i++)
+    for (size_t i = 0; i < 20; i++)
     {
         auto ent = CreateEntity("testSphere: " + std::to_string(i));
         auto& sm = ent.AddComponent<MeshComponent>(L"DefaultSphere");
@@ -98,6 +102,16 @@ bool SponzaExe::LoadContent()
         float z = (rand() % 30) - 15;
         trans.pos = { x, y, z };
         lights.emplace_back((std::uint32_t)ent.GetId());
+    }
+
+
+    {
+        auto ent = CreateEntity("DxCube");
+        auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+        sm.SetMaterialInstance(material);
+        auto& trans = ent.GetComponent<TransformComponent>();
+        trans.scale = { 10.f, 10.f, 10.f };
+        trans.pos = { 10.f, 10.f, 0.f };
     }
 
     /*

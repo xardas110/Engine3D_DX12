@@ -20,6 +20,8 @@ using namespace DirectX;
 
 #define INSTANCE_OPAQUE (1<<0)
 #define INSTANCE_TRANSLUCENT (1<<1)
+#define INSTANCE_ALPHA_BLEND (1<<2)
+#define INSTANCE_ALPHA_CUTOFF (1<<3)
 
 #ifndef HLSL
 #define COMPAT_ONE = 1;

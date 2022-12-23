@@ -184,7 +184,7 @@ void GBuffer::CreatePipeline()
         CD3DX12_PIPELINE_STATE_STREAM_PS PS;
         CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
         CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormats;
-        CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL DS;
+       // CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL DS;
        // CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER Rasterizer;
     } pipelineStateStream;
 
@@ -193,12 +193,12 @@ void GBuffer::CreatePipeline()
   //  rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
   //  pipelineStateStream.Rasterizer = rasterizerDesc;
 
-    CD3DX12_DEPTH_STENCIL_DESC dsDesc{};
-    dsDesc.DepthEnable = true;
-    dsDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-    dsDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+   // CD3DX12_DEPTH_STENCIL_DESC dsDesc{};
+   // dsDesc.DepthEnable = true;
+   // dsDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+    //dsDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 
-    pipelineStateStream.DS = dsDesc;
+   // pipelineStateStream.DS = dsDesc;
 
     pipelineStateStream.pRootSignature = rootSignature.GetRootSignature().Get();
 

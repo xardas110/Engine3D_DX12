@@ -194,7 +194,19 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 		}
 
 		MaterialInstance matInstance(currentName, matInfo);
-				
+		
+		matInstance.SetFlags(INSTANCE_OPAQUE);
+
+		if (matInfo.opacity != 0xffffffff)
+		{
+			matInstance.SetFlags(INSTANCE_TRANSLUCENT);
+
+			if (MeshImport::ForceAlphaBlend & flags)
+				matInstance.AddFlag(INSTANCE_ALPHA_BLEND);
+			else if (MeshImport::ForceAlphaCutoff & flags)
+				matInstance.AddFlag(INSTANCE_ALPHA_CUTOFF);
+		}
+
 		if (mesh.materialData.bHasMaterial)
 		{
 			Material materialData;
@@ -205,6 +217,17 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 			materialData.roughness = mesh.materialData.roughness;
 			materialData.emissive = mesh.materialData.emissive;
 
+			if (mesh.materialData.opacity < 1.f) 
+			{ 
+				matInstance.SetFlags(INSTANCE_TRANSLUCENT);
+
+				if (MeshImport::ForceAlphaBlend & flags)
+					matInstance.AddFlag(INSTANCE_ALPHA_BLEND);
+				else if (MeshImport::ForceAlphaCutoff & flags)
+					matInstance.AddFlag(INSTANCE_ALPHA_CUTOFF);
+
+			}
+				
 			auto inst = MaterialInstance::CreateMaterial(currentName + L"/" + std::wstring(mesh.materialData.name.begin(), mesh.materialData.name.end()), materialData);
 			matInstance.SetMaterial(inst);
 		}

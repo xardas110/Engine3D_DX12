@@ -43,7 +43,7 @@ struct PixelShaderOutput
   
 void TestRT(RayDesc ray, inout float3 debugColor);
 
-bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.4f)
+bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5f)
 {
     MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
     MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
@@ -118,6 +118,9 @@ float TraceVisibility(RayInfo ray, RaytracingAccelerationStructure scene)
         visibility *= 1.f - opacity;       
     }
     
+    if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+        return visibility;
+    
     hit.bFrontFaced = shadowQuery.CommittedTriangleFrontFace();
     hit.instanceIndex = shadowQuery.CommittedInstanceID();
     hit.primitiveIndex = shadowQuery.CommittedPrimitiveIndex();
@@ -152,7 +155,7 @@ void TraceTranslucency(RayInfo ray, RngStateType rng, inout float3 troughput, in
         MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
         MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
     
-        if (materialInfo.flags & INSTANCE_OPAQUE && i == 0)
+        if ((materialInfo.flags & INSTANCE_OPAQUE || materialInfo.flags & INSTANCE_ALPHA_CUTOFF) && i == 0)
             return;
                      
         MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
@@ -294,7 +297,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     RayDesc ray;
     ray.TMin = 0.f;
     ray.TMax = 1e10f;
-    ray.Origin = OffsetRay(pixelWS, geometryNormal) + geometryNormal * 0.2f;
+    ray.Origin = OffsetRay(pixelWS, geometryNormal) + geometryNormal * 0.05f;
     ray.Direction = normalize(pixelWS.rgb - g_Camera.pos.rgb);
 
     SurfaceMaterial currentMat;
@@ -482,26 +485,15 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
 void TestRT(RayDesc ray, inout float3 debugColor)
 {
-    RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES > query;
-    query.TraceRayInline(g_Scene, 0, INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT, ray);
-    
-    while (query.Proceed())
-    {
-    }
-                  
-    if (query.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
-        return;
+    RayInfo rayInfo;
+    rayInfo.desc = ray;
+    rayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
+    rayInfo.flags = 0;
     
     HitAttributes hit;
-    hit.bFrontFaced = query.CandidateTriangleFrontFace();
-        
-    hit.instanceIndex = query.CandidateInstanceID();
-    hit.primitiveIndex = query.CandidatePrimitiveIndex();
-    hit.geometryIndex = query.CandidateGeometryIndex();
-        
-    hit.barycentrics = query.CandidateTriangleBarycentrics();
-    hit.objToWorld = query.CandidateObjectToWorld3x4();
-        
+    if (!CastRay(rayInfo, g_Scene, hit))
+        return;
+      
     MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
     MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
     MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);

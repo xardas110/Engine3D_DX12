@@ -35,3 +35,10 @@ void MaterialInstance::SetFlags(UINT flags)
 	materialManager.instanceData.gpuInfo[materialInstanceID].flags = flags;
 	materialManager.instanceData.cpuInfo[materialInstanceID].flags = flags;
 }
+
+void MaterialInstance::AddFlag(UINT flag)
+{
+	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
+	materialManager.instanceData.gpuInfo[materialInstanceID].flags |= flag;
+	materialManager.instanceData.cpuInfo[materialInstanceID].flags |= flag;
+}

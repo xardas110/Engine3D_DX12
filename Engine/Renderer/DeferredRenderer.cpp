@@ -224,7 +224,8 @@ void DeferredRenderer::Render(Window& window)
         PIXBeginEvent(gfxCommandList.Get(), 0, L"Building DXR structure");    
         m_Raytracer->BuildAccelerationStructure(*commandList, meshInstances, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);      
         PIXEndEvent(gfxCommandList.Get());
-    }  
+    } 
+    /*
     {//DEPTH PREPASS
         PIXBeginEvent(gfxCommandList.Get(), 0, L"zPrePass");
 
@@ -254,6 +255,7 @@ void DeferredRenderer::Render(Window& window)
         }
         PIXEndEvent(gfxCommandList.Get());
     }
+    */
     {//GBuffer Pass
         PIXBeginEvent(gfxCommandList.Get(), 0, L"GBufferPass");
         commandList->SetRenderTarget(m_GBuffer->renderTarget);
@@ -290,13 +292,7 @@ void DeferredRenderer::Render(Window& window)
             objectCB.materialGPUID = matInstanceID;
 
             commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
-
-            if (mesh.HasOpacity())
-            {
-                i++;
-                continue;
-            }
-
+          
             assetManager->m_MeshManager.meshData.meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
 
             i++;

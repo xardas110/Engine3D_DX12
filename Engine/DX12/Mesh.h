@@ -58,7 +58,9 @@ namespace MeshImport
         IgnoreUserMaterialAlbedoOnly = 1 << 2,
         LHCoords = 1 << 3,
         ConvertShininiessToAlpha = 1 << 4,
-        AmbientAsMetallic = 1 << 5
+        AmbientAsMetallic = 1 << 5,
+        ForceAlphaBlend = 1 << 6, //Forces blending mode on all importet materials with opacity
+        ForceAlphaCutoff = 1 << 7,
     };
 }
 
@@ -164,7 +166,7 @@ struct MeshInstance
         if (tex) return true;
 
         auto& mat = GetUserMaterial();
-       
+        
         if (mat.diffuse.w >= 1.f) return false;
 
         return true;
