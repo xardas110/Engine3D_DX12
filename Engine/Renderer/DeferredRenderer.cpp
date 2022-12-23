@@ -236,7 +236,6 @@ void DeferredRenderer::Render(Window& window)
 
         for (auto [transform, mesh] : meshInstances)
         {     
-
             objectCB.model = transform.GetTransform();
             objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
             objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
