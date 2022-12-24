@@ -151,7 +151,10 @@ bool TraceTranslucency(RayInfo ray, RngStateType rng, inout float3 troughput, in
 {  
     HitAttributes hit;
     if (!CastRay(ray, g_Scene, hit))
-    {       
+    {   
+        if (refractInfo.depth == 0)
+            return false;
+        
         float3 color = SampleSky(ray.desc.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;
         radiance.rgb += color * troughput;
         
@@ -166,13 +169,17 @@ bool TraceTranslucency(RayInfo ray, RngStateType rng, inout float3 troughput, in
         
     if (refractInfo.depth == 0 && materialInfo.flags & INSTANCE_ALPHA_CUTOFF)
         return false;
-        
+     
+
     MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
     SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData);
               
     ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
     hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
- 
+   
+    if (refractInfo.depth == 0)
+        radiance.a = hitSurfaceMaterial.opacity;
+      
     float3 rayHit = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
     float3 geometryNormal = RotatePoint(meshInfo.objRot, hitSurface.normal);
         
@@ -216,9 +223,6 @@ bool TraceTranslucency(RayInfo ray, RngStateType rng, inout float3 troughput, in
         
     radiance.rgb += troughput * (directLight + ambientLight + hitSurfaceMaterial.emissive);
             
-    if (materialInfo.flags & INSTANCE_OPAQUE || materialInfo.flags & INSTANCE_ALPHA_CUTOFF)
-        return false;
-
     return true;
 }
 
@@ -230,39 +234,21 @@ bool TranslucentPass(RayInfo ray, RngStateType rng, inout float3 troughput, inou
     
     if (!bResult)
         return bResult;
-    
-    int numRefractions = 5;
-    for (int i = 0; i < numRefractions; i++)
-    {
-        refractInfo.depth += 1;
 
-        ray.desc.Origin = refractInfo.hitPos + ray.desc.Direction * 0.1f;
-           
-       
-        RefractionInfo reflectInfo = refractInfo;
-        RayInfo reflectRay = ray;
-        reflectRay.desc.Origin = reflectInfo.hitPos;
-        
-        float3 currentDir = normalize(ray.desc.Direction);
+    refractInfo.depth = 1;
+    
+    float3 currentDir = normalize(ray.desc.Direction);
          
-        if (reflectInfo.mat.roughness < 0.1f)
-        {       
-            float3 brdfWeight;
-            float2 u = float2(Rand(rng), Rand(rng));
-            if (EvaluateIndirectBRDF(u, reflectInfo.mat.normal, reflectInfo.geoNormal, -currentDir, reflectInfo.mat, BRDF_TYPE_SPECULAR, reflectRay.desc.Direction, brdfWeight))
-            {
-                TraceTranslucency(reflectRay, rng, brdfWeight, radiance, reflectInfo);
-            }       
-        }
-        
-        if (!TransmissionDirection(1.f, 1.52f, currentDir, refractInfo.mat.normal, ray.desc.Direction))
-            break;
-            
-        if (!TraceTranslucency(ray, rng, troughput, radiance, refractInfo))
-            break;
-
+    if (refractInfo.mat.roughness < 0.1f)
+    {       
+        float3 brdfWeight;
+        float2 u = float2(Rand(rng), Rand(rng));
+        if (EvaluateIndirectBRDF(u, refractInfo.mat.normal, refractInfo.geoNormal, -currentDir, refractInfo.mat, BRDF_TYPE_SPECULAR, ray.desc.Direction, brdfWeight))
+        {
+            TraceTranslucency(ray, rng, brdfWeight, radiance, refractInfo);
+        }       
     }
-    
+
     return bResult;
 }
 
@@ -318,15 +304,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float3 indirectDiffuse = float3(0.f, 0.f, 0.f);
     float3 indirectSpecular = float3(0.f, 0.f, 0.f);
     
-    if (TranslucentPass(tranclucentRay, rngState, translucentTroughput, translucentRadiance))
-    {
-        OUT.DirectDiffuse = float4(0.f, 0.f, 0.f, 0.f);
-        OUT.TransparentColor = translucentRadiance;
-        OUT.IndirectDiffuse = float4(0.f, 0.f, 0.f, 0.f);
-        OUT.IndirectSpecular = float4(0.f, 0.f, 0.f, 0.f);
-        return OUT;
-    }
-    
+    TranslucentPass(tranclucentRay, rngState, translucentTroughput, translucentRadiance);
+
     if (fi.shaderModel == SM_SKY)
     {
         float3 color = SampleSky(tranclucentRay.desc.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;
@@ -436,7 +415,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         RayInfo opaqueRay;
         opaqueRay.desc = ray;
         opaqueRay.flags = 0;
-        opaqueRay.instanceMask = INSTANCE_OPAQUE;
+        opaqueRay.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
            
         HitAttributes hit;   
         if (!CastRay(opaqueRay, g_Scene, hit))

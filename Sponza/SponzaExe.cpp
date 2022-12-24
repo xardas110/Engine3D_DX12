@@ -27,14 +27,14 @@ bool SponzaExe::LoadContent()
 
     }
 */
-/*
+
     {
         auto mcLaren = CreateEntity("Mercedes");
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::ForceAlphaBlend);
         auto& trans = mcLaren.GetComponent<TransformComponent>();
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(270.f), DirectX::XMConvertToRadians(90.f), 0.f);      
     } 
-    */
+
     /*
     {
         auto mcLaren = CreateEntity("Lambo");
@@ -70,12 +70,12 @@ bool SponzaExe::LoadContent()
     */
     /*
     */
-
+    /*
     meshManager.CreateCube();
     meshManager.CreateSphere();
    // meshManager.CreateTorus();
    // meshManager.CreateCone();
-
+    
     std::cout << "game init" << std::endl;
 
     Material materialEmissive;
@@ -104,7 +104,7 @@ bool SponzaExe::LoadContent()
         trans.pos = { x, y, z };
         lights.emplace_back((std::uint32_t)ent.GetId());
     }
-    /*
+
     {
         auto ent = CreateEntity("DxCube");
         auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
