@@ -174,10 +174,10 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
     if (flags & DIRECT_LIGHT_FLAG_SKIP_OPAQUE && materialInfo.flags & INSTANCE_OPAQUE)
         return false;
         
-    if (flags & DIRECT_LIGHT_FLAG_SKIP_CUTOFF & materialInfo.flags && INSTANCE_ALPHA_CUTOFF)
+    if (flags & DIRECT_LIGHT_FLAG_SKIP_CUTOFF && materialInfo.flags & INSTANCE_ALPHA_CUTOFF)
         return false;
     
-    if (flags & DIRECT_LIGHT_FLAG_SKIP_BLEND & materialInfo.flags && INSTANCE_ALPHA_BLEND)
+    if (flags & DIRECT_LIGHT_FLAG_SKIP_BLEND && materialInfo.flags & INSTANCE_ALPHA_BLEND)
         return false;
      
     MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
@@ -190,18 +190,16 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
         radiance.a = hitSurfaceMaterial.opacity;
       
     float3 rayHit = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
-    float3 geometryNormal = RotatePoint(meshInfo.objRot, hitSurface.normal);
-        
-    float3 V = normalize(-ray.desc.Direction);
-        
+    float3 V = normalize(-ray.desc.Direction);                            
+    float3 L = -g_DirectionalLight.direction.rgb;
+    float3 X = rayHit;
+    
+    float3 geometryNormal = RotatePoint(meshInfo.objRot, hitSurface.normal);          
     if (dot(geometryNormal, V) < 0.0f)
         geometryNormal = -geometryNormal;
     if (dot(geometryNormal, hitSurfaceMaterial.normal) < 0.0f)
         hitSurfaceMaterial.normal = -hitSurfaceMaterial.normal;
-                       
-    float3 L = -g_DirectionalLight.direction.rgb;
-    float3 X = rayHit;
-              
+   
     float3 rayHitOffset = OffsetRay(X, geometryNormal);
 
     traceResult.mat = hitSurfaceMaterial;
@@ -228,34 +226,6 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
     return true;
 }
 
-/*
-bool TranslucentPass(RayInfo ray, RngStateType rng, inout float3 troughput, inout float4 radiance)
-{   
-    RefractionInfo refractInfo;
-    refractInfo.depth = 0;
-    bool bResult = TraceTranslucency(ray, rng, troughput, radiance, refractInfo);
-    
-    if (!bResult)
-        return bResult;
-
-    refractInfo.depth = 1;
-    
-    float3 currentDir = normalize(ray.desc.Direction);
-         
-    if (refractInfo.mat.roughness < 0.1f)
-    {       
-        float3 brdfWeight;
-        float2 u = float2(Rand(rng), Rand(rng));
-        if (EvaluateIndirectBRDF(u, refractInfo.mat.normal, refractInfo.geoNormal, -currentDir, refractInfo.mat, BRDF_TYPE_SPECULAR, ray.desc.Direction, brdfWeight))
-        {
-            TraceTranslucency(ray, rng, brdfWeight, radiance, refractInfo);
-        }       
-    }
-
-    return bResult;
-}
-*/
-
 // Generates a primary ray for pixel given in NDC space using pinhole camera
 RayDesc GeneratePinholeCameraRay(float2 pixel)
 {
@@ -279,6 +249,34 @@ RayDesc GeneratePinholeCameraRay(float2 pixel)
 
     return ray;
 }
+
+bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, inout float4 radiance)
+{
+    RayInfo ray;
+    ray.desc = GeneratePinholeCameraRay(texcoords * 2.f - 1.f);
+    ray.flags = 0;
+    ray.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT; 
+        
+    TraceResult traceResult;
+    bool bResult = TraceDirectLight(ray, rng, 0.02f, DIRECT_LIGHT_FLAG_SAVE_OPACITY | DIRECT_LIGHT_FLAG_SKIP_OPAQUE | DIRECT_LIGHT_FLAG_SKIP_CUTOFF | DIRECT_LIGHT_FLAG_SKIP_SKY, troughput, radiance, traceResult);
+       
+    if (!bResult)
+        return bResult;
+
+    if (traceResult.mat.roughness < 0.1f)
+    {
+        float3 brdfWeight;
+        float2 u = float2(Rand(rng), Rand(rng));
+        if (EvaluateIndirectBRDF(u, traceResult.mat.normal, traceResult.geoNormal, -ray.desc.Direction, traceResult.mat, BRDF_TYPE_SPECULAR, ray.desc.Direction, brdfWeight))
+        {           
+            ray.desc.Origin = traceResult.hitPos;   
+            TraceDirectLight(ray, rng, 0.02f, 0, brdfWeight, radiance, traceResult);
+        }
+    }
+ 
+    return bResult;
+}
+
 
 bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, inout float4 radiance)
 {
@@ -453,18 +451,17 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
     RngStateType rngState = InitRNG(pixelCoords, g_Camera.resolution, g_RaytracingData.frameNumber);
         
-    RayDesc cameraRay = GeneratePinholeCameraRay(TexCoord * 2.f - 1.f);
-    
     float3 directRadiance = float3(0.f, 0.f, 0.f);  
     float3 troughput = float3(1.f, 1.f, 1.f);
-    
-    //TranslucentPass(tranclucentRay, rngState, translucentTroughput, translucentRadiance);
     
     OUT.DirectLight = float4(0.f, 0.f, 0.f, 0.f);
     OUT.IndirectDiffuse = float4(0.f, 0.f, 0.f, 0.f);
     OUT.IndirectSpecular = float4(0.f, 0.f, 0.f, 0.f); 
     OUT.TransparentColor = float4(0.f, 0.f, 0.f, 0.f);
     OUT.rtDebug = float4(0.f, 0.f, 0.f, 0.f);
+    
+    TranslucentPass(TexCoord, rngState, float3(1.f, 1.f, 1.f), OUT.TransparentColor);
+    
     
     if (!DirectLightGBuffer(TexCoord, rngState, OUT.DirectLight))
     {
