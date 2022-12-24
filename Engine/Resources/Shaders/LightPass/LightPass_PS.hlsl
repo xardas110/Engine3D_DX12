@@ -136,7 +136,7 @@ float TraceVisibility(RayInfo ray, RaytracingAccelerationStructure scene)
         if (!TestOpacity(hit, opacity, 1.f))      
             shadowQuery.CommitNonOpaqueTriangleHit();
 
-        visibility *= 1.f - opacity;       
+       // visibility *= 1.f - opacity;       
     }
     
     if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
@@ -150,9 +150,11 @@ float TraceVisibility(RayInfo ray, RaytracingAccelerationStructure scene)
     hit.objToWorld = shadowQuery.CommittedObjectToWorld3x4();
     hit.minT = shadowQuery.CommittedRayT();
     
-    float opacity;
-    TestOpacity(hit, opacity, 1.f);
-    visibility *= 1.f - opacity;
+    visibility = 0.f;
+    
+    //float opacity;
+   // TestOpacity(hit, opacity, 1.f);
+    //visibility *= 1.f - opacity;
     
     return visibility;
 }
@@ -188,7 +190,7 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
     SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData);
               
     ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
-    hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
+    //hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
    
     if (flags & DIRECT_LIGHT_FLAG_SAVE_OPACITY)
         radiance.a = hitSurfaceMaterial.opacity;
@@ -263,7 +265,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
     ray.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT; 
         
     TraceResult traceResult;
-    bool bResult = TraceDirectLight(ray, rng, 0.02f, DIRECT_LIGHT_FLAG_SAVE_OPACITY | DIRECT_LIGHT_FLAG_SKIP_OPAQUE | DIRECT_LIGHT_FLAG_SKIP_CUTOFF | DIRECT_LIGHT_FLAG_SKIP_SKY, troughput, radiance, traceResult);
+    bool bResult = TraceDirectLight(ray, rng, 0.01f, DIRECT_LIGHT_FLAG_SAVE_OPACITY | DIRECT_LIGHT_FLAG_SKIP_OPAQUE | DIRECT_LIGHT_FLAG_SKIP_CUTOFF | DIRECT_LIGHT_FLAG_SKIP_SKY, troughput, radiance, traceResult);
        
     if (!bResult)
         return bResult;
@@ -275,7 +277,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
         if (EvaluateIndirectBRDF(u, traceResult.mat.normal, traceResult.geoNormal, -ray.desc.Direction, traceResult.mat, BRDF_TYPE_SPECULAR, ray.desc.Direction, brdfWeight))
         {           
             ray.desc.Origin = traceResult.hitPos;   
-            TraceDirectLight(ray, rng, 0.02f, 0, brdfWeight, radiance, traceResult);
+            TraceDirectLight(ray, rng, 0.01f, 0, brdfWeight, radiance, traceResult);
         }
     }
  
@@ -286,7 +288,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
 bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, inout float4 radiance)
 {
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, texCoords);
-    fi.albedo = pow(fi.albedo, 2.2f);
+    //fi.albedo = pow(fi.albedo, 2.2f);
       
     SurfaceMaterial currentMat;
     currentMat.albedo = fi.albedo;
@@ -334,7 +336,7 @@ void IndirectLight(
     inout float4 indirectSpecular)
 {
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, texCoords);
-    fi.albedo = pow(fi.albedo, 2.2f);
+   // fi.albedo = pow(fi.albedo, 2.2f);
       
     SurfaceMaterial currentMat;
     currentMat.albedo = fi.albedo;
@@ -347,13 +349,13 @@ void IndirectLight(
     
     float diffuseWeight = 0.f;
     float specWeight = 0.f;
-    
-    float3 geometryNormal = fi.geometryNormal;    
+       
     float3 X = GetWorldPosFromDepth(texCoords, fi.depth, g_Camera.invViewProj);
     float3 L = -g_DirectionalLight.direction.rgb;
     float3 V = normalize(g_Camera.pos.rgb - X.rgb);
     float viewZ = g_GBufferHeap[GBUFFER_LINEAR_DEPTH].Sample(g_NearestRepeatSampler, texCoords).r;
-  
+    float3 geometryNormal = fi.geometryNormal;
+    
     RayDesc ray;
     ray.TMin = 0.f;
     ray.TMax = 1e10f;
@@ -367,34 +369,23 @@ void IndirectLight(
     for (int i = 0; i < g_RaytracingData.numBounces; i++)
     {
         int brdfType;
-        if (currentMat.metallic == 1.f && currentMat.roughness == 0.f)
+        float brdfProbability = GetBRDFProbability(currentMat, V, currentMat.normal);
+        if (Rand(rngState) < brdfProbability)
         {
             brdfType = BRDF_TYPE_SPECULAR;
-            
+            troughput /= brdfProbability;
+                
             if (i == 0)
                 specWeight = 1.f;
         }
         else
         {
-            float brdfProbability = GetBRDFProbability(currentMat, V, currentMat.normal);
-
-            if (Rand(rngState) < brdfProbability)
-            {
-                brdfType = BRDF_TYPE_SPECULAR;
-                troughput /= brdfProbability;
+            brdfType = BRDF_TYPE_DIFFUSE;
+            troughput /= (1.0f - brdfProbability);
                 
-                if (i == 0)
-                    specWeight = 1.f;
-            }
-            else
-            {
-                brdfType = BRDF_TYPE_DIFFUSE;
-                troughput /= (1.0f - brdfProbability);
-                
-                if (i == 0)
-                    diffuseWeight = 1.f;
-            }
-        }
+            if (i == 0)
+                diffuseWeight = 1.f;
+        }       
         
         if (dot(geometryNormal, V) < 0.0f)
             geometryNormal = -geometryNormal;
@@ -418,7 +409,7 @@ void IndirectLight(
         indirectRay.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
            
         TraceResult traceResult;
-        if (!TraceDirectLight(indirectRay, rngState, 0.f, 0, troughput, indirectRadiance, traceResult))
+        if (!TraceDirectLight(indirectRay, rngState, 0.0f, 0, troughput, indirectRadiance, traceResult))
         {
             indirectDiffuse.rgb += indirectRadiance.rgb * diffuseWeight;
             indirectSpecular.rgb += indirectRadiance.rgb * specWeight;          
@@ -468,8 +459,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     OUT.rtDebug = float4(0.f, 0.f, 0.f, 0.f);
     
     TranslucentPass(TexCoord, rngState, float3(1.f, 1.f, 1.f), OUT.TransparentColor);
-    
-    
+     
     if (!DirectLightGBuffer(TexCoord, rngState, OUT.DirectLight))
     {
         return OUT;

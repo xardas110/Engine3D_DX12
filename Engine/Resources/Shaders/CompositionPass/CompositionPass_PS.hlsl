@@ -43,7 +43,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     PixelShaderOutput OUT;
 
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);       
-    fi.albedo = pow(fi.albedo, 2.2f); //pow(fi.albedo, 2.2f);
+    //fi.albedo = pow(fi.albedo, 2.2f); //pow(fi.albedo, 2.2f);
    
     /*
     if (fi.shaderModel == SM_SKY)

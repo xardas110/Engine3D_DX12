@@ -33,6 +33,8 @@ bool SponzaExe::LoadContent()
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::ForceAlphaBlend);
         auto& trans = mcLaren.GetComponent<TransformComponent>();
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(270.f), DirectX::XMConvertToRadians(90.f), 0.f);      
+        trans.pos = { 0.f, 0.f, 0.f };
+        trans.scale = { 2.f, 2.f, 2.f };
     } 
 
     /*
@@ -46,6 +48,7 @@ bool SponzaExe::LoadContent()
   
   
     */
+    /*
     {
         auto sponza = CreateEntity("sponza");
       
@@ -55,7 +58,7 @@ bool SponzaExe::LoadContent()
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.scale = { 0.015f, 0.015f, 0.015f };
     }
-     
+     */
     /*
     {
         auto modelEnt = CreateEntity("Mirror");
@@ -70,7 +73,7 @@ bool SponzaExe::LoadContent()
     */
     /*
     */
-    /*
+/*
     meshManager.CreateCube();
     meshManager.CreateSphere();
    // meshManager.CreateTorus();
@@ -80,8 +83,7 @@ bool SponzaExe::LoadContent()
 
     Material materialEmissive;
     materialEmissive.diffuse = { 0.f, 1.f, 0.f, 1.f };
-    materialEmissive.diffuse.w = 0.51f;
-    materialEmissive.emissive = { 0.f, 0.f, 0.f };
+    materialEmissive.emissive = { 0.f, 10.f, 0.f };
    
     auto materialID = MaterialInstance::CreateMaterial(L"DefaultEmissiveRed", materialEmissive);
 
@@ -89,7 +91,7 @@ bool SponzaExe::LoadContent()
     MaterialInfo matInfo;
     material.CreateMaterialInstance(L"DefaultMaterialInstance", matInfo);
     material.SetMaterial(materialID);
-    material.SetFlags(INSTANCE_TRANSLUCENT | INSTANCE_ALPHA_BLEND);
+    material.SetFlags(INSTANCE_OPAQUE);
 
     for (size_t i = 0; i < 20; i++)
     {
@@ -104,7 +106,7 @@ bool SponzaExe::LoadContent()
         trans.pos = { x, y, z };
         lights.emplace_back((std::uint32_t)ent.GetId());
     }
-
+    /*
     {
         auto ent = CreateEntity("DxCube");
         auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
@@ -113,6 +115,7 @@ bool SponzaExe::LoadContent()
         trans.scale = { 10.f, 10.f, 10.f };
         trans.pos = { 10.f, 10.f, 0.f };
     }
+
     */
     /*
     TextureInstance spaceAlbedo(L"Assets/Textures/SpaceBall/space-cruiser-panels2_albedo.png");

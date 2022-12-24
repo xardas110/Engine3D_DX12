@@ -28,6 +28,97 @@
 
 #define SpecularMaskingFunctionSmithGGXCorrelated
 
+// Specify what NDF (GGX or BECKMANN you want to use)
+#ifndef MICROFACET_DISTRIBUTION
+#define MICROFACET_DISTRIBUTION GGX
+//#define MICROFACET_DISTRIBUTION BECKMANN
+#endif
+
+// Specify default specular and diffuse BRDFs
+#ifndef SPECULAR_BRDF
+#define SPECULAR_BRDF MICROFACET
+//#define SPECULAR_BRDF PHONG
+//#define SPECULAR_BRDF NONE
+#endif
+
+#ifndef DIFFUSE_BRDF
+#define DIFFUSE_BRDF LAMBERTIAN
+//#define DIFFUSE_BRDF OREN_NAYAR
+//#define DIFFUSE_BRDF DISNEY
+//#define DIFFUSE_BRDF FROSTBITE
+//#define DIFFUSE_BRDF NONE
+#endif
+
+
+// Select distribution function
+#if MICROFACET_DISTRIBUTION == GGX
+#define Microfacet_D GGX_D
+#elif MICROFACET_DISTRIBUTION == BECKMANN
+#define Microfacet_D Beckmann_D
+#endif
+
+// Select G functions (masking/shadowing) depending on selected distribution
+#if MICROFACET_DISTRIBUTION == GGX
+#define Smith_G_Lambda Smith_G_Lambda_GGX
+#elif MICROFACET_DISTRIBUTION == BECKMANN
+#define Smith_G_Lambda Smith_G_Lambda_Beckmann_Walter
+#endif
+
+#ifndef Smith_G1
+// Define version of G1 optimized specifically for selected NDF
+#if MICROFACET_DISTRIBUTION == GGX
+#define Smith_G1 Smith_G1_GGX
+#elif MICROFACET_DISTRIBUTION == BECKMANN
+#define Smith_G1 Smith_G1_Beckmann_Walter
+#endif
+#endif
+
+// Select default specular and diffuse BRDF functions
+#if SPECULAR_BRDF == MICROFACET
+#define EvalSpecular EvaluateMicrofacet
+#define SampleSpecular SampleSpecularMicrofacet
+#if MICROFACET_DISTRIBUTION == GGX
+#define SampleSpecularHalfVector SampleGGXVNDF
+#else
+#define SampleSpecularHalfVector SampleBeckmannWalter
+#endif
+#elif SPECULAR_BRDF == PHONG
+#define EvalSpecular EvalPhong
+#define SampleSpecular SampleSpecularPhong
+#define SampleSpecularHalfVector SamplePhong
+#else
+#define EvalSpecular EvalVoid
+#define SampleSpecular SampleSpecularVoid
+#define SampleSpecularHalfVector SampleSpecularHalfVectorVoid
+#endif
+
+#if MICROFACET_DISTRIBUTION == GGX
+#define SpecularSampleWeight SpecularSampleWeightGGXVNDF
+#define SpecularPdf SampleGGXVNDFReflectionPdf
+#else
+#define SpecularSampleWeight SpecularSampleWeightBeckmannWalter
+#define SpecularPdf SampleBeckmannWalterReflectionPdf
+#endif
+
+#if DIFFUSE_BRDF == LAMBERTIAN
+#define EvalDiffuse EvaluateLambertian
+#define DiffuseTerm Lambertian
+#elif DIFFUSE_BRDF == OREN_NAYAR
+#define EvalDiffuse EvalOrenNayar
+#define DiffuseTerm OrenNayar
+#elif DIFFUSE_BRDF == DISNEY
+#define EvalDiffuse EvalDisneyDiffuse
+#define DiffuseTerm DisneyDiffuse
+#elif DIFFUSE_BRDF == FROSTBITE
+#define EvalDiffuse EvalFrostbiteDisneyDiffuse
+#define DiffuseTerm FrostbiteDisneyDiffuse
+#else
+#define EvalDiffuse evalVoid
+#define EvalIndirectDiffuse evalIndirectVoid
+#define DiffuseTerm none
+#endif
+
+
 struct BRDFData
 {
     float3 V;
@@ -123,6 +214,32 @@ float GGX_D(float alphaSquared, float NdotH)
     return alphaSquared / (PI * b * b);
 }
 
+float Beckmann_D(float alphaSquared, float NdotH)
+{
+    float cos2Theta = NdotH * NdotH;
+    float numerator = exp((cos2Theta - 1.0f) / (alphaSquared * cos2Theta));
+    float denominator = PI * alphaSquared * cos2Theta * cos2Theta;
+    return numerator / denominator;
+}
+
+float Smith_G_Lambda_GGX(float a)
+{
+    return (-1.0f + sqrt(1.0f + (1.0f / (a * a)))) * 0.5f;
+}
+
+float Smith_G_Lambda_Beckmann_Walter(float a)
+{
+    if (a < 1.6f)
+    {
+        return (1.0f - (1.259f - 0.396f * a) * a) / ((3.535f + 2.181f * a) * a);
+		//return ((1.0f + (2.276f + 2.577f * a) * a) / ((3.535f + 2.181f * a) * a)) - 1.0f; //< Walter's original
+    }
+    else
+    {
+        return 0.0f;
+    }
+}
+
 float Smith_G2_Height_Correlated_GGX_Lagarde(float alphaSquared, float NdotL, float NdotV)
 {
     float a = NdotV * sqrt(alphaSquared + NdotL * (NdotL - alphaSquared * NdotL));
@@ -135,11 +252,113 @@ float Smith_G2(float alpha, float alphaSquared, float NdotL, float NdotV)
     return Smith_G2_Height_Correlated_GGX_Lagarde(alphaSquared, NdotL, NdotV);
 }
 
+float Smith_G1_Beckmann_Walter(float a)
+{
+    if (a < 1.6f)
+    {
+        return ((3.535f + 2.181f * a) * a) / (1.0f + (2.276f + 2.577f * a) * a);
+    }
+    else
+    {
+        return 1.0f;
+    }
+}
+
 float3 EvaluateMicrofacet(const in BRDFData data)
 {
     float D = GGX_D(max(0.00001f, data.alphaSquared), data.NdotH);
     float G2 = Smith_G2(data.alpha, data.alphaSquared, data.NdotL, data.NdotV);
     return data.F * (G2 * D * data.NdotL);
+}
+
+float3 SampleBeckmannWalter(float3 Vlocal, float2 alpha2D, float2 u)
+{
+    float alpha = dot(alpha2D, float2(0.5f, 0.5f));
+
+	// Equations (28) and (29) from Walter's paper for Beckmann distribution
+    float tanThetaSquared = -(alpha * alpha) * log(1.0f - u.x);
+    float phi = TWO_PI * u.y;
+
+	// Calculate cosTheta and sinTheta needed for conversion to H vector
+    float cosTheta = rsqrt(1.0f + tanThetaSquared);
+    float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
+
+	// Convert sampled spherical coordinates to H vector
+    return normalize(float3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta));
+}
+
+float SpecularSampleWeightBeckmannWalter(float alpha, float alphaSquared, float NdotL, float NdotV, float HdotL, float NdotH)
+{
+    return (HdotL * Smith_G2(alpha, alphaSquared, NdotL, NdotV)) / (NdotV * NdotH);
+}
+
+float SampleBeckmannWalterReflectionPdf(float alpha, float alphaSquared, float NdotH, float NdotV, float LdotH)
+{
+    NdotH = max(0.00001f, NdotH);
+    LdotH = max(0.00001f, LdotH);
+    return Beckmann_D(max(0.00001f, alphaSquared), NdotH) * NdotH / (4.0f * LdotH);
+}
+
+float OrenNayar(BRDFData data)
+{
+	// Oren-Nayar roughness (sigma) is in radians - use conversion from Beckmann roughness here
+    float sigma = BeckmannAlphaToOrenNayarRoughness(data.alpha);
+
+    float thetaV = acos(data.NdotV);
+    float thetaL = acos(data.NdotL);
+
+    float alpha = max(thetaV, thetaL);
+    float beta = min(thetaV, thetaL);
+
+	// Calculate cosine of azimuth angles difference - by projecting L and V onto plane defined by N. Assume L, V, N are normalized.
+    float3 l = data.L - data.NdotL * data.N;
+    float3 v = data.V - data.NdotV * data.N;
+    float cosPhiDifference = dot(normalize(v), normalize(l));
+
+    float sigma2 = sigma * sigma;
+    float A = 1.0f - 0.5f * (sigma2 / (sigma2 + 0.33f));
+    float B = 0.45f * (sigma2 / (sigma2 + 0.09f));
+
+    return (A + B * max(0.0f, cosPhiDifference) * sin(alpha) * tan(beta));
+}
+
+float3 EvalOrenNayar(const BRDFData data)
+{
+    return data.diffuseReflectance * (OrenNayar(data) * ONE_OVER_PI * data.NdotL);
+}
+
+float DisneyDiffuse(const BRDFData data)
+{
+
+    float FD90MinusOne = 2.0f * data.roughness * data.LdotH * data.LdotH - 0.5f;
+
+    float FDL = 1.0f + (FD90MinusOne * pow(1.0f - data.NdotL, 5.0f));
+    float FDV = 1.0F + (FD90MinusOne * pow(1.0f - data.NdotV, 5.0f));
+
+    return FDL * FDV;
+}
+
+float3 EvalDisneyDiffuse(const BRDFData data)
+{
+    return data.diffuseReflectance * (DisneyDiffuse(data) * ONE_OVER_PI * data.NdotL);
+}
+
+float FrostbiteDisneyDiffuse(const BRDFData data)
+{
+    float energyBias = 0.5f * data.roughness;
+    float energyFactor = lerp(1.0f, 1.0f / 1.51f, data.roughness);
+
+    float FD90MinusOne = energyBias + 2.0 * data.LdotH * data.LdotH * data.roughness - 1.0f;
+
+    float FDL = 1.0f + (FD90MinusOne * pow(1.0f - data.NdotL, 5.0f));
+    float FDV = 1.0f + (FD90MinusOne * pow(1.0f - data.NdotV, 5.0f));
+
+    return FDL * FDV * energyFactor;
+}
+
+float3 EvalFrostbiteDisneyDiffuse(const BRDFData data)
+{
+    return data.diffuseReflectance * (FrostbiteDisneyDiffuse(data) * ONE_OVER_PI * data.NdotL);
 }
 
 float3 EvaluateLambertian(const in BRDFData data)
@@ -154,8 +373,8 @@ float3 EvaluateBRDF(in float3 N, in float3 L, in float3 V, in SurfaceMaterial ma
     if (data.bVbackFacing || data.bLbackFacing)
         return float3(0.0f, 0.0f, 0.0f);
     
-    float3 specular = EvaluateMicrofacet(data);
-    float3 diffuse = EvaluateLambertian(data);
+    float3 specular = EvalSpecular(data);
+    float3 diffuse = EvalDiffuse(data);
 
     return (float3(1.0f, 1.0f, 1.0f) - data.F) * diffuse + specular;
 }
@@ -356,10 +575,10 @@ bool EvaluateIndirectBRDF(
     {
         rayDirectionLocal = SampleHemisphere(u);
         const BRDFData data = PrepareBRDFData(Nlocal, rayDirectionLocal, Vlocal, material);
-        sampleWeight = data.diffuseReflectance * Lambertian(data);
+        sampleWeight = data.diffuseReflectance * DiffuseTerm(data);
         
         //TODO:Generate new u value
-        float3 hSpecular = SampleGGXVNDF(Vlocal, float2(data.alpha, data.alpha), u);
+        float3 hSpecular = SampleSpecularHalfVector(Vlocal, float2(data.alpha, data.alpha), u);
         
         float VdotH = max(0.00001f, min(1.0f, dot(Vlocal, hSpecular)));
         sampleWeight *= (float3(1.0f, 1.0f, 1.0f) - EvaluateFresnelSchlick(data.specularF0, ShadowedF90(data.specularF0), VdotH));
@@ -367,7 +586,7 @@ bool EvaluateIndirectBRDF(
     else if (BRDF_TYPE_SPECULAR == brdfType)
     {
         const BRDFData data = PrepareBRDFData(Nlocal, float3(0.0f, 0.0f, 1.0f) /* unused L vector */, Vlocal, material);
-        rayDirectionLocal = SampleSpecularMicrofacet(Vlocal, data.alpha, data.alphaSquared, data.specularF0, u, sampleWeight);
+        rayDirectionLocal = SampleSpecular(Vlocal, data.alpha, data.alphaSquared, data.specularF0, u, sampleWeight);
     }
 
     if (Luminance(sampleWeight) == 0.0f)
