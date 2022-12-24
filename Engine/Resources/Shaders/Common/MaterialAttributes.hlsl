@@ -110,6 +110,20 @@ float3 SrgbToLinear(float3 color)
     return lerp(color * consts.x, Pow(color * consts.y + consts.zzz, consts.www), color > 0.04045);
 }
 
+float srgbToLinear(float srgbColor)
+{
+    if (srgbColor < 0.04045f)
+        return srgbColor / 12.92f;
+    else
+        return float(pow((srgbColor + 0.055f) / 1.055f, 2.4f));
+}
+
+float3 srgbToLinear(float3 srgbColor)
+{
+    return float3(srgbToLinear(srgbColor.x), srgbToLinear(srgbColor.y), srgbToLinear(srgbColor.z));
+
+}
+
 float4 GetAlbedo(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float mipLevel = 0.f)
 {
     if (matInfo.albedo != 0xffffffff)
@@ -207,8 +221,8 @@ SurfaceMaterial GetSurfaceMaterial(
     surface.ao = GetAO(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel);
     surface.albedo = GetAlbedo(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel); //* surface.ao;
     
-    surface.albedo = pow(surface.albedo, 2.2f);
-    
+    surface.albedo = srgbToLinear(surface.albedo);
+
     surface.emissive = GetEmissive(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel);
     surface.height = GetHeight(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel);
     surface.roughness = GetRoughness(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel);

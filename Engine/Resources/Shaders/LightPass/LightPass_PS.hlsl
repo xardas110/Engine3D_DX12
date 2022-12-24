@@ -187,11 +187,9 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
         return false;
      
     MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
-    SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData);
-              
+    SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData);             
     ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
-    //hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
-   
+
     if (flags & DIRECT_LIGHT_FLAG_SAVE_OPACITY)
         radiance.a = hitSurfaceMaterial.opacity;
       
@@ -265,19 +263,23 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
     ray.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT; 
         
     TraceResult traceResult;
-    bool bResult = TraceDirectLight(ray, rng, 0.01f, DIRECT_LIGHT_FLAG_SAVE_OPACITY | DIRECT_LIGHT_FLAG_SKIP_OPAQUE | DIRECT_LIGHT_FLAG_SKIP_CUTOFF | DIRECT_LIGHT_FLAG_SKIP_SKY, troughput, radiance, traceResult);
+    bool bResult = TraceDirectLight(ray, rng, 0.001f, DIRECT_LIGHT_FLAG_SAVE_OPACITY | DIRECT_LIGHT_FLAG_SKIP_OPAQUE | DIRECT_LIGHT_FLAG_SKIP_CUTOFF | DIRECT_LIGHT_FLAG_SKIP_SKY, troughput, radiance, traceResult);
        
     if (!bResult)
         return bResult;
 
     if (traceResult.mat.roughness < 0.1f)
     {
+        float brdfProbability = GetBRDFProbability(traceResult.mat, -ray.desc.Direction, traceResult.mat.normal);
+        troughput /= float3(brdfProbability, brdfProbability, brdfProbability);
+        
         float3 brdfWeight;
         float2 u = float2(Rand(rng), Rand(rng));
         if (EvaluateIndirectBRDF(u, traceResult.mat.normal, traceResult.geoNormal, -ray.desc.Direction, traceResult.mat, BRDF_TYPE_SPECULAR, ray.desc.Direction, brdfWeight))
         {           
-            ray.desc.Origin = traceResult.hitPos;   
-            TraceDirectLight(ray, rng, 0.01f, 0, brdfWeight, radiance, traceResult);
+            ray.desc.Origin = traceResult.hitPos;  
+            troughput *= brdfWeight;
+            TraceDirectLight(ray, rng, 0.004f, 0, troughput, radiance, traceResult);
         }
     }
  
@@ -288,8 +290,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
 bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, inout float4 radiance)
 {
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, texCoords);
-    //fi.albedo = pow(fi.albedo, 2.2f);
-      
+
     SurfaceMaterial currentMat;
     currentMat.albedo = fi.albedo;
     currentMat.ao = fi.ao;
@@ -336,8 +337,7 @@ void IndirectLight(
     inout float4 indirectSpecular)
 {
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, texCoords);
-   // fi.albedo = pow(fi.albedo, 2.2f);
-      
+
     SurfaceMaterial currentMat;
     currentMat.albedo = fi.albedo;
     currentMat.ao = fi.ao;
