@@ -206,6 +206,9 @@ SurfaceMaterial GetSurfaceMaterial(
     SurfaceMaterial surface;    
     surface.ao = GetAO(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel);
     surface.albedo = GetAlbedo(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel); //* surface.ao;
+    
+    surface.albedo = pow(surface.albedo, 2.2f);
+    
     surface.emissive = GetEmissive(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel);
     surface.height = GetHeight(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel);
     surface.roughness = GetRoughness(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel);
