@@ -37,6 +37,7 @@ RWTexture2D<float4>             g_GlobalUAV[]               : register(u0);
 #define DIRECT_LIGHT_FLAG_SKIP_BLEND (1 << 3)
 #define DIRECT_LIGHT_FLAG_SAVE_OPACITY (1 << 4)
 
+#define ANY_HIT_FLAGS_SKIP_BLEND (1 << 0)
 
 static float reflectiveAmbient = 0.005f;
 
@@ -61,7 +62,7 @@ struct TraceResult
 
 void TestRT(RayDesc ray, inout float3 debugColor);
 
-bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5f)
+bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5f, uint anyhitFlags = 0)
 {
     MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
     MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
@@ -74,7 +75,10 @@ bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5f)
     
     if (hitSurfaceMaterial.opacity < cutOff)
         return true;
-    
+ 
+    if (ANY_HIT_FLAGS_SKIP_BLEND & anyhitFlags && materialInfo.flags & INSTANCE_ALPHA_BLEND)
+        return true;
+        
     return false;
 }
 
@@ -95,7 +99,7 @@ bool CastRay(RayInfo ray, RaytracingAccelerationStructure scene, inout HitAttrib
         hit.minT = query.CandidateTriangleRayT();
         
         float opacity;
-        if (!TestOpacity(hit, opacity))      
+        if (!TestOpacity(hit, opacity, 0.5f, ray.anyhitFlags))      
             query.CommitNonOpaqueTriangleHit();
     };
   
@@ -255,6 +259,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
     RayInfo ray;
     ray.desc = GeneratePinholeCameraRay(texcoords * 2.f - 1.f);
     ray.flags = 0;
+    ray.anyhitFlags = 0;
     ray.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT; 
         
     TraceResult traceResult;
@@ -310,6 +315,7 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, inout float4 radi
     shadowRayInfo.desc.Origin = X;
     shadowRayInfo.desc.Direction = L;
     shadowRayInfo.flags = 0;
+    shadowRayInfo.anyhitFlags = 0;
     shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
    
     radiance.rgb += currentMat.emissive;
@@ -405,13 +411,14 @@ void IndirectLight(
         troughput *= brdfWeight;
         V = -ray.Direction;
                      
-        RayInfo opaqueRay;
-        opaqueRay.desc = ray;
-        opaqueRay.flags = 0;
-        opaqueRay.instanceMask = INSTANCE_OPAQUE;
+        RayInfo indirectRay;
+        indirectRay.desc = ray;
+        indirectRay.flags = 0;
+        indirectRay.anyhitFlags = ANY_HIT_FLAGS_SKIP_BLEND;
+        indirectRay.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
            
         TraceResult traceResult;
-        if (!TraceDirectLight(opaqueRay, rngState, 0.f, 0, troughput, indirectRadiance, traceResult))
+        if (!TraceDirectLight(indirectRay, rngState, 0.f, 0, troughput, indirectRadiance, traceResult))
         {
             indirectDiffuse.rgb += indirectRadiance.rgb * diffuseWeight;
             indirectSpecular.rgb += indirectRadiance.rgb * specWeight;          

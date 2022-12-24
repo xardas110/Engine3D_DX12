@@ -22,6 +22,7 @@ struct RayInfo
     RayDesc desc;
     uint instanceMask;
     uint flags;
+    uint anyhitFlags;
 };
 
 float2 BaryInterp2(in float2 v0, in float2 v1, in float2 v2, in float3 bary)
