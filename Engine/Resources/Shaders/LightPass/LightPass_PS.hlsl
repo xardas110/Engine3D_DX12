@@ -30,7 +30,7 @@ ConstantBuffer<RaytracingDataCB>   g_RaytracingData         : register(b2);
 
 RWTexture2D<float4>             g_GlobalUAV[]               : register(u0);
   
-static float reflectiveAmbient = 0.02f;
+static float reflectiveAmbient = 0.005f;
 
 struct PixelShaderOutput
 {
@@ -40,7 +40,17 @@ struct PixelShaderOutput
     float4 rtDebug          : SV_TARGET3;
     float4 TransparentColor : SV_TARGET4;
 };
-  
+ 
+struct RefractionInfo
+{
+    HitAttributes hit;
+    SurfaceMaterial mat;
+    MeshVertex vert;
+    float3 hitPos;
+    float3 geoNormal;
+    int depth;
+};
+
 void TestRT(RayDesc ray, inout float3 debugColor);
 
 bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5f)
@@ -136,95 +146,124 @@ float TraceVisibility(RayInfo ray, RaytracingAccelerationStructure scene)
     return visibility;
 }
 
-void TraceTranslucency(RayInfo ray, RngStateType rng, inout float3 troughput, inout float4 radiance)
+//Returns true on refraction
+bool TraceTranslucency(RayInfo ray, RngStateType rng, inout float3 troughput, inout float4 radiance, inout RefractionInfo refractInfo)
 {  
-    for (int i = 0; i < 2; i++)
-    { 
-        HitAttributes hit;
-        if (!CastRay(ray, g_Scene, hit))
-        {
-            if (i != 0)
-            {           
-                float4 skyVal = SampleSky(ray.desc.Direction, g_Cubemap, g_LinearRepeatSampler);
-                radiance.rgb += skyVal.rgb * troughput;
-            }
-            
-           return;
-        }
-           
-        MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
-        MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
-    
-        if ((materialInfo.flags & INSTANCE_OPAQUE || materialInfo.flags & INSTANCE_ALPHA_CUTOFF) && i == 0)
-            return;
-                     
-        MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
-        SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData);
-              
-        ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
-        hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
- 
-        float3 rayHit = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
-        float3 geometryNormal = RotatePoint(meshInfo.objRot, hitSurface.normal);
+    HitAttributes hit;
+    if (!CastRay(ray, g_Scene, hit))
+    {       
+        float3 color = SampleSky(ray.desc.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;
+        radiance.rgb += color * troughput;
         
-        float3 V = normalize(-ray.desc.Direction);
-        
-        if (dot(geometryNormal, V) < 0.0f)
-            geometryNormal = -geometryNormal;
-        if (dot(geometryNormal, hitSurfaceMaterial.normal) < 0.0f)
-            hitSurfaceMaterial.normal = -hitSurfaceMaterial.normal;
-                          
-        float3 L = -g_DirectionalLight.direction.rgb;
-        float3 X = rayHit;
-              
-        float3 rayHitOffset = X;
-
-        ray.desc.TMin = 0.0f;
-        ray.desc.Origin = rayHitOffset + hitSurfaceMaterial.normal * 0.1f;
-
-        RayInfo shadowRayInfo;
-        RayDesc shadowRayDesc;
-    
-        shadowRayDesc.TMin = 0.f;
-        shadowRayDesc.TMax = 1e10f;
-        shadowRayDesc.Origin = ray.desc.Origin;
-        shadowRayDesc.Direction = L;
-    
-        shadowRayInfo.desc = shadowRayDesc;
-        shadowRayInfo.flags = 0;
-        shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
-        
-        float shadowFactor = TraceVisibility(shadowRayInfo, g_Scene);
-
-        if (i==0)
-            radiance.a = hitSurfaceMaterial.opacity;
-        
-        float3 directLight = EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb * shadowFactor;
-        float3 ambientLight = hitSurfaceMaterial.albedo * reflectiveAmbient * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
-        
-        radiance.rgb += troughput * (directLight + ambientLight + hitSurfaceMaterial.emissive);
-
-        int brdfType;
-        if (hitSurfaceMaterial.metallic > 0.9f && hitSurfaceMaterial.roughness < 0.1f)
-        {
-            brdfType = BRDF_TYPE_SPECULAR;
-            
-        }
-        else
-        {
-            break;
-        }
-        
-        float3 brdfWeight;
-        float2 u = float2(Rand(rng), Rand(rng));
-        if (!EvaluateIndirectBRDF(u, hitSurfaceMaterial.normal, geometryNormal, V, hitSurfaceMaterial, brdfType, ray.desc.Direction, brdfWeight))
-        {
-            break;
-        }
-           
-        troughput *= brdfWeight;
-        
+        return false;
     }
+           
+    MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
+    MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
+          
+    if (refractInfo.depth == 0 && materialInfo.flags & INSTANCE_OPAQUE)
+        return false;
+        
+    if (refractInfo.depth == 0 && materialInfo.flags & INSTANCE_ALPHA_CUTOFF)
+        return false;
+        
+    MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
+    SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData);
+              
+    ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
+    hitSurfaceMaterial.albedo = pow(hitSurfaceMaterial.albedo, 2.2f);
+ 
+    float3 rayHit = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
+    float3 geometryNormal = RotatePoint(meshInfo.objRot, hitSurface.normal);
+        
+    float3 V = normalize(-ray.desc.Direction);
+        
+    if (dot(geometryNormal, V) < 0.0f)
+        geometryNormal = -geometryNormal;
+    if (dot(geometryNormal, hitSurfaceMaterial.normal) < 0.0f)
+        hitSurfaceMaterial.normal = -hitSurfaceMaterial.normal;
+                       
+    float3 L = -g_DirectionalLight.direction.rgb;
+    float3 X = rayHit;
+              
+    float3 rayHitOffset = OffsetRay(X, geometryNormal);
+
+    refractInfo.mat = hitSurfaceMaterial;
+    refractInfo.hit = hit;
+    refractInfo.geoNormal = geometryNormal;
+    refractInfo.vert = hitSurface;
+    refractInfo.hitPos = rayHitOffset;
+                       
+    ray.desc.TMin = 0.01f;
+    ray.desc.Origin = rayHitOffset;
+
+    RayInfo shadowRayInfo;
+    RayDesc shadowRayDesc;
+    
+    shadowRayDesc.TMin = 0.f;
+    shadowRayDesc.TMax = 1e10f;
+    shadowRayDesc.Origin = ray.desc.Origin;
+    shadowRayDesc.Direction = L;
+    
+    shadowRayInfo.desc = shadowRayDesc;
+    shadowRayInfo.flags = 0;
+    shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
+        
+    float shadowFactor = TraceVisibility(shadowRayInfo, g_Scene);
+
+    float3 directLight = EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb * shadowFactor;
+    float3 ambientLight = hitSurfaceMaterial.albedo * reflectiveAmbient * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+        
+    radiance.rgb += troughput * (directLight + ambientLight + hitSurfaceMaterial.emissive);
+            
+    if (materialInfo.flags & INSTANCE_OPAQUE || materialInfo.flags & INSTANCE_ALPHA_CUTOFF)
+        return false;
+
+    return true;
+}
+
+bool TranslucentPass(RayInfo ray, RngStateType rng, inout float3 troughput, inout float4 radiance)
+{   
+    RefractionInfo refractInfo;
+    refractInfo.depth = 0;
+    bool bResult = TraceTranslucency(ray, rng, troughput, radiance, refractInfo);
+    
+    if (!bResult)
+        return bResult;
+    
+    int numRefractions = 5;
+    for (int i = 0; i < numRefractions; i++)
+    {
+        refractInfo.depth += 1;
+
+        ray.desc.Origin = refractInfo.hitPos + ray.desc.Direction * 0.1f;
+           
+       
+        RefractionInfo reflectInfo = refractInfo;
+        RayInfo reflectRay = ray;
+        reflectRay.desc.Origin = reflectInfo.hitPos;
+        
+        float3 currentDir = normalize(ray.desc.Direction);
+         
+        if (reflectInfo.mat.roughness < 0.1f)
+        {       
+            float3 brdfWeight;
+            float2 u = float2(Rand(rng), Rand(rng));
+            if (EvaluateIndirectBRDF(u, reflectInfo.mat.normal, reflectInfo.geoNormal, -currentDir, reflectInfo.mat, BRDF_TYPE_SPECULAR, reflectRay.desc.Direction, brdfWeight))
+            {
+                TraceTranslucency(reflectRay, rng, brdfWeight, radiance, reflectInfo);
+            }       
+        }
+        
+        if (!TransmissionDirection(1.f, 1.52f, currentDir, refractInfo.mat.normal, ray.desc.Direction))
+            break;
+            
+        if (!TraceTranslucency(ray, rng, troughput, radiance, refractInfo))
+            break;
+
+    }
+    
+    return bResult;
 }
 
 // Generates a primary ray for pixel given in NDC space using pinhole camera
@@ -279,10 +318,17 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float3 indirectDiffuse = float3(0.f, 0.f, 0.f);
     float3 indirectSpecular = float3(0.f, 0.f, 0.f);
     
+    if (TranslucentPass(tranclucentRay, rngState, translucentTroughput, translucentRadiance))
+    {
+        OUT.DirectDiffuse = float4(0.f, 0.f, 0.f, 0.f);
+        OUT.TransparentColor = translucentRadiance;
+        OUT.IndirectDiffuse = float4(0.f, 0.f, 0.f, 0.f);
+        OUT.IndirectSpecular = float4(0.f, 0.f, 0.f, 0.f);
+        return OUT;
+    }
+    
     if (fi.shaderModel == SM_SKY)
     {
-        TraceTranslucency(tranclucentRay, rngState, translucentTroughput, translucentRadiance);
-        
         float3 color = SampleSky(tranclucentRay.desc.Direction, g_Cubemap, g_LinearRepeatSampler).rgb;
         
         OUT.DirectDiffuse = float4(color, 0.f);
@@ -326,13 +372,11 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     shadowRayInfo.flags = 0;
     shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
    
-    TraceTranslucency(tranclucentRay, rngState, translucentTroughput, translucentRadiance);
- 
     directRadiance += currentMat.emissive * troughput;
     
     float shadowFactor = TraceVisibility(shadowRayInfo, g_Scene);
     directRadiance += troughput * EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb * shadowFactor;
-    
+
 //Direct Lighting END-------------
 //Indirect Lighting BEGIN----------        
     float firstDiffuseBounceDistance = 0.f;

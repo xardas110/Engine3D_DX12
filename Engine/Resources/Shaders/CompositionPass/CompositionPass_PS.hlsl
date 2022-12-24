@@ -89,9 +89,9 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     denoisedIndirectDiffuse.rgb *= (diffDemod * 0.99f + 0.01f);
     denoisedIndirectSpecular.rgb *= (specDemod * 0.99f + 0.01f);
 
-    float3 color = directDiffuse.rgb + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb;
+    float3 color = directDiffuse.rgb + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb + transparentColor.rgb;
        
-    color = lerp(color, transparentColor.rgb, transparentColor.a);
+    //color = lerp(color, transparentColor.rgb, transparentColor.a);
     
     OUT.ColorTexture = float4(color, 1.f);
 
