@@ -24,6 +24,7 @@ struct PixelShaderInput
     float3 NormalLS_N   :   NORMALLS_N;
     float4 PrevPosition :   PREVPOS_CLIP;
     float4 PositionClip :   POS_CLIP;
+    float  ViewZ        :   VIEW_Z;
     float4 Position		:   SV_Position;
 };
 
@@ -70,7 +71,7 @@ PixelShaderOutput main(PixelShaderInput IN)
     OUT.albedo = gPack.albedo;
     OUT.aoMetallicHeight = gPack.aoMetallicHeight;
     OUT.emissiveSM = gPack.emissiveSM;
-    OUT.linearDepth = IN.PositionClip.z;
+    OUT.linearDepth = IN.ViewZ;
     OUT.normalRoughness = gPack.normalRough;
     OUT.geometryNormal = gPack.geometryNormal;
     OUT.motionVector = float4(IN.PrevPositionWS.rgb - IN.PositionWS.rgb, 1.f);

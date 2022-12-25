@@ -81,9 +81,11 @@ bool SponzaExe::LoadContent()
     std::cout << "game init" << std::endl;
 
     Material materialEmissive;
-    materialEmissive.diffuse = { 1.f, 0.f, 0.f, 1.f };
+    materialEmissive.diffuse = { 1.f, 1.f, 1.f, 1.f };
     materialEmissive.emissive = { 0.f, 0.f, 0.f };
-   
+    materialEmissive.roughness = 0.f;
+    materialEmissive.metallic = 1.f;
+
     auto materialID = MaterialInstance::CreateMaterial(L"DefaultEmissiveRed", materialEmissive);
 
     MaterialInstance material;
