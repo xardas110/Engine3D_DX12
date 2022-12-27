@@ -71,7 +71,7 @@ PixelShaderOutput main(PixelShaderInput IN)
     OUT.albedo = gPack.albedo;
     OUT.aoMetallicHeight = gPack.aoMetallicHeight;
     OUT.emissiveSM = gPack.emissiveSM;
-    OUT.linearDepth = IN.ViewZ;
+    OUT.linearDepth = IN.PositionClip.z;
     OUT.normalRoughness = gPack.normalRough;
     OUT.geometryNormal = gPack.geometryNormal;
     OUT.motionVector = float4(IN.PrevPositionWS.rgb - IN.PositionWS.rgb, 1.f);

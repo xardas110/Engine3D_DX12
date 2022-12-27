@@ -412,7 +412,14 @@ void IndirectLight(
         if (!TraceDirectLight(indirectRay, rngState, 0.0f, 0, troughput, indirectRadiance, traceResult))
         {
             indirectDiffuse.rgb += indirectRadiance.rgb * diffuseWeight;
-            indirectSpecular.rgb += indirectRadiance.rgb * specWeight;          
+            indirectSpecular.rgb += indirectRadiance.rgb * specWeight;      
+            
+            if (i == 0)
+            {
+                indirectDiffuse.a = REBLUR_FrontEnd_GetNormHitDist(50000.f, viewZ, g_RaytracingData.hitParams, fi.roughness) * diffuseWeight;
+                indirectSpecular.a = REBLUR_FrontEnd_GetNormHitDist(50000.f, viewZ, g_RaytracingData.hitParams, fi.roughness) * specWeight;
+            }
+            
             break;
         }
                      
