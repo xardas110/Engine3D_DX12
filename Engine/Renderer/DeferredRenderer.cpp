@@ -440,7 +440,7 @@ void DeferredRenderer::Render(Window& window)
             &CD3DX12_RESOURCE_BARRIER::Transition(
             dt.inMV.GetD3D12Resource().Get(), 
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+                D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 
         gfxCommandList->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
@@ -487,7 +487,7 @@ void DeferredRenderer::Render(Window& window)
         gfxCommandList->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
                 dt.inMV.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
         gfxCommandList->ResourceBarrier(1,

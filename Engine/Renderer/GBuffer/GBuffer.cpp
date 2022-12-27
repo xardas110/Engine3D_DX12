@@ -35,7 +35,7 @@ void GBuffer::CreateRenderTarget(int width, int height)
     normalRoughDesc.MipLevels = 1;
 
     auto motionDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height);
-    motionDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    motionDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     motionDesc.MipLevels = 1;
 
     auto motionDesc2D = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16_FLOAT, width, height);

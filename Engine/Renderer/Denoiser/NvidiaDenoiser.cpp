@@ -3,7 +3,7 @@
 #include <Application.h>
 #include <CommandQueue.h>
 
-#include <NRIDescs.hpp>
+//#include <NRIDescs.hpp>
 #include <NRDIntegration.hpp>
 
 #include <Helpers.h>
@@ -86,7 +86,7 @@ NvidiaDenoiser::NvidiaDenoiser(int width, int height, DenoiserTextures& texs)
 
 	nrd::DenoiserCreationDesc denoiserCreationDesc = {};
 	denoiserCreationDesc.requestedMethods = methodDescs;
-	denoiserCreationDesc.requestedMethodNum = 1;
+	denoiserCreationDesc.requestedMethodsNum = 1;
 
 	bool result = NRD.Initialize(denoiserCreationDesc, *m_NRIDevice, NRI, NRI);
 
@@ -125,8 +125,8 @@ NvidiaDenoiser::NvidiaDenoiser(int width, int height, DenoiserTextures& texs)
 
 		entryDesc.texture = current.texture;
 
-		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE;
-		entryDesc.nextLayout = nri::TextureLayout::SHADER_RESOURCE;
+		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE_STORAGE;
+		entryDesc.nextLayout = nri::TextureLayout::GENERAL;
 	};
 	{//viewZ
 		nri::TextureD3D12Desc texDesc = {};
