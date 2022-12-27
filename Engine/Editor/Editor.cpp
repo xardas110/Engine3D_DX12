@@ -320,7 +320,7 @@ void UpdateMaterial(Material& material)
 {
     ImGui::ColorPicker4("Color", &material.diffuse.x, ImGuiColorEditFlags_Float);
     ImGui::ColorPicker3("Transparency", &material.transparent.x, ImGuiColorEditFlags_Float);
-    ImGui::ColorPicker3("Emissive", &material.emissive.x, ImGuiColorEditFlags_Float);
+    ImGui::ColorPicker3("Emissive", &material.emissive.x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
     ImGui::SliderFloat("Roughness", &material.roughness, 0.f, 1.f);
     ImGui::SliderFloat("Metallic", &material.metallic, 0.f, 1.f);
     ImGui::SliderFloat("Opacity", &material.diffuse.w, 0.f, 1.f);
