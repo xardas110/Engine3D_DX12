@@ -18,14 +18,19 @@ struct DenoiserTextures
 {
 	DenoiserTextures(const Texture& inMV, const Texture& inViewZ, const Texture& inNormalRough,
 		const Texture& inIndirectDiffuse, const Texture& inIndirectSpecular,
-		const Texture& outIndirectDiffuse, const Texture& outIndirectSpecular)
+		const Texture& outIndirectDiffuse, const Texture& outIndirectSpecular,
+		const Texture& inShadowData, const Texture& outShadow)
 		:	inMV(inMV), 
 			inViewZ(inViewZ),
 			inNormalRough(inNormalRough), 
 			inIndirectDiffuse(inIndirectDiffuse),
 			inIndirectSpecular(inIndirectSpecular), 
 			outIndirectDiffuse(outIndirectDiffuse),
-			outIndirectSpecular(outIndirectSpecular) {};
+			outIndirectSpecular(outIndirectSpecular),
+			inShadowData(outIndirectDiffuse),
+			outShadow(outIndirectSpecular)
+			
+	{};
 
 	const Texture& inMV;
 	const Texture& inViewZ;
@@ -34,6 +39,9 @@ struct DenoiserTextures
 	const Texture& inIndirectSpecular;
 	const Texture& outIndirectDiffuse;
 	const Texture& outIndirectSpecular;
+
+	const Texture& inShadowData;
+	const Texture& outShadow;
 };
 
 namespace nriTypes
@@ -47,6 +55,8 @@ namespace nriTypes
 		inIndirectSpecular,
 		outIndirectDiffuse,
 		outIndirectSpecular,
+		inShadowData,
+		outShadow,
 		size
 	};
 }

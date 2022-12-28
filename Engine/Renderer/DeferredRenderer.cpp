@@ -122,7 +122,9 @@ DenoiserTextures DeferredRenderer::GetDenoiserTextures()
         m_LightPass->GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE),
         m_LightPass->GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR),
         m_LightPass->GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE),
-        m_LightPass->GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR)
+        m_LightPass->GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR),
+        m_LightPass->GetTexture(LIGHTBUFFER_SHADOW_DATA),
+        m_LightPass->GetTexture(LIGHTBUFFER_DENOISED_SHADOW)
     );
     return dt;
 }

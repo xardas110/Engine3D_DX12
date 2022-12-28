@@ -20,6 +20,14 @@ void LightPass::CreateRenderTarget(int width, int height)
     directDiffuseDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     directDiffuseDesc.MipLevels = 1;
 
+    auto shadowDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16_FLOAT, width, height);
+    shadowDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    shadowDesc.MipLevels = 1;
+
+    auto outShadowDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8_UNORM, width, height);
+    outShadowDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    outShadowDesc.MipLevels = 1;
+
     auto transparentColorDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height);
     transparentColorDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     transparentColorDesc.MipLevels = 1;
@@ -52,6 +60,14 @@ void LightPass::CreateRenderTarget(int width, int height)
         TextureUsage::RenderTarget,
         L"LightPass DirectDiffuse");
 
+    Texture shadow = Texture(shadowDesc, &ClearValue(shadowDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
+        TextureUsage::RenderTarget,
+        L"LightPass shadow");
+
+    denoisedShadow = Texture(outShadowDesc, &ClearValue(outShadowDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
+        TextureUsage::RenderTarget,
+        L"LightPass denoised shadow");
+
     Texture transparentColor = Texture(transparentColorDesc, &ClearValue(transparentColorDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
         TextureUsage::RenderTarget,
         L"LightPass TransparentColor");
@@ -83,6 +99,7 @@ void LightPass::CreateRenderTarget(int width, int height)
     renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_DIRECT_LIGHT, directDiffuse);
     renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_INDIRECT_DIFFUSE, indirectDiffuse);
     renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_INDIRECT_SPECULAR, indirectSpecular);
+    renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_SHADOW_DATA, shadow);
     renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_RT_DEBUG, rtDebug);
     renderTarget.AttachTexture(AttachmentPoint::Color4, transparentColor);
 
@@ -245,11 +262,13 @@ void LightPass::CreatePipeline()
 void LightPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
 {
     float clearValue[] = { 0.f, 0.f, 0.f, 0.f };
+    float clearValueShadow[] = { 0.f, 0.f, 0.f, 0.f };
 
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_DIRECT_LIGHT), clearValue);
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color4), clearValue);
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE), clearValue);
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR), clearValue);
+    commandlist.ClearTexture(GetTexture(LIGHTBUFFER_SHADOW_DATA), clearValue);
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_RT_DEBUG), clearColor);
 }
 
@@ -259,6 +278,7 @@ void LightPass::OnResize(int width, int height)
     rwAccumulation.Resize(width, height);
     denoisedIndirectDiffuse.Resize(width, height);
     denoisedIndirectSpecular.Resize(width, height);
+    denoisedShadow.Resize(width, height);
 
     CreateSRVViews();
     CreateUAVViews();
@@ -293,6 +313,14 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateSRVViews()
         m_SRVHeap.SetHandle(LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR));
 
     device->CreateShaderResourceView(
+        GetTexture(LIGHTBUFFER_SHADOW_DATA).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(LIGHTBUFFER_SHADOW_DATA));
+
+    device->CreateShaderResourceView(
+        GetTexture(LIGHTBUFFER_DENOISED_SHADOW).GetD3D12Resource().Get(), nullptr,
+        m_SRVHeap.SetHandle(LIGHTBUFFER_DENOISED_SHADOW));
+
+    device->CreateShaderResourceView(
         GetTexture(LIGHTBUFFER_ACCUM_BUFFER).GetD3D12Resource().Get(), nullptr,
         m_SRVHeap.SetHandle(LIGHTBUFFER_ACCUM_BUFFER));
 
@@ -322,6 +350,7 @@ const Texture& LightPass::GetTexture(int type)
     if (type == LIGHTBUFFER_ACCUM_BUFFER) return rwAccumulation;
     if (type == LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE) return denoisedIndirectDiffuse;
     if (type == LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR) return denoisedIndirectSpecular;
+    if (type == LIGHTBUFFER_DENOISED_SHADOW) return denoisedShadow;
 
     return renderTarget.GetTexture((AttachmentPoint)type);
 }

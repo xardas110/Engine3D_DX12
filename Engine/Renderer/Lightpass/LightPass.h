@@ -53,6 +53,7 @@ private:
 	Texture rwAccumulation;
 	Texture denoisedIndirectDiffuse;
 	Texture denoisedIndirectSpecular;
+	Texture denoisedShadow;
 
 	const Texture& GetTexture(int type);
 

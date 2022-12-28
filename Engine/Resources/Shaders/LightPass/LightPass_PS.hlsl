@@ -48,6 +48,7 @@ struct PixelShaderOutput
     float4 IndirectSpecular : SV_TARGET2;
     float4 rtDebug          : SV_TARGET3;
     float4 TransparentColor : SV_TARGET4;
+    float2 ShadowData       : SV_TARGET7;
 };
  
 struct TraceResult
@@ -58,6 +59,12 @@ struct TraceResult
     float3 hitPos;
     float3 geoNormal;
     int depth;
+};
+
+struct VisibilityResult
+{
+    bool bHit;
+    float hitT;
 };
 
 void TestRT(RayDesc ray, inout float3 debugColor);
@@ -137,14 +144,14 @@ bool CastRay(RayInfo ray, RaytracingAccelerationStructure scene, inout HitAttrib
     return query.CommittedStatus() == COMMITTED_TRIANGLE_HIT;
 }
 
-float TraceVisibility(RayInfo ray, RaytracingAccelerationStructure scene)
+float TraceVisibility(RayInfo ray, RaytracingAccelerationStructure scene, out VisibilityResult result)
 {
     RayQuery < RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH > shadowQuery;
     shadowQuery.TraceRayInline(scene, ray.flags, ray.instanceMask, ray.desc);
     
     float visibility = 1.f;
-    HitAttributes hit;
-        
+    
+    HitAttributes hit;       
     while (shadowQuery.Proceed())
     {
         hit.bFrontFaced = shadowQuery.CandidateTriangleFrontFace();
@@ -157,29 +164,17 @@ float TraceVisibility(RayInfo ray, RaytracingAccelerationStructure scene)
         
         float opacity;
         if (!TestOpacity(hit, opacity, 1.f))      
-            shadowQuery.CommitNonOpaqueTriangleHit();
-
-       // visibility *= 1.f - opacity;       
+            shadowQuery.CommitNonOpaqueTriangleHit();     
     }
     
-    if (shadowQuery.CommittedStatus() != COMMITTED_TRIANGLE_HIT)
+    result.bHit = shadowQuery.CommittedStatus() == COMMITTED_TRIANGLE_HIT;
+    
+    if (!result.bHit)
         return visibility;
+     
+    result.hitT = shadowQuery.CommittedRayT();
     
-    hit.bFrontFaced = shadowQuery.CommittedTriangleFrontFace();
-    hit.instanceIndex = shadowQuery.CommittedInstanceID();
-    hit.primitiveIndex = shadowQuery.CommittedPrimitiveIndex();
-    hit.geometryIndex = shadowQuery.CommittedGeometryIndex();
-    hit.barycentrics = shadowQuery.CommittedTriangleBarycentrics();
-    hit.objToWorld = shadowQuery.CommittedObjectToWorld3x4();
-    hit.minT = shadowQuery.CommittedRayT();
-    
-    visibility = 0.f;
-    
-    //float opacity;
-   // TestOpacity(hit, opacity, 1.f);
-    //visibility *= 1.f - opacity;
-    
-    return visibility;
+    return 0.f;
 }
 
 //Returns true on refraction
@@ -238,17 +233,19 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
     shadowRayInfo.desc.Direction = L;
     shadowRayInfo.flags = 0;
     shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
-        
-    float3 directLight = EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+         
+    float3 directLight = float3(0.f, 0.f, 0.f);
     
-    for (int i = 0; i < 1; i++)
-    {
-        shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(float2(Rand(rng), Rand(rng)), L, 0.05f);
-        directLight.rgb *= TraceVisibility(shadowRayInfo, g_Scene);
-    }
+    shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(float2(Rand(rng), Rand(rng)), L, 0.05f);
+    
+    VisibilityResult visibilityResult;
+    float visibility = TraceVisibility(shadowRayInfo, g_Scene, visibilityResult);
+    
+    if (visibility > 0.f)
+        directLight += EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
     
     float3 ambientLight = hitSurfaceMaterial.albedo * ambientFactor * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
-        
+
     radiance.rgb += troughput * (directLight + ambientLight + hitSurfaceMaterial.emissive);
             
     return true;
@@ -312,7 +309,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
 }
 
 
-bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, inout float4 radiance)
+bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inout float4 radiance, inout float2 shadowData)
 {
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, texCoords);
 
@@ -348,20 +345,23 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, inout float4 radi
    
     radiance.rgb += currentMat.emissive;
     
-    radiance.rgb += EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+    shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(float2(Rand(rng), Rand(rng)), L, 0.05f);
     
-    for (int i = 0; i < 1; i++)
-    {
-        shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(float2(Rand(rng), Rand(rng)), L, 0.05f);
-        radiance.rgb *= TraceVisibility(shadowRayInfo, g_Scene);
-    }
+    VisibilityResult visibilityResult;
+    float visibility = TraceVisibility(shadowRayInfo, g_Scene, visibilityResult);
     
+    shadowData = SIGMA_FrontEnd_PackShadow(viewZ, visibilityResult.hitT, 0.5f);
+    
+    if (visibility > 0.f)
+        radiance.rgb += EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+      
     return true;
 }
 
 void IndirectLight(
     in float2 texCoords,
-    RngStateType rngState, 
+    RngStateType rngState,
+    float viewZ,
     inout float3 troughput, 
     inout float4 indirectDiffuse, 
     inout float4 indirectSpecular)
@@ -382,8 +382,7 @@ void IndirectLight(
        
     float3 X = GetWorldPosFromDepth(texCoords, fi.depth, g_Camera.invViewProj);
     float3 L = -g_DirectionalLight.direction.rgb;
-    float3 V = normalize(g_Camera.pos.rgb - X.rgb);
-    float viewZ = g_GBufferHeap[GBUFFER_LINEAR_DEPTH].Sample(g_NearestRepeatSampler, texCoords).r;
+    float3 V = normalize(g_Camera.pos.rgb - X.rgb);    
     float3 geometryNormal = fi.geometryNormal;
     
     RayDesc ray;
@@ -484,24 +483,27 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
     uint2 pixelCoords = g_Camera.resolution * TexCoord;
 
+    float viewZ = g_GBufferHeap[GBUFFER_LINEAR_DEPTH].Sample(g_NearestRepeatSampler, TexCoord).r;
+    
     RngStateType rngState = InitRNG(pixelCoords, g_Camera.resolution, g_RaytracingData.frameNumber);
         
     float3 directRadiance = float3(0.f, 0.f, 0.f);  
     float3 troughput = float3(1.f, 1.f, 1.f);
     
     OUT.DirectLight = float4(0.f, 0.f, 0.f, 0.f);
+    OUT.ShadowData = SIGMA_FrontEnd_PackShadow(60000.f, 60000.f, 0.f);
     OUT.IndirectDiffuse = float4(0.f, 0.f, 0.f, 0.f);
     OUT.IndirectSpecular = float4(0.f, 0.f, 0.f, 0.f); 
     OUT.TransparentColor = float4(0.f, 0.f, 0.f, 0.f);
     OUT.rtDebug = float4(0.f, 0.f, 0.f, 0.f);
-    
+
     TranslucentPass(TexCoord, rngState, float3(1.f, 1.f, 1.f), OUT.TransparentColor);
      
-    if (!DirectLightGBuffer(TexCoord, rngState, OUT.DirectLight))
+    if (!DirectLightGBuffer(TexCoord, rngState, viewZ, OUT.DirectLight, OUT.ShadowData))
     {
         return OUT;
     }   
-    IndirectLight(TexCoord, rngState, troughput, OUT.IndirectDiffuse, OUT.IndirectSpecular);
+    IndirectLight(TexCoord, rngState, viewZ, troughput, OUT.IndirectDiffuse, OUT.IndirectSpecular);
     
     /*
     
