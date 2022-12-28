@@ -465,7 +465,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     OUT.TransparentColor = float4(0.f, 0.f, 0.f, 0.f);
     OUT.rtDebug = float4(0.f, 0.f, 0.f, 0.f);
     
-    //TranslucentPass(TexCoord, rngState, float3(1.f, 1.f, 1.f), OUT.TransparentColor);
+    TranslucentPass(TexCoord, rngState, float3(1.f, 1.f, 1.f), OUT.TransparentColor);
      
     if (!DirectLightGBuffer(TexCoord, rngState, OUT.DirectLight))
     {
