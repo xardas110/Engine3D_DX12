@@ -92,6 +92,56 @@ float3 SphericalDirectionalLightRayDirection(in float2 rect, in float3 direction
     return normalize(direction + p.x * tangent + p.y * bitangent);
 }
 
+// https://en.wikipedia.org/wiki/Ordered_dithering
+#define STL_BAYER_LINEAR 0
+#define STL_BAYER_REVERSEBITS 1
+
+// RESULT: [0; 15]
+uint Bayer4x4ui( uint2 samplePos, uint frameIndex)
+{
+    uint2 samplePosWrap = samplePos & 3;
+    uint a = 2068378560 * ( 1 - ( samplePosWrap.x >> 1 ) ) + 1500172770 * ( samplePosWrap.x >> 1 );
+    uint b = ( samplePosWrap.y + ( ( samplePosWrap.x & 1 ) << 2 ) ) << 2;
+
+    uint sampleOffset = frameIndex;
+
+    return ( ( a >> b ) + sampleOffset ) & 0xF;
+}
+
+/*
+//https://github.com/NVIDIAGameWorks/RayTracingDenoiser
+float2 GetBlueNoise(Texture2D<uint3> texScramblingRanking, uint2 pixelPos, uint seed, uint sampleIndex, uint sppVirtual = 1, uint spp = 1)
+{
+    // Final SPP - total samples per pixel ( there is a different "gIn_Scrambling_Ranking" texture! )
+    // SPP - samples per pixel taken in a single frame ( must be POW of 2! )
+    // Virtual SPP - "Final SPP / SPP" - samples per pixel distributed in time ( across frames )
+
+    // Based on:
+    //     https://eheitzresearch.wordpress.com/772-2/
+    // Source code and textures can be found here:
+    //     https://belcour.github.io/blog/research/publication/2019/06/17/sampling-bluenoise.html (but 2D only)
+
+    // Sample index
+    uint frameIndex = g_RaytracingData.frameNumber;
+    uint virtualSampleIndex = (frameIndex + seed) & (sppVirtual - 1);
+    sampleIndex &= spp - 1;
+    sampleIndex += virtualSampleIndex * spp;
+
+    // The algorithm
+    uint3 A = texScramblingRanking[pixelPos & 127];
+    uint rankedSampleIndex = sampleIndex ^ A.z;
+    uint4 B = gIn_Sobol[uint2(rankedSampleIndex & 255, 0)];
+    float4 blue = (float4(B ^ A.xyxy) + 0.5) * (1.0 / 256.0);
+
+    // Randomize in [ 0; 1 / 256 ] area to get rid of possible banding
+    uint d = Bayer4x4ui(pixelPos, g_RaytracingData.frameNumber);
+    float2 dither = (float2(d & 3, d >> 2) + 0.5) * (1.0 / 4.0);
+    blue += (dither.xyxy - 0.5) * (1.0 / 256.0);
+
+    return saturate(blue.xy);
+}
+*/
+
 bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5f, uint anyhitFlags = 0)
 {
     MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];

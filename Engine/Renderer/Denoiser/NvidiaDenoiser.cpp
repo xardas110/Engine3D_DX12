@@ -46,6 +46,17 @@ NvidiaDenoiser::NvidiaDenoiser(int width, int height, DenoiserTextures& texs)
 	auto device = Application::Get().GetDevice();
 	auto cq = Application::Get().GetCommandQueue();
 
+	/*
+	auto copyQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
+	auto cl = copyQueue->GetCommandList();
+
+	cl->LoadTextureFromFile(scrambling, L"Assets/Textures/BlueNoise/scrambling_ranking_128x128_2d_1spp.png");
+	//cl->LoadTextureFromFile(sobol, L"Assets/Textures/BlueNoise/sobol_256_4d.png");
+
+	auto fVal = copyQueue->ExecuteCommandList(cl);
+	copyQueue->WaitForFenceValue(fVal);
+	*/
+
 	m_Adapter = Application::Get().GetAdapter(false).Get();
 
 	nri::DeviceCreationD3D12Desc deviceDesc = {};

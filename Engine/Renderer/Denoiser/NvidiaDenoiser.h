@@ -102,7 +102,6 @@ class NvidiaDenoiser
 	void RenderFrame(CommandList& commandList, const CameraCB& cam, int currentBackbufferIndex, int width, int height);
 	void OnGUI();
 
-
 	NrdIntegration NRD = NrdIntegration(3);
 	NrdIntegration NRD_Sigma = NrdIntegration(3);
 
@@ -125,4 +124,7 @@ class NvidiaDenoiser
 
 	const int width, height;
 	DenoiserSettings denoiserSettings;
+
+	Texture scrambling;
+	Texture sobol;
 };
