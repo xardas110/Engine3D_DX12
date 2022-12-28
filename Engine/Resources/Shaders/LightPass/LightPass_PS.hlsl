@@ -62,6 +62,29 @@ struct TraceResult
 
 void TestRT(RayDesc ray, inout float3 debugColor);
 
+//Raytracing gems II chapter 24
+float2 MapRectToCircle(in float2 rect)
+{      
+    float radius = sqrt(rect.x);      
+    float angle = rect.y * 2.0 * 3.14159265359;
+        
+    return float2(
+        radius * cos(angle),
+        radius * sin(angle)
+    );
+}
+
+float3 SphericalDirectionalLightRayDirection(in float2 rect, in float3 direction, in float radius)
+{
+    float2 p = MapRectToCircle(rect) * radius;
+
+    float3 tangent = normalize(cross(direction, float3(0.0, 1.0, 0.0)));
+    
+    float3 bitangent = normalize(cross(tangent, direction));
+    
+    return normalize(direction + p.x * tangent + p.y * bitangent);
+}
+
 bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5f, uint anyhitFlags = 0)
 {
     MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
@@ -198,12 +221,8 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
     float3 L = -g_DirectionalLight.direction.rgb;
     float3 X = rayHit;
     
-    float3 geometryNormal = RotatePoint(meshInfo.objRot, hitSurface.normal);          
-    if (dot(geometryNormal, V) < 0.0f)
-        geometryNormal = -geometryNormal;
-    if (dot(geometryNormal, hitSurfaceMaterial.normal) < 0.0f)
-        hitSurfaceMaterial.normal = -hitSurfaceMaterial.normal;
-   
+    float3 geometryNormal = RotatePoint(meshInfo.objRot, hitSurface.normal);   
+      
     float3 rayHitOffset = OffsetRay(X, geometryNormal);
 
     traceResult.mat = hitSurfaceMaterial;
@@ -213,16 +232,21 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
     traceResult.hitPos = rayHitOffset;
                        
     RayInfo shadowRayInfo;
-    shadowRayInfo.desc.TMin = 0.f;
+    shadowRayInfo.desc.TMin = 0.0f;
     shadowRayInfo.desc.TMax = 1e10f;
     shadowRayInfo.desc.Origin = rayHitOffset;
     shadowRayInfo.desc.Direction = L;
     shadowRayInfo.flags = 0;
     shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
         
-    float shadowFactor = TraceVisibility(shadowRayInfo, g_Scene);
-
-    float3 directLight = EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb * shadowFactor;
+    float3 directLight = EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+    
+    for (int i = 0; i < 1; i++)
+    {
+        shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(float2(Rand(rng), Rand(rng)), L, 0.05f);
+        directLight.rgb *= TraceVisibility(shadowRayInfo, g_Scene);
+    }
+    
     float3 ambientLight = hitSurfaceMaterial.albedo * ambientFactor * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
         
     radiance.rgb += troughput * (directLight + ambientLight + hitSurfaceMaterial.emissive);
@@ -258,6 +282,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
 {
     RayInfo ray;
     ray.desc = GeneratePinholeCameraRay(texcoords * 2.f - 1.f);
+    ray.desc.TMin = 0.2f;
     ray.flags = 0;
     ray.anyhitFlags = 0;
     ray.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT; 
@@ -323,8 +348,13 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, inout float4 radi
    
     radiance.rgb += currentMat.emissive;
     
-    float shadowFactor = TraceVisibility(shadowRayInfo, g_Scene);
-    radiance.rgb += EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb * shadowFactor;
+    radiance.rgb += EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+    
+    for (int i = 0; i < 1; i++)
+    {
+        shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(float2(Rand(rng), Rand(rng)), L, 0.05f);
+        radiance.rgb *= TraceVisibility(shadowRayInfo, g_Scene);
+    }
     
     return true;
 }
@@ -357,17 +387,22 @@ void IndirectLight(
     float3 geometryNormal = fi.geometryNormal;
     
     RayDesc ray;
-    ray.TMin = 0.f;
+    ray.TMin = 0.0f;
     ray.TMax = 1e10f;
     ray.Origin = OffsetRay(X, fi.geometryNormal) + fi.geometryNormal * 0.05f;
     ray.Direction = -V;
-
+        
     BRDFData gBufferBRDF = PrepareBRDFData(fi.normal, -g_DirectionalLight.direction.rgb, V, currentMat);
     
     float4 indirectRadiance = float4(0.f, 0.f, 0.f, 0.f);
     
     for (int i = 0; i < g_RaytracingData.numBounces; i++)
-    {
+    {       
+        if (dot(geometryNormal, V) < 0.0f)
+            geometryNormal = -geometryNormal;
+        if (dot(geometryNormal, currentMat.normal) < 0.0f)
+            currentMat.normal = -currentMat.normal;
+        
         int brdfType;
         float brdfProbability = GetBRDFProbability(currentMat, V, currentMat.normal);
         if (Rand(rngState) < brdfProbability)
@@ -386,12 +421,7 @@ void IndirectLight(
             if (i == 0)
                 diffuseWeight = 1.f;
         }       
-        
-        if (dot(geometryNormal, V) < 0.0f)
-            geometryNormal = -geometryNormal;
-        if (dot(geometryNormal, currentMat.normal) < 0.0f)
-            currentMat.normal = -currentMat.normal;
-        
+              
         float3 brdfWeight;
         float2 u = float2(Rand(rngState), Rand(rngState));
         if (!EvaluateIndirectBRDF(u, currentMat.normal, geometryNormal, V, currentMat, brdfType, ray.Direction, brdfWeight))
@@ -401,7 +431,7 @@ void IndirectLight(
            
         troughput *= brdfWeight;
         V = -ray.Direction;
-                     
+               
         RayInfo indirectRay;
         indirectRay.desc = ray;
         indirectRay.flags = 0;

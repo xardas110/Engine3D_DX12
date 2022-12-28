@@ -276,7 +276,7 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 			nriTextures[nriTypes::outIndirectSpecular].entryFormat });
 	}
 
-	NRD.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, true);
+	NRD.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, false);
 
 	NRI.DestroyCommandBuffer(*nriCommandBuffer);
 }
