@@ -194,21 +194,7 @@ void DeferredRenderer::Render(Window& window)
 
     auto& directionalLight = game->m_DirectionalLight;
 
-    ImGui::Begin("Directional light settings");
-    if (ImGui::SliderFloat3("Direction", &directionalLight.data.direction.m128_f32[0], -1, +1))
-    {
-        if (XMVector3Equal(directionalLight.data.direction, XMVectorZero()))
-        { 
-            directionalLight.data.direction = { 0.f, -1.f, 0.f, directionalLight.data.direction.m128_f32[3] };
-        }        
-        else
-        { 
-            directionalLight.data.direction = XMVector3Normalize(directionalLight.data.direction);
-        }
-    }
-    ImGui::SliderFloat("Lux", &directionalLight.data.color.m128_f32[3], 0, 20.f);
-    ImGui::ColorPicker3("Color", &directionalLight.data.color.m128_f32[0], ImGuiColorEditFlags_Float);    
-    ImGui::End();
+    directionalLight.UpdateUI();
 
     // Clear the render targets.
     {
@@ -385,7 +371,7 @@ void DeferredRenderer::Render(Window& window)
         gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::GBufferHeap, m_GBuffer->m_SRVHeap.GetGPUHandle(0));
 
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::CameraCB, cameraCB);
-        commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::DirectionalLightCB, directionalLight);
+        commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::DirectionalLightCB, directionalLight.GetData());
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::RaytracingDataCB, rtData);
 
         commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_Skybox->heap.heap.Get());

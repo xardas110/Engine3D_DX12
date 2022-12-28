@@ -345,12 +345,13 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inou
    
     radiance.rgb += currentMat.emissive;
     
-    shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(float2(Rand(rng), Rand(rng)), L, 0.05f);
+    shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(float2(Rand(rng), Rand(rng)), L, g_DirectionalLight.tanAngularRadius);
     
     VisibilityResult visibilityResult;
     float visibility = TraceVisibility(shadowRayInfo, g_Scene, visibilityResult);
     
-    shadowData = SIGMA_FrontEnd_PackShadow(viewZ, visibilityResult.hitT, 0.5f);
+    if (visibilityResult.bHit)
+        shadowData = SIGMA_FrontEnd_PackShadow(viewZ, visibilityResult.hitT, g_DirectionalLight.tanAngularRadius);
     
     if (visibility > 0.f)
         radiance.rgb += EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
@@ -491,7 +492,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float3 troughput = float3(1.f, 1.f, 1.f);
     
     OUT.DirectLight = float4(0.f, 0.f, 0.f, 0.f);
-    OUT.ShadowData = SIGMA_FrontEnd_PackShadow(viewZ, 60000.f, 0.f);
+    OUT.ShadowData = SIGMA_FrontEnd_PackShadow(viewZ, NRD_FP16_MAX, g_DirectionalLight.tanAngularRadius);
     OUT.IndirectDiffuse = float4(0.f, 0.f, 0.f, 0.f);
     OUT.IndirectSpecular = float4(0.f, 0.f, 0.f, 0.f); 
     OUT.TransparentColor = float4(0.f, 0.f, 0.f, 0.f);

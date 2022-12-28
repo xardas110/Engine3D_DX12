@@ -14,5 +14,14 @@ struct DirectionalLight
 	void SetColor(const XMFLOAT3 newColor);
 	void SetItensity(float itensity);
 
+	void UpdateUI();
+
+	const DirectionalLightCB& GetData()
+	{
+		data.tanAngularRadius = tan(DirectX::XMConvertToRadians(data.angularDiameter * 0.5f));
+		return data;
+	}
+
+private:
 	DirectionalLightCB data;
 };

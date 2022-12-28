@@ -246,6 +246,11 @@ struct DirectionalLightCB
     XMVECTOR direction;
     //Color and itensity
     XMVECTOR color;
+
+    float azimuth COMPAT_FLOAT(-147.f);
+    float elevation COMPAT_FLOAT(45.f);
+    float angularDiameter COMPAT_FLOAT(0.533f);
+    float tanAngularRadius; //Tan( DegToRad( m_Settings.sunAngularDiameter * 0.5f ) ); in application
 };
 
 struct CameraCB
