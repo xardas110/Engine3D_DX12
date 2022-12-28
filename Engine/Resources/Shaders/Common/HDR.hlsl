@@ -91,6 +91,7 @@ float3 ApplyTonemap(in float3 hdr, in TonemapCB tonemapParamaters)
     }
 
     return pow(abs(SDR), 1.0f / tonemapParamaters.Gamma);
+
 }
 
 #endif
