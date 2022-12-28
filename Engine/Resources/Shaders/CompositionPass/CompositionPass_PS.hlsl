@@ -45,7 +45,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float4 directDiffuse = g_LightMapHeap[LIGHTBUFFER_DIRECT_LIGHT].Sample(g_NearestRepeatSampler, TexCoord);
     float4 denoisedIndirectDiffuse = g_LightMapHeap[LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE].Sample(g_NearestRepeatSampler, TexCoord);
     float4 denoisedIndirectSpecular = g_LightMapHeap[LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR].Sample(g_NearestRepeatSampler, TexCoord);
-    float denoisedShadow = g_LightMapHeap[LIGHTBUFFER_DENOISED_SHADOW].Sample(g_NearestRepeatSampler, TexCoord).r;
+    float denoisedShadow = g_LightMapHeap[LIGHTBUFFER_DENOISED_SHADOW].Sample(g_NearestRepeatSampler, TexCoord);
     
     float4 transparentColor = g_LightMapHeap[LIGHTBUFFER_TRANSPARENT_COLOR].Sample(g_NearestRepeatSampler, TexCoord);
       

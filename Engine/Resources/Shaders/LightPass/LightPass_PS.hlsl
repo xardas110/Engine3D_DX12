@@ -30,16 +30,16 @@ ConstantBuffer<RaytracingDataCB>   g_RaytracingData         : register(b2);
 
 RWTexture2D<float4>             g_GlobalUAV[]               : register(u0);
   
+static float reflectiveAmbient = 0.005f;
 
 #define DIRECT_LIGHT_FLAG_SKIP_SKY (1 << 0)
 #define DIRECT_LIGHT_FLAG_SKIP_OPAQUE (1 << 1)
 #define DIRECT_LIGHT_FLAG_SKIP_CUTOFF (1 << 2)
 #define DIRECT_LIGHT_FLAG_SKIP_BLEND (1 << 3)
 #define DIRECT_LIGHT_FLAG_SAVE_OPACITY (1 << 4)
+#define DIRECT_LIGHT_FLAG_HARD_SHADOWS (1 << 5)
 
 #define ANY_HIT_FLAGS_SKIP_BLEND (1 << 0)
-
-static float reflectiveAmbient = 0.005f;
 
 struct PixelShaderOutput
 {
@@ -236,7 +236,8 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
          
     float3 directLight = float3(0.f, 0.f, 0.f);
     
-    shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(float2(Rand(rng), Rand(rng)), L, 0.05f);
+    if (!(flags & DIRECT_LIGHT_FLAG_HARD_SHADOWS))
+        shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(float2(Rand(rng), Rand(rng)), L, 0.05f);
     
     VisibilityResult visibilityResult;
     float visibility = TraceVisibility(shadowRayInfo, g_Scene, visibilityResult);
@@ -301,7 +302,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
         {           
             ray.desc.Origin = traceResult.hitPos;  
             troughput *= brdfWeight;
-            TraceDirectLight(ray, rng, 0.004f, 0, troughput, radiance, traceResult);
+            TraceDirectLight(ray, rng, 0.004f, DIRECT_LIGHT_FLAG_HARD_SHADOWS, troughput, radiance, traceResult);
         }
     }
  
@@ -353,8 +354,7 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inou
     if (visibilityResult.bHit)
         shadowData = SIGMA_FrontEnd_PackShadow(viewZ, visibilityResult.hitT, g_DirectionalLight.tanAngularRadius);
     
-    if (visibility > 0.f)
-        radiance.rgb += EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+    radiance.rgb += EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
       
     return true;
 }
