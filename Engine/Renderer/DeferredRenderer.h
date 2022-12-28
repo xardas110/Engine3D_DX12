@@ -13,6 +13,7 @@
 #include <Skybox/Skybox.h>
 #include <HDR/HDR.h>
 #include <DLSS/DLSS.h>
+#include <DirectLightPass.h>
 
 class Game;
 class MeshTuple;
@@ -76,6 +77,7 @@ class DeferredRenderer
 	std::unique_ptr<Skybox> m_Skybox;
 
 	std::unique_ptr<GBuffer> m_GBuffer;
+	std::unique_ptr<DirectLightPass> m_DirectLightPass;
 	std::unique_ptr<LightPass> m_LightPass; //Init before denoiser
 	std::unique_ptr<CompositionPass> m_CompositionPass;
 	

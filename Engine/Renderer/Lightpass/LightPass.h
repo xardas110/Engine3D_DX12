@@ -1,5 +1,5 @@
 #pragma once
-#pragma once
+
 #include <RenderTarget.h>
 #include <RootSignature.h>
 #include <CommandList.h>

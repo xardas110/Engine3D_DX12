@@ -24,7 +24,8 @@ StructuredBuffer<Material>      g_GlobalMaterials           : register(t4, space
 Texture2D                       g_GBufferHeap[]             : register(t5, space6);
 Texture2D                       g_LightMapHeap[]            : register(t6, space7);
 
-TextureCube<float4>             g_Cubemap                   : register(t7, space8);
+Texture2D                       g_DirectLightHeap           : register(t7, space8);
+Texture2D                       g_DirectLightShadowHeap     : register(t8, space9);
   
 SamplerState                    g_NearestRepeatSampler      : register(s0);
 SamplerState                    g_LinearRepeatSampler       : register(s1);
@@ -43,24 +44,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     PixelShaderOutput OUT;
 
     GFragment fi = UnpackGBuffer(g_GBufferHeap, g_NearestRepeatSampler, TexCoord);       
-    //fi.albedo = pow(fi.albedo, 2.2f); //pow(fi.albedo, 2.2f);
-   
-    /*
-    if (fi.shaderModel == SM_SKY)
-    {
-        uint2 pixelCoords = TexCoord * g_Camera.resolution;
-            
-        float3 direction;
-        GetCameraDirectionFromUV(pixelCoords, g_Camera.resolution, g_Camera.pos, g_Camera.invViewProj, direction);
-         
-        float3 color = SampleSky(direction, g_Cubemap, g_LinearRepeatSampler).rgb;
-              
-        OUT.ColorTexture = float4(color, 1.f);
-            
-        return OUT;
-    }
-    */
-    
+  
     float4 directDiffuse = g_LightMapHeap[LIGHTBUFFER_DIRECT_LIGHT].Sample(g_NearestRepeatSampler, TexCoord);
     float4 denoisedIndirectDiffuse = g_LightMapHeap[LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE].Sample(g_NearestRepeatSampler, TexCoord);
     float4 denoisedIndirectSpecular = g_LightMapHeap[LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR].Sample(g_NearestRepeatSampler, TexCoord);

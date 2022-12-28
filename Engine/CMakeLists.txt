@@ -72,7 +72,14 @@ set( HEADER_FILES
     "DX12/StaticDescriptorHeap.h" 
     "Renderer/CompositionPass/CompositionPass.h"
     "Renderer/Debug/DebugTexture.h"
- "Lights/DirectionalLight.h"  "Renderer/Denoiser/NvidiaDenoiser.h" "core/DX12Helper.h" "Renderer/Skybox/Skybox.h" "Renderer/HDR/HDR.h" "Renderer/DLSS/DLSS.h" "core/Logger.h")
+    "Lights/DirectionalLight.h"  
+    "Renderer/Denoiser/NvidiaDenoiser.h" 
+    "core/DX12Helper.h" 
+    "Renderer/Skybox/Skybox.h" 
+    "Renderer/HDR/HDR.h" 
+    "Renderer/DLSS/DLSS.h" 
+    "core/Logger.h" 
+    "Renderer/DirectLightPass/DirectLightPass.h")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
@@ -121,7 +128,13 @@ set( SOURCE_FILES
     "Renderer/GBuffer/GBuffer.cpp" 
     "DX12/StaticDescriptorHeap.cpp" 
     "Renderer/CompositionPass/CompositionPass.cpp"
-    "Renderer/Debug/DebugTexture.cpp" "Lights/DirectionalLight.cpp"  "Renderer/Denoiser/NvidiaDenoiser.cpp" "Renderer/Skybox/Skybox.cpp" "Renderer/HDR/HDR.cpp" "Renderer/DLSS/DLSS.cpp")
+    "Renderer/Debug/DebugTexture.cpp" 
+    "Lights/DirectionalLight.cpp"  
+    "Renderer/Denoiser/NvidiaDenoiser.cpp" 
+    "Renderer/Skybox/Skybox.cpp" 
+    "Renderer/HDR/HDR.cpp" 
+    "Renderer/DLSS/DLSS.cpp" 
+    "Renderer/DirectLightPass/DirectLightPass.cpp")
 
 set( IMGUI_HEADERS
     external/ImGui/imgui.h
@@ -162,6 +175,12 @@ set( SHADER_FILES
     Resources/Shaders/Debug/DebugTexture_PS.hlsl
     Resources/Shaders/HDR/HDR_VS.hlsl
     Resources/Shaders/HDR/HDR_PS.hlsl
+
+    Resources/Shaders/DirectLightPass/DirectLightPass_VS.hlsl
+    Resources/Shaders/DirectLightPass/DirectLightPass_PS.hlsl
+
+    Resources/Shaders/DirectLightPass/DirectLightShadowPass_VS.hlsl
+    Resources/Shaders/DirectLightPass/DirectLightShadowPass_PS.hlsl
 )
 
 set( RESOURCE_FILES 
@@ -199,6 +218,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC Renderer/GBuffer
     PUBLIC Renderer/Debug
     PUBLIC Renderer/Lightpass
+    PUBLIC Renderer/DirectLightPass
     PUBLIC Renderer/Denoiser
     PUBLIC Libs/DLSS/include
     PUBLIC Lights
@@ -360,6 +380,34 @@ set_source_files_properties( Resources/Shaders/HDR/HDR_PS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Pixel
         VS_SHADER_VARIABLE_NAME g_HDR_PS
+        ShaderType "ps"
+)
+
+set_source_files_properties( Resources/Shaders/DirectLightPass/DirectLightPass_VS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Vertex
+        VS_SHADER_VARIABLE_NAME g_DirectLightPass_VS
+        ShaderType "vs"
+)
+
+set_source_files_properties( Resources/Shaders/DirectLightPass/DirectLightPass_PS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Pixel
+        VS_SHADER_VARIABLE_NAME g_DirectLightPass_PS
+        ShaderType "ps"
+)
+
+set_source_files_properties( Resources/Shaders/DirectLightPass/DirectLightShadowPass_VS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Vertex
+        VS_SHADER_VARIABLE_NAME g_DirectLightShadowPass_VS
+        ShaderType "vs"
+)
+
+set_source_files_properties( Resources/Shaders/DirectLightPass/DirectLightShadowPass_PS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Pixel
+        VS_SHADER_VARIABLE_NAME g_DirectLightShadowPass_PS
         ShaderType "ps"
 )
 
