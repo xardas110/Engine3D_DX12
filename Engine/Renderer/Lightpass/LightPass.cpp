@@ -47,11 +47,7 @@ void LightPass::CreateRenderTarget(int width, int height)
     auto outIndirectSpecularDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height);
     outIndirectSpecularDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     outIndirectSpecularDesc.MipLevels = 1;
-  
-    auto rwAccumDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R32G32B32A32_FLOAT, width, height);
-    rwAccumDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-    rwAccumDesc.MipLevels = 1;
- 
+
     auto rtDebugDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM , width, height);
     rtDebugDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     rtDebugDesc.MipLevels = 1;
@@ -92,16 +88,12 @@ void LightPass::CreateRenderTarget(int width, int height)
         TextureUsage::RenderTarget,
         L"LightPass Denoised IndirectSpecular");
 
-    rwAccumulation = Texture(rwAccumDesc, nullptr,
-        TextureUsage::RenderTarget,
-        L"LightPass AccumBuffer");
-
     renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_DIRECT_LIGHT, directDiffuse);
     renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_INDIRECT_DIFFUSE, indirectDiffuse);
-    renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_INDIRECT_SPECULAR, indirectSpecular);
-    renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_SHADOW_DATA, shadow);
+    renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_INDIRECT_SPECULAR, indirectSpecular);   
     renderTarget.AttachTexture((AttachmentPoint)LIGHTBUFFER_RT_DEBUG, rtDebug);
     renderTarget.AttachTexture(AttachmentPoint::Color4, transparentColor);
+    renderTarget.AttachTexture((AttachmentPoint)Color5, shadow);
 
     CreateSRVViews();
     CreateUAVViews();
@@ -275,7 +267,6 @@ void LightPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
 void LightPass::OnResize(int width, int height)
 {
     renderTarget.Resize(width, height);
-    rwAccumulation.Resize(width, height);
     denoisedIndirectDiffuse.Resize(width, height);
     denoisedIndirectSpecular.Resize(width, height);
     denoisedShadow.Resize(width, height);
@@ -321,10 +312,6 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateSRVViews()
         m_SRVHeap.SetHandle(LIGHTBUFFER_DENOISED_SHADOW));
 
     device->CreateShaderResourceView(
-        GetTexture(LIGHTBUFFER_ACCUM_BUFFER).GetD3D12Resource().Get(), nullptr,
-        m_SRVHeap.SetHandle(LIGHTBUFFER_ACCUM_BUFFER));
-
-    device->CreateShaderResourceView(
         renderTarget.GetTexture(AttachmentPoint::Color4).GetD3D12Resource().Get(), nullptr,
         m_SRVHeap.SetHandle(LIGHTBUFFER_TRANSPARENT_COLOR));
 
@@ -347,10 +334,10 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateUAVViews()
 
 const Texture& LightPass::GetTexture(int type)
 {
-    if (type == LIGHTBUFFER_ACCUM_BUFFER) return rwAccumulation;
     if (type == LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE) return denoisedIndirectDiffuse;
     if (type == LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR) return denoisedIndirectSpecular;
     if (type == LIGHTBUFFER_DENOISED_SHADOW) return denoisedShadow;
+    if (type == LIGHTBUFFER_SHADOW_DATA) return renderTarget.GetTexture((AttachmentPoint)Color5);
 
     return renderTarget.GetTexture((AttachmentPoint)type);
 }

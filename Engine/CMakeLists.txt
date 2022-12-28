@@ -78,8 +78,7 @@ set( HEADER_FILES
     "Renderer/Skybox/Skybox.h" 
     "Renderer/HDR/HDR.h" 
     "Renderer/DLSS/DLSS.h" 
-    "core/Logger.h" 
-    "Renderer/DirectLightPass/DirectLightPass.h")
+    "core/Logger.h")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
@@ -133,8 +132,7 @@ set( SOURCE_FILES
     "Renderer/Denoiser/NvidiaDenoiser.cpp" 
     "Renderer/Skybox/Skybox.cpp" 
     "Renderer/HDR/HDR.cpp" 
-    "Renderer/DLSS/DLSS.cpp" 
-    "Renderer/DirectLightPass/DirectLightPass.cpp")
+    "Renderer/DLSS/DLSS.cpp")
 
 set( IMGUI_HEADERS
     external/ImGui/imgui.h
@@ -175,12 +173,6 @@ set( SHADER_FILES
     Resources/Shaders/Debug/DebugTexture_PS.hlsl
     Resources/Shaders/HDR/HDR_VS.hlsl
     Resources/Shaders/HDR/HDR_PS.hlsl
-
-    Resources/Shaders/DirectLightPass/DirectLightPass_VS.hlsl
-    Resources/Shaders/DirectLightPass/DirectLightPass_PS.hlsl
-
-    Resources/Shaders/DirectLightPass/DirectLightShadowPass_VS.hlsl
-    Resources/Shaders/DirectLightPass/DirectLightShadowPass_PS.hlsl
 )
 
 set( RESOURCE_FILES 
@@ -218,7 +210,6 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC Renderer/GBuffer
     PUBLIC Renderer/Debug
     PUBLIC Renderer/Lightpass
-    PUBLIC Renderer/DirectLightPass
     PUBLIC Renderer/Denoiser
     PUBLIC Libs/DLSS/include
     PUBLIC Lights
@@ -382,35 +373,6 @@ set_source_files_properties( Resources/Shaders/HDR/HDR_PS.hlsl
         VS_SHADER_VARIABLE_NAME g_HDR_PS
         ShaderType "ps"
 )
-
-set_source_files_properties( Resources/Shaders/DirectLightPass/DirectLightPass_VS.hlsl
-    PROPERTIES
-        VS_SHADER_TYPE Vertex
-        VS_SHADER_VARIABLE_NAME g_DirectLightPass_VS
-        ShaderType "vs"
-)
-
-set_source_files_properties( Resources/Shaders/DirectLightPass/DirectLightPass_PS.hlsl
-    PROPERTIES
-        VS_SHADER_TYPE Pixel
-        VS_SHADER_VARIABLE_NAME g_DirectLightPass_PS
-        ShaderType "ps"
-)
-
-set_source_files_properties( Resources/Shaders/DirectLightPass/DirectLightShadowPass_VS.hlsl
-    PROPERTIES
-        VS_SHADER_TYPE Vertex
-        VS_SHADER_VARIABLE_NAME g_DirectLightShadowPass_VS
-        ShaderType "vs"
-)
-
-set_source_files_properties( Resources/Shaders/DirectLightPass/DirectLightShadowPass_PS.hlsl
-    PROPERTIES
-        VS_SHADER_TYPE Pixel
-        VS_SHADER_VARIABLE_NAME g_DirectLightShadowPass_PS
-        ShaderType "ps"
-)
-
 
 foreach(FILE ${SHADER_FILES})
   get_filename_component(FILE_WE ${FILE} NAME_WE)

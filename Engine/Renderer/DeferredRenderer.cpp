@@ -58,7 +58,6 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     }
 
     m_GBuffer = std::unique_ptr<GBuffer>(new GBuffer(m_Width, m_Height));
-    m_DirectLightPass = std::unique_ptr<DirectLightPass>(new DirectLightPass(m_Width, m_Height));
     m_LightPass = std::unique_ptr<LightPass>(new LightPass(m_Width, m_Height));
     m_CompositionPass = std::unique_ptr<CompositionPass>(new CompositionPass(m_Width, m_Height));
     m_DebugTexturePass = std::unique_ptr<DebugTexturePass>(new DebugTexturePass(m_NativeWidth, m_NativeHeight));
@@ -219,7 +218,6 @@ void DeferredRenderer::Render(Window& window)
         m_GBuffer->ClearRendetTarget(*commandList, clearColor);
 
         commandList->SetRenderTarget(m_LightPass->renderTarget);
-        m_DirectLightPass->ClearRendetTargets(*commandList, clearColor);
         m_LightPass->ClearRendetTarget(*commandList, clearColor);
 
         PIXEndEvent(gfxCommandList.Get());
@@ -357,85 +355,7 @@ void DeferredRenderer::Render(Window& window)
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
         PIXEndEvent(gfxCommandList.Get());
-    }
-    {// Direct light shadow PASS
-        PIXBeginEvent(gfxCommandList.Get(), 0, L"DirectLightShadowPass");
-
-        commandList->SetRenderTarget(m_DirectLightPass->directLightShadowRT);
-        commandList->SetViewport(m_DirectLightPass->directLightShadowRT.GetViewport());
-        commandList->SetScissorRect(m_ScissorRect);
-        commandList->SetPipelineState(m_DirectLightPass->directLightShadowPSO);
-        gfxCommandList->SetGraphicsRootSignature(m_DirectLightPass->directLightShadowRS.GetRootSignature().Get());
-
-        commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-        gfxCommandList->SetGraphicsRootShaderResourceView(
-            DirectLightShadowPassParam::AccelerationStructure,
-            m_Raytracer->GetCurrentTLAS()->GetGPUVirtualAddress());
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.heap.Get());
-
-        gfxCommandList->SetGraphicsRootDescriptorTable(DirectLightShadowPassParam::GlobalHeapData, srvHeap.heap->GetGPUDescriptorHandleForHeapStart());
-
-        commandList->SetGraphicsDynamicStructuredBuffer(DirectLightShadowPassParam::GlobalMaterials, materials);
-
-        commandList->SetGraphicsDynamicStructuredBuffer(DirectLightShadowPassParam::GlobalMatInfo, globalMaterialInfo);
-
-        commandList->SetGraphicsDynamicStructuredBuffer(DirectLightShadowPassParam::GlobalMeshInfo, globalMeshInfo);
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
-        gfxCommandList->SetGraphicsRootDescriptorTable(DirectLightShadowPassParam::GBufferHeap, m_GBuffer->m_SRVHeap.GetGPUHandle(0));
-
-        commandList->SetGraphicsDynamicConstantBuffer(DirectLightShadowPassParam::CameraCB, cameraCB);
-        commandList->SetGraphicsDynamicConstantBuffer(DirectLightShadowPassParam::DirectionalLightCB, directionalLight);
-        commandList->SetGraphicsDynamicConstantBuffer(DirectLightShadowPassParam::RaytracingDataCB, rtData);
-
-        commandList->Draw(3);
-  
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_DirectLightPass->shadowHeap.heap.Get());
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_DirectLightPass->directLightShadowRT.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-
-        PIXEndEvent(gfxCommandList.Get());
-    }
-    { //DirectLight pass
-        PIXBeginEvent(gfxCommandList.Get(), 0, L"DirectLightPass");
-
-        commandList->SetRenderTarget(m_DirectLightPass->directLightRT);
-        commandList->SetViewport(m_DirectLightPass->directLightRT.GetViewport());
-        commandList->SetScissorRect(m_ScissorRect);
-        commandList->SetPipelineState(m_DirectLightPass->directLightPSO);
-        gfxCommandList->SetGraphicsRootSignature(m_DirectLightPass->directLightRS.GetRootSignature().Get());
-
-        commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
-        gfxCommandList->SetGraphicsRootDescriptorTable(DirectLightPassParam::GBufferHeap, m_GBuffer->m_SRVHeap.GetGPUHandle(0));
-
-        commandList->SetGraphicsDynamicConstantBuffer(DirectLightPassParam::CameraCB, cameraCB);
-        commandList->SetGraphicsDynamicConstantBuffer(DirectLightPassParam::DirectionalLightCB, directionalLight);
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_Skybox->heap.heap.Get());
-        gfxCommandList->SetGraphicsRootDescriptorTable(DirectLightPassParam::Cubemap, m_Skybox->GetSRVView());
-
-        commandList->Draw(3);
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_DirectLightPass->directLightHeap.heap.Get());
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_DirectLightPass->directLightRT.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        PIXEndEvent(gfxCommandList.Get());
-
-    }
+    }  
     {//LIGHT PASS
         PIXBeginEvent(gfxCommandList.Get(), 0, L"LightPass");
         
@@ -481,6 +401,12 @@ void DeferredRenderer::Render(Window& window)
 
         gfxCommandList->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->GetTexture(LIGHTBUFFER_SHADOW_DATA).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        gfxCommandList->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
                 m_LightPass->renderTarget.GetTexture(AttachmentPoint::Color4).GetD3D12Resource().Get(),
                 D3D12_RESOURCE_STATE_RENDER_TARGET,
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
@@ -503,11 +429,6 @@ void DeferredRenderer::Render(Window& window)
                 D3D12_RESOURCE_STATE_RENDER_TARGET,
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_LightPass->GetTexture(LIGHTBUFFER_ACCUM_BUFFER).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_PRESENT,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
         PIXEndEvent(gfxCommandList.Get());
     }
@@ -641,12 +562,6 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_LightPass->m_SRVHeap.heap.Get());
         gfxCommandList->SetGraphicsRootDescriptorTable(CompositionPassParam::LightMapHeap, m_LightPass->m_SRVHeap.GetGPUHandle(0));
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_DirectLightPass->directLightHeap.heap.Get());
-        gfxCommandList->SetGraphicsRootDescriptorTable(CompositionPassParam::DirectLightHeap, m_DirectLightPass->directLightHeap.GetHandleAtStart());
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_DirectLightPass->shadowHeap.heap.Get());
-        gfxCommandList->SetGraphicsRootDescriptorTable(CompositionPassParam::DirectLightShadowHeap, m_DirectLightPass->shadowHeap.GetHandleAtStart());
 
         commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::RaytracingDataCB, rtData);
         commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::CameraCB, cameraCB);
@@ -876,6 +791,12 @@ void DeferredRenderer::Render(Window& window)
 
         gfxCommandList->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->GetTexture(LIGHTBUFFER_SHADOW_DATA).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+        gfxCommandList->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
                 m_LightPass->renderTarget.GetTexture(AttachmentPoint::Color4).GetD3D12Resource().Get(),
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
                 D3D12_RESOURCE_STATE_RENDER_TARGET));
@@ -898,30 +819,6 @@ void DeferredRenderer::Render(Window& window)
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
                 D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_LightPass->GetTexture(LIGHTBUFFER_ACCUM_BUFFER).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_PRESENT));
-
-    }
-    { //Direct light pass barriers
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_DirectLightPass->directLightHeap.heap.Get());
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_DirectLightPass->directLightRT.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_RENDER_TARGET));
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_DirectLightPass->shadowHeap.heap.Get());
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_DirectLightPass->directLightShadowRT.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_RENDER_TARGET));
     }
     { //CompositionPass barriers
         gfxCommandList->ResourceBarrier(1,
@@ -983,7 +880,6 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     std::cout << "Dlss prefered res: " << res.x << "x" << res.y << std::endl;
 
     m_GBuffer->OnResize(m_Width, m_Height);
-    m_DirectLightPass->OnResize(m_Width, m_Height);
     m_LightPass->OnResize(m_Width, m_Height);
     m_CompositionPass->OnResize(m_Width, m_Height);
     m_DebugTexturePass->OnResize(m_NativeWidth, m_NativeHeight);

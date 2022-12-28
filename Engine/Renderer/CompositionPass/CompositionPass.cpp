@@ -89,21 +89,6 @@ void CompositionPass::CreatePipeline()
     lightmapSRVHeap.RegisterSpace = 7;
     lightmapSRVHeap.OffsetInDescriptorsFromTableStart = 0;
 
-    CD3DX12_DESCRIPTOR_RANGE1 directLigthSRVHeap = {};
-    directLigthSRVHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    directLigthSRVHeap.NumDescriptors = 1;
-    directLigthSRVHeap.BaseShaderRegister = 7;
-    directLigthSRVHeap.RegisterSpace = 8;
-    directLigthSRVHeap.OffsetInDescriptorsFromTableStart = 0;
-    //directLigthSRVHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
-
-    CD3DX12_DESCRIPTOR_RANGE1 directLigthShadowSRVHeap = {};
-    directLigthShadowSRVHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    directLigthShadowSRVHeap.NumDescriptors = 1;
-    directLigthShadowSRVHeap.BaseShaderRegister = 8;
-    directLigthShadowSRVHeap.RegisterSpace = 9;
-    directLigthShadowSRVHeap.OffsetInDescriptorsFromTableStart = 0;
-
     CD3DX12_ROOT_PARAMETER1 rootParameters[CompositionPassParam::Size];
     rootParameters[CompositionPassParam::AccelerationStructure].InitAsShaderResourceView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
     rootParameters[CompositionPassParam::LightMapHeap].InitAsDescriptorTable(1, &lightmapSRVHeap, D3D12_SHADER_VISIBILITY_PIXEL);
@@ -114,8 +99,6 @@ void CompositionPass::CreatePipeline()
     rootParameters[CompositionPassParam::GlobalMaterials].InitAsShaderResourceView(4, 5);
     rootParameters[CompositionPassParam::RaytracingDataCB].InitAsConstantBufferView(0);
     rootParameters[CompositionPassParam::CameraCB].InitAsConstantBufferView(1);
-    rootParameters[CompositionPassParam::DirectLightHeap].InitAsDescriptorTable(1, &directLigthSRVHeap, D3D12_SHADER_VISIBILITY_PIXEL);
-    rootParameters[CompositionPassParam::DirectLightShadowHeap].InitAsDescriptorTable(1, &directLigthShadowSRVHeap, D3D12_SHADER_VISIBILITY_PIXEL);
     rootParameters[CompositionPassParam::TonemapCB].InitAsConstantBufferView(2);
 
     CD3DX12_STATIC_SAMPLER_DESC samplers[2];

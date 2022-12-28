@@ -310,7 +310,7 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 
 		NRD.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, true);
 	}
-
+/*
 	NRD.SetMethodSettings(nrd::Method::SIGMA_SHADOW, &settings);
 
 	{ //Shadow denoising
@@ -330,6 +330,7 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 
 		NRD.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, true);
 	}
+	*/
 
 	NRI.DestroyCommandBuffer(*nriCommandBuffer);
 }

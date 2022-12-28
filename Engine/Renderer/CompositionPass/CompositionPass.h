@@ -11,8 +11,6 @@ namespace CompositionPassParam
 		AccelerationStructure,
 		GBufferHeap,
 		LightMapHeap,
-		DirectLightHeap,
-		DirectLightShadowHeap,
 		GlobalHeapData,
 		GlobalMatInfo,
 		GlobalMaterials,

@@ -50,7 +50,6 @@ private:
 	RenderTarget renderTarget;
 	RootSignature rootSignature;
 
-	Texture rwAccumulation;
 	Texture denoisedIndirectDiffuse;
 	Texture denoisedIndirectSpecular;
 	Texture denoisedShadow;

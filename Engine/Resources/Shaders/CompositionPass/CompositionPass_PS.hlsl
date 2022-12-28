@@ -24,9 +24,6 @@ StructuredBuffer<Material>      g_GlobalMaterials           : register(t4, space
 Texture2D                       g_GBufferHeap[]             : register(t5, space6);
 Texture2D                       g_LightMapHeap[]            : register(t6, space7);
 
-Texture2D                       g_DirectLightHeap           : register(t7, space8);
-Texture2D                       g_DirectLightShadowHeap     : register(t8, space9);
-  
 SamplerState                    g_NearestRepeatSampler      : register(s0);
 SamplerState                    g_LinearRepeatSampler       : register(s1);
 
@@ -49,6 +46,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float4 denoisedIndirectDiffuse = g_LightMapHeap[LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE].Sample(g_NearestRepeatSampler, TexCoord);
     float4 denoisedIndirectSpecular = g_LightMapHeap[LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR].Sample(g_NearestRepeatSampler, TexCoord);
     float4 transparentColor = g_LightMapHeap[LIGHTBUFFER_TRANSPARENT_COLOR].Sample(g_NearestRepeatSampler, TexCoord);
+    float shadow = g_LightMapHeap[LIGHTBUFFER_DENOISED_SHADOW].Sample(g_NearestRepeatSampler, TexCoord);
     
     denoisedIndirectDiffuse = REBLUR_BackEnd_UnpackRadianceAndNormHitDist(denoisedIndirectDiffuse);
     denoisedIndirectSpecular = REBLUR_BackEnd_UnpackRadianceAndNormHitDist(denoisedIndirectSpecular);
@@ -73,7 +71,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     denoisedIndirectDiffuse.rgb *= (diffDemod * 0.99f + 0.01f);
     denoisedIndirectSpecular.rgb *= (specDemod * 0.99f + 0.01f);
 
-    float3 color = directDiffuse.rgb + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb;
+    float3 color = (directDiffuse.rgb * shadow) + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb;
        
     color = lerp(color, transparentColor.rgb, transparentColor.a);
     

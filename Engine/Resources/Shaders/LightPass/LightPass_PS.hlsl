@@ -48,7 +48,7 @@ struct PixelShaderOutput
     float4 IndirectSpecular : SV_TARGET2;
     float4 rtDebug          : SV_TARGET3;
     float4 TransparentColor : SV_TARGET4;
-    float2 ShadowData       : SV_TARGET7;
+    float2 ShadowData       : SV_TARGET5;
 };
  
 struct TraceResult
