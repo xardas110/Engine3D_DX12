@@ -25,7 +25,7 @@ void LightPass::CreateRenderTarget(int width, int height)
     shadowDesc.MipLevels = 1;
 
     auto outShadowDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8_UNORM, width, height);
-    outShadowDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    outShadowDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     outShadowDesc.MipLevels = 1;
 
     auto transparentColorDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height);
@@ -60,7 +60,7 @@ void LightPass::CreateRenderTarget(int width, int height)
         TextureUsage::RenderTarget,
         L"LightPass shadow");
 
-    denoisedShadow = Texture(outShadowDesc, &ClearValue(outShadowDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
+    denoisedShadow = Texture(outShadowDesc, nullptr,
         TextureUsage::RenderTarget,
         L"LightPass denoised shadow");
 

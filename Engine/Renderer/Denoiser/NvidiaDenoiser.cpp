@@ -78,21 +78,43 @@ NvidiaDenoiser::NvidiaDenoiser(int width, int height, DenoiserTextures& texs)
 
 	ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator)));
 
-	const nrd::MethodDesc methodDescs[] =
-	{
-		// Put neeeded methods here, like:
-		{ nrd::Method::REBLUR_DIFFUSE_SPECULAR, width, height },
-	};
+	bool result = true;
 
-	nrd::DenoiserCreationDesc denoiserCreationDesc = {};
-	denoiserCreationDesc.requestedMethods = methodDescs;
-	denoiserCreationDesc.requestedMethodsNum = 1;
+	{//REBLUR
+		const nrd::MethodDesc methodDescs[] =
+		{
+			// Put neeeded methods here, like:
+			{ nrd::Method::REBLUR_DIFFUSE_SPECULAR, width, height }
+		};
 
-	bool result = NRD.Initialize(denoiserCreationDesc, *m_NRIDevice, NRI, NRI);
+		nrd::DenoiserCreationDesc denoiserCreationDesc = {};
+		denoiserCreationDesc.requestedMethods = methodDescs;
+		denoiserCreationDesc.requestedMethodsNum = 1;
 
-	if (!result)
-	{
-		throw std::exception("Failed to create NRI interface");
+		result = NRD.Initialize(denoiserCreationDesc, *m_NRIDevice, NRI, NRI);
+
+		if (!result)
+		{
+			throw std::exception("Failed to create NRI interface");
+		}
+	}
+	{//SIGMA
+		const nrd::MethodDesc methodDescs[] =
+		{
+			// Put neeeded methods here, like:
+			{ nrd::Method::SIGMA_SHADOW, width, height }
+		};
+
+		nrd::DenoiserCreationDesc denoiserCreationDesc = {};
+		denoiserCreationDesc.requestedMethods = methodDescs;
+		denoiserCreationDesc.requestedMethodsNum = 1;
+
+		result = NRD_Sigma.Initialize(denoiserCreationDesc, *m_NRIDevice, NRI, NRI);
+
+		if (!result)
+		{
+			throw std::exception("Failed to create NRI interface");
+		}
 	}
 
 	{//Normalrough
@@ -232,8 +254,8 @@ NvidiaDenoiser::NvidiaDenoiser(int width, int height, DenoiserTextures& texs)
 		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, current.texture));
 
 		entryDesc.texture = current.texture;
-		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE;
-		entryDesc.nextLayout = nri::TextureLayout::SHADER_RESOURCE;
+		entryDesc.nextAccess = nri::AccessBits::SHADER_RESOURCE_STORAGE;
+		entryDesc.nextLayout = nri::TextureLayout::GENERAL;
 	};
 
 	std::cout << "-------------------------" << std::endl;
@@ -247,6 +269,7 @@ NvidiaDenoiser::~NvidiaDenoiser()
 	m_CommandAllocator->Reset();
 
 	NRD.Destroy();	
+	NRD_Sigma.Destroy();
 
 	for (uint32_t i = 0; i < nriTypes::size; i++)
 		NRI.DestroyTexture(*nriTextures[i].texture);
@@ -276,62 +299,55 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 
 	NRD.SetMethodSettings(nrd::Method::REBLUR_DIFFUSE_SPECULAR, &settings);
 
-	{ //Indirect light denoising
-		NrdUserPool userPool = {};
+	 //Indirect light denoising
+	NrdUserPool userPool = {};
 	
-		NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_MV,
-			{ &nriTextures[nriTypes::inMV].entryDescs,
-			nriTextures[nriTypes::inMV].entryFormat });
+	NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_MV,
+		{ &nriTextures[nriTypes::inMV].entryDescs,
+		nriTextures[nriTypes::inMV].entryFormat });
 
-		NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_NORMAL_ROUGHNESS,
-			{ &nriTextures[nriTypes::inNormalRoughness].entryDescs, 
-			nriTextures[nriTypes::inNormalRoughness].entryFormat });
+	NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_NORMAL_ROUGHNESS,
+		{ &nriTextures[nriTypes::inNormalRoughness].entryDescs, 
+		nriTextures[nriTypes::inNormalRoughness].entryFormat });
 
-		NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_VIEWZ,
-			{ &nriTextures[nriTypes::inViewZ].entryDescs, 
-			nriTextures[nriTypes::inViewZ].entryFormat });
+	NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_VIEWZ,
+		{ &nriTextures[nriTypes::inViewZ].entryDescs, 
+		nriTextures[nriTypes::inViewZ].entryFormat });
 
-		NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_DIFF_RADIANCE_HITDIST,
-			{ &nriTextures[nriTypes::inIndirectDiffuse].entryDescs, 
-			nriTextures[nriTypes::inIndirectDiffuse].entryFormat });
+	NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_DIFF_RADIANCE_HITDIST,
+		{ &nriTextures[nriTypes::inIndirectDiffuse].entryDescs, 
+		nriTextures[nriTypes::inIndirectDiffuse].entryFormat });
 
-		NrdIntegration_SetResource(userPool, nrd::ResourceType::OUT_DIFF_RADIANCE_HITDIST,
-			{ &nriTextures[nriTypes::outIndirectDiffuse].entryDescs, 
-			nriTextures[nriTypes::outIndirectDiffuse].entryFormat });
+	NrdIntegration_SetResource(userPool, nrd::ResourceType::OUT_DIFF_RADIANCE_HITDIST,
+		{ &nriTextures[nriTypes::outIndirectDiffuse].entryDescs, 
+		nriTextures[nriTypes::outIndirectDiffuse].entryFormat });
 
-		NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_SPEC_RADIANCE_HITDIST,
-			{ &nriTextures[nriTypes::inIndirectSpecular].entryDescs,
-			nriTextures[nriTypes::inIndirectSpecular].entryFormat });
+	NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_SPEC_RADIANCE_HITDIST,
+		{ &nriTextures[nriTypes::inIndirectSpecular].entryDescs,
+		nriTextures[nriTypes::inIndirectSpecular].entryFormat });
 
-		NrdIntegration_SetResource(userPool, nrd::ResourceType::OUT_SPEC_RADIANCE_HITDIST,
-			{ &nriTextures[nriTypes::outIndirectSpecular].entryDescs,
-			nriTextures[nriTypes::outIndirectSpecular].entryFormat });
+	NrdIntegration_SetResource(userPool, nrd::ResourceType::OUT_SPEC_RADIANCE_HITDIST,
+		{ &nriTextures[nriTypes::outIndirectSpecular].entryDescs,
+		nriTextures[nriTypes::outIndirectSpecular].entryFormat });
 	
+	NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_NORMAL_ROUGHNESS,
+		{ &nriTextures[nriTypes::inNormalRoughness].entryDescs,
+		nriTextures[nriTypes::inNormalRoughness].entryFormat });
 
-		NRD.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, true);
-	}
-/*
-	NRD.SetMethodSettings(nrd::Method::SIGMA_SHADOW, &settings);
+	NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_SHADOWDATA,
+		{ &nriTextures[nriTypes::inShadowData].entryDescs,
+		nriTextures[nriTypes::inShadowData].entryFormat });
 
-	{ //Shadow denoising
-		NrdUserPool userPool = {};
+	NrdIntegration_SetResource(userPool, nrd::ResourceType::OUT_SHADOW_TRANSLUCENCY,
+		{ &nriTextures[nriTypes::outShadow].entryDescs,
+		nriTextures[nriTypes::outShadow].entryFormat });
 
-		NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_NORMAL_ROUGHNESS,
-			{ &nriTextures[nriTypes::inNormalRoughness].entryDescs,
-			nriTextures[nriTypes::inNormalRoughness].entryFormat });
+	nrd::SigmaSettings shadowSettings = {};
+	NRD_Sigma.SetMethodSettings(nrd::Method::SIGMA_SHADOW, &shadowSettings);
+	NRD_Sigma.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, true);
+
+	NRD.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, true);
 	
-		NrdIntegration_SetResource(userPool, nrd::ResourceType::IN_SHADOWDATA,
-			{ &nriTextures[nriTypes::inShadowData].entryDescs,
-			nriTextures[nriTypes::inShadowData].entryFormat });
-
-		NrdIntegration_SetResource(userPool, nrd::ResourceType::OUT_SHADOW_TRANSLUCENCY,
-			{ &nriTextures[nriTypes::outShadow].entryDescs,
-			nriTextures[nriTypes::outShadow].entryFormat });
-
-		NRD.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, true);
-	}
-	*/
-
 	NRI.DestroyCommandBuffer(*nriCommandBuffer);
 }
 

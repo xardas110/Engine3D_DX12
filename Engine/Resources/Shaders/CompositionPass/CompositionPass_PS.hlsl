@@ -45,12 +45,14 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float4 directDiffuse = g_LightMapHeap[LIGHTBUFFER_DIRECT_LIGHT].Sample(g_NearestRepeatSampler, TexCoord);
     float4 denoisedIndirectDiffuse = g_LightMapHeap[LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE].Sample(g_NearestRepeatSampler, TexCoord);
     float4 denoisedIndirectSpecular = g_LightMapHeap[LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR].Sample(g_NearestRepeatSampler, TexCoord);
-    float4 transparentColor = g_LightMapHeap[LIGHTBUFFER_TRANSPARENT_COLOR].Sample(g_NearestRepeatSampler, TexCoord);
-    float shadow = g_LightMapHeap[LIGHTBUFFER_DENOISED_SHADOW].Sample(g_NearestRepeatSampler, TexCoord);
+    float denoisedShadow = g_LightMapHeap[LIGHTBUFFER_DENOISED_SHADOW].Sample(g_NearestRepeatSampler, TexCoord).r;
     
+    float4 transparentColor = g_LightMapHeap[LIGHTBUFFER_TRANSPARENT_COLOR].Sample(g_NearestRepeatSampler, TexCoord);
+      
     denoisedIndirectDiffuse = REBLUR_BackEnd_UnpackRadianceAndNormHitDist(denoisedIndirectDiffuse);
     denoisedIndirectSpecular = REBLUR_BackEnd_UnpackRadianceAndNormHitDist(denoisedIndirectSpecular);
-         
+    denoisedShadow = SIGMA_BackEnd_UnpackShadow(denoisedShadow);
+    
     float3 fragPos = GetWorldPosFromDepth(TexCoord, fi.depth, g_Camera.invViewProj);
     
     float3 V = -normalize(fragPos.rgb - g_Camera.pos.rgb);
@@ -71,7 +73,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     denoisedIndirectDiffuse.rgb *= (diffDemod * 0.99f + 0.01f);
     denoisedIndirectSpecular.rgb *= (specDemod * 0.99f + 0.01f);
 
-    float3 color = (directDiffuse.rgb * shadow) + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb;
+    float3 color = (directDiffuse.rgb * denoisedShadow) + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb;
        
     color = lerp(color, transparentColor.rgb, transparentColor.a);
     

@@ -491,7 +491,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float3 troughput = float3(1.f, 1.f, 1.f);
     
     OUT.DirectLight = float4(0.f, 0.f, 0.f, 0.f);
-    OUT.ShadowData = SIGMA_FrontEnd_PackShadow(60000.f, 60000.f, 0.f);
+    OUT.ShadowData = SIGMA_FrontEnd_PackShadow(viewZ, 60000.f, 0.f);
     OUT.IndirectDiffuse = float4(0.f, 0.f, 0.f, 0.f);
     OUT.IndirectSpecular = float4(0.f, 0.f, 0.f, 0.f); 
     OUT.TransparentColor = float4(0.f, 0.f, 0.f, 0.f);

@@ -27,8 +27,8 @@ struct DenoiserTextures
 			inIndirectSpecular(inIndirectSpecular), 
 			outIndirectDiffuse(outIndirectDiffuse),
 			outIndirectSpecular(outIndirectSpecular),
-			inShadowData(outIndirectDiffuse),
-			outShadow(outIndirectSpecular)
+			inShadowData(inShadowData),
+			outShadow(outShadow)
 			
 	{};
 
@@ -104,6 +104,7 @@ class NvidiaDenoiser
 
 
 	NrdIntegration NRD = NrdIntegration(3);
+	NrdIntegration NRD_Sigma = NrdIntegration(3);
 
 	struct NriInterface
 		: public nri::CoreInterface

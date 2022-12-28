@@ -473,6 +473,12 @@ void DeferredRenderer::Render(Window& window)
 
         gfxCommandList->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
+                dt.inShadowData.GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+
+        gfxCommandList->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
                 dt.outIndirectDiffuse.GetD3D12Resource().Get(), 
                 D3D12_RESOURCE_STATE_PRESENT,
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
@@ -480,6 +486,12 @@ void DeferredRenderer::Render(Window& window)
         gfxCommandList->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
                 dt.outIndirectSpecular.GetD3D12Resource().Get(), 
+                D3D12_RESOURCE_STATE_PRESENT,
+                D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+
+        gfxCommandList->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                dt.outShadow.GetD3D12Resource().Get(),
                 D3D12_RESOURCE_STATE_PRESENT,
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 
@@ -521,6 +533,12 @@ void DeferredRenderer::Render(Window& window)
 
         gfxCommandList->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
+                dt.inShadowData.GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        gfxCommandList->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
                 dt.outIndirectDiffuse.GetD3D12Resource().Get(),
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
@@ -528,6 +546,12 @@ void DeferredRenderer::Render(Window& window)
         gfxCommandList->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
                 dt.outIndirectSpecular.GetD3D12Resource().Get(), 
+                D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        gfxCommandList->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                dt.outShadow.GetD3D12Resource().Get(),
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
@@ -725,6 +749,12 @@ void DeferredRenderer::Render(Window& window)
                 m_LightPass->GetTexture(LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR).GetD3D12Resource().Get(),
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
                 D3D12_RESOURCE_STATE_PRESENT));     
+
+        gfxCommandList->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_LightPass->GetTexture(LIGHTBUFFER_DENOISED_SHADOW).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_PRESENT));
     }
     { //Transition GBuffer back to RT
         gfxCommandList->ResourceBarrier(1,
