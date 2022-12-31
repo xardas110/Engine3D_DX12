@@ -202,7 +202,7 @@ void DLSS::InitWithRecommendedSettings(int width, int height)
         qualityMode,
         &recommendedSettings);
 
-    InitFeatures(recommendedSettings.m_ngxRecommendedOptimalRenderSize, {(unsigned)width, (unsigned)height}, true, false, 1.f, true, false, qualityMode);
+    InitFeatures(recommendedSettings.m_ngxRecommendedOptimalRenderSize, {(unsigned)width, (unsigned)height}, false, false, 1.f, true, false, qualityMode);
 }
 
 void DLSS::EvaluateSuperSampling(

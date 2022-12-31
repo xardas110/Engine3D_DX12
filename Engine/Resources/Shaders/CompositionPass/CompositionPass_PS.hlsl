@@ -76,7 +76,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float3 color = (directDiffuse.rgb * denoisedShadow) + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb;
        
     color = lerp(color, transparentColor.rgb, transparentColor.a);
-    
+
     OUT.ColorTexture = float4(color, 1.f);
 
     if (g_RaytracingData.debugSettings == DEBUG_LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE)

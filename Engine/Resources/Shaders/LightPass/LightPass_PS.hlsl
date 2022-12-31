@@ -94,6 +94,23 @@ float3 SphericalDirectionalLightRayDirection(in float2 rect, in float3 direction
     
     return normalize(direction + p.x * tangent + p.y * bitangent);
 }
+/*
+bool SampleLightUniform(inout RngStateType rngState, float3 hitPosition, float3 surfaceNormal, out Light light, out float lightSampleWeight)
+{
+
+    if (gData.lightCount == 0)
+        return false;
+
+    uint randomLightIndex = min(gData.lightCount - 1, uint(rand(rngState) * gData.lightCount));
+    light = gData.lights[randomLightIndex];
+
+	// PDF of uniform distribution is (1/light count). Reciprocal of that PDF (simply a light count) is a weight of this sample
+    lightSampleWeight = float(gData.lightCount);
+
+    return true;
+}
+*/
+
 
 // https://en.wikipedia.org/wiki/Ordered_dithering
 #define STL_BAYER_LINEAR 0
@@ -141,58 +158,6 @@ float2 GetBlueNoise(Texture2D<uint4> texScramblingRanking, uint2 pixelPos, uint 
     blue += (dither.xyxy - 0.5) * (1.0 / 256.0);
 
     return saturate(blue.xy);
-}
-
-#define _Pi( x ) radians( 180.0 * x )
-
-float Pi( float x )
-{ return _Pi( x ); }
-
-float2 Pi( float2 x )
-{ return _Pi( x ); }
-
-float3 Pi( float3 x )
-{ return _Pi( x ); }
-
-float4 Pi( float4 x )
-{ return _Pi( x ); }
-
-// Sqrt for values in range [0; 1]
-float Sqrt01( float x )
-{ return sqrt( saturate( x ) ); }
-
-float2 Sqrt01( float2 x )
-{ return sqrt( saturate( x ) ); }
-
-float3 Sqrt01( float3 x )
-{ return sqrt( saturate( x ) ); }
-
-float4 Sqrt01( float4 x )
-{ return sqrt( saturate( x ) ); }
-
-namespace Cosine
-{
-    float GetPDF(float NoL = 1.0) // default can be useful to handle NoL cancelation ( PDF's NoL cancels throughput's NoL )
-    {
-        float pdf = NoL / Pi(1.0);
-
-        return max(pdf, 1e-7);
-    }
-
-    float3 GetRay(float2 rnd)
-    {
-        float phi = rnd.x * Pi(2.0);
-
-        float cosTheta = Sqrt01(rnd.y);
-        float sinTheta = Sqrt01(1.0 - cosTheta * cosTheta);
-
-        float3 ray;
-        ray.x = sinTheta * cos(phi);
-        ray.y = sinTheta * sin(phi);
-        ray.z = cosTheta;
-
-        return ray;
-    }
 }
 
 bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5f, uint anyhitFlags = 0)

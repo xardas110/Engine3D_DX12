@@ -48,6 +48,12 @@ using namespace DirectX;
 #define DENOISER_TEX_SOBOL 1
 #define DENOISER_TEX_NUM 2
 
+#define LIGHT_INVALID 0
+#define LIGHT_POINT 1
+#define LIGHT_SPOT 2
+#define LIGHT_DIRECTIONAL 3
+#define MAX_LIGHTS 10
+
 //0-7 color targets and 8 is depth
 #define GBUFFER_ALBEDO 0
 #define GBUFFER_NORMAL_ROUGHNESS 1
@@ -151,6 +157,24 @@ struct TonemapCB
     float LinearWhite COMPAT_FLOAT(11.2f);
 
     float Gamma COMPAT_FLOAT(2.2f);
+};
+
+struct Light
+{
+    XMFLOAT3 pos;
+    UINT type;
+    XMFLOAT3 intensity;
+    float pad;
+};
+
+struct LightDataCB
+{
+    UINT numLights;
+    UINT meshID;
+    UINT materialID;
+    UINT pad2;
+
+    Light lights[MAX_LIGHTS];
 };
 
 struct Material

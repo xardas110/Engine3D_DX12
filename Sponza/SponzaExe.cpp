@@ -103,7 +103,7 @@ bool SponzaExe::LoadContent()
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 2.f, 2.f, 2.f };
         float x = -10;
-        float y = 10;
+        float y = 1;
         float z = -0.5f;
         trans.pos = { x, y, z };
         lights.emplace_back((std::uint32_t)ent.GetId());
@@ -115,7 +115,7 @@ bool SponzaExe::LoadContent()
         sm.SetMaterialInstance(material);
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 2.f, 2.f, 2.f };
-        trans.pos = { 10.f, 10.f, -0.5f };
+        trans.pos = { 10.f, 1.f, -0.5f };
     }
 
     
