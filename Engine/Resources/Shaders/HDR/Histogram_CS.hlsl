@@ -6,12 +6,9 @@ Texture2D                   t_Source        : register(t0);
 RWBuffer<uint>              u_Histogram     : register(u0);
 ConstantBuffer<TonemapCB>   g_ToneMapping   : register(b2);
 
-#define GROUP_X 16
-#define GROUP_Y 16
-
 groupshared uint s_Histogram[HISTOGRAM_BINS];
 
-[numthreads(GROUP_X, GROUP_Y, 1)]
+[numthreads(HISTROGRAM_GROUP_X, HISTROGRAM_GROUP_Y, 1)]
 void main(uint linearIdx : SV_GroupIndex, uint2 globalIdx : SV_DispatchThreadID)
 {
     uint2 pixelPos = globalIdx.xy + g_ToneMapping.viewOrigin.xy;

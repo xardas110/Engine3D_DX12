@@ -122,6 +122,10 @@ using namespace DirectX;
 #define FIXED_POINT_FRAC_BITS 6
 #define FIXED_POINT_FRAC_MULTIPLIER (1 << FIXED_POINT_FRAC_BITS)
 
+#define HISTROGRAM_GROUP_X 16
+#define HISTROGRAM_GROUP_Y 16
+
+
 // Converts Phong's exponent (shininess) to Beckmann roughness (alpha)
 // Source: "Microfacet Models for Refraction through Rough Surfaces" by Walter et al.
 inline float ShininessToBeckmannAlpha(float shininess)

@@ -6,7 +6,6 @@ Buffer<uint> t_Histogram : register(t0);
 RWTexture2D<float> u_Exposure : register(u0);
 ConstantBuffer<TonemapCB> g_ToneMapping : register(b2);
 
-
 // Most of the code below has been shamelessly stolen from UE4 eye adaptation shaders, i.e. PostProcessEyeAdaptation.usf
 
 float GetHistogramBucket(uint BucketIndex)
@@ -32,8 +31,70 @@ float ComputeLuminanceFromHistogramPosition(float HistogramPosition)
     return exp2(HistogramPosition * g_ToneMapping.logLuminanceScale + g_ToneMapping.logLuminanceBias);
 }
 
+float ComputeAverageLuminaneWithoutOutlier(float MinFractionSum, float MaxFractionSum)
+{
+    float2 SumWithoutOutliers = 0;
+
+    [loop]
+    for (uint i = 0; i < HISTOGRAM_BINS; ++i)
+    {
+        float LocalValue = GetHistogramBucket(i);
+
+        // remove outlier at lower end
+        float Sub = min(LocalValue, MinFractionSum);
+        LocalValue = LocalValue - Sub;
+        MinFractionSum -= Sub;
+        MaxFractionSum -= Sub;
+
+        // remove outlier at upper end
+        LocalValue = min(LocalValue, MaxFractionSum);
+        MaxFractionSum -= LocalValue;
+
+        float LuminanceAtBucket = ComputeLuminanceFromHistogramPosition(i / (float) HISTOGRAM_BINS);
+
+        SumWithoutOutliers += float2(LuminanceAtBucket, 1) * LocalValue;
+    }
+
+    return SumWithoutOutliers.x / max(0.0001f, SumWithoutOutliers.y);
+}
+
+float ComputeEyeAdaptationExposure()
+{
+    float HistogramSum = ComputeHistogramSum();
+
+    float UnclampedAdaptedLuminance = ComputeAverageLuminaneWithoutOutlier(
+        HistogramSum * g_ToneMapping.histogramLowPercentile,
+        HistogramSum * g_ToneMapping.histogramHighPercentile);
+
+    float ClampedAdaptedLuminance = clamp(
+        UnclampedAdaptedLuminance,
+        g_ToneMapping.minAdaptedLuminance,
+        g_ToneMapping.maxAdaptedLuminance);
+    
+    return ClampedAdaptedLuminance;
+}
+
+float ComputeEyeAdaptation(float OldExposure, float TargetExposure, float FrameTime)
+{
+    float Diff = OldExposure - TargetExposure;
+
+    float AdaptationSpeed = (Diff < 0) ? g_ToneMapping.eyeAdaptationSpeedUp : g_ToneMapping.eyeAdaptationSpeedDown;
+
+    if (AdaptationSpeed <= 0)
+        return TargetExposure;
+
+    float Factor = exp2(-FrameTime * AdaptationSpeed);
+
+    return TargetExposure + Diff * Factor;
+}
+
 [numthreads(1, 1, 1)]
 void main()
 {
-    u_Exposure[uint2(0, 0)] = 0.1f;
+    float TargetExposure = ComputeEyeAdaptationExposure();
+    float OldExposure = u_Exposure[uint2(0, 0)];
+
+    float SmoothedExposure = ComputeEyeAdaptation(OldExposure, TargetExposure, g_ToneMapping.frameTime);
+
+    u_Exposure[uint2(0, 0)] = SmoothedExposure;
 }
