@@ -1,7 +1,8 @@
 #ifndef BRDF_H
 #define BRDF_H
 #include "MaterialAttributes.hlsl"
-//Based on Raytracing Gems II chapter 14
+
+//Raytracing Gems II chapter 14
 
 #define MIN_F0 0.04f
 
@@ -685,7 +686,6 @@ void ReflectionDirection(float3 I, float3 N, inout float3 R)
 {
     R = I - 2 * dot(I, N) * N;
 }
-
 
 bool TransmissionDirection(float n1, float n2, float3 I, float3 N, inout float3 T)
 {
