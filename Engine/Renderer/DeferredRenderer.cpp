@@ -614,6 +614,16 @@ void DeferredRenderer::Render(Window& window)
 
         PIXEndEvent(gfxCommandList.Get());
     } 
+    { //Exposure pass
+        PIXBeginEvent(gfxCommandList.Get(), 0, L"Exposure Pass");      
+        commandList->SetPipelineState(m_HDR->exposurePSO);     
+        commandList->SetComputeRootSignature(m_HDR->exposureRT);
+
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_HDR->heap.heap.Get());
+        gfxCommandList->SetComputeRootDescriptorTable(ExposureParam::ExposureTex, m_HDR->heap.GetGPUHandle(0));
+        commandList->Dispatch(1,1,1);
+        PIXEndEvent(gfxCommandList.Get());
+    }
     { //DLSS pass
 
         gfxCommandList->ResourceBarrier(1,
@@ -631,12 +641,12 @@ void DeferredRenderer::Render(Window& window)
                 &m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0),
                 &m_DLSS->resolvedTexture,
                 &m_GBuffer->GetTexture(GBUFFER_GEOMETRY_MV2D),
-                &m_GBuffer->GetTexture(GBUFFER_STANDARD_DEPTH)
+                &m_GBuffer->GetTexture(GBUFFER_STANDARD_DEPTH),
+                &m_HDR->exposureTex
             );
 
             dlssTextures.linearDepth = &m_GBuffer->GetTexture(GBUFFER_LINEAR_DEPTH);
             dlssTextures.motionVectors3D = &m_GBuffer->GetTexture(GBUFFER_MOTION_VECTOR);
-
 
             m_DLSS->EvaluateSuperSampling(commandList.get(), dlssTextures, m_NativeWidth, m_NativeHeight);
 

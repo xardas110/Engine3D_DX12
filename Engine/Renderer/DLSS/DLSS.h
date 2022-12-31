@@ -42,8 +42,8 @@ struct DlssRecommendedSettings
 struct DlssTextures
 {
 	//required textures
-	DlssTextures(const Texture* unresolvedColor, const Texture* resolvedColor, const Texture* motionVectors, const Texture* depth)
-		: unresolvedColor(unresolvedColor), resolvedColor(resolvedColor) , motionVectors(motionVectors) , depth(depth) {}
+	DlssTextures(const Texture* unresolvedColor, const Texture* resolvedColor, const Texture* motionVectors, const Texture* depth, const Texture* exposure)
+		: unresolvedColor(unresolvedColor), resolvedColor(resolvedColor) , motionVectors(motionVectors) , depth(depth), exposure(exposure) {}
 
 	const Texture* unresolvedColor{ nullptr };
 	const Texture* resolvedColor{ nullptr };

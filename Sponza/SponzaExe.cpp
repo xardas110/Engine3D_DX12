@@ -26,7 +26,7 @@ bool SponzaExe::LoadContent()
         auto& trans = bathRoom.GetComponent<TransformComponent>();
         trans.pos = { 70.f, 0.f, 0.f };
 
-    }
+    }  
     /*
     {
         auto mcLaren = CreateEntity("Mercedes");
@@ -73,7 +73,7 @@ bool SponzaExe::LoadContent()
     */
     /*
     */
-
+    return true;
     meshManager.CreateCube();
     meshManager.CreateSphere();
    // meshManager.CreateTorus();

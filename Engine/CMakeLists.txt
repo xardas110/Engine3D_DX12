@@ -173,6 +173,8 @@ set( SHADER_FILES
     Resources/Shaders/Debug/DebugTexture_PS.hlsl
     Resources/Shaders/HDR/HDR_VS.hlsl
     Resources/Shaders/HDR/HDR_PS.hlsl
+    Resources/Shaders/HDR/Exposure_CS.hlsl
+    Resources/Shaders/HDR/Histogram_CS.hlsl
 )
 
 set( RESOURCE_FILES 
@@ -287,6 +289,20 @@ set_source_files_properties( Resources/Shaders/Div/GenerateMips_CS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Compute
         VS_SHADER_VARIABLE_NAME g_GenerateMips_CS
+        ShaderType "cs"
+)
+
+set_source_files_properties( Resources/Shaders/HDR/Exposure_CS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Compute
+        VS_SHADER_VARIABLE_NAME g_Exposure_CS
+        ShaderType "cs"
+)
+
+set_source_files_properties( Resources/Shaders/HDR/Histogram_CS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Compute
+        VS_SHADER_VARIABLE_NAME g_Histogram_CS
         ShaderType "cs"
 )
 

@@ -118,6 +118,10 @@ using namespace DirectX;
 #define TM_ACESFilmic 3
 #define TM_Uncharted 4
 
+#define HISTOGRAM_BINS 256
+#define FIXED_POINT_FRAC_BITS 6
+#define FIXED_POINT_FRAC_MULTIPLIER (1 << FIXED_POINT_FRAC_BITS)
+
 // Converts Phong's exponent (shininess) to Beckmann roughness (alpha)
 // Source: "Microfacet Models for Refraction through Rough Surfaces" by Walter et al.
 inline float ShininessToBeckmannAlpha(float shininess)
@@ -157,6 +161,24 @@ struct TonemapCB
     float LinearWhite COMPAT_FLOAT(11.2f);
 
     float Gamma COMPAT_FLOAT(2.2f);
+
+    XMFLOAT2 viewOrigin;
+    XMFLOAT2 viewSize;
+
+    float logLuminanceScale;
+    float logLuminanceBias;
+    float histogramLowPercentile;
+    float histogramHighPercentile;
+
+    float eyeAdaptationSpeedUp;
+    float eyeAdaptationSpeedDown;
+    float minAdaptedLuminance;
+    float maxAdaptedLuminance;
+
+    float frameTime;
+    float exposureScale;
+    float whitePointInvSquared;
+    UINT sourceSlice;
 };
 
 struct Light

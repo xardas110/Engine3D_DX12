@@ -8,6 +8,8 @@
 #include <HDR_VS.h>
 #include <HDR_PS.h>
 
+#include <Exposure_CS.h>
+
 TonemapCB g_TonemapParameters;
 
 // Number of values to plot in the tonemapping curves.
@@ -152,6 +154,8 @@ HDR::HDR(int nativeWidth, int nativeHeight)
 {
     CreateRenderTarget(nativeWidth, nativeHeight);
     CreatePipeline();
+    CreateExposurePSO();
+    CreateUAVViews();
 }
 
 void HDR::CreateRenderTarget(int nativeWidth, int nativeHeight)
@@ -159,6 +163,14 @@ void HDR::CreateRenderTarget(int nativeWidth, int nativeHeight)
     auto outputTextureDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM, nativeWidth, nativeHeight);
     outputTextureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     outputTextureDesc.MipLevels = 1;
+
+    auto exposureTexDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R32_FLOAT, 1, 1);
+    exposureTexDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    exposureTexDesc.MipLevels = 1;
+
+    exposureTex = Texture(exposureTexDesc, nullptr,
+        TextureUsage::RenderTarget,
+        L"Exposure texture");
 
     Texture outputTexture = Texture(outputTextureDesc, &ClearValue(outputTextureDesc.Format, { 0.f, 0.f, 0.f, 0.f }),
         TextureUsage::RenderTarget,
@@ -231,6 +243,66 @@ void HDR::CreatePipeline()
     };
 
     ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&pipeline)));
+}
+
+void HDR::CreateExposurePSO()
+{
+    auto device = Application::Get().GetDevice();
+
+    D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
+    featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
+    if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
+    {
+        featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
+    }
+
+    CD3DX12_DESCRIPTOR_RANGE1 exposureHeap = {};
+    exposureHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+    exposureHeap.NumDescriptors = 1;
+    exposureHeap.BaseShaderRegister = 0;
+    exposureHeap.RegisterSpace = 0;
+    exposureHeap.OffsetInDescriptorsFromTableStart = 0;
+    exposureHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE;
+
+    CD3DX12_ROOT_PARAMETER1 rootParameters[ExposureParam::Size];
+    rootParameters[ExposureParam::ExposureTex].InitAsDescriptorTable(1, &exposureHeap);
+
+    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
+    rootSignatureDesc.Init_1_1(ExposureParam::Size,
+        rootParameters, 0, nullptr);
+
+    exposureRT.SetRootSignatureDesc(
+        rootSignatureDesc.Desc_1_1,
+        featureData.HighestVersion
+    );
+
+    struct PipelineStateStream
+    {
+        CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
+        CD3DX12_PIPELINE_STATE_STREAM_CS CS;
+    } pipelineStateStream;
+
+
+    pipelineStateStream.pRootSignature = exposureRT.GetRootSignature().Get();
+    pipelineStateStream.CS = { g_Exposure_CS, sizeof(g_Exposure_CS) };
+
+    D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
+        sizeof(PipelineStateStream), &pipelineStateStream
+    };
+
+    ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&exposurePSO)));
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE HDR::CreateUAVViews()
+{
+    auto device = Application::Get().GetDevice();
+   
+    D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+    uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+    
+    device->CreateUnorderedAccessView(exposureTex.GetD3D12Resource().Get(), nullptr, &uavDesc, heap.SetHandle(0));
+
+    return heap.GetHandleAtStart();
 }
 
 void HDR::OnResize(int nativeWidth, int nativeHeight)

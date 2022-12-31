@@ -202,7 +202,7 @@ void DLSS::InitWithRecommendedSettings(int width, int height)
         qualityMode,
         &recommendedSettings);
 
-    InitFeatures(recommendedSettings.m_ngxRecommendedOptimalRenderSize, {(unsigned)width, (unsigned)height}, false, false, 1.f, true, false, qualityMode);
+    InitFeatures(recommendedSettings.m_ngxRecommendedOptimalRenderSize, {(unsigned)width, (unsigned)height}, true, false, 1.f, true, true, qualityMode);
 }
 
 void DLSS::EvaluateSuperSampling(
@@ -223,13 +223,22 @@ void DLSS::EvaluateSuperSampling(
     D3D12DlssEvalParams.Feature.pInOutput = texs.resolvedColor->GetD3D12Resource().Get();
     D3D12DlssEvalParams.pInDepth = texs.depth->GetD3D12Resource().Get();
     D3D12DlssEvalParams.pInMotionVectors = texs.motionVectors->GetD3D12Resource().Get();
-    D3D12DlssEvalParams.pInExposureTexture = nullptr;
+    D3D12DlssEvalParams.pInExposureTexture = texs.exposure->GetD3D12Resource().Get();
 
     D3D12DlssEvalParams.Feature.InSharpness = flSharpness;
 
+    ImGui::Begin("DLSS settings");
+    static float f1 = 1.f;
+    static float f2 = 0.f;
+
+    ImGui::DragFloat("ExposureScale", &f1, 0.1f, 0.f, 100.f);
+    ImGui::DragFloat("InPreExposure", &f2, 0.1f, 0.f, 100.f);
+
+    D3D12DlssEvalParams.InExposureScale = f1;
+    D3D12DlssEvalParams.InPreExposure = f2;
+    ImGui::End();
+
     //D3D12DlssEvalParams.InReset = true;
-    //D3D12DlssEvalParams.InExposureScale = 1.f;
-    //D3D12DlssEvalParams.InPreExposure = 0.f;
 
     unsigned baseWidth = (unsigned)recommendedSettings.m_ngxRecommendedOptimalRenderSize.x;
     unsigned baseHeight = (unsigned)recommendedSettings.m_ngxRecommendedOptimalRenderSize.y;
