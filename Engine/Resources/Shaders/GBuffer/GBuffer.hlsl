@@ -66,25 +66,25 @@ GPackInfo PackGBuffer(in CameraCB camera, in ObjectCB objectCB, in SurfaceMateri
 //Temp, until better packing is added
 GFragment UnpackGBuffer(in Texture2D gBufferHeap[], 
     in SamplerState nearestSampler, 
-    in float2 texCoords)
+    in float2 texCoords, int lod = 0)
 {
     GFragment fi;
     
-    float4 albedoTex = gBufferHeap[GBUFFER_ALBEDO].Sample(nearestSampler, texCoords, 0.f);
+    float4 albedoTex = gBufferHeap[GBUFFER_ALBEDO].Sample(nearestSampler, texCoords, lod);
     
-    float4 normalRoughTex = NRD_FrontEnd_UnpackNormalAndRoughness(gBufferHeap[GBUFFER_NORMAL_ROUGHNESS].Sample(nearestSampler, texCoords, 0.f));
+    float4 normalRoughTex = NRD_FrontEnd_UnpackNormalAndRoughness(gBufferHeap[GBUFFER_NORMAL_ROUGHNESS].Sample(nearestSampler, texCoords, lod));
     
-    float4 motionVector = gBufferHeap[GBUFFER_MOTION_VECTOR].Sample(nearestSampler, texCoords, 0.f);
+    float4 motionVector = gBufferHeap[GBUFFER_MOTION_VECTOR].Sample(nearestSampler, texCoords, lod);
     
-    float4 emissiveSMTex = gBufferHeap[GBUFFER_EMISSIVE_SHADER_MODEL].Sample(nearestSampler, texCoords, 0.f);
+    float4 emissiveSMTex = gBufferHeap[GBUFFER_EMISSIVE_SHADER_MODEL].Sample(nearestSampler, texCoords, lod);
     
-    float4 aoMetallicHeight = gBufferHeap[GBUFFER_AO_METALLIC_HEIGHT].Sample(nearestSampler, texCoords, 0.f);
+    float4 aoMetallicHeight = gBufferHeap[GBUFFER_AO_METALLIC_HEIGHT].Sample(nearestSampler, texCoords, lod);
     
-    float4 geometryNormal = gBufferHeap[GBUFFER_GEOMETRY_NORMAL].Sample(nearestSampler, texCoords, 0.f);
+    float4 geometryNormal = gBufferHeap[GBUFFER_GEOMETRY_NORMAL].Sample(nearestSampler, texCoords, lod);
     
-    float linearDepth = gBufferHeap[GBUFFER_LINEAR_DEPTH].Sample(nearestSampler, texCoords, 0.f).r;
+    float linearDepth = gBufferHeap[GBUFFER_LINEAR_DEPTH].Sample(nearestSampler, texCoords, lod).r;
     
-    float standardDepth = gBufferHeap[GBUFFER_STANDARD_DEPTH].Sample(nearestSampler, texCoords, 0.f).r;
+    float standardDepth = gBufferHeap[GBUFFER_STANDARD_DEPTH].Sample(nearestSampler, texCoords, lod).r;
     
     fi.albedo = albedoTex.rgb;
     

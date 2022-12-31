@@ -20,6 +20,7 @@ namespace LightPassParam
 		RaytracingDataCB,
 		AccumBuffer,
 		Cubemap,
+		BlueNoiseTextures,
 		Size
 	};
 }

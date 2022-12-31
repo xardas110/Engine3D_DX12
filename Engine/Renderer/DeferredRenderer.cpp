@@ -80,6 +80,30 @@ DeferredRenderer::DeferredRenderer(int width, int height)
 
 }
 
+void DeferredRenderer::LoadContent()
+{
+    auto copyQueue = Application::Get().GetCommandQueue();
+
+    auto cl = copyQueue->GetCommandList();
+
+    cl->LoadTextureFromFile(scrambling, L"Assets/Textures/BlueNoise/scrambling_ranking_128x128_2d_1spp.png");
+    cl->LoadTextureFromFile(sobol, L"Assets/Textures/BlueNoise/sobol_256_4d.png");
+
+    auto fVal = copyQueue->ExecuteCommandList(cl);
+    copyQueue->WaitForFenceValue(fVal);
+
+    auto device = Application::Get().GetDevice();
+
+    device->CreateShaderResourceView(
+        scrambling.GetD3D12Resource().Get(), nullptr,
+        heap.SetHandle(DENOISER_TEX_SCRAMBLING));
+
+    device->CreateShaderResourceView(
+        sobol.GetD3D12Resource().Get(), nullptr,
+        heap.SetHandle(DENOISER_TEX_SOBOL));
+     
+}
+
 DeferredRenderer::~DeferredRenderer()
 {
     m_DLSS->dlssChangeEvent.detach(&DeferredRenderer::OnDlssChanged, this);
@@ -182,7 +206,7 @@ void DeferredRenderer::Render(Window& window)
     rtData.debugSettings = listbox_item_debug;
     auto& hitParams = m_NvidiaDenoiser->denoiserSettings.settings.hitDistanceParameters;
     rtData.hitParams = { hitParams.A, hitParams.B, hitParams.C, hitParams.D};
-
+    rtData.frameIndex = window.m_CurrentBackBufferIndex;
     static int numBounces = 2;
 
     ImGui::Begin("Raytracing Settings");
@@ -376,6 +400,9 @@ void DeferredRenderer::Render(Window& window)
 
         commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_Skybox->heap.heap.Get());
         gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::Cubemap, m_Skybox->GetSRVView());
+
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, heap.heap.Get());
+        gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::BlueNoiseTextures, heap.GetHandleAtStart());
 
         commandList->Draw(3);
 

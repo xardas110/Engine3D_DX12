@@ -19,6 +19,8 @@ StructuredBuffer<Material>      g_GlobalMaterials           : register(t4, space
 Texture2D                       g_GBufferHeap[]             : register(t5, space6);
 
 TextureCube<float4>             g_Cubemap                   : register(t7, space8);
+
+Texture2D<uint4>                g_BlueNoise[]               : register(t8, space9);
     
 SamplerState                    g_NearestRepeatSampler      : register(s0);
 SamplerState                    g_LinearRepeatSampler       : register(s1);
@@ -38,6 +40,7 @@ static float reflectiveAmbient = 0.005f;
 #define DIRECT_LIGHT_FLAG_SKIP_BLEND (1 << 3)
 #define DIRECT_LIGHT_FLAG_SAVE_OPACITY (1 << 4)
 #define DIRECT_LIGHT_FLAG_HARD_SHADOWS (1 << 5)
+#define DIRECT_LIGHT_FLAG_SKIP_SHADOWS (1 << 6)
 
 #define ANY_HIT_FLAGS_SKIP_BLEND (1 << 0)
 
@@ -108,9 +111,8 @@ uint Bayer4x4ui( uint2 samplePos, uint frameIndex)
     return ( ( a >> b ) + sampleOffset ) & 0xF;
 }
 
-/*
 //https://github.com/NVIDIAGameWorks/RayTracingDenoiser
-float2 GetBlueNoise(Texture2D<uint3> texScramblingRanking, uint2 pixelPos, uint seed, uint sampleIndex, uint sppVirtual = 1, uint spp = 1)
+float2 GetBlueNoise(Texture2D<uint4> texScramblingRanking, uint2 pixelPos, uint seed, uint sampleIndex, uint sppVirtual = 1, uint spp = 1)
 {
     // Final SPP - total samples per pixel ( there is a different "gIn_Scrambling_Ranking" texture! )
     // SPP - samples per pixel taken in a single frame ( must be POW of 2! )
@@ -122,7 +124,7 @@ float2 GetBlueNoise(Texture2D<uint3> texScramblingRanking, uint2 pixelPos, uint 
     //     https://belcour.github.io/blog/research/publication/2019/06/17/sampling-bluenoise.html (but 2D only)
 
     // Sample index
-    uint frameIndex = g_RaytracingData.frameNumber;
+    uint frameIndex = g_RaytracingData.frameIndex;
     uint virtualSampleIndex = (frameIndex + seed) & (sppVirtual - 1);
     sampleIndex &= spp - 1;
     sampleIndex += virtualSampleIndex * spp;
@@ -130,17 +132,68 @@ float2 GetBlueNoise(Texture2D<uint3> texScramblingRanking, uint2 pixelPos, uint 
     // The algorithm
     uint3 A = texScramblingRanking[pixelPos & 127];
     uint rankedSampleIndex = sampleIndex ^ A.z;
-    uint4 B = gIn_Sobol[uint2(rankedSampleIndex & 255, 0)];
+    uint4 B = g_BlueNoise[DENOISER_TEX_SOBOL][uint2(rankedSampleIndex & 255, 0)];
     float4 blue = (float4(B ^ A.xyxy) + 0.5) * (1.0 / 256.0);
 
     // Randomize in [ 0; 1 / 256 ] area to get rid of possible banding
-    uint d = Bayer4x4ui(pixelPos, g_RaytracingData.frameNumber);
+    uint d = Bayer4x4ui(pixelPos, frameIndex);
     float2 dither = (float2(d & 3, d >> 2) + 0.5) * (1.0 / 4.0);
     blue += (dither.xyxy - 0.5) * (1.0 / 256.0);
 
     return saturate(blue.xy);
 }
-*/
+
+#define _Pi( x ) radians( 180.0 * x )
+
+float Pi( float x )
+{ return _Pi( x ); }
+
+float2 Pi( float2 x )
+{ return _Pi( x ); }
+
+float3 Pi( float3 x )
+{ return _Pi( x ); }
+
+float4 Pi( float4 x )
+{ return _Pi( x ); }
+
+// Sqrt for values in range [0; 1]
+float Sqrt01( float x )
+{ return sqrt( saturate( x ) ); }
+
+float2 Sqrt01( float2 x )
+{ return sqrt( saturate( x ) ); }
+
+float3 Sqrt01( float3 x )
+{ return sqrt( saturate( x ) ); }
+
+float4 Sqrt01( float4 x )
+{ return sqrt( saturate( x ) ); }
+
+namespace Cosine
+{
+    float GetPDF(float NoL = 1.0) // default can be useful to handle NoL cancelation ( PDF's NoL cancels throughput's NoL )
+    {
+        float pdf = NoL / Pi(1.0);
+
+        return max(pdf, 1e-7);
+    }
+
+    float3 GetRay(float2 rnd)
+    {
+        float phi = rnd.x * Pi(2.0);
+
+        float cosTheta = Sqrt01(rnd.y);
+        float sinTheta = Sqrt01(1.0 - cosTheta * cosTheta);
+
+        float3 ray;
+        ray.x = sinTheta * cos(phi);
+        ray.y = sinTheta * sin(phi);
+        ray.z = cosTheta;
+
+        return ray;
+    }
+}
 
 bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5f, uint anyhitFlags = 0)
 {
@@ -287,13 +340,13 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
     float3 directLight = float3(0.f, 0.f, 0.f);
     
     if (!(flags & DIRECT_LIGHT_FLAG_HARD_SHADOWS))
-        shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(float2(Rand(rng), Rand(rng)), L, 0.05f);
+        shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(float2(Rand(rng), Rand(rng)), L, g_DirectionalLight.tanAngularRadius);
     
     VisibilityResult visibilityResult;
     float visibility = TraceVisibility(shadowRayInfo, g_Scene, visibilityResult);
-    
+     
     if (visibility > 0.f)
-        directLight += EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+    directLight += EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
     
     float3 ambientLight = hitSurfaceMaterial.albedo * ambientFactor * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
 
@@ -340,7 +393,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
        
     if (!bResult)
         return bResult;
-
+      
     if (traceResult.mat.roughness < 0.1f)
     {
         float brdfProbability = GetBRDFProbability(traceResult.mat, -ray.desc.Direction, traceResult.mat.normal);
@@ -359,6 +412,21 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
     return bResult;
 }
 
+float3x3 GetBasis(float3 N)
+{
+    float sz = sign(N.z);
+    float a = 1.0 / (sz + N.z);
+    float ya = N.y * a;
+    float b = N.x * ya;
+    float c = N.x * sz;
+
+    float3 T = float3(c * N.x * a - 1.0, sz * b, c);
+    float3 B = float3(b, N.y * ya - sz, N.y);
+
+            // Note: due to the quaternion formulation, the generated frame is rotated by 180 degrees,
+            // s.t. if N = (0, 0, 1), then T = (-1, 0, 0) and B = (0, -1, 0).
+    return float3x3(T, B, N);
+}
 
 bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inout float4 radiance, inout float2 shadowData)
 {
@@ -374,7 +442,7 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inou
     currentMat.normal = fi.normal;
     
     float3 X = GetWorldPosFromDepth(texCoords, fi.depth, g_Camera.invViewProj);
-    X = OffsetRay(X, fi.geometryNormal) + fi.geometryNormal * 0.05f;
+    X = OffsetRay(X, fi.geometryNormal) + fi.geometryNormal * 0.1f;
     
     float3 V = normalize(g_Camera.pos.rgb - X.rgb);
     float3 L = -g_DirectionalLight.direction.rgb;
@@ -386,7 +454,7 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inou
     }
      
     RayInfo shadowRayInfo;
-    shadowRayInfo.desc.TMin = 0.00f;
+    shadowRayInfo.desc.TMin = 0.0f;
     shadowRayInfo.desc.TMax = 10000.f;
     shadowRayInfo.desc.Origin = X;
     shadowRayInfo.desc.Direction = L;
@@ -394,16 +462,20 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inou
     shadowRayInfo.anyhitFlags = 0;
     shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
    
-    radiance.rgb += currentMat.emissive;
-    
-    shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(float2(Rand(rng), Rand(rng)), L, g_DirectionalLight.tanAngularRadius);
+   // uint2 pixelPos = texCoords * g_Camera.resolution;
+    float2 rnd = float2(Rand(rng), Rand(rng)); //GetBlueNoise(g_BlueNoise[DENOISER_TEX_SCRAMBLING], pixelPos, 0, 0);
+    //rnd = Cosine::GetRay(rnd);
+
+    shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(rnd, L, g_DirectionalLight.tanAngularRadius);
     
     VisibilityResult visibilityResult;
+   
     float visibility = TraceVisibility(shadowRayInfo, g_Scene, visibilityResult);
     
     if (visibilityResult.bHit)
         shadowData = SIGMA_FrontEnd_PackShadow(viewZ, visibilityResult.hitT, g_DirectionalLight.tanAngularRadius);
     
+    radiance.rgb += fi.emissive;
     radiance.rgb += EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
       
     return true;
@@ -554,6 +626,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     {
         return OUT;
     }   
+    
     IndirectLight(TexCoord, rngState, viewZ, troughput, OUT.IndirectDiffuse, OUT.IndirectSpecular);
     
     /*

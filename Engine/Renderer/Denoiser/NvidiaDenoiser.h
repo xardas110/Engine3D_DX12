@@ -125,6 +125,5 @@ class NvidiaDenoiser
 	const int width, height;
 	DenoiserSettings denoiserSettings;
 
-	Texture scrambling;
-	Texture sobol;
+	nrd::SigmaSettings shadowSettings = {};
 };

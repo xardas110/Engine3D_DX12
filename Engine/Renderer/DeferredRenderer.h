@@ -39,6 +39,8 @@ class DeferredRenderer
 	DeferredRenderer(int width, int height);
 	~DeferredRenderer();
 
+	void LoadContent();
+
 	void Render(class Window& window);
 
 	void OnResize(ResizeEventArgs& e);
@@ -87,5 +89,8 @@ class DeferredRenderer
 
 	std::unique_ptr<DebugTexturePass> m_DebugTexturePass;
 
+	Texture scrambling;
+	Texture sobol;
+	SRVHeapData heap = SRVHeapData(2);
 };
 

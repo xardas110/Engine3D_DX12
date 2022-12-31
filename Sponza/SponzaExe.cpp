@@ -2,6 +2,8 @@
 #include <iostream>
 #include <Components.h>
 #include <entity.h>
+#include <CommandQueue.h>
+#include <CommandList.h>
 
 SponzaExe::SponzaExe(const std::wstring& name, int width, int height, bool vSync)
 	:Game(name, width, height, vSync)
@@ -25,8 +27,7 @@ bool SponzaExe::LoadContent()
         trans.pos = { 70.f, 0.f, 0.f };
 
     }
-
-
+    /*
     {
         auto mcLaren = CreateEntity("Mercedes");
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::ForceAlphaBlend);
@@ -35,7 +36,7 @@ bool SponzaExe::LoadContent()
         trans.pos = { 0.f, 0.f, 0.f };
         trans.scale = { 1.f, 1.f, 1.f };
     } 
-    /*
+    
     
     {
         auto mcLaren = CreateEntity("Lambo");

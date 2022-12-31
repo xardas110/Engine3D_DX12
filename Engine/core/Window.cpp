@@ -51,8 +51,13 @@ void Window::Initialize()
     m_GUI.Initialize( shared_from_this() );
 #endif
 #endif // !DEBUG_EDITOR
+
 }
 
+void Window::LoadContent()
+{
+    m_DeferredRenderer.LoadContent();
+}
 
 HWND Window::GetWindowHandle() const
 {
@@ -67,6 +72,8 @@ const std::wstring& Window::GetWindowName() const
 void Window::Show()
 {
     ::ShowWindow(m_hWnd, SW_SHOW);
+
+
 }
 
 /**

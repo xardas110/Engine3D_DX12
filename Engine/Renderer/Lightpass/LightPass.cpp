@@ -24,7 +24,7 @@ void LightPass::CreateRenderTarget(int width, int height)
     shadowDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     shadowDesc.MipLevels = 1;
 
-    auto outShadowDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8_UNORM, width, height);
+    auto outShadowDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16_UNORM, width, height);
     outShadowDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     outShadowDesc.MipLevels = 1;
 
@@ -156,6 +156,15 @@ void LightPass::CreatePipeline()
     cubemapSRVHeap.OffsetInDescriptorsFromTableStart = 0;
     cubemapSRVHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
+    CD3DX12_DESCRIPTOR_RANGE1 denoiserHeap = {};
+    denoiserHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    denoiserHeap.NumDescriptors = DENOISER_TEX_NUM;
+    denoiserHeap.BaseShaderRegister = 8;
+    denoiserHeap.RegisterSpace = 9;
+    denoiserHeap.OffsetInDescriptorsFromTableStart = 0;
+    denoiserHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+
+
     CD3DX12_ROOT_PARAMETER1 rootParameters[LightPassParam::Size];
     rootParameters[LightPassParam::AccelerationStructure].InitAsShaderResourceView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE);
     rootParameters[LightPassParam::GBufferHeap].InitAsDescriptorTable(1, &gBufferSRVHeap, D3D12_SHADER_VISIBILITY_PIXEL);
@@ -168,6 +177,7 @@ void LightPass::CreatePipeline()
     rootParameters[LightPassParam::RaytracingDataCB].InitAsConstantBufferView(2);
     rootParameters[LightPassParam::AccumBuffer].InitAsDescriptorTable(1, &gAccumBuffer);
     rootParameters[LightPassParam::Cubemap].InitAsDescriptorTable(1, &cubemapSRVHeap);
+    rootParameters[LightPassParam::BlueNoiseTextures].InitAsDescriptorTable(1, &denoiserHeap);
 
     D3D12_STATIC_SAMPLER_DESC staticSampler[3] = {};
     staticSampler[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;

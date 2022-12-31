@@ -176,6 +176,8 @@ protected:
     // Update the render target views for the swapchain back buffers.
     void UpdateRenderTargetViews();
 
+    void LoadContent();
+
 private:
     // Windows should not be copied.
     Window(const Window& copy) = delete;
@@ -203,6 +205,7 @@ private:
     
     Microsoft::WRL::ComPtr<IDXGISwapChain4> m_dxgiSwapChain;
     Texture m_BackBufferTextures[BufferCount];
+
     // Marked mutable to allow modification in a const function.
     mutable RenderTarget m_RenderTarget;
 

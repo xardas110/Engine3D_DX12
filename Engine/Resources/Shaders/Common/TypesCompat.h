@@ -44,6 +44,10 @@ using namespace DirectX;
 #define TEXTURE_NULL UINT_MAX_NULL
 #define MATERIAL_ID_NULL UINT_MAX_NULL
 
+#define DENOISER_TEX_SCRAMBLING 0
+#define DENOISER_TEX_SOBOL 1
+#define DENOISER_TEX_NUM 2
+
 //0-7 color targets and 8 is depth
 #define GBUFFER_ALBEDO 0
 #define GBUFFER_NORMAL_ROUGHNESS 1
@@ -277,7 +281,7 @@ struct RaytracingDataCB
     int accumulatedFrameNumber; 
     int bResetDuty;
     int numBounces COMPAT_INT(2);
-    int pad1;
+    int frameIndex;
     int pad2;
     int pad3;
     XMFLOAT4 hitParams;

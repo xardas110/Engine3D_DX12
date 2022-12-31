@@ -46,17 +46,6 @@ NvidiaDenoiser::NvidiaDenoiser(int width, int height, DenoiserTextures& texs)
 	auto device = Application::Get().GetDevice();
 	auto cq = Application::Get().GetCommandQueue();
 
-	/*
-	auto copyQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
-	auto cl = copyQueue->GetCommandList();
-
-	cl->LoadTextureFromFile(scrambling, L"Assets/Textures/BlueNoise/scrambling_ranking_128x128_2d_1spp.png");
-	//cl->LoadTextureFromFile(sobol, L"Assets/Textures/BlueNoise/sobol_256_4d.png");
-
-	auto fVal = copyQueue->ExecuteCommandList(cl);
-	copyQueue->WaitForFenceValue(fVal);
-	*/
-
 	m_Adapter = Application::Get().GetAdapter(false).Get();
 
 	nri::DeviceCreationD3D12Desc deviceDesc = {};
@@ -260,7 +249,7 @@ NvidiaDenoiser::NvidiaDenoiser(int width, int height, DenoiserTextures& texs)
 		nri::TextureTransitionBarrierDesc& entryDesc = nriTextures[nriTypes::outShadow].entryDescs;
 		auto& current = nriTextures[nriTypes::outShadow];
 
-		nriTextures[nriTypes::outShadow].entryFormat = nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R8_UNORM);
+		nriTextures[nriTypes::outShadow].entryFormat = nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R16_UNORM);
 
 		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, texDesc, current.texture));
 
@@ -353,7 +342,6 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 		{ &nriTextures[nriTypes::outShadow].entryDescs,
 		nriTextures[nriTypes::outShadow].entryFormat });
 
-	nrd::SigmaSettings shadowSettings = {};
 	NRD_Sigma.SetMethodSettings(nrd::Method::SIGMA_SHADOW, &shadowSettings);
 	NRD_Sigma.Denoise(currentBackbufferIndex, *nriCommandBuffer, commonSettings, userPool, true);
 
@@ -368,6 +356,12 @@ void NvidiaDenoiser::OnGUI()
 
 	auto* settings = &denoiserSettings.settings;
 	auto* commonSettings = &denoiserSettings.commonSettings;
+
+	ImGui::Text("SIGMA");
+	ImGui::DragFloat("BlurRadiusScale", &shadowSettings.blurRadiusScale, 0.5f, 1.f, 4.f);
+	ImGui::DragFloat("planeDistanceSensitivity", &shadowSettings.planeDistanceSensitivity, 0.1f, 0.f, 1.f);
+
+	ImGui::Text("REBLUR");
 
 	ImGui::Text("Frame History Settings --------------------");
 
