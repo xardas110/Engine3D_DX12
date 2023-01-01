@@ -125,7 +125,6 @@ using namespace DirectX;
 #define HISTROGRAM_GROUP_X 16
 #define HISTROGRAM_GROUP_Y 16
 
-
 // Converts Phong's exponent (shininess) to Beckmann roughness (alpha)
 // Source: "Microfacet Models for Refraction through Rough Surfaces" by Walter et al.
 inline float ShininessToBeckmannAlpha(float shininess)

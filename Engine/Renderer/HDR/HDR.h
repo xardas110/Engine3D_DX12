@@ -19,6 +19,19 @@ namespace ExposureParam
 	enum
 	{
 		ExposureTex,
+		Histogram,
+		TonemapCB,
+		Size
+	};
+}
+
+namespace HistogramParam
+{
+	enum
+	{
+		SourceTex,
+		Histogram,
+		TonemapCB,
 		Size
 	};
 }
@@ -33,6 +46,7 @@ private:
 	void CreatePipeline();
 
 	void CreateExposurePSO();
+	void CreateHistogramPSO();
 
 	void CreateRenderTarget(int nativeWidth, int nativeHeight);
 
@@ -43,7 +57,7 @@ private:
 	static TonemapCB& GetTonemapCB();
 
 	//Returns handle to heap start
-	D3D12_GPU_DESCRIPTOR_HANDLE CreateUAVViews();
+	void CreateUAVViews();
 
 	RenderTarget renderTarget;
 
@@ -51,8 +65,14 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> pipeline;
 
 	Texture exposureTex;
+	Texture histogram;
+
 	RootSignature exposureRT;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> exposurePSO;
 
-	SRVHeapData heap;
+	RootSignature histogramRT;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> histogramPSO;
+
+	SRVHeapData exposureHeap;
+	SRVHeapData histogramHeap;
 };

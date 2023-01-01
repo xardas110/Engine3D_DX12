@@ -9,6 +9,7 @@
 #include <HDR_PS.h>
 
 #include <Exposure_CS.h>
+#include <Histogram_CS.h>
 
 TonemapCB g_TonemapParameters;
 
@@ -155,6 +156,7 @@ HDR::HDR(int nativeWidth, int nativeHeight)
     CreateRenderTarget(nativeWidth, nativeHeight);
     CreatePipeline();
     CreateExposurePSO();
+    CreateHistogramPSO();
     CreateUAVViews();
 }
 
@@ -167,6 +169,13 @@ void HDR::CreateRenderTarget(int nativeWidth, int nativeHeight)
     auto exposureTexDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R32_FLOAT, 1, 1);
     exposureTexDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     exposureTexDesc.MipLevels = 1;
+    
+    D3D12_RESOURCE_ALLOCATION_INFO histoInfo;
+    histoInfo.Alignment = 0;
+    histoInfo.SizeInBytes = sizeof(UINT) * HISTOGRAM_BINS;
+
+    auto histogramDesc = CD3DX12_RESOURCE_DESC::Buffer(histoInfo, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+    histogram = Texture(histogramDesc, nullptr, TextureUsage::RenderTarget, L"HistogramBuffer");
 
     exposureTex = Texture(exposureTexDesc, nullptr,
         TextureUsage::RenderTarget,
@@ -259,13 +268,23 @@ void HDR::CreateExposurePSO()
     CD3DX12_DESCRIPTOR_RANGE1 exposureHeap = {};
     exposureHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
     exposureHeap.NumDescriptors = 1;
-    exposureHeap.BaseShaderRegister = 0;
+    exposureHeap.BaseShaderRegister = 1;
     exposureHeap.RegisterSpace = 0;
     exposureHeap.OffsetInDescriptorsFromTableStart = 0;
     exposureHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE;
 
+    CD3DX12_DESCRIPTOR_RANGE1 histogramHeap = {};
+    histogramHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+    histogramHeap.NumDescriptors = 1;
+    histogramHeap.BaseShaderRegister = 0;
+    histogramHeap.RegisterSpace = 0;
+    histogramHeap.OffsetInDescriptorsFromTableStart = 0;
+    histogramHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE;
+
     CD3DX12_ROOT_PARAMETER1 rootParameters[ExposureParam::Size];
     rootParameters[ExposureParam::ExposureTex].InitAsDescriptorTable(1, &exposureHeap);
+    rootParameters[ExposureParam::Histogram].InitAsDescriptorTable(1, &histogramHeap);
+    rootParameters[ExposureParam::TonemapCB].InitAsConstantBufferView(2,0);
 
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
     rootSignatureDesc.Init_1_1(ExposureParam::Size,
@@ -293,16 +312,83 @@ void HDR::CreateExposurePSO()
     ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&exposurePSO)));
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE HDR::CreateUAVViews()
+void HDR::CreateHistogramPSO()
+{
+    auto device = Application::Get().GetDevice();
+
+    D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
+    featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
+    if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
+    {
+        featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
+    }
+
+    CD3DX12_DESCRIPTOR_RANGE1 histogramHeap = {};
+    histogramHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+    histogramHeap.NumDescriptors = 1;
+    histogramHeap.BaseShaderRegister = 0;
+    histogramHeap.RegisterSpace = 0;
+    histogramHeap.OffsetInDescriptorsFromTableStart = 0;
+    histogramHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE;
+
+    CD3DX12_DESCRIPTOR_RANGE1 sourceHeap = {};
+    sourceHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    sourceHeap.NumDescriptors = 1;
+    sourceHeap.BaseShaderRegister = 0;
+    sourceHeap.RegisterSpace = 0;
+    sourceHeap.OffsetInDescriptorsFromTableStart = 0;
+    //sourceHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE;
+
+    CD3DX12_ROOT_PARAMETER1 rootParameters[HistogramParam::Size];
+    rootParameters[HistogramParam::Histogram].InitAsDescriptorTable(1, &histogramHeap);
+    rootParameters[HistogramParam::SourceTex].InitAsDescriptorTable(1, &sourceHeap, D3D12_SHADER_VISIBILITY_ALL);
+    rootParameters[HistogramParam::TonemapCB].InitAsConstantBufferView(2, 0);
+
+    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
+    rootSignatureDesc.Init_1_1(HistogramParam::Size,
+        rootParameters, 0, nullptr);
+
+    histogramRT.SetRootSignatureDesc(
+        rootSignatureDesc.Desc_1_1,
+        featureData.HighestVersion
+    );
+
+    struct PipelineStateStream
+    {
+        CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
+        CD3DX12_PIPELINE_STATE_STREAM_CS CS;
+    } pipelineStateStream;
+
+    pipelineStateStream.pRootSignature = histogramRT.GetRootSignature().Get();
+    pipelineStateStream.CS = { g_Histogram_CS, sizeof(g_Histogram_CS) };
+
+    D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
+        sizeof(PipelineStateStream), &pipelineStateStream
+    };
+
+    ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&histogramPSO)));
+}
+
+void HDR::CreateUAVViews()
 {
     auto device = Application::Get().GetDevice();
    
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-    
-    device->CreateUnorderedAccessView(exposureTex.GetD3D12Resource().Get(), nullptr, &uavDesc, heap.SetHandle(0));
 
-    return heap.GetHandleAtStart();
+    D3D12_UNORDERED_ACCESS_VIEW_DESC desc{};
+    D3D12_BUFFER_UAV bufferUAV;
+    bufferUAV.FirstElement = 0;
+    bufferUAV.NumElements = HISTOGRAM_BINS;
+    bufferUAV.StructureByteStride = sizeof(UINT);
+    bufferUAV.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+    bufferUAV.CounterOffsetInBytes = 0;
+
+    desc.Buffer = bufferUAV;
+    desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+
+    device->CreateUnorderedAccessView(exposureTex.GetD3D12Resource().Get(), nullptr, &uavDesc, exposureHeap.SetHandle(0));
+    device->CreateUnorderedAccessView(histogram.GetD3D12Resource().Get(), nullptr, &desc, histogramHeap.SetHandle(0));
 }
 
 void HDR::OnResize(int nativeWidth, int nativeHeight)

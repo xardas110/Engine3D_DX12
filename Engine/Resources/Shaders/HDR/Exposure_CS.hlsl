@@ -2,8 +2,9 @@
 #include "../Common/TypesCompat.h"
 #include "../Common/BRDF.hlsl"
 
-Buffer<uint> t_Histogram : register(t0);
-RWTexture2D<float> u_Exposure : register(u0);
+RWBuffer<uint> t_Histogram : register(u0);
+RWTexture2D<float> u_Exposure : register(u1);
+
 ConstantBuffer<TonemapCB> g_ToneMapping : register(b2);
 
 // Most of the code below has been shamelessly stolen from UE4 eye adaptation shaders, i.e. PostProcessEyeAdaptation.usf

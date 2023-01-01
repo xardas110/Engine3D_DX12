@@ -24,6 +24,9 @@
 //#include <NRD.h>
 //#include <NRDIntegration.h>
 
+static const float g_minLogLuminance = -10; // TODO: figure out how to set these properly
+static const float g_maxLogLuminamce = 4;
+
 using namespace DirectX;
 
 bool IsDirectXRaytracingSupported(IDXGIAdapter4* adapter)
@@ -217,11 +220,21 @@ void DeferredRenderer::Render(Window& window)
     XMStoreFloat3(&cameraCB.pos, camera->get_Translation());
 
     auto& directionalLight = game->m_DirectionalLight;
-
     directionalLight.UpdateUI();
 
-    // Clear the render targets.
-    {
+    {//update tonemapper
+
+        //TODO: Remove static
+        auto& tonemapCB = HDR::GetTonemapCB();
+
+        tonemapCB.logLuminanceScale = 1.0f / (g_maxLogLuminamce - g_minLogLuminance);
+        tonemapCB.logLuminanceBias = -g_minLogLuminance * tonemapCB.logLuminanceScale;
+
+        tonemapCB.viewOrigin = { 0.f, 0.f };
+        tonemapCB.viewSize = { (float)m_Width, (float)m_Height };
+        tonemapCB.sourceSlice = 0;
+    }    
+    {// Clear the render targets.
         PIXBeginEvent(gfxCommandList.Get(), 0, L"Clear buffers");
         FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
         commandList->SetRenderTarget(m_GBuffer->renderTarget);
@@ -614,13 +627,49 @@ void DeferredRenderer::Render(Window& window)
 
         PIXEndEvent(gfxCommandList.Get());
     } 
+    {//Histogram pass
+        PIXBeginEvent(gfxCommandList.Get(), 0, L"Histogram Pass");
+        commandList->SetPipelineState(m_HDR->histogramPSO);
+        commandList->SetComputeRootSignature(m_HDR->histogramRT);
+
+        gfxCommandList->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_CompositionPass->heap.heap.Get());
+        gfxCommandList->SetComputeRootDescriptorTable(HistogramParam::SourceTex, m_CompositionPass->heap.GetGPUHandle(0));
+
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_HDR->histogramHeap.heap.Get());
+        gfxCommandList->SetComputeRootDescriptorTable(HistogramParam::Histogram, m_HDR->histogramHeap.GetGPUHandle(0));
+   
+        auto& tonemapCB = HDR::GetTonemapCB();
+        commandList->SetComputeDynamicConstantBuffer(HistogramParam::TonemapCB, tonemapCB);
+
+        commandList->Dispatch((tonemapCB.viewSize.x + 15) / HISTROGRAM_GROUP_X , (tonemapCB.viewSize.y + 15) / HISTROGRAM_GROUP_Y, 1);
+
+        gfxCommandList->ResourceBarrier(1,
+            &CD3DX12_RESOURCE_BARRIER::Transition(
+                m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
+                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+        PIXEndEvent(gfxCommandList.Get());
+    }
     { //Exposure pass
         PIXBeginEvent(gfxCommandList.Get(), 0, L"Exposure Pass");      
         commandList->SetPipelineState(m_HDR->exposurePSO);     
         commandList->SetComputeRootSignature(m_HDR->exposureRT);
 
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_HDR->heap.heap.Get());
-        gfxCommandList->SetComputeRootDescriptorTable(ExposureParam::ExposureTex, m_HDR->heap.GetGPUHandle(0));
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_HDR->exposureHeap.heap.Get());
+        gfxCommandList->SetComputeRootDescriptorTable(ExposureParam::ExposureTex, m_HDR->exposureHeap.GetGPUHandle(0));
+
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_HDR->histogramHeap.heap.Get());
+        gfxCommandList->SetComputeRootDescriptorTable(ExposureParam::Histogram, m_HDR->histogramHeap.GetGPUHandle(0));
+
+        commandList->SetComputeDynamicConstantBuffer(ExposureParam::TonemapCB, HDR::GetTonemapCB());
+
         commandList->Dispatch(1,1,1);
         PIXEndEvent(gfxCommandList.Get());
     }
