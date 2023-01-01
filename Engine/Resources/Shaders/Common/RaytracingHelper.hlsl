@@ -143,6 +143,37 @@ MeshVertex GetHitSurface(in HitAttributes attr, in MeshInfo meshInfo, in Structu
     return result;
 }
 
+MeshVertex GetHitSurface(in HitAttributes attr, in MeshInfo meshInfo, in StructuredBuffer<MeshVertex> globalMeshVertexData[], in StructuredBuffer<uint> globalMeshIndexData[], out float2 aUV[3], out float3 aPos[3])
+{
+    float3 bary;
+    bary.x = 1 - attr.barycentrics.x - attr.barycentrics.y;
+    bary.y = attr.barycentrics.x;
+    bary.z = attr.barycentrics.y;
+    
+    StructuredBuffer<MeshVertex> vertexBuffer = globalMeshVertexData[meshInfo.vertexOffset];
+    StructuredBuffer<uint> indexBuffer = globalMeshIndexData[meshInfo.indexOffset];
+
+    const uint primId = attr.primitiveIndex;
+    const uint i0 = indexBuffer[primId * 3 + 0];
+    const uint i1 = indexBuffer[primId * 3 + 1];
+    const uint i2 = indexBuffer[primId * 3 + 2];
+   
+    MeshVertex v0 = vertexBuffer[i0];
+    MeshVertex v1 = vertexBuffer[i1];
+    MeshVertex v2 = vertexBuffer[i2];
+    
+    aUV[0] = v0.textureCoordinate;
+    aUV[1] = v1.textureCoordinate;
+    aUV[2] = v2.textureCoordinate;
+    
+    aPos[0] = v0.position;
+    aPos[1] = v1.position;
+    aPos[2] = v2.position;
+    
+    MeshVertex result = BarycentricLerp(v0, v1, v2, bary);
+    return result;
+}
+
 
 void GetCameraDirectionFromUV(in uint2 index, in float2 resolution, in float3 camPos, in float4x4 invViewProj, out float3 direction)
 {

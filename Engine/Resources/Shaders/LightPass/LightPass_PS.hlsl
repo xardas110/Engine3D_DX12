@@ -271,20 +271,41 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
     
     if (flags & DIRECT_LIGHT_FLAG_SKIP_BLEND && materialInfo.flags & INSTANCE_ALPHA_BLEND)
         return false;
-     
-    MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
-    SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData);             
+       
+    float2 aUVs[3];
+    float3 aPos[3];   
+    MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData, aUVs, aPos);
+    
+    float3 rayHit = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
+    float3 geometryNormal = RotatePoint(meshInfo.objRot, hitSurface.normal);
+    
+    const float2 rayConeAtOrigin = float2(0, g_Camera.eyeToPixelConeSpreadAngle);
+    const float2 rayConeAtHit = float2(
+		// New cone width should increase by 2*RayLength*tan(SpreadAngle/2), but RayLength*SpreadAngle is a close approximation
+		rayConeAtOrigin.x + rayConeAtOrigin.y * length(rayHit - g_Camera.pos.xyz),
+		rayConeAtOrigin.y + g_Camera.eyeToPixelConeSpreadAngle);
+    
+    float2 uvAreaFromCone = UVAreaFromRayCone(ray.desc.Direction, geometryNormal, rayConeAtHit.x, aUVs, aPos, (float3x3)hit.objToWorld);
+    uint2 vTexSize = uint2(0, 0);
+    
+    if (materialInfo.albedo != 0xffffffff)
+        vTexSize = TexDims(g_GlobalTextureData[materialInfo.albedo]);
+    
+    float texLOD = UVAreaToTexLOD(vTexSize, uvAreaFromCone);
+    
+    SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData, texLOD, SAMPLE_TYPE_LEVEL);
+    
     ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
 
     if (flags & DIRECT_LIGHT_FLAG_SAVE_OPACITY)
         radiance.a = hitSurfaceMaterial.opacity;
       
-    float3 rayHit = mul(hit.objToWorld, float4(hitSurface.position, 1.f));
+    
     float3 V = normalize(-ray.desc.Direction);                            
     float3 L = -g_DirectionalLight.direction.rgb;
     float3 X = rayHit;
     
-    float3 geometryNormal = RotatePoint(meshInfo.objRot, hitSurface.normal);   
+   
       
     float3 rayHitOffset = OffsetRay(X, geometryNormal);
 
