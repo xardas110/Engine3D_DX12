@@ -628,7 +628,7 @@ float4 InvertRotation(float4 q)
 bool EvaluateIndirectBRDF(
     in float2 u, in float3 shadingNormal, in float3 geometryNormal, in float3 V, 
     in SurfaceMaterial material, const int brdfType, 
-    out float3 rayDirection, out float3 sampleWeight)
+    out float3 rayDirection, out float3 sampleWeight, RngStateType rng)
 {
     if (dot(shadingNormal, V) <= 0.0f)
         return false;
@@ -645,8 +645,7 @@ bool EvaluateIndirectBRDF(
         const BRDFData data = PrepareBRDFData(Nlocal, rayDirectionLocal, Vlocal, material);
         sampleWeight = data.diffuseReflectance * DiffuseTerm(data);
         
-        //TODO:Generate new u value
-        float3 hSpecular = SampleSpecularHalfVector(Vlocal, float2(data.alpha, data.alpha), u);
+        float3 hSpecular = SampleSpecularHalfVector(Vlocal, float2(data.alpha, data.alpha), float2(Rand(rng), Rand(rng)));
         
         float VdotH = max(0.00001f, min(1.0f, dot(Vlocal, hSpecular)));
         sampleWeight *= (float3(1.0f, 1.0f, 1.0f) - EvaluateFresnelSchlick(data.specularF0, ShadowedF90(data.specularF0), VdotH));

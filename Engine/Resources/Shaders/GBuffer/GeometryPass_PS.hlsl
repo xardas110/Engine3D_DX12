@@ -62,7 +62,7 @@ PixelShaderOutput main(PixelShaderInput IN)
 
     
     
-    SurfaceMaterial surface = GetSurfaceMaterial(matInfo, vert, g_ObjectCB.model, g_ObjectCB.objRotQuat, g_LinearRepeatSampler, g_GlobalTextureData);
+    SurfaceMaterial surface = GetSurfaceMaterial(matInfo, vert, g_ObjectCB.model, g_ObjectCB.objRotQuat, g_LinearRepeatSampler, g_GlobalTextureData, 0, SAMPLE_TYPE_MIP);
     ApplyMaterial(matInfo, surface, g_GlobalMaterials);
         
     if (surface.opacity < alphaCutoff)

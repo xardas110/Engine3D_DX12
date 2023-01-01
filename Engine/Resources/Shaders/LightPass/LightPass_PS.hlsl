@@ -366,7 +366,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
         
         float3 brdfWeight;
         float2 u = float2(Rand(rng), Rand(rng));
-        if (EvaluateIndirectBRDF(u, traceResult.mat.normal, traceResult.geoNormal, -ray.desc.Direction, traceResult.mat, BRDF_TYPE_SPECULAR, ray.desc.Direction, brdfWeight))
+        if (EvaluateIndirectBRDF(u, traceResult.mat.normal, traceResult.geoNormal, -ray.desc.Direction, traceResult.mat, BRDF_TYPE_SPECULAR, ray.desc.Direction, brdfWeight, rng))
         {           
             ray.desc.Origin = traceResult.hitPos;  
             troughput *= brdfWeight;
@@ -511,7 +511,7 @@ void IndirectLight(
               
         float3 brdfWeight;
         float2 u = float2(Rand(rngState), Rand(rngState));
-        if (!EvaluateIndirectBRDF(u, currentMat.normal, geometryNormal, V, currentMat, brdfType, ray.Direction, brdfWeight))
+        if (!EvaluateIndirectBRDF(u, currentMat.normal, geometryNormal, V, currentMat, brdfType, ray.Direction, brdfWeight, rngState))
         {
             break;
         }
