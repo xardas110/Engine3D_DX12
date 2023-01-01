@@ -207,8 +207,17 @@ void HDR::CreatePipeline()
     textureHeap.OffsetInDescriptorsFromTableStart = 0;
     textureHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
 
+    CD3DX12_DESCRIPTOR_RANGE1 exposureHeap = {};
+    exposureHeap.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+    exposureHeap.NumDescriptors = 1;
+    exposureHeap.BaseShaderRegister = 0;
+    exposureHeap.RegisterSpace = 0;
+    exposureHeap.OffsetInDescriptorsFromTableStart = 0;
+    exposureHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE;
+
     CD3DX12_ROOT_PARAMETER1 rootParameters[HDRParam::Size];
     rootParameters[HDRParam::ColorTexture].InitAsDescriptorTable(1, &textureHeap);
+    rootParameters[HDRParam::ExposureTex].InitAsDescriptorTable(1, &exposureHeap);
     rootParameters[HDRParam::TonemapCB].InitAsConstantBufferView(0, 0);
 
     CD3DX12_STATIC_SAMPLER_DESC samplers[2];
@@ -279,7 +288,7 @@ void HDR::CreateExposurePSO()
     histogramHeap.BaseShaderRegister = 0;
     histogramHeap.RegisterSpace = 0;
     histogramHeap.OffsetInDescriptorsFromTableStart = 0;
-    histogramHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE;
+    //histogramHeap.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DATA_VOLATILE;
 
     CD3DX12_ROOT_PARAMETER1 rootParameters[ExposureParam::Size];
     rootParameters[ExposureParam::ExposureTex].InitAsDescriptorTable(1, &exposureHeap);
@@ -380,15 +389,17 @@ void HDR::CreateUAVViews()
     D3D12_BUFFER_UAV bufferUAV;
     bufferUAV.FirstElement = 0;
     bufferUAV.NumElements = HISTOGRAM_BINS;
-    bufferUAV.StructureByteStride = sizeof(UINT);
-    bufferUAV.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+    bufferUAV.StructureByteStride = 0;
+    bufferUAV.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
     bufferUAV.CounterOffsetInBytes = 0;
 
     desc.Buffer = bufferUAV;
     desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+    desc.Format = DXGI_FORMAT_R32_TYPELESS;
 
     device->CreateUnorderedAccessView(exposureTex.GetD3D12Resource().Get(), nullptr, &uavDesc, exposureHeap.SetHandle(0));
     device->CreateUnorderedAccessView(histogram.GetD3D12Resource().Get(), nullptr, &desc, histogramHeap.SetHandle(0));
+    device->CreateUnorderedAccessView(histogram.GetD3D12Resource().Get(), nullptr, &desc, histogramClearHeap.SetHandle(0));
 }
 
 void HDR::OnResize(int nativeWidth, int nativeHeight)

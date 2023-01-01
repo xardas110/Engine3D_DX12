@@ -9,6 +9,7 @@ namespace HDRParam
 	enum
 	{
 		ColorTexture,
+		ExposureTex,
 		TonemapCB,
 		Size
 	};
@@ -74,5 +75,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> histogramPSO;
 
 	SRVHeapData exposureHeap;
-	SRVHeapData histogramHeap;
+
+	SRVHeapData histogramHeap = SRVHeapData(1);
+	SRVHeapData histogramClearHeap = SRVHeapData(1, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 };

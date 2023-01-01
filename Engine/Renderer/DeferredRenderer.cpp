@@ -629,6 +629,14 @@ void DeferredRenderer::Render(Window& window)
     } 
     {//Histogram pass
         PIXBeginEvent(gfxCommandList.Get(), 0, L"Histogram Pass");
+
+        UINT histoClear[4] = { 0, 0, 0, 0 };
+
+        gfxCommandList->ClearUnorderedAccessViewUint(
+            m_HDR->histogramClearHeap.heap->GetGPUDescriptorHandleForHeapStart(),
+            m_HDR->histogramClearHeap.heap->GetCPUDescriptorHandleForHeapStart(),
+            m_HDR->histogram.GetD3D12Resource().Get(), histoClear, 0, nullptr);
+
         commandList->SetPipelineState(m_HDR->histogramPSO);
         commandList->SetComputeRootSignature(m_HDR->histogramRT);
 
@@ -728,6 +736,9 @@ void DeferredRenderer::Render(Window& window)
             commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_CompositionPass->heap.heap.Get());
             gfxCommandList->SetGraphicsRootDescriptorTable(HDRParam::ColorTexture, m_CompositionPass->heap.GetGPUHandle(0));
         }
+
+        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_HDR->exposureHeap.heap.Get());
+        gfxCommandList->SetGraphicsRootDescriptorTable(HDRParam::ExposureTex, m_HDR->exposureHeap.GetGPUHandle(0));
 
         commandList->SetGraphicsDynamicConstantBuffer(HDRParam::TonemapCB, HDR::GetTonemapCB());
 

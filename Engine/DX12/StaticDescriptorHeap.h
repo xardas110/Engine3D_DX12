@@ -14,8 +14,8 @@ private:
 	const int heapSize = 50000;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
 public:
-	SRVHeapData();
-	SRVHeapData(int heapSize);
+	SRVHeapData(D3D12_DESCRIPTOR_HEAP_FLAGS flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+	SRVHeapData(int heapSize, D3D12_DESCRIPTOR_HEAP_FLAGS flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
 	//Call this only once per resource!
 	D3D12_CPU_DESCRIPTOR_HANDLE SetHandle(UINT srvIndex)
