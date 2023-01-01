@@ -73,7 +73,7 @@ bool SponzaExe::LoadContent()
     */
     /*
     */
-    return true;
+    //return true;
     meshManager.CreateCube();
     meshManager.CreateSphere();
    // meshManager.CreateTorus();
