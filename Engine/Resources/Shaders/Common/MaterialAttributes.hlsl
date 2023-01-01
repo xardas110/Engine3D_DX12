@@ -7,6 +7,7 @@
 
 #define SAMPLE_TYPE_MIP 0
 #define SAMPLE_TYPE_LEVEL 1
+#define SAMPLE_TYPE_GRADIENT 2
 
 struct SurfaceMaterial
 {
@@ -127,21 +128,23 @@ float3 srgbToLinear(float3 srgbColor)
 
 }
 
-float4 GetAlbedo(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float4 GetAlbedo(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.albedo != 0xffffffff)
     {
         Texture2D albedo = globalTextureData[matInfo.albedo];
         
         if (sampleType == SAMPLE_TYPE_MIP)
-            return albedo.Sample(inSampler, texCoords, mipLevel);
-        
-        return albedo.SampleLevel(inSampler, texCoords, mipLevel);
+            return albedo.Sample(inSampler, texCoords, mipLevel.x);
+        else if (sampleType == SAMPLE_TYPE_GRADIENT)
+            return albedo.SampleGrad(inSampler, texCoords, mipLevel.xy, mipLevel.zw);
+            
+        return albedo.SampleLevel(inSampler, texCoords, mipLevel.x);
     }
     return float4(1.f, 1.f, 1.f, 1.f);
 }
 
-float3 GetNormal(in MaterialInfo matInfo, in float2 texCoords, out bool bMatHasNormal, in SamplerState inSampler, in Texture2D globalTextureData[], float mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float3 GetNormal(in MaterialInfo matInfo, in float2 texCoords, out bool bMatHasNormal, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.normal != 0xffffffff)
     {
@@ -149,94 +152,108 @@ float3 GetNormal(in MaterialInfo matInfo, in float2 texCoords, out bool bMatHasN
         bMatHasNormal = true;
         
         if (sampleType == SAMPLE_TYPE_MIP)
-            return normal.Sample(inSampler, texCoords, mipLevel);
-        
-        return normal.SampleLevel(inSampler, texCoords, mipLevel).rgb;
+            return normal.Sample(inSampler, texCoords, mipLevel.x);
+        else if (sampleType == SAMPLE_TYPE_GRADIENT)
+            return normal.SampleGrad(inSampler, texCoords, mipLevel.xy, mipLevel.zw);
+            
+        return normal.SampleLevel(inSampler, texCoords, mipLevel.x);
     }
     bMatHasNormal = false;
     return float3(0.f, 1.f, 0.f);
 }
 
-float GetAO(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float GetAO(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.ao != 0xffffffff)
     {
         Texture2D ao = globalTextureData[matInfo.ao];
         
         if (sampleType == SAMPLE_TYPE_MIP)
-            return ao.Sample(inSampler, texCoords, mipLevel);
-        
-        return ao.SampleLevel(inSampler, texCoords, mipLevel).r;
+            return ao.Sample(inSampler, texCoords, mipLevel.x);
+        else if (sampleType == SAMPLE_TYPE_GRADIENT)
+            return ao.SampleGrad(inSampler, texCoords, mipLevel.xy, mipLevel.zw);
+            
+        return ao.SampleLevel(inSampler, texCoords, mipLevel.x);
     }
     return 1.f;
 }
 
-float GetRoughness(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float GetRoughness(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.roughness != 0xffffffff)
     {
         Texture2D roughness = globalTextureData[matInfo.roughness];
         
         if (sampleType == SAMPLE_TYPE_MIP)
-            return roughness.Sample(inSampler, texCoords, mipLevel);
-        
-        return roughness.SampleLevel(inSampler, texCoords, mipLevel).r;
+            return roughness.Sample(inSampler, texCoords, mipLevel.x);
+        else if (sampleType == SAMPLE_TYPE_GRADIENT)
+            return roughness.SampleGrad(inSampler, texCoords, mipLevel.xy, mipLevel.zw);
+            
+        return roughness.SampleLevel(inSampler, texCoords, mipLevel.x);
     }
     return 0.5f;
 }
 
-float GetMetallic(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float GetMetallic(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.metallic != 0xffffffff)
     {
         Texture2D metallic = globalTextureData[matInfo.metallic];
         
         if (sampleType == SAMPLE_TYPE_MIP)
-            return metallic.Sample(inSampler, texCoords, mipLevel);
-        
-        return metallic.SampleLevel(inSampler, texCoords, mipLevel).r;
+            return metallic.Sample(inSampler, texCoords, mipLevel.x);
+        else if (sampleType == SAMPLE_TYPE_GRADIENT)
+            return metallic.SampleGrad(inSampler, texCoords, mipLevel.xy, mipLevel.zw);
+            
+        return metallic.SampleLevel(inSampler, texCoords, mipLevel.x);
     }
     return 0.5f;
 }
 
-float GetHeight(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float GetHeight(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.height != 0xffffffff)
     {
         Texture2D height = globalTextureData[matInfo.height];
         
         if (sampleType == SAMPLE_TYPE_MIP)
-            return height.Sample(inSampler, texCoords, mipLevel);
-        
-        return height.SampleLevel(inSampler, texCoords, mipLevel).r;
+            return height.Sample(inSampler, texCoords, mipLevel.x);
+        else if (sampleType == SAMPLE_TYPE_GRADIENT)
+            return height.SampleGrad(inSampler, texCoords, mipLevel.xy, mipLevel.zw);
+            
+        return height.SampleLevel(inSampler, texCoords, mipLevel.x);
     }
     return 1.f;
 }
 
-float3 GetEmissive(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float3 GetEmissive(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.emissive != 0xffffffff)
     {
         Texture2D emissive = globalTextureData[matInfo.emissive];
         
         if (sampleType == SAMPLE_TYPE_MIP)
-            return emissive.Sample(inSampler, texCoords, mipLevel);
-        
-        return emissive.SampleLevel(inSampler, texCoords, mipLevel);
+            return emissive.Sample(inSampler, texCoords, mipLevel.x);
+        else if (sampleType == SAMPLE_TYPE_GRADIENT)
+            return emissive.SampleGrad(inSampler, texCoords, mipLevel.xy, mipLevel.zw);
+            
+        return emissive.SampleLevel(inSampler, texCoords, mipLevel.x);
     }
     return float3(0.f, 0.f, 0.f);
 }
 
-float GetOpacity(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float GetOpacity(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.opacity != 0xffffffff)
     {
         Texture2D opacity = globalTextureData[matInfo.opacity];
         
         if (sampleType == SAMPLE_TYPE_MIP)
-            return opacity.Sample(inSampler, texCoords, mipLevel);
-        
-        return opacity.SampleLevel(inSampler, texCoords, mipLevel).r;
+            return opacity.Sample(inSampler, texCoords, mipLevel.x);
+        else if (sampleType == SAMPLE_TYPE_GRADIENT)
+            return opacity.SampleGrad(inSampler, texCoords, mipLevel.xy, mipLevel.zw);
+            
+        return opacity.SampleLevel(inSampler, texCoords, mipLevel.x);
     }
     return 1.f;
 }
@@ -250,7 +267,7 @@ float3 TangentToWorldNormal(in float3 localTangent, in float3 localBiTangent, in
 
 SurfaceMaterial GetSurfaceMaterial(
     in MaterialInfo matInfo, in MeshVertex v, in float3x4 model, in float4 objRotQuat,
-    in SamplerState inSampler, in Texture2D globalTextureData[], float mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+    in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     SurfaceMaterial surface;    
     surface.ao = GetAO(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);

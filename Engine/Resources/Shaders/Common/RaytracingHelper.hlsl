@@ -119,6 +119,28 @@ float4 UVDerivsFromRayCone(float3 vRayDir, float3 vWorldNormal, float vRayConeWi
     return float4(fULength, 0, 0, fULength);
 }
 
+float4 RayConeGradientMIP(in float3 rayDir, in float3 geometryNormal, float hitT, float coneSpreadAngle, in float2 aUVs[3], in float3 aPos[3], float3x3 model)
+{
+    const float2 rayConeAtOrigin = float2(0, coneSpreadAngle);
+    const float2 rayConeAtHit = float2(
+		// New cone width should increase by 2*RayLength*tan(SpreadAngle/2), but RayLength*SpreadAngle is a close approximation
+		rayConeAtOrigin.x + rayConeAtOrigin.y * hitT, //length(rayHit - g_Camera.pos.xyz),
+		rayConeAtOrigin.y + coneSpreadAngle);
+    
+    //float2 uvAreaFromCone = UVAreaFromRayCone(rayDir, geometryNormal, rayConeAtHit.x, aUVs, aPos, model);
+    
+    /* For conelevel
+    uint2 vTexSize = uint2(0, 0);
+    
+    if (materialInfo.albedo != 0xffffffff)
+        vTexSize = TexDims(g_GlobalTextureData[materialInfo.albedo]);
+    
+    float texLODLevel = UVAreaToTexLOD(vTexSize, uvAreaFromCone);
+    */
+    
+    return UVDerivsFromRayCone(rayDir, geometryNormal, rayConeAtHit.x, aUVs, aPos, model);
+}
+
 //In object space
 MeshVertex GetHitSurface(in HitAttributes attr, in MeshInfo meshInfo, in StructuredBuffer<MeshVertex> globalMeshVertexData[], in StructuredBuffer<uint> globalMeshIndexData[])
 {
