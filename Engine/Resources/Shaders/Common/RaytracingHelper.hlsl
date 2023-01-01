@@ -50,6 +50,75 @@ MeshVertex BarycentricLerp(in MeshVertex v0, in MeshVertex v1, in MeshVertex v2,
     return r;
 }
 
+/////////// Begin ray cone functions  /////////// 
+//Raytracing gems chapter 7
+uint2 TexDims(Texture2D<float4> tex)
+{
+    uint2 vSize;
+    tex.GetDimensions(vSize.x, vSize.y);
+    return vSize;
+}
+uint2 TexDims(Texture2D<float3> tex)
+{
+    uint2 vSize;
+    tex.GetDimensions(vSize.x, vSize.y);
+    return vSize;
+}
+uint2 TexDims(Texture2D<float> tex)
+{
+    uint2 vSize;
+    tex.GetDimensions(vSize.x, vSize.y);
+    return vSize;
+}
+
+//Raytracing gems chapter 7
+float2 UVAreaFromRayCone(float3 vRayDir, float3 vWorldNormal, float vRayConeWidth, float2 aUV[3], float3 aPos[3], float3x3 matWorld)
+{
+    float2 vUV10 = aUV[1] - aUV[0];
+    float2 vUV20 = aUV[2] - aUV[0];
+    float fTriUVArea = abs(vUV10.x * vUV20.y - vUV20.x * vUV10.y);
+
+	// We need the area of the triangle, which is length(triangleNormal) in worldspace, and I
+	// could not figure out a way with fewer than two 3x3 mtx multiplies for ray cones.
+    float3 vEdge10 = mul(aPos[1] - aPos[0], matWorld);
+    float3 vEdge20 = mul(aPos[2] - aPos[0], matWorld);
+
+    float3 vFaceNrm = cross(vEdge10, vEdge20); // in world space, by design
+    float fTriLODOffset = 0.5f * log2(fTriUVArea / length(vFaceNrm)); // Triangle-wide LOD offset value
+    float fDistTerm = vRayConeWidth * vRayConeWidth;
+    float fNormalTerm = dot(vRayDir, vWorldNormal);
+
+    return float2(fTriLODOffset, fDistTerm / (fNormalTerm * fNormalTerm));
+}
+
+float UVAreaToTexLOD(uint2 vTexSize, float2 vUVAreaInfo)
+{
+    return vUVAreaInfo.x + 0.5f * log2(vTexSize.x * vTexSize.y * vUVAreaInfo.y);
+}
+
+float4 UVDerivsFromRayCone(float3 vRayDir, float3 vWorldNormal, float vRayConeWidth, float2 aUV[3], float3 aPos[3], float3x3 matWorld)
+{
+    float2 vUV10 = aUV[1] - aUV[0];
+    float2 vUV20 = aUV[2] - aUV[0];
+    float fQuadUVArea = abs(vUV10.x * vUV20.y - vUV20.x * vUV10.y);
+
+	// Since the ray cone's width is in world-space, we need to compute the quad
+	// area in world-space as well to enable proper ratio calculation
+    float3 vEdge10 = mul(aPos[1] - aPos[0], matWorld);
+    float3 vEdge20 = mul(aPos[2] - aPos[0], matWorld);
+    float3 vFaceNrm = cross(vEdge10, vEdge20);
+    float fQuadArea = length(vFaceNrm);
+
+    float fDistTerm = abs(vRayConeWidth);
+    float fNormalTerm = abs(dot(vRayDir, vWorldNormal));
+    float fProjectedConeWidth = vRayConeWidth / fNormalTerm;
+    float fVisibleAreaRatio = (fProjectedConeWidth * fProjectedConeWidth) / fQuadArea;
+
+    float fVisibleUVArea = fQuadUVArea * fVisibleAreaRatio;
+    float fULength = sqrt(fVisibleUVArea);
+    return float4(fULength, 0, 0, fULength);
+}
+
 //In object space
 MeshVertex GetHitSurface(in HitAttributes attr, in MeshInfo meshInfo, in StructuredBuffer<MeshVertex> globalMeshVertexData[], in StructuredBuffer<uint> globalMeshIndexData[])
 {

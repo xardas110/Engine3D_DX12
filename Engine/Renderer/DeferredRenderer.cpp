@@ -203,6 +203,7 @@ void DeferredRenderer::Render(Window& window)
     cameraCB.resolution = { (float)m_Width, (float)m_Height };
     cameraCB.zNear = camera->GetNear();
     cameraCB.zFar = camera->GetFar();
+    cameraCB.eyeToPixelConeSpreadAngle = atanf((2.0f * tanf(camera->get_FoV() * 0.5f)) / (float)m_Height);;
 
     RaytracingDataCB rtData;
     rtData.frameNumber = Application::GetFrameCount();
