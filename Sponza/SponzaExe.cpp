@@ -22,7 +22,7 @@ bool SponzaExe::LoadContent()
  
     {
         auto bathRoom = CreateEntity("Bistro");
-        auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroInterior.fbx", MeshImport::SkipTextures);
+        auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroInterior.fbx", MeshImport::BaseColorAlpha | MeshImport::AO_Rough_Metal_As_Spec_Tex);
         auto& trans = bathRoom.GetComponent<TransformComponent>();
         trans.pos = { 0.f, 0.f, 0.f };
         trans.scale = { 0.01f, 0.01f, 0.01f };

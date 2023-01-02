@@ -304,6 +304,20 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
         auto device = Application::Get().GetDevice();
         Microsoft::WRL::ComPtr<ID3D12Resource> textureResource;
 
+        std::wcout << "Creating Texture Resource For: " << fileName.c_str() << std::endl;
+      
+        if (textureDesc.Width == 1)
+        { 
+            textureDesc.Width = 16;
+            textureDesc.MipLevels = 1;
+        }
+
+        if (textureDesc.Height == 1)
+        { 
+            textureDesc.Height = 16;
+            textureDesc.MipLevels = 1;
+        }
+
         ThrowIfFailed(device->CreateCommittedResource(
             &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
             D3D12_HEAP_FLAG_NONE,

@@ -22,6 +22,10 @@ using namespace DirectX;
 #define INSTANCE_TRANSLUCENT (1<<1)
 #define INSTANCE_ALPHA_BLEND (1<<2)
 #define INSTANCE_ALPHA_CUTOFF (1<<3)
+//Material flag has some shared data with instance flags
+//TODO: FIX duplicates
+#define MATERIAL_FLAG_BASECOLOR_ALPHA (1 << 4)
+#define MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR (1 << 5)
 
 #ifndef HLSL
 #define COMPAT_ONE = 1;
@@ -252,7 +256,7 @@ struct MaterialInfo
     UINT lightmap TEXTURE_NULL;
 
     UINT height TEXTURE_NULL;
-    UINT pad2 TEXTURE_NULL;
+    UINT specular TEXTURE_NULL;
     UINT materialID MATERIAL_ID_NULL; //User defined material
     UINT flags DEFAULT_NULL;
 };

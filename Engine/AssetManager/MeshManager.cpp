@@ -163,6 +163,12 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
 			matInfo.metallic = tex.GetTextureID();
 		}
+		if (mesh.material.HasTexture(AssimpMaterialType::Specular))
+		{
+			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Specular).path;
+			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+			matInfo.specular = tex.GetTextureID();
+		}
 		if (mesh.material.HasTexture(AssimpMaterialType::Height))
 		{
 			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Height).path;
@@ -205,6 +211,16 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 				matInstance.AddFlag(INSTANCE_ALPHA_BLEND);
 			else if (MeshImport::ForceAlphaCutoff & flags)
 				matInstance.AddFlag(INSTANCE_ALPHA_CUTOFF);
+		}
+
+		if (flags & MeshImport::AO_Rough_Metal_As_Spec_Tex)
+		{
+			matInstance.AddFlag(MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR);
+		}
+
+		if (flags & MeshImport::BaseColorAlpha)
+		{
+			matInstance.AddFlag(MATERIAL_FLAG_BASECOLOR_ALPHA);
 		}
 
 		if (mesh.materialData.bHasMaterial)

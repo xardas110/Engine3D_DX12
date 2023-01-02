@@ -23,6 +23,7 @@ struct SurfaceMaterial
     float3 transparent COMPAT_VEC3F(1.f, 1.f, 1.f);
     float roughness COMPAT_FLOAT(1.f);
     
+    float3 specular COMPAT_VEC3F(1.f, 0.f, 0.f); //for phong shading model or PBR materials
     float metallic COMPAT_FLOAT(0.f);
 };
 
@@ -162,6 +163,24 @@ float3 GetNormal(in MaterialInfo matInfo, in float2 texCoords, out bool bMatHasN
     return float3(0.f, 1.f, 0.f);
 }
 
+float3 GetSpecular(in MaterialInfo matInfo, in float2 texCoords, out bool bMatHasSpecular, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+{
+    if (matInfo.specular != 0xffffffff)
+    {
+        Texture2D specular = globalTextureData[matInfo.specular];
+        bMatHasSpecular = true;
+        
+        if (sampleType == SAMPLE_TYPE_MIP)
+            return specular.Sample(inSampler, texCoords, mipLevel.x);
+        else if (sampleType == SAMPLE_TYPE_GRADIENT)
+            return specular.SampleGrad(inSampler, texCoords, mipLevel.xy, mipLevel.zw);
+            
+        return specular.SampleLevel(inSampler, texCoords, mipLevel.x);
+    }
+    bMatHasSpecular = false;
+    return float3(1.f, 0.f, 0.f);
+}
+
 float GetAO(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.ao != 0xffffffff)
@@ -280,6 +299,18 @@ SurfaceMaterial GetSurfaceMaterial(
     surface.roughness = GetRoughness(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
     surface.metallic = GetMetallic(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
     surface.opacity = GetOpacity(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
+   
+    bool bHasSpec;
+    surface.specular = GetSpecular(matInfo, v.textureCoordinate, bHasSpec, inSampler, globalTextureData, mipLevel, sampleType);
+    if (bHasSpec == true)
+    {
+        if (matInfo.flags & MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR)
+        {
+            surface.ao = surface.specular.x;
+            surface.roughness = surface.specular.y;
+            surface.metallic = surface.specular.z;
+        }
+    }
     
     bool bMatHasNormal;
     surface.normal = GetNormal(matInfo, v.textureCoordinate, bMatHasNormal, inSampler, globalTextureData, mipLevel, sampleType);
@@ -301,10 +332,15 @@ void ApplyMaterial(in MaterialInfo matInfo, inout SurfaceMaterial surfaceMat, in
     
     surfaceMat.albedo = matInfo.albedo == 0xffffffff ? mat.diffuse.rgb : (surfaceMat.albedo * mat.diffuse.rgb);
     surfaceMat.emissive = matInfo.emissive == 0xffffffff ? mat.emissive : (surfaceMat.emissive * mat.emissive);
-    surfaceMat.roughness = matInfo.roughness == 0xffffffff ? mat.roughness : (surfaceMat.roughness * mat.roughness);
-    surfaceMat.metallic = matInfo.metallic == 0xffffffff ? mat.metallic : (surfaceMat.metallic * mat.metallic);
     surfaceMat.opacity = matInfo.opacity == 0xffffffff ? mat.diffuse.a : (surfaceMat.opacity * mat.diffuse.a);
     surfaceMat.transparent = mat.transparent;
+    
+    if (!(matInfo.flags & MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR))
+    {   
+        surfaceMat.roughness = matInfo.roughness == 0xffffffff ? mat.roughness : (surfaceMat.roughness * mat.roughness);
+        surfaceMat.metallic = matInfo.metallic == 0xffffffff ? mat.metallic : (surfaceMat.metallic * mat.metallic);
+    }
+    
 }
 
 #endif

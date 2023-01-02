@@ -604,26 +604,19 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float4 indirectLight = 0.f;
     IndirectLight(TexCoord, rngState, viewZ, indirectLight, troughput, OUT.IndirectDiffuse, OUT.IndirectSpecular);
     
-    /*
-    
+
     if (DEBUG_FINAL_COLOR == g_RaytracingData.debugSettings)
     {
         return OUT;
     }
-    
+    RayDesc ray = GeneratePinholeCameraRay(TexCoord * 2.f - 1.f);
     ray.TMax = 10000.f;
     
     float3 rtDebugColor = float3(0.f, 0.f, 0.f);
     TestRT(ray, rtDebugColor);
     
-    if (DEBUG_RAYTRACED_HIT_T == g_RaytracingData.debugSettings)
-    {
-        rtDebugColor = float3(firstDiffuseBounceDistance, firstDiffuseBounceDistance, firstDiffuseBounceDistance);
-    } 
-  
     OUT.rtDebug = float4(rtDebugColor, 1.f);
     
-*/
     return OUT;
 };
 
