@@ -21,11 +21,12 @@ bool SponzaExe::LoadContent()
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
  
     {
-        auto bathRoom = CreateEntity("Simple Room");
-        auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/simple_room/simple_room.obj", MeshImport::HeightAsNormal);
+        auto bathRoom = CreateEntity("Bistro");
+        auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroInterior.fbx", MeshImport::SkipTextures);
         auto& trans = bathRoom.GetComponent<TransformComponent>();
-        trans.pos = { 70.f, 0.f, 0.f };
-
+        trans.pos = { 0.f, 0.f, 0.f };
+        trans.scale = { 0.01f, 0.01f, 0.01f };
+        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(270.f), DirectX::XMConvertToRadians(90.f), 0.f);
     }  
     /*
     {
@@ -49,15 +50,15 @@ bool SponzaExe::LoadContent()
     
   
 
-    {
-        auto sponza = CreateEntity("sponza");
-      
-        sponza.AddComponent<StaticMeshComponent>("Assets/Models/sponza/sponza.fbx", 
-            MeshImport::HeightAsNormal | MeshImport::AmbientAsMetallic | MeshImport::ForceAlphaCutoff);
+  //  {
+//        auto sponza = CreateEntity("sponza");
+ //     
+//        sponza.AddComponent<StaticMeshComponent>("Assets/Models/sponza/sponza.fbx", 
+  //          MeshImport::HeightAsNormal | MeshImport::AmbientAsMetallic | MeshImport::ForceAlphaCutoff);
 
-        auto& trans = sponza.GetComponent<TransformComponent>();
-        trans.scale = { 0.015f, 0.015f, 0.015f };
-    }
+ //       auto& trans = sponza.GetComponent<TransformComponent>();
+ //       trans.scale = { 0.015f, 0.015f, 0.015f };
+  //  }
 
     /*
     {

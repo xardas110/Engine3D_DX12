@@ -111,28 +111,31 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene, MeshImport::Flag
       
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
       
-        GetTexturePath(aiTextureType::aiTextureType_AMBIENT, material, path, internalMesh.material.textures[AssimpMaterialType::Ambient].path);
-        GetTexturePath(aiTextureType::aiTextureType_AMBIENT_OCCLUSION, material, path, internalMesh.material.textures[AssimpMaterialType::Ambient].path);
+        if (!(flags & MeshImport::SkipTextures))
+        { 
+            GetTexturePath(aiTextureType::aiTextureType_AMBIENT, material, path, internalMesh.material.textures[AssimpMaterialType::Ambient].path);
+            GetTexturePath(aiTextureType::aiTextureType_AMBIENT_OCCLUSION, material, path, internalMesh.material.textures[AssimpMaterialType::Ambient].path);
 
-        GetTexturePath(aiTextureType::aiTextureType_DIFFUSE, material, path, internalMesh.material.textures[AssimpMaterialType::Diffuse].path);
-        GetTexturePath(aiTextureType::aiTextureType_BASE_COLOR, material, path, internalMesh.material.textures[AssimpMaterialType::Diffuse].path);
+            GetTexturePath(aiTextureType::aiTextureType_DIFFUSE, material, path, internalMesh.material.textures[AssimpMaterialType::Diffuse].path);
+            GetTexturePath(aiTextureType::aiTextureType_BASE_COLOR, material, path, internalMesh.material.textures[AssimpMaterialType::Diffuse].path);
 
-        GetTexturePath(aiTextureType::aiTextureType_SPECULAR, material, path, internalMesh.material.textures[AssimpMaterialType::Specular].path);
+            GetTexturePath(aiTextureType::aiTextureType_SPECULAR, material, path, internalMesh.material.textures[AssimpMaterialType::Specular].path);
 
-        GetTexturePath(aiTextureType::aiTextureType_EMISSIVE, material, path, internalMesh.material.textures[AssimpMaterialType::Emissive].path);
-        GetTexturePath(aiTextureType::aiTextureType_EMISSION_COLOR, material, path, internalMesh.material.textures[AssimpMaterialType::Emissive].path);
+            GetTexturePath(aiTextureType::aiTextureType_EMISSIVE, material, path, internalMesh.material.textures[AssimpMaterialType::Emissive].path);
+            GetTexturePath(aiTextureType::aiTextureType_EMISSION_COLOR, material, path, internalMesh.material.textures[AssimpMaterialType::Emissive].path);
 
-        GetTexturePath(aiTextureType::aiTextureType_HEIGHT, material, path, internalMesh.material.textures[AssimpMaterialType::Height].path);
+            GetTexturePath(aiTextureType::aiTextureType_HEIGHT, material, path, internalMesh.material.textures[AssimpMaterialType::Height].path);
 
-        GetTexturePath(aiTextureType::aiTextureType_NORMALS, material, path, internalMesh.material.textures[AssimpMaterialType::Normal].path);
-        GetTexturePath(aiTextureType::aiTextureType_NORMAL_CAMERA, material, path, internalMesh.material.textures[AssimpMaterialType::Normal].path);
+            GetTexturePath(aiTextureType::aiTextureType_NORMALS, material, path, internalMesh.material.textures[AssimpMaterialType::Normal].path);
+            GetTexturePath(aiTextureType::aiTextureType_NORMAL_CAMERA, material, path, internalMesh.material.textures[AssimpMaterialType::Normal].path);
 
-        GetTexturePath(aiTextureType::aiTextureType_METALNESS, material, path, internalMesh.material.textures[AssimpMaterialType::Metallic].path);
+            GetTexturePath(aiTextureType::aiTextureType_METALNESS, material, path, internalMesh.material.textures[AssimpMaterialType::Metallic].path);
 
-        GetTexturePath(aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS, material, path, internalMesh.material.textures[AssimpMaterialType::Roughness].path);
+            GetTexturePath(aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS, material, path, internalMesh.material.textures[AssimpMaterialType::Roughness].path);
 
-        GetTexturePath(aiTextureType::aiTextureType_OPACITY, material, path, internalMesh.material.textures[AssimpMaterialType::Opacity].path);
-     
+            GetTexturePath(aiTextureType::aiTextureType_OPACITY, material, path, internalMesh.material.textures[AssimpMaterialType::Opacity].path);
+        }
+
         if (!(flags & MeshImport::IgnoreUserMaterial))
         {
             LoadUserMaterial(material, internalMesh.materialData, flags);

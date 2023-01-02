@@ -246,7 +246,7 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
         {
             ThrowIfFailed( LoadFromDDSFile( 
                 fileName.c_str(),
-                DDS_FLAGS_NONE, 
+                DDS_FLAGS_FORCE_RGB,
                 &metadata,
                 scratchImage));
         }

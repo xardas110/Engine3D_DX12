@@ -61,6 +61,7 @@ namespace MeshImport
         AmbientAsMetallic = 1 << 5,
         ForceAlphaBlend = 1 << 6, //Forces blending mode on all importet materials with opacity
         ForceAlphaCutoff = 1 << 7,
+        SkipTextures = 1 << 8
     };
 }
 
