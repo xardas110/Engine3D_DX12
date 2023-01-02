@@ -26,6 +26,7 @@ using namespace DirectX;
 //TODO: FIX duplicates
 #define MATERIAL_FLAG_BASECOLOR_ALPHA (1 << 4)
 #define MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR (1 << 5)
+#define MATERIAL_FLAG_INVERT_NORMALS (1 << 6)
 
 #ifndef HLSL
 #define COMPAT_ONE = 1;

@@ -67,9 +67,11 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene, MeshImport::Flag
             
             if (mesh->HasNormals())
             { 
-                vertex.normal.x = mesh->mNormals[i].x;
-                vertex.normal.y = mesh->mNormals[i].y;
-                vertex.normal.z = mesh->mNormals[i].z;
+                bool bInvertNormals = flags & MeshImport::InvertNormals;
+
+                vertex.normal.x = bInvertNormals ? -mesh->mNormals[i].x: mesh->mNormals[i].x;
+                vertex.normal.y = bInvertNormals ? -mesh->mNormals[i].y : mesh->mNormals[i].y;
+                vertex.normal.z = bInvertNormals ? -mesh->mNormals[i].z : mesh->mNormals[i].z;
             }
         }
         {	//Texture coords

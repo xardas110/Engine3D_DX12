@@ -19,10 +19,11 @@ bool SponzaExe::LoadContent()
 {
 
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
- 
+    
     {
         auto bathRoom = CreateEntity("Bistro");
-        auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroInterior.fbx", MeshImport::BaseColorAlpha | MeshImport::AO_Rough_Metal_As_Spec_Tex);
+        auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroInterior.fbx", 
+            MeshImport::BaseColorAlpha | MeshImport::AO_Rough_Metal_As_Spec_Tex | MeshImport::InvertMaterialNormals | MeshImport::ForceAlphaBlend);
         auto& trans = bathRoom.GetComponent<TransformComponent>();
         trans.pos = { 0.f, 0.f, 0.f };
         trans.scale = { 0.01f, 0.01f, 0.01f };
@@ -49,18 +50,18 @@ bool SponzaExe::LoadContent()
     */
     
   
-
-  //  {
-//        auto sponza = CreateEntity("sponza");
- //     
-//        sponza.AddComponent<StaticMeshComponent>("Assets/Models/sponza/sponza.fbx", 
-  //          MeshImport::HeightAsNormal | MeshImport::AmbientAsMetallic | MeshImport::ForceAlphaCutoff);
-
- //       auto& trans = sponza.GetComponent<TransformComponent>();
- //       trans.scale = { 0.015f, 0.015f, 0.015f };
-  //  }
-
     /*
+    {
+        auto sponza = CreateEntity("sponza");
+      
+        sponza.AddComponent<StaticMeshComponent>("Assets/Models/sponza/sponza.fbx", 
+            MeshImport::HeightAsNormal | MeshImport::AmbientAsMetallic | MeshImport::ForceAlphaCutoff | MeshImport::IgnoreUserMaterial);
+
+        auto& trans = sponza.GetComponent<TransformComponent>();
+        trans.scale = { 0.015f, 0.015f, 0.015f };
+    }
+
+    
     {
         auto modelEnt = CreateEntity("Mirror");
 

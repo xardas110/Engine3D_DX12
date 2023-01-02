@@ -223,6 +223,11 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 			matInstance.AddFlag(MATERIAL_FLAG_BASECOLOR_ALPHA);
 		}
 
+		if (flags & MeshImport::InvertMaterialNormals)
+		{
+			matInstance.AddFlag(MATERIAL_FLAG_INVERT_NORMALS);
+		}
+
 		if (mesh.materialData.bHasMaterial)
 		{
 			Material materialData;

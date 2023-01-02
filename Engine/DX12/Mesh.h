@@ -63,7 +63,9 @@ namespace MeshImport
         ForceAlphaCutoff = 1 << 7,
         SkipTextures = 1 << 8,
         BaseColorAlpha = 1 << 9,
-        AO_Rough_Metal_As_Spec_Tex = 1 << 10
+        AO_Rough_Metal_As_Spec_Tex = 1 << 10,
+        InvertNormals = 1 << 11, //Geometry normal only
+        InvertMaterialNormals = 1 << 12,
     };
 }
 

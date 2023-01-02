@@ -491,8 +491,6 @@ void IndirectLight(
         
     BRDFData gBufferBRDF = PrepareBRDFData(fi.normal, -g_DirectionalLight.direction.rgb, V, currentMat);
     
-    //float4 indirectRadiance = float4(0.f, 0.f, 0.f, 0.f);
-    
     for (int i = 0; i < g_RaytracingData.numBounces; i++)
     {       
         if (dot(geometryNormal, V) < 0.0f)

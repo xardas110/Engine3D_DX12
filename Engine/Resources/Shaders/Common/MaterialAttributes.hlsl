@@ -290,7 +290,8 @@ SurfaceMaterial GetSurfaceMaterial(
 {
     SurfaceMaterial surface;    
     surface.ao = GetAO(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
-    surface.albedo = GetAlbedo(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType); //* surface.ao;
+    float4 baseColor = GetAlbedo(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType); //* surface.ao;
+    surface.albedo = baseColor.rgb;
     
     surface.albedo = srgbToLinear(surface.albedo);
 
@@ -300,6 +301,11 @@ SurfaceMaterial GetSurfaceMaterial(
     surface.metallic = GetMetallic(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
     surface.opacity = GetOpacity(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
    
+    if (matInfo.flags & MATERIAL_FLAG_BASECOLOR_ALPHA)
+    {
+        surface.opacity = baseColor.a;
+    }
+    
     bool bHasSpec;
     surface.specular = GetSpecular(matInfo, v.textureCoordinate, bHasSpec, inSampler, globalTextureData, mipLevel, sampleType);
     if (bHasSpec == true)
@@ -316,7 +322,10 @@ SurfaceMaterial GetSurfaceMaterial(
     surface.normal = GetNormal(matInfo, v.textureCoordinate, bMatHasNormal, inSampler, globalTextureData, mipLevel, sampleType);
     
     if (bMatHasNormal == true)
-        surface.normal = TangentToWorldNormal(v.tangent, v.bitangent, v.normal, surface.normal, model);                    
+    {
+        surface.normal = TangentToWorldNormal(v.tangent, v.bitangent, v.normal, surface.normal, model);
+        surface.normal *= matInfo.flags & MATERIAL_FLAG_INVERT_NORMALS ? -1.f : 1.f;
+    }                          
     else
         surface.normal = RotatePoint(objRotQuat, v.normal);
 
@@ -327,9 +336,9 @@ void ApplyMaterial(in MaterialInfo matInfo, inout SurfaceMaterial surfaceMat, in
 {
     if (matInfo.materialID == 0xffffffff)
         return;
-    
+
     Material mat = materials[matInfo.materialID];
-    
+   
     surfaceMat.albedo = matInfo.albedo == 0xffffffff ? mat.diffuse.rgb : (surfaceMat.albedo * mat.diffuse.rgb);
     surfaceMat.emissive = matInfo.emissive == 0xffffffff ? mat.emissive : (surfaceMat.emissive * mat.emissive);
     surfaceMat.opacity = matInfo.opacity == 0xffffffff ? mat.diffuse.a : (surfaceMat.opacity * mat.diffuse.a);
@@ -339,8 +348,12 @@ void ApplyMaterial(in MaterialInfo matInfo, inout SurfaceMaterial surfaceMat, in
     {   
         surfaceMat.roughness = matInfo.roughness == 0xffffffff ? mat.roughness : (surfaceMat.roughness * mat.roughness);
         surfaceMat.metallic = matInfo.metallic == 0xffffffff ? mat.metallic : (surfaceMat.metallic * mat.metallic);
+    }   
+    else
+    {
+        surfaceMat.roughness = (surfaceMat.roughness * mat.roughness);
+        surfaceMat.metallic = (surfaceMat.metallic * mat.metallic);
     }
-    
 }
 
 #endif
