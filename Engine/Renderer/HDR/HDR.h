@@ -37,6 +37,18 @@ namespace HistogramParam
 	};
 }
 
+struct EyeAdaption
+{
+	float lowPercentile = 0.8f;
+	float highPercentile = 0.95f;
+	float eyeAdaptionSpeedUp = 1.0f;
+	float eyeAdaptionSpeedDown = 5.0f;
+	float minAdaptedLuminance = 0.1f;
+	float maxAdaptedLuminance = 5.f;
+	float exposureBias = 0.0f;
+	float whitePoint = 3.f;
+};
+
 struct HDR
 {
 private:
@@ -53,9 +65,10 @@ private:
 
 	void OnResize(int nativeWidth, int nativeHeight);
 
-	static void UpdateGUI();
+	void UpdateGUI();
+	void UpdateEyeAdaptionGUI();
 
-	static TonemapCB& GetTonemapCB();
+	TonemapCB& GetTonemapCB();
 
 	//Returns handle to heap start
 	void CreateUAVViews();
@@ -78,4 +91,7 @@ private:
 
 	SRVHeapData histogramHeap = SRVHeapData(1);
 	SRVHeapData histogramClearHeap = SRVHeapData(1, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+
+	EyeAdaption eyeAdaption;
+	TonemapCB tonemapParameters;
 };

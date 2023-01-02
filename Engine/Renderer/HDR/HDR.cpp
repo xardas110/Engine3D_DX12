@@ -11,8 +11,6 @@
 #include <Exposure_CS.h>
 #include <Histogram_CS.h>
 
-TonemapCB g_TonemapParameters;
-
 // Number of values to plot in the tonemapping curves.
 static const int VALUES_COUNT = 256;
 // Maximum HDR value to normalize the plot samples.
@@ -34,43 +32,6 @@ float LinearTonemapping(float HDR, float max)
     return HDR;
 }
 
-float LinearTonemappingPlot(void*, int index)
-{
-    return LinearTonemapping(index / (float)VALUES_COUNT * HDR_MAX, g_TonemapParameters.MaxLuminance);
-}
-
-// Reinhard tone mapping.
-// See: http://www.cs.utah.edu/~reinhard/cdrom/tonemap.pdf
-float ReinhardTonemapping(float HDR, float k)
-{
-    return HDR / (HDR + k);
-}
-
-float ReinhardTonemappingPlot(void*, int index)
-{
-    return ReinhardTonemapping(index / (float)VALUES_COUNT * HDR_MAX, g_TonemapParameters.K);
-}
-
-float ReinhardSqrTonemappingPlot(void*, int index)
-{
-    float reinhard = ReinhardTonemapping(index / (float)VALUES_COUNT * HDR_MAX, g_TonemapParameters.K);
-    return reinhard * reinhard;
-}
-
-// ACES Filmic
-// See: https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting/142
-float ACESFilmicTonemapping(float x, float A, float B, float C, float D, float E, float F)
-{
-    return (((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - (E / F));
-}
-
-float ACESFilmicTonemappingPlot(void*, int index)
-{
-    float HDR = index / (float)VALUES_COUNT * HDR_MAX;
-    return ACESFilmicTonemapping(HDR, g_TonemapParameters.A, g_TonemapParameters.B, g_TonemapParameters.C, g_TonemapParameters.D, g_TonemapParameters.E, g_TonemapParameters.F) /
-        ACESFilmicTonemapping(g_TonemapParameters.LinearWhite, g_TonemapParameters.A, g_TonemapParameters.B, g_TonemapParameters.C, g_TonemapParameters.D, g_TonemapParameters.E, g_TonemapParameters.F);
-}
-
 // Helper to display a little (?) mark which shows a tooltip when hovered.
 static void ShowHelpMarker(const char* desc)
 {
@@ -85,18 +46,44 @@ static void ShowHelpMarker(const char* desc)
     }
 }
 
+void HDR::UpdateEyeAdaptionGUI()
+{
+    ImGui::SliderFloat("eyeAdaptionSpeedDown", &eyeAdaption.eyeAdaptionSpeedDown, 0.f, 10.0f);
+    ImGui::SliderFloat("eyeAdaptionSpeedUp", &eyeAdaption.eyeAdaptionSpeedUp, 0.f, 10.0f);
+    ImGui::SliderFloat("lowPercentile", &eyeAdaption.lowPercentile, 0.f, 1.0f);
+    ImGui::SliderFloat("highPercentile", &eyeAdaption.highPercentile, 0.f, 1.0f);
+
+    ImGui::SliderFloat("minAdaptedLuminance", &eyeAdaption.minAdaptedLuminance, 0.f, 20.0f);
+    ImGui::SliderFloat("maxAdaptedLuminance", &eyeAdaption.maxAdaptedLuminance, 0.f, 20.0f);
+
+    ImGui::SliderFloat("whitePoint", &eyeAdaption.whitePoint, 0.f, 10.0f);
+
+    ImGui::SliderFloat("exposureBias", &eyeAdaption.exposureBias, -10.0f, 10.0f);
+}
+
 void HDR::UpdateGUI()
 {
     ImGui::Begin("Tonemapping");
     {
+        static bool bEye = (bool)tonemapParameters.bEyeAdaption;
+        ImGui::Checkbox("EyeAdaption", &bEye);
+        tonemapParameters.bEyeAdaption = (int)bEye; //for shader
+
+        if (bEye)
+        { 
+            UpdateEyeAdaptionGUI();
+            ImGui::End();
+            return;           
+        }
+
         ImGui::TextWrapped("Use the Exposure slider to adjust the overall exposure of the HDR scene.");
-        ImGui::SliderFloat("Exposure", &g_TonemapParameters.Exposure, -10.0f, 10.0f);
+        ImGui::SliderFloat("Exposure", &tonemapParameters.Exposure, -10.0f, 10.0f);
         ImGui::SameLine(); ShowHelpMarker("Adjust the overall exposure of the HDR scene.");
-        ImGui::SliderFloat("Gamma", &g_TonemapParameters.Gamma, 0.01f, 5.0f);
+        ImGui::SliderFloat("Gamma", &tonemapParameters.Gamma, 0.01f, 5.0f);
         ImGui::SameLine(); ShowHelpMarker("Adjust the Gamma of the output image.");
 
-        ImGui::SliderFloat("MinLogLuminance", &g_TonemapParameters.minLogLuminance, -30.f, 30.f);
-        ImGui::SliderFloat("MaxLogLuminamce", &g_TonemapParameters.maxLogLuminamce, -30.f, 30.f);
+        ImGui::SliderFloat("MinLogLuminance", &tonemapParameters.minLogLuminance, -30.f, 30.f);
+        ImGui::SliderFloat("MaxLogLuminamce", &tonemapParameters.maxLogLuminamce, -30.f, 30.f);
 
         const char* toneMappingMethods[] = {
             "Linear",
@@ -106,34 +93,30 @@ void HDR::UpdateGUI()
             "Uncharted"
         };
 
-        ImGui::Combo("Tonemapping Methods", (int*)(&g_TonemapParameters.TonemapMethod), toneMappingMethods, sizeof(toneMappingMethods) / sizeof(toneMappingMethods[0]));
+        ImGui::Combo("Tonemapping Methods", (int*)(&tonemapParameters.TonemapMethod), toneMappingMethods, sizeof(toneMappingMethods) / sizeof(toneMappingMethods[0]));
 
-        switch (g_TonemapParameters.TonemapMethod)
+        switch (tonemapParameters.TonemapMethod)
         {
         case TM_Linear:
-            ImGui::PlotLines("Linear Tonemapping", &LinearTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.0f, ImVec2(0, 250));
-            ImGui::SliderFloat("Max Brightness", &g_TonemapParameters.MaxLuminance, 1.0f, 10.0f);
+            ImGui::SliderFloat("Max Brightness", &tonemapParameters.MaxLuminance, 1.0f, 10.0f);
             ImGui::SameLine(); ShowHelpMarker("Linearly scale the HDR image by the maximum brightness.");
             break;
         case TM_Reinhard:
-            ImGui::PlotLines("Reinhard Tonemapping", &ReinhardTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.0f, ImVec2(0, 250));
-            ImGui::SliderFloat("Reinhard Constant", &g_TonemapParameters.K, 0.01f, 10.0f);
+            ImGui::SliderFloat("Reinhard Constant", &tonemapParameters.K, 0.01f, 10.0f);
             ImGui::SameLine(); ShowHelpMarker("The Reinhard constant is used in the denominator.");
             break;
         case TM_ReinhardSq:
-            ImGui::PlotLines("Reinhard Squared Tonemapping", &ReinhardSqrTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.0f, ImVec2(0, 250));
-            ImGui::SliderFloat("Reinhard Constant", &g_TonemapParameters.K, 0.01f, 10.0f);
+            ImGui::SliderFloat("Reinhard Constant", &tonemapParameters.K, 0.01f, 10.0f);
             ImGui::SameLine(); ShowHelpMarker("The Reinhard constant is used in the denominator.");
             break;
         case TM_ACESFilmic:
-            ImGui::PlotLines("ACES Filmic Tonemapping", &ACESFilmicTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.0f, ImVec2(0, 250));
-            ImGui::SliderFloat("Shoulder Strength", &g_TonemapParameters.A, 0.01f, 5.0f);
-            ImGui::SliderFloat("Linear Strength", &g_TonemapParameters.B, 0.0f, 100.0f);
-            ImGui::SliderFloat("Linear Angle", &g_TonemapParameters.C, 0.0f, 1.0f);
-            ImGui::SliderFloat("Toe Strength", &g_TonemapParameters.D, 0.01f, 1.0f);
-            ImGui::SliderFloat("Toe Numerator", &g_TonemapParameters.E, 0.0f, 10.0f);
-            ImGui::SliderFloat("Toe Denominator", &g_TonemapParameters.F, 1.0f, 10.0f);
-            ImGui::SliderFloat("Linear White", &g_TonemapParameters.LinearWhite, 1.0f, 120.0f);
+            ImGui::SliderFloat("Shoulder Strength", &tonemapParameters.A, 0.01f, 5.0f);
+            ImGui::SliderFloat("Linear Strength", &tonemapParameters.B, 0.0f, 100.0f);
+            ImGui::SliderFloat("Linear Angle", &tonemapParameters.C, 0.0f, 1.0f);
+            ImGui::SliderFloat("Toe Strength", &tonemapParameters.D, 0.01f, 1.0f);
+            ImGui::SliderFloat("Toe Numerator", &tonemapParameters.E, 0.0f, 10.0f);
+            ImGui::SliderFloat("Toe Denominator", &tonemapParameters.F, 1.0f, 10.0f);
+            ImGui::SliderFloat("Linear White", &tonemapParameters.LinearWhite, 1.0f, 120.0f);
             break;
         default:
             break;
@@ -142,7 +125,7 @@ void HDR::UpdateGUI()
 
     if (ImGui::Button("Reset to Defaults"))
     {
-        g_TonemapParameters = TonemapCB();
+        tonemapParameters = TonemapCB();
     }
 
     ImGui::End();
@@ -150,7 +133,7 @@ void HDR::UpdateGUI()
 
 TonemapCB& HDR::GetTonemapCB()
 {
-    return g_TonemapParameters;
+    return tonemapParameters;
 }
 
 

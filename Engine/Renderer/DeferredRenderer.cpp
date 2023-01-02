@@ -165,7 +165,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
  
     auto clockNow = std::chrono::high_resolution_clock::now();
 
-    HDR::UpdateGUI();
+    m_HDR->UpdateGUI();
     m_DLSS->OnGUI();
     m_NvidiaDenoiser->OnGUI();
 
@@ -608,7 +608,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
 
         commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::RaytracingDataCB, rtData);
         commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::CameraCB, cameraCB);
-        commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::TonemapCB, HDR::GetTonemapCB());
+        commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::TonemapCB, m_HDR->GetTonemapCB());
 
         commandList->Draw(3);
 
@@ -645,7 +645,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_HDR->histogramHeap.heap.Get());
         gfxCommandList->SetComputeRootDescriptorTable(HistogramParam::Histogram, m_HDR->histogramHeap.GetGPUHandle(0));
    
-        auto tonemapCB = HDR::GetTonemapCB();
+        auto tonemapCB = m_HDR->GetTonemapCB();
         tonemapCB.logLuminanceScale = 1.0f / (tonemapCB.maxLogLuminamce - tonemapCB.minLogLuminance);
         tonemapCB.logLuminanceBias = -tonemapCB.minLogLuminance * tonemapCB.logLuminanceScale;
 
@@ -677,23 +677,17 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         gfxCommandList->SetComputeRootDescriptorTable(ExposureParam::Histogram, m_HDR->histogramHeap.GetGPUHandle(0));
 
 
-        auto tonemapCB = HDR::GetTonemapCB();
-
-        float lowPercentile = 0.8f;
-        float highPercentile = 0.95f;
-        float eyeAdaptionSpeedUp = 3.0f;
-        float eyeAdaptionSpeedDown = 3.0f;
-        float minAdaptedLuminance = 0.1f;
-        float maxAdaptedLuminance = 10.f;
+        auto tonemapCB = m_HDR->GetTonemapCB();
+        auto& eyeAdapt = m_HDR->eyeAdaption;
 
         tonemapCB.logLuminanceScale = tonemapCB.maxLogLuminamce - tonemapCB.minLogLuminance;
         tonemapCB.logLuminanceBias = tonemapCB.minLogLuminance;
-        tonemapCB.histogramLowPercentile = std::min(0.99f, std::max(0.f, lowPercentile));
-        tonemapCB.histogramHighPercentile = std::min(1.f, std::max(tonemapCB.histogramLowPercentile, highPercentile));
-        tonemapCB.eyeAdaptationSpeedUp = eyeAdaptionSpeedUp;
-        tonemapCB.eyeAdaptationSpeedDown = eyeAdaptionSpeedDown;
-        tonemapCB.minAdaptedLuminance = minAdaptedLuminance;
-        tonemapCB.maxAdaptedLuminance = maxAdaptedLuminance;
+        tonemapCB.histogramLowPercentile = std::min(0.99f, std::max(0.f, eyeAdapt.lowPercentile));
+        tonemapCB.histogramHighPercentile = std::min(1.f, std::max(tonemapCB.histogramLowPercentile, eyeAdapt.highPercentile));
+        tonemapCB.eyeAdaptationSpeedUp = eyeAdapt.eyeAdaptionSpeedUp;
+        tonemapCB.eyeAdaptationSpeedDown = eyeAdapt.eyeAdaptionSpeedDown;
+        tonemapCB.minAdaptedLuminance = eyeAdapt.minAdaptedLuminance;
+        tonemapCB.maxAdaptedLuminance = eyeAdapt.maxAdaptedLuminance;
         tonemapCB.frameTime = e.ElapsedTime;
         
         commandList->SetComputeDynamicConstantBuffer(ExposureParam::TonemapCB, tonemapCB);
@@ -760,17 +754,13 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_HDR->exposureHeap.heap.Get());
         gfxCommandList->SetGraphicsRootDescriptorTable(HDRParam::ExposureTex, m_HDR->exposureHeap.GetGPUHandle(0));
 
-        auto tonemapCB = HDR::GetTonemapCB();
+        auto tonemapCB = m_HDR->GetTonemapCB();
+        const auto& eyeAdapt = m_HDR->eyeAdaption;
 
-        float minAdaptedLuminance = 0.1f;
-        float maxAdaptedLuminance = 10.f;
-        float exposureBias = -0.5f;
-        float whitePoint = 3.f;
-
-        tonemapCB.exposureScale = ::exp2f(exposureBias);
-        tonemapCB.whitePointInvSquared = 1.f / powf(whitePoint, 2.f);
-        tonemapCB.minAdaptedLuminance = minAdaptedLuminance;
-        tonemapCB.maxAdaptedLuminance = maxAdaptedLuminance;
+        tonemapCB.exposureScale = ::exp2f(eyeAdapt.exposureBias);
+        tonemapCB.whitePointInvSquared = 1.f / powf(eyeAdapt.whitePoint, 2.f);
+        tonemapCB.minAdaptedLuminance = eyeAdapt.minAdaptedLuminance;
+        tonemapCB.maxAdaptedLuminance = eyeAdapt.maxAdaptedLuminance;
         tonemapCB.sourceSlice = 0;
 
         commandList->SetGraphicsDynamicConstantBuffer(HDRParam::TonemapCB, tonemapCB);

@@ -42,10 +42,10 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         
     float3 color = g_Texture.Sample(g_LinearRepeatSampler, TexCoord).rgb;
     
-    TonemapCB tonemap = g_TonemapCB;
-    tonemap.Exposure = g_Exposure[uint2(0, 0)];
-    
-    color = ConvertToLDR(color); //ApplyTonemap(color, tonemap);
+    if (g_TonemapCB.bEyeAdaption == 1)
+        color = ConvertToLDR(color);
+    else
+        color = ApplyTonemap(color, g_TonemapCB);
 
     OUT.ColorTexture = float4(color, 1.f);
         
