@@ -449,7 +449,7 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inou
     if (visibilityResult.bHit)
         shadowData = SIGMA_FrontEnd_PackShadow(viewZ, visibilityResult.hitT, g_DirectionalLight.tanAngularRadius);
     
-    radiance.rgb += fi.emissive;
+    //radiance.rgb += fi.emissive; Has to be added at composition stage since shadow is seperated for denoising
     radiance.rgb += EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
       
     return true;

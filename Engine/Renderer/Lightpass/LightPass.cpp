@@ -344,10 +344,11 @@ D3D12_GPU_DESCRIPTOR_HANDLE LightPass::CreateUAVViews()
 
 const Texture& LightPass::GetTexture(int type)
 {
+    //TODO:SWITCH STATEMENT
     if (type == LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE) return denoisedIndirectDiffuse;
-    if (type == LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR) return denoisedIndirectSpecular;
-    if (type == LIGHTBUFFER_DENOISED_SHADOW) return denoisedShadow;
-    if (type == LIGHTBUFFER_SHADOW_DATA) return renderTarget.GetTexture((AttachmentPoint)Color5);
+    else if (type == LIGHTBUFFER_DENOISED_INDIRECT_SPECULAR) return denoisedIndirectSpecular;
+    else if (type == LIGHTBUFFER_DENOISED_SHADOW) return denoisedShadow;
+    else if (type == LIGHTBUFFER_SHADOW_DATA) return renderTarget.GetTexture((AttachmentPoint)Color5);
 
     return renderTarget.GetTexture((AttachmentPoint)type);
 }
