@@ -111,12 +111,7 @@ bool SampleLightUniform(inout RngStateType rngState, float3 hitPosition, float3 
 }
 */
 
-
 // https://en.wikipedia.org/wiki/Ordered_dithering
-#define STL_BAYER_LINEAR 0
-#define STL_BAYER_REVERSEBITS 1
-
-// RESULT: [0; 15]
 uint Bayer4x4ui( uint2 samplePos, uint frameIndex)
 {
     uint2 samplePosWrap = samplePos & 3;
@@ -135,6 +130,7 @@ float AnimateBlueNoise(in float blueNoise, in int frameIndex)
 }
 
 //https://github.com/NVIDIAGameWorks/RayTracingDenoiser
+// + Raytracing gems II Chapter 24 for animated blue noise
 float2 GetBlueNoise(uint2 pixelPos, uint seed, uint sampleIndex, uint sppVirtual = 1, uint spp = 1)
 {
     // Final SPP - total samples per pixel ( there is a different "gIn_Scrambling_Ranking" texture! )
@@ -170,9 +166,10 @@ bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5f,
 {
     MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
     MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
-            
+         
     MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
-    SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData, 0.f, SAMPLE_TYPE_LEVEL);             
+
+    SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData, 0.f, SAMPLE_TYPE_LEVEL);
     ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
 
     opacity = hitSurfaceMaterial.opacity;
@@ -201,7 +198,7 @@ bool CastRay(RayInfo ray, RaytracingAccelerationStructure scene, inout HitAttrib
         hit.barycentrics = query.CandidateTriangleBarycentrics();
         hit.objToWorld = query.CandidateObjectToWorld3x4();
         hit.minT = query.CandidateTriangleRayT();
-        
+      
         float opacity;
         if (!TestOpacity(hit, opacity, 0.5f, ray.anyhitFlags))      
             query.CommitNonOpaqueTriangleHit();
@@ -420,7 +417,7 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inou
     currentMat.normal = fi.normal;
     
     float3 X = GetWorldPosFromDepth(texCoords, fi.depth, g_Camera.invViewProj);
-    X = OffsetRay(X, fi.geometryNormal) + fi.geometryNormal * 0.1f;
+    X = OffsetRay(X, fi.geometryNormal) + fi.geometryNormal * 0.05f;
     
     float3 V = normalize(g_Camera.pos.rgb - X.rgb);
     float3 L = -g_DirectionalLight.direction.rgb;
