@@ -41,7 +41,7 @@ class DeferredRenderer
 
 	void LoadContent();
 
-	void Render(class Window& window);
+	void Render(class Window& window, const RenderEventArgs& e);
 
 	void OnResize(ResizeEventArgs& e);
 

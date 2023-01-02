@@ -182,6 +182,11 @@ struct TonemapCB
     float exposureScale;
     float whitePointInvSquared;
     UINT sourceSlice;
+
+    float minLogLuminance COMPAT_FLOAT(-10.f); // TODO: figure out how to set these properly
+    float maxLogLuminamce COMPAT_FLOAT(4.f);
+    float pad1;
+    float pad2;
 };
 
 struct Light

@@ -95,6 +95,9 @@ void HDR::UpdateGUI()
         ImGui::SliderFloat("Gamma", &g_TonemapParameters.Gamma, 0.01f, 5.0f);
         ImGui::SameLine(); ShowHelpMarker("Adjust the Gamma of the output image.");
 
+        ImGui::SliderFloat("MinLogLuminance", &g_TonemapParameters.minLogLuminance, -30.f, 30.f);
+        ImGui::SliderFloat("MaxLogLuminamce", &g_TonemapParameters.maxLogLuminamce, -30.f, 30.f);
+
         const char* toneMappingMethods[] = {
             "Linear",
             "Reinhard",

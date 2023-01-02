@@ -2,6 +2,7 @@
 #include "../Common/TypesCompat.h"
 
 #include "../Common/HDR.hlsl"
+#include "../Common/BRDF.hlsl"
 #include "../Common/MaterialAttributes.hlsl"
 
 Texture2D                       g_Texture                   : register(t0);
@@ -18,6 +19,23 @@ struct PixelShaderOutput
     float4 ColorTexture : SV_TARGET0;
 };
 
+float3 ConvertToLDR(float3 color)
+{
+    float srcLuminance = Luminance(color);
+
+    if (srcLuminance <= 0)
+        return 0;
+
+    float adaptedLuminance = g_Exposure[uint2(0, 0)];
+    if (adaptedLuminance <= 0)
+        adaptedLuminance = g_TonemapCB.minAdaptedLuminance;
+
+    float scaledLuminance = g_TonemapCB.exposureScale * srcLuminance / adaptedLuminance;
+    float mappedLuminance = (scaledLuminance * (1 + scaledLuminance * g_TonemapCB.whitePointInvSquared)) / (1 + scaledLuminance);
+
+    return color * (mappedLuminance / srcLuminance);
+}
+
 PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
     PixelShaderOutput OUT;
@@ -27,7 +45,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     TonemapCB tonemap = g_TonemapCB;
     tonemap.Exposure = g_Exposure[uint2(0, 0)];
     
-    color = ApplyTonemap(color, tonemap);
+    color = ConvertToLDR(color); //ApplyTonemap(color, tonemap);
 
     OUT.ColorTexture = float4(color, 1.f);
         

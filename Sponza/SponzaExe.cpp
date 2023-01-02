@@ -27,7 +27,7 @@ bool SponzaExe::LoadContent()
         trans.pos = { 70.f, 0.f, 0.f };
 
     }  
-   
+    /*
     {
         auto mcLaren = CreateEntity("Mercedes");
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::ForceAlphaBlend);
@@ -36,7 +36,7 @@ bool SponzaExe::LoadContent()
         trans.pos = { 0.f, 0.f, 0.f };
         trans.scale = { 1.f, 1.f, 1.f };
     } 
-    /*
+
     
     {
         auto mcLaren = CreateEntity("Lambo");
@@ -73,7 +73,7 @@ bool SponzaExe::LoadContent()
     */
     /*
     */
-    //return true;
+    return true;
     meshManager.CreateCube();
     meshManager.CreateSphere();
    // meshManager.CreateTorus();
