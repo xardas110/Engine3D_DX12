@@ -159,9 +159,9 @@ float2 GetBlueNoise(uint2 pixelPos, uint seed, uint sampleIndex, uint sppVirtual
     float4 blue = (float4(B ^ A.xyxy) + 0.5) * (1.0 / 256.0);
 
     // Randomize in [ 0; 1 / 256 ] area to get rid of possible banding
-   // uint d = Bayer4x4ui(pixelPos, frameIndex);
-    //float2 dither = (float2(d & 3, d >> 2) + 0.5) * (1.0 / 4.0);
-   // blue += (dither.xyxy - 0.5) * (1.0 / 256.0);
+    uint d = Bayer4x4ui(pixelPos, frameIndex);
+    float2 dither = (float2(d & 3, d >> 2) + 0.5) * (1.0 / 4.0);
+    blue += (dither.xyxy - 0.5) * (1.0 / 256.0);
 
     return saturate(blue.xy);
 }
@@ -441,13 +441,8 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inou
     shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
    
     uint2 pixelPos = texCoords * g_Camera.resolution;
-    float2 rnd = GetBlueNoise(pixelPos, 0, 0); //float2(Rand(rng), Rand(rng)); //
-    //rnd = Cosine::GetRay(rnd);
-    //rnd *= g_DirectionalLight.tanAngularRadius;
-    
-    //float3x3 mSunBasis = GetBasis(-g_DirectionalLight.direction.rgb); // TODO: move to CB
-   // float3 sunDirection = normalize(mSunBasis[0] * rnd.x + mSunBasis[1] * rnd.y + mSunBasis[2]);
-    
+    float2 rnd = GetBlueNoise(pixelPos, 0, 0);
+
     shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(rnd, L, g_DirectionalLight.tanAngularRadius);
     
     VisibilityResult visibilityResult;
