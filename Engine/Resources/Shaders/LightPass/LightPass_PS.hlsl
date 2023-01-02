@@ -128,8 +128,14 @@ uint Bayer4x4ui( uint2 samplePos, uint frameIndex)
     return ( ( a >> b ) + sampleOffset ) & 0xF;
 }
 
+//Raytracing gems II chapter 24
+float AnimateBlueNoise(in float blueNoise, in int frameIndex)
+{
+    return frac(blueNoise + float(frameIndex % 32) * 0.61803399);
+}
+
 //https://github.com/NVIDIAGameWorks/RayTracingDenoiser
-float2 GetBlueNoise(Texture2D<uint4> texScramblingRanking, uint2 pixelPos, uint seed, uint sampleIndex, uint sppVirtual = 1, uint spp = 1)
+float2 GetBlueNoise(uint2 pixelPos, uint seed, uint sampleIndex, uint sppVirtual = 1, uint spp = 1)
 {
     // Final SPP - total samples per pixel ( there is a different "gIn_Scrambling_Ranking" texture! )
     // SPP - samples per pixel taken in a single frame ( must be POW of 2! )
@@ -141,21 +147,21 @@ float2 GetBlueNoise(Texture2D<uint4> texScramblingRanking, uint2 pixelPos, uint 
     //     https://belcour.github.io/blog/research/publication/2019/06/17/sampling-bluenoise.html (but 2D only)
 
     // Sample index
-    uint frameIndex = g_RaytracingData.frameIndex;
+    uint frameIndex = g_RaytracingData.frameNumber;
     uint virtualSampleIndex = (frameIndex + seed) & (sppVirtual - 1);
     sampleIndex &= spp - 1;
     sampleIndex += virtualSampleIndex * spp;
 
     // The algorithm
-    uint3 A = texScramblingRanking[pixelPos & 127];
+    uint3 A = g_BlueNoise[DENOISER_TEX_SCRAMBLING][pixelPos & 127].rgb;
     uint rankedSampleIndex = sampleIndex ^ A.z;
     uint4 B = g_BlueNoise[DENOISER_TEX_SOBOL][uint2(rankedSampleIndex & 255, 0)];
     float4 blue = (float4(B ^ A.xyxy) + 0.5) * (1.0 / 256.0);
 
     // Randomize in [ 0; 1 / 256 ] area to get rid of possible banding
-    uint d = Bayer4x4ui(pixelPos, frameIndex);
-    float2 dither = (float2(d & 3, d >> 2) + 0.5) * (1.0 / 4.0);
-    blue += (dither.xyxy - 0.5) * (1.0 / 256.0);
+   // uint d = Bayer4x4ui(pixelPos, frameIndex);
+    //float2 dither = (float2(d & 3, d >> 2) + 0.5) * (1.0 / 4.0);
+   // blue += (dither.xyxy - 0.5) * (1.0 / 256.0);
 
     return saturate(blue.xy);
 }
@@ -434,10 +440,14 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inou
     shadowRayInfo.anyhitFlags = 0;
     shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
    
-   // uint2 pixelPos = texCoords * g_Camera.resolution;
-    float2 rnd = float2(Rand(rng), Rand(rng)); //GetBlueNoise(g_BlueNoise[DENOISER_TEX_SCRAMBLING], pixelPos, 0, 0);
+    uint2 pixelPos = texCoords * g_Camera.resolution;
+    float2 rnd = GetBlueNoise(pixelPos, 0, 0); //float2(Rand(rng), Rand(rng)); //
     //rnd = Cosine::GetRay(rnd);
-
+    //rnd *= g_DirectionalLight.tanAngularRadius;
+    
+    //float3x3 mSunBasis = GetBasis(-g_DirectionalLight.direction.rgb); // TODO: move to CB
+   // float3 sunDirection = normalize(mSunBasis[0] * rnd.x + mSunBasis[1] * rnd.y + mSunBasis[2]);
+    
     shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(rnd, L, g_DirectionalLight.tanAngularRadius);
     
     VisibilityResult visibilityResult;
@@ -457,6 +467,7 @@ void IndirectLight(
     in float2 texCoords,
     RngStateType rngState,
     float viewZ,
+    inout float4 indirectRadiance,
     inout float3 troughput, 
     inout float4 indirectDiffuse, 
     inout float4 indirectSpecular)
@@ -488,7 +499,7 @@ void IndirectLight(
         
     BRDFData gBufferBRDF = PrepareBRDFData(fi.normal, -g_DirectionalLight.direction.rgb, V, currentMat);
     
-    float4 indirectRadiance = float4(0.f, 0.f, 0.f, 0.f);
+    //float4 indirectRadiance = float4(0.f, 0.f, 0.f, 0.f);
     
     for (int i = 0; i < g_RaytracingData.numBounces; i++)
     {       
@@ -598,8 +609,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     {
         return OUT;
     }   
-    
-    IndirectLight(TexCoord, rngState, viewZ, troughput, OUT.IndirectDiffuse, OUT.IndirectSpecular);
+    float4 indirectLight = 0.f;
+    IndirectLight(TexCoord, rngState, viewZ, indirectLight, troughput, OUT.IndirectDiffuse, OUT.IndirectSpecular);
     
     /*
     

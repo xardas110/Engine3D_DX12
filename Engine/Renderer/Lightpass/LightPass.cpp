@@ -264,7 +264,7 @@ void LightPass::CreatePipeline()
 void LightPass::ClearRendetTarget(CommandList& commandlist, float clearColor[4])
 {
     float clearValue[] = { 0.f, 0.f, 0.f, 0.f };
-    float clearValueShadow[] = { 0.f, 0.f, 0.f, 0.f };
+    float clearValueShadow[] = { UINT16_MAX, UINT16_MAX, UINT16_MAX, UINT16_MAX };
 
     commandlist.ClearTexture(GetTexture(LIGHTBUFFER_DIRECT_LIGHT), clearValue);
     commandlist.ClearTexture(renderTarget.GetTexture(AttachmentPoint::Color4), clearValue);

@@ -326,7 +326,7 @@ struct CameraCB
 struct RaytracingDataCB
 {
     int debugSettings COMPAT_INT(-1); //-1 means no debugging
-    int frameNumber COMPAT_INT(0);
+    UINT frameNumber COMPAT_INT(0);
     int accumulatedFrameNumber; 
     int bResetDuty;
     int numBounces COMPAT_INT(2);

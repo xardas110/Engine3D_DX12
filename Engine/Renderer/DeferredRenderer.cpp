@@ -97,12 +97,19 @@ void DeferredRenderer::LoadContent()
 
     auto device = Application::Get().GetDevice();
 
+    D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
+    desc.Format = DXGI_FORMAT_R8G8B8A8_UINT;
+    desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    desc.Texture2D.MipLevels = 1;
+    desc.Texture2D.MostDetailedMip = 0;
+
     device->CreateShaderResourceView(
-        scrambling.GetD3D12Resource().Get(), nullptr,
+        scrambling.GetD3D12Resource().Get(), &desc,
         heap.SetHandle(DENOISER_TEX_SCRAMBLING));
 
     device->CreateShaderResourceView(
-        sobol.GetD3D12Resource().Get(), nullptr,
+        sobol.GetD3D12Resource().Get(), &desc,
         heap.SetHandle(DENOISER_TEX_SOBOL));
      
 }
@@ -779,7 +786,9 @@ void DeferredRenderer::Render(Window& window)
             "Raytraced Emissive",
             "Raytraced Hit T",
             "GBuffer MV2D",
-            "LightBuffer Translucent"
+            "LightBuffer Translucent",
+            "LightBuffer Unfiltered Shadow",
+            "LightBuffer Denoised Shadow"
         };
 
         const Texture* texArray[] =
@@ -806,7 +815,9 @@ void DeferredRenderer::Render(Window& window)
             &m_LightPass->GetTexture(LIGHTBUFFER_RT_DEBUG),
             &m_LightPass->GetTexture(LIGHTBUFFER_DIRECT_LIGHT),
             &m_GBuffer->GetTexture(GBUFFER_GEOMETRY_MV2D),
-            &m_LightPass->renderTarget.GetTexture(AttachmentPoint::Color4)
+            &m_LightPass->renderTarget.GetTexture(AttachmentPoint::Color4),
+            &m_LightPass->GetTexture(LIGHTBUFFER_SHADOW_DATA),
+            &m_LightPass->denoisedShadow
         };
         ImGui::Begin("Select render buffer");
         ImGui::ListBox("listbox\n(single select)", &listbox_item_debug, listbox_items, IM_ARRAYSIZE(listbox_items));
