@@ -21,7 +21,7 @@ struct SurfaceMaterial
     float opacity COMPAT_FLOAT(1.f);
     
     float3 transparent COMPAT_VEC3F(1.f, 1.f, 1.f);
-    float roughness COMPAT_FLOAT(1.f);
+    float roughness COMPAT_FLOAT(0.f);
     
     float3 specular COMPAT_VEC3F(1.f, 0.f, 0.f); //for phong shading model or PBR materials
     float metallic COMPAT_FLOAT(0.f);
@@ -210,7 +210,7 @@ float GetRoughness(in MaterialInfo matInfo, in float2 texCoords, in SamplerState
             
         return roughness.SampleLevel(inSampler, texCoords, mipLevel.x);
     }
-    return 0.5f;
+    return 0.6f;
 }
 
 float GetMetallic(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
@@ -226,7 +226,7 @@ float GetMetallic(in MaterialInfo matInfo, in float2 texCoords, in SamplerState 
             
         return metallic.SampleLevel(inSampler, texCoords, mipLevel.x);
     }
-    return 0.5f;
+    return 0.0f;
 }
 
 float GetHeight(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
@@ -291,9 +291,8 @@ SurfaceMaterial GetSurfaceMaterial(
     SurfaceMaterial surface;    
     surface.ao = GetAO(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
     float4 baseColor = GetAlbedo(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType); //* surface.ao;
-    surface.albedo = baseColor.rgb;
-    
-    surface.albedo = srgbToLinear(surface.albedo);
+
+    surface.albedo = srgbToLinear(baseColor.rgb);
 
     surface.emissive = GetEmissive(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
     surface.height = GetHeight(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
@@ -344,15 +343,16 @@ void ApplyMaterial(in MaterialInfo matInfo, inout SurfaceMaterial surfaceMat, in
     surfaceMat.opacity = matInfo.opacity == 0xffffffff ? mat.diffuse.a : (surfaceMat.opacity * mat.diffuse.a);
     surfaceMat.transparent = mat.transparent;
     
+    surfaceMat.emissive *= 20.f;
+    
     if (!(matInfo.flags & MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR))
     {   
         surfaceMat.roughness = matInfo.roughness == 0xffffffff ? mat.roughness : (surfaceMat.roughness * mat.roughness);
         surfaceMat.metallic = matInfo.metallic == 0xffffffff ? mat.metallic : (surfaceMat.metallic * mat.metallic);
-    }   
+    }
     else
     {
-        surfaceMat.roughness = (surfaceMat.roughness * mat.roughness);
-        surfaceMat.metallic = (surfaceMat.metallic * mat.metallic);
+        surfaceMat.roughness *= mat.roughness;
     }
 }
 

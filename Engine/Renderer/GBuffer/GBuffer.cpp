@@ -185,13 +185,13 @@ void GBuffer::CreatePipeline()
         CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
         CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormats;
        // CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL DS;
-       // CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER Rasterizer;
+        CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER Rasterizer;
     } pipelineStateStream;
 
     //TODO:FIX
-  //  CD3DX12_RASTERIZER_DESC rasterizerDesc(D3D12_DEFAULT);
-  //  rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
-  //  pipelineStateStream.Rasterizer = rasterizerDesc;
+    //CD3DX12_RASTERIZER_DESC rasterizerDesc(D3D12_DEFAULT);
+   // rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+   // pipelineStateStream.Rasterizer = rasterizerDesc;
 
    // CD3DX12_DEPTH_STENCIL_DESC dsDesc{};
    // dsDesc.DepthEnable = true;

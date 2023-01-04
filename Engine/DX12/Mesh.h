@@ -56,7 +56,7 @@ namespace MeshImport
         HeightAsNormal = 1 << 0,
         IgnoreUserMaterial = 1 << 1,
         IgnoreUserMaterialAlbedoOnly = 1 << 2,
-        LHCoords = 1 << 3,
+        RHCoords = 1 << 3,
         ConvertShininiessToAlpha = 1 << 4,
         AmbientAsMetallic = 1 << 5,
         ForceAlphaBlend = 1 << 6, //Forces blending mode on all importet materials with opacity

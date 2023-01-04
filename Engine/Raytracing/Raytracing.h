@@ -49,5 +49,6 @@ class Raytracing
         return m_TopLevelAccelerationStructure[m_CurrentBufferIndex];
     }
 
+    bool bUpdate = true;
     UINT m_CurrentBufferIndex = 0;
 };

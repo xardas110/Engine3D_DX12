@@ -305,20 +305,18 @@ void DLSS::OnGUI()
        "Max Quality",
     };
 
-    NVSDK_NGX_PerfQuality_Value prefValue[] =
+    NVSDK_NGX_PerfQuality_Value g_DLSSPrefValue[] =
     {
         NVSDK_NGX_PerfQuality_Value_MaxQuality,
         NVSDK_NGX_PerfQuality_Value_MaxPerf,
         NVSDK_NGX_PerfQuality_Value_Balanced,
         NVSDK_NGX_PerfQuality_Value_MaxQuality
     };
-
-    static int list_item = 0;
-
+    
     int lastItemValue = list_item;
     ImGui::ListBox("listbox\n(single select)", &list_item, listbox_items, IM_ARRAYSIZE(listbox_items));
 
-    qualityMode = prefValue[list_item];
+    qualityMode = g_DLSSPrefValue[list_item];
 
     if (lastItemValue != list_item)
     {

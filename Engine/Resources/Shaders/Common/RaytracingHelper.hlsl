@@ -27,7 +27,7 @@ struct RayInfo
 
 float2 BaryInterp2(in float2 v0, in float2 v1, in float2 v2, in float3 bary)
 {
-    return bary.x * v0 + bary.y * v1 + bary.z * v2;;
+    return bary.x * v0 + bary.y * v1 + bary.z * v2;
 }
 
 float3 BaryInterp3(in float3 v0, in float3 v1, in float3 v2, in float3 bary)
@@ -148,7 +148,7 @@ MeshVertex GetHitSurface(in HitAttributes attr, in MeshInfo meshInfo, in Structu
     bary.x = 1 - attr.barycentrics.x - attr.barycentrics.y;
     bary.y = attr.barycentrics.x;
     bary.z = attr.barycentrics.y;
-    
+
     StructuredBuffer<MeshVertex> vertexBuffer = globalMeshVertexData[meshInfo.vertexOffset];
     StructuredBuffer<uint> indexBuffer = globalMeshIndexData[meshInfo.indexOffset];
 

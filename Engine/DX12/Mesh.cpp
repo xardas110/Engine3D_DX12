@@ -485,28 +485,10 @@ std::unique_ptr<Mesh> Mesh::CreateMesh(CommandList& commandList, VertexCollectio
     return mesh;
 }
 
-// Helper for flipping winding of geometric primitives for LH vs. RH coords
-static void ReverseWinding(IndexCollection32& indices, VertexCollection& vertices)
-{
-    assert((indices.size() % 3) == 0);
-    for (auto it = indices.begin(); it != indices.end(); it += 3)
-    {
-        std::swap(*it, *(it + 2));
-    }
-
-    for (auto it = vertices.begin(); it != vertices.end(); ++it)
-    {
-        it->textureCoordinate.x = (1.f - it->textureCoordinate.x);
-    }
-}
-
 void Mesh::Initialize(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords)
 {
     if (vertices.size() >= UINT_MAX)
         throw std::exception("Too many vertices for 32-bit index buffer");
-
-    if (!rhcoords)
-        ReverseWinding(indices, vertices);
 
     commandList.CopyVertexBuffer(m_VertexBuffer, vertices);
     commandList.CopyIndexBuffer(m_IndexBuffer, indices);

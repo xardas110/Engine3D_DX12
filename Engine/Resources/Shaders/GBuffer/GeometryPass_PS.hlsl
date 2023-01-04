@@ -60,8 +60,6 @@ PixelShaderOutput main(PixelShaderInput IN)
     vert.bitangent = IN.BiTangent_N;
     vert.position = IN.PositionClip;
 
-    
-    
     SurfaceMaterial surface = GetSurfaceMaterial(matInfo, vert, g_ObjectCB.model, g_ObjectCB.objRotQuat, g_LinearRepeatSampler, g_GlobalTextureData, 0.f, SAMPLE_TYPE_MIP);
     ApplyMaterial(matInfo, surface, g_GlobalMaterials);
         

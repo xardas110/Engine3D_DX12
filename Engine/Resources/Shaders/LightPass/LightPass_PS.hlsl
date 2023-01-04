@@ -358,7 +358,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
 {
     RayInfo ray;
     ray.desc = GeneratePinholeCameraRay(texcoords * 2.f - 1.f);
-    ray.desc.TMin = 0.2f;
+    ray.desc.TMin = 0.1f;
     ray.flags = 0;
     ray.anyhitFlags = 0;
     ray.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT; 

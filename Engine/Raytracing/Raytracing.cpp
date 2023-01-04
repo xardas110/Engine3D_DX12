@@ -169,6 +169,8 @@ void Raytracing::BuildAccelerationStructures()
 
 void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::vector<MeshInstanceWrapper>& meshWrapperInstances, MeshManager& meshManager, UINT backbufferIndex)
 {
+    if (!bUpdate) return;
+
     m_CurrentBufferIndex = backbufferIndex;
 
     auto device = Application::Get().GetDevice();

@@ -60,6 +60,12 @@ MaterialInstanceID MaterialManager::CreateMaterialInstance(const std::wstring& n
 
 		m_TextureManager.IncrementRef(textureIDs.roughness);
 	}
+	if (IsMaterialValid(textureIDs.specular))
+	{
+		instanceData.gpuInfo[currentIndex].specular = textureData.textures[textureIDs.specular].heapID;
+
+		m_TextureManager.IncrementRef(textureIDs.specular);
+	}
 	if (IsMaterialValid(textureIDs.metallic))
 	{
 		instanceData.gpuInfo[currentIndex].metallic = textureData.textures[textureIDs.metallic].heapID;

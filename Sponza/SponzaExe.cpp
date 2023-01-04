@@ -19,26 +19,35 @@ bool SponzaExe::LoadContent()
 {
 
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
-    
+   /*
     {
-        auto bathRoom = CreateEntity("Bistro");
-        auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroInterior.fbx", 
+        auto bathRoom = CreateEntity("BistroExterior");
+        auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroExterior.fbx", 
+            MeshImport::BaseColorAlpha | MeshImport::AO_Rough_Metal_As_Spec_Tex | MeshImport::InvertMaterialNormals | MeshImport::ForceAlphaCutoff);
+        auto& trans = bathRoom.GetComponent<TransformComponent>();
+        trans.pos = { 0.f, 0.f, 0.f };
+        trans.scale = { 0.01f, 0.01f, 0.01f };
+        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
+    }     
+    */
+    {
+        auto bathRoom = CreateEntity("BistroInterior");
+        auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroInterior.fbx",
             MeshImport::BaseColorAlpha | MeshImport::AO_Rough_Metal_As_Spec_Tex | MeshImport::InvertMaterialNormals | MeshImport::ForceAlphaBlend);
         auto& trans = bathRoom.GetComponent<TransformComponent>();
         trans.pos = { 0.f, 0.f, 0.f };
         trans.scale = { 0.01f, 0.01f, 0.01f };
-        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(270.f), DirectX::XMConvertToRadians(90.f), 0.f);
+        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
     }  
-    /*
     {
         auto mcLaren = CreateEntity("Mercedes");
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::ForceAlphaBlend);
         auto& trans = mcLaren.GetComponent<TransformComponent>();
-        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(270.f), DirectX::XMConvertToRadians(90.f), 0.f);      
-        trans.pos = { 0.f, 0.f, 0.f };
+        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);      
+        trans.pos = { 1.f, 0.3f, 12.f };
         trans.scale = { 1.f, 1.f, 1.f };
     } 
-
+    /*
     
     {
         auto mcLaren = CreateEntity("Lambo");
@@ -49,7 +58,7 @@ bool SponzaExe::LoadContent()
     }
     */
     
-  
+   
     /*
     {
         auto sponza = CreateEntity("sponza");
@@ -60,7 +69,7 @@ bool SponzaExe::LoadContent()
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.scale = { 0.015f, 0.015f, 0.015f };
     }
-
+   
     
     {
         auto modelEnt = CreateEntity("Mirror");

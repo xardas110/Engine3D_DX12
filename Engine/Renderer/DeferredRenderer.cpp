@@ -215,7 +215,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
     auto& hitParams = m_NvidiaDenoiser->denoiserSettings.settings.hitDistanceParameters;
     rtData.hitParams = { hitParams.A, hitParams.B, hitParams.C, hitParams.D};
     rtData.frameIndex = window.m_CurrentBackBufferIndex;
-    static int numBounces = 2;
+    static int numBounces = 1;
 
     ImGui::Begin("Raytracing Settings");
     ImGui::SliderInt("Num Bounces", &numBounces, 0, 10);
@@ -242,6 +242,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         PIXBeginEvent(gfxCommandList.Get(), 0, L"Building DXR structure");    
         m_Raytracer->BuildAccelerationStructure(*commandList, meshInstances, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);      
         PIXEndEvent(gfxCommandList.Get());
+        m_Raytracer->bUpdate = false;
     } 
     /*
     {//DEPTH PREPASS

@@ -110,7 +110,7 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 		std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(num++) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
 
 		MeshTuple tuple;
-		tuple.mesh = std::move(*Mesh::CreateMesh(*commandList, mesh.vertices, mesh.indices, !(MeshImport::LHCoords & flags)));
+		tuple.mesh = std::move(*Mesh::CreateMesh(*commandList, mesh.vertices, mesh.indices, (MeshImport::RHCoords & flags)));
 		tuple.mesh.InitializeBlas(*rtCommandList);
 		
 		meshData.CreateMesh(currentName, tuple, m_SrvHeapData);
@@ -249,8 +249,8 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticM
 
 			}
 				
-			auto inst = MaterialInstance::CreateMaterial(currentName + L"/" + std::wstring(mesh.materialData.name.begin(), mesh.materialData.name.end()), materialData);
-			matInstance.SetMaterial(inst);
+			auto mat = MaterialInstance::CreateMaterial(currentName + L"/" + std::wstring(mesh.materialData.name.begin(), mesh.materialData.name.end()), materialData);
+			matInstance.SetMaterial(mat);
 		}
 
 		meshInstance.SetMaterialInstance(matInstance);				
