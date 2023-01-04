@@ -5,6 +5,7 @@
 #include <ResourceStateTracker.h>
 #include <CommandList.h>
 #include <CommandQueue.h>
+#include <TypesCompat.h>
 
 using namespace DirectX;
 using namespace Microsoft::WRL;
@@ -113,6 +114,20 @@ const std::wstring& MeshInstance::GetUserMaterialName()
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
     auto matInstanceID = meshManager.instanceData.meshInfo[id].materialInstanceID;
     return materialManager.GetMaterialName(matInstanceID);
+}
+
+bool MeshInstance::IsPointlight()
+{
+    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
+    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
+    auto matInstanceID = meshManager.instanceData.meshInfo[id].materialInstanceID;
+    
+    auto matInstance = MaterialInstance(matInstanceID);
+
+    if (matInstance.GetCPUFlags() & INSTANCE_LIGHT || matInstance.GetGPUFlags() & INSTANCE_LIGHT)
+        return true;
+
+    return false;
 }
 
 Mesh::Mesh()

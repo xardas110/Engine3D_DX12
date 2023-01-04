@@ -31,6 +31,9 @@ struct MaterialInstance
 
 	void AddFlag(UINT flag);
 
+	UINT GetCPUFlags();
+	UINT GetGPUFlags();
+
 	MaterialInstanceID GetMaterialInstanceID() const 
 	{
 		return materialInstanceID;

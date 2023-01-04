@@ -78,7 +78,7 @@ set( HEADER_FILES
     "Renderer/Skybox/Skybox.h" 
     "Renderer/HDR/HDR.h" 
     "Renderer/DLSS/DLSS.h" 
-    "core/Logger.h")
+    "core/Logger.h" "Lights/LightManager.h")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
@@ -132,7 +132,7 @@ set( SOURCE_FILES
     "Renderer/Denoiser/NvidiaDenoiser.cpp" 
     "Renderer/Skybox/Skybox.cpp" 
     "Renderer/HDR/HDR.cpp" 
-    "Renderer/DLSS/DLSS.cpp")
+    "Renderer/DLSS/DLSS.cpp" "Lights/LightManager.cpp")
 
 set( IMGUI_HEADERS
     external/ImGui/imgui.h

@@ -22,6 +22,7 @@ using namespace DirectX;
 #define INSTANCE_TRANSLUCENT (1<<1)
 #define INSTANCE_ALPHA_BLEND (1<<2)
 #define INSTANCE_ALPHA_CUTOFF (1<<3)
+#define INSTANCE_LIGHT (1<<4)
 //Material flag has some shared data with instance flags
 //TODO: FIX duplicates
 #define MATERIAL_FLAG_BASECOLOR_ALPHA (1 << 4)

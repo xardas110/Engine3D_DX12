@@ -345,14 +345,14 @@ void ApplyMaterial(in MaterialInfo matInfo, inout SurfaceMaterial surfaceMat, in
     
     surfaceMat.emissive *= 20.f;
     
-    if (!(matInfo.flags & MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR))
+    if (!(matInfo.flags & MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR)) //weird convention on bistro scene...
     {   
         surfaceMat.roughness = matInfo.roughness == 0xffffffff ? mat.roughness : (surfaceMat.roughness * mat.roughness);
         surfaceMat.metallic = matInfo.metallic == 0xffffffff ? mat.metallic : (surfaceMat.metallic * mat.metallic);
     }
     else
     {
-        surfaceMat.roughness *= mat.roughness;
+        surfaceMat.roughness *= mat.roughness; 
     }
 }
 

@@ -30,6 +30,7 @@ bool SponzaExe::LoadContent()
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
     }     
     */
+    /*
     {
         auto bathRoom = CreateEntity("BistroInterior");
         auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroInterior.fbx",
@@ -47,6 +48,7 @@ bool SponzaExe::LoadContent()
         trans.pos = { 1.f, 0.3f, 12.f };
         trans.scale = { 1.f, 1.f, 1.f };
     } 
+    */
     /*
     
     {
@@ -59,7 +61,7 @@ bool SponzaExe::LoadContent()
     */
     
    
-    /*
+   
     {
         auto sponza = CreateEntity("sponza");
       
@@ -69,8 +71,7 @@ bool SponzaExe::LoadContent()
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.scale = { 0.015f, 0.015f, 0.015f };
     }
-   
-    
+    /*
     {
         auto modelEnt = CreateEntity("Mirror");
 

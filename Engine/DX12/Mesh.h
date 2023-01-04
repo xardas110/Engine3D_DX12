@@ -177,6 +177,8 @@ struct MeshInstance
         return true;
     }
 
+    bool IsPointlight();
+
 private:
     MeshInstance() = default;
     MeshInstance(MeshInstanceID id) :id(id) {};

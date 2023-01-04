@@ -242,6 +242,10 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         PIXBeginEvent(gfxCommandList.Get(), 0, L"Building DXR structure");    
         m_Raytracer->BuildAccelerationStructure(*commandList, meshInstances, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);      
         PIXEndEvent(gfxCommandList.Get());
+
+       // ImGui::Begin("RtStructure");
+       // ImGui::Checkbox("Build pr. frame", &m_Raytracer->bUpdate);
+       // ImGui::End();
         m_Raytracer->bUpdate = false;
     } 
     /*
