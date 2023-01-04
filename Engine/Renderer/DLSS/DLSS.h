@@ -5,6 +5,7 @@
 #include <Texture.h>
 #include <eventcpp/event.hpp>
 #include <StaticDescriptorHeap.h>
+#include <Camera.h>
 
 #define APP_ID 231313132
 
@@ -88,6 +89,7 @@ private:
 		CommandList* commandList,
 		const DlssTextures& texs,
 		int width, int height,
+		const Camera& cam,
 		bool bResetAccumulation = false,
 		float flSharpness = 0.0f,
 		bool bUseNgxSdkExtApi = false);

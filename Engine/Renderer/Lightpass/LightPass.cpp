@@ -178,6 +178,7 @@ void LightPass::CreatePipeline()
     rootParameters[LightPassParam::AccumBuffer].InitAsDescriptorTable(1, &gAccumBuffer);
     rootParameters[LightPassParam::Cubemap].InitAsDescriptorTable(1, &cubemapSRVHeap);
     rootParameters[LightPassParam::BlueNoiseTextures].InitAsDescriptorTable(1, &denoiserHeap);
+    rootParameters[LightPassParam::LightDataCB].InitAsConstantBufferView(3);
 
     D3D12_STATIC_SAMPLER_DESC staticSampler[3] = {};
     staticSampler[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;

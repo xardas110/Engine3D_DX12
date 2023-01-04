@@ -21,6 +21,7 @@ namespace LightPassParam
 		AccumBuffer,
 		Cubemap,
 		BlueNoiseTextures,
+		LightDataCB,
 		Size
 	};
 }

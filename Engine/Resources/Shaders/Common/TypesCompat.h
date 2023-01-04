@@ -22,7 +22,7 @@ using namespace DirectX;
 #define INSTANCE_TRANSLUCENT (1<<1)
 #define INSTANCE_ALPHA_BLEND (1<<2)
 #define INSTANCE_ALPHA_CUTOFF (1<<3)
-#define INSTANCE_LIGHT (1<<4)
+#define INSTANCE_LIGHT (1<<7)
 //Material flag has some shared data with instance flags
 //TODO: FIX duplicates
 #define MATERIAL_FLAG_BASECOLOR_ALPHA (1 << 4)
@@ -293,6 +293,8 @@ struct ObjectCB
     XMMATRIX prevModel;
     XMMATRIX prevMVP;
     XMVECTOR objRotQuat;
+
+    XMMATRIX jitteredMVP;
 };
 
 struct MeshVertex
@@ -332,6 +334,10 @@ struct CameraCB
     XMFLOAT2 resolution; //native res
     float zNear;
     float zFar;
+
+    XMFLOAT2 jitter;
+    float pad1;
+    float pad2;
 };
 
 struct RaytracingDataCB

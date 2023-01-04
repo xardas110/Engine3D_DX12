@@ -117,7 +117,7 @@ DeferredRenderer::~DeferredRenderer()
     Application::Get().m_DLSS = std::move(m_DLSS);
 }
 
-std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(entt::registry& registry)
+std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(entt::registry& registry, std::vector<MeshInstanceWrapper>* pointLights)
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     std::vector<MeshInstanceWrapper> instances;
@@ -126,7 +126,14 @@ std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(entt::regist
         for (auto [entity, transform, mesh] : view.each())
         {
             MeshInstanceWrapper wrap(transform, mesh);
-            instances.emplace_back(wrap);
+
+            if (mesh.IsPointlight())
+            { 
+                if (pointLights)
+                    pointLights->emplace_back(wrap);
+            }
+
+            instances.emplace_back(wrap);           
         }
     }
     {
@@ -136,7 +143,14 @@ std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(entt::regist
             for (size_t i = sm.startOffset; i < sm.endOffset; i++)
             {
                 MeshInstanceWrapper wrap(transform, i);
-                instances.emplace_back(wrap);
+
+                if (MeshInstance(i).IsPointlight())
+                {
+                    if (pointLights)
+                        pointLights->emplace_back(wrap);
+                }
+
+                instances.emplace_back(wrap);             
             }
         }
     }
@@ -192,12 +206,20 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
 
     auto* camera = game->GetRenderCamera();
 
+    XMFLOAT2 jitter = camera->jitter;
+    jitter.x /= float(m_Width);
+    jitter.y /= float(m_Height);
+
     ObjectCB objectCB; //todo move to cam
     objectCB.view = camera->get_ViewMatrix();
     objectCB.proj = camera->get_ProjectionMatrix();
     objectCB.invView = XMMatrixInverse(nullptr, objectCB.view);
     objectCB.invProj = XMMatrixInverse(nullptr, objectCB.proj);
-      
+
+    XMMATRIX jitterMat = XMMatrixIdentity();
+    jitterMat.r[3].m128_f32[0] = jitter.x;
+    jitterMat.r[3].m128_f32[1] = jitter.y;
+
     cameraCB.view = camera->get_ViewMatrix();
     cameraCB.proj = camera->get_ProjectionMatrix();
     cameraCB.invView = XMMatrixInverse(nullptr, cameraCB.view);
@@ -208,6 +230,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
     cameraCB.zNear = camera->GetNear();
     cameraCB.zFar = camera->GetFar();
     cameraCB.eyeToPixelConeSpreadAngle = atanf((2.0f * tanf(camera->get_FoV() * 0.5f)) / (float)m_Height);
+    cameraCB.jitter = jitter;
 
     RaytracingDataCB rtData;
     rtData.frameNumber = Application::GetFrameCount();
@@ -297,10 +320,18 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         int i = 0;
         for (auto [transform, mesh] : meshInstances)
         {  
+
+            if (mesh.IsPointlight())
+            {
+                i++;
+                continue;
+            }
+
             objectCB.model = transform.GetTransform();
 
-            objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
-            objectCB.prevMVP = prevTrans[i].GetTransform() * cameraCB.prevView * cameraCB.prevProj;
+            objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj * jitterMat;
+            objectCB.jitteredMVP = objectCB.model * objectCB.view * objectCB.proj * jitterMat;
+            objectCB.prevMVP = prevTrans[i].GetTransform() * cameraCB.prevView * cameraCB.prevProj * jitterMat;
 
             objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
             objectCB.meshId = mesh.id;
@@ -519,7 +550,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
                 D3D12_RESOURCE_STATE_PRESENT,
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 
-        m_NvidiaDenoiser->RenderFrame(*commandList, cameraCB, window.m_CurrentBackBufferIndex, m_Width, m_Height);
+        m_NvidiaDenoiser->RenderFrame(*commandList, cameraCB, *camera, window.m_CurrentBackBufferIndex, m_Width, m_Height);
 
         commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
 
@@ -724,7 +755,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
             dlssTextures.linearDepth = &m_GBuffer->GetTexture(GBUFFER_LINEAR_DEPTH);
             dlssTextures.motionVectors3D = &m_GBuffer->GetTexture(GBUFFER_MOTION_VECTOR);
 
-            m_DLSS->EvaluateSuperSampling(commandList.get(), dlssTextures, m_NativeWidth, m_NativeHeight);
+            m_DLSS->EvaluateSuperSampling(commandList.get(), dlssTextures, m_NativeWidth, m_NativeHeight, *camera);
 
             PIXEndEvent(gfxCommandList.Get());
         }

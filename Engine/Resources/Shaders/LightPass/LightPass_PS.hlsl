@@ -29,6 +29,7 @@ SamplerState                    g_LinearClampSampler        : register(s2);
 ConstantBuffer<DirectionalLightCB> g_DirectionalLight       : register(b0);
 ConstantBuffer<CameraCB>           g_Camera                 : register(b1);
 ConstantBuffer<RaytracingDataCB>   g_RaytracingData         : register(b2);
+ConstantBuffer<LightDataCB>        g_LightData              : register(b3);
 
 RWTexture2D<float4>             g_GlobalUAV[]               : register(u0);
   
@@ -94,6 +95,7 @@ float3 SphericalDirectionalLightRayDirection(in float2 rect, in float3 direction
     
     return normalize(direction + p.x * tangent + p.y * bitangent);
 }
+
 /*
 bool SampleLightUniform(inout RngStateType rngState, float3 hitPosition, float3 surfaceNormal, out Light light, out float lightSampleWeight)
 {
@@ -577,6 +579,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
     PixelShaderOutput OUT;
         
+    TexCoord += g_Camera.jitter;
+    
     uint2 pixelCoords = g_Camera.resolution * TexCoord;
 
     float viewZ = g_GBufferHeap[GBUFFER_LINEAR_DEPTH].Sample(g_NearestRepeatSampler, TexCoord).r;

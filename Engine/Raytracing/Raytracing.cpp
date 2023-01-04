@@ -217,7 +217,7 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::ve
         else if (mesh.IsPointlight())
         {
             instanceDesc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_FORCE_OPAQUE;
-            instanceDesc.InstanceMask |= INSTANCE_LIGHT;
+            instanceDesc.InstanceMask = INSTANCE_LIGHT;
         }
         else
         {

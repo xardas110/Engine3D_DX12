@@ -89,6 +89,12 @@ void Game::OnUpdate(UpdateEventArgs& e)
 
     XMMATRIX viewMatrix = m_Camera.get_ViewMatrix();
 
+    XMFLOAT2 halt = Halton2D(Application::GetFrameCount());
+    halt.x -= -0.5f;
+    halt.y -= -0.5f;
+
+    m_Camera.jitter = halt;
+
     if (m_CameraController.forward > 0.f ||
         m_CameraController.backward > 0.f ||
         m_CameraController.left > 0.f ||

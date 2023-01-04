@@ -209,6 +209,7 @@ void DLSS::EvaluateSuperSampling(
     CommandList* commandList,
     const DlssTextures& texs,
     int width, int height,
+    const Camera& cam,
     bool bResetAccumulation,
     float flSharpness,
     bool bUseNgxSdkExtApi)
@@ -226,6 +227,9 @@ void DLSS::EvaluateSuperSampling(
     D3D12DlssEvalParams.pInExposureTexture = texs.exposure->GetD3D12Resource().Get();
 
     D3D12DlssEvalParams.Feature.InSharpness = flSharpness;
+
+    D3D12DlssEvalParams.InJitterOffsetX = -cam.jitter.x;
+    D3D12DlssEvalParams.InJitterOffsetY = -cam.jitter.y;
 
     ImGui::Begin("DLSS settings");
     static float f1 = 1.f;

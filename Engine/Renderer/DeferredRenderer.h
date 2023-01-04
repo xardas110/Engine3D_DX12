@@ -50,7 +50,7 @@ class DeferredRenderer
 
 	void Shutdown();
 
-	std::vector<MeshInstanceWrapper> GetMeshInstances(entt::registry& registry);
+	std::vector<MeshInstanceWrapper> GetMeshInstances(entt::registry& registry, std::vector<MeshInstanceWrapper>* pointLights = nullptr);
 
 	void SetRenderTexture(const Texture* texture)
 	{

@@ -14,6 +14,8 @@
 
 #include <NRDSettings.h>
 
+#include <Camera.h>
+
 struct DenoiserTextures
 {
 	DenoiserTextures(const Texture& inMV, const Texture& inViewZ, const Texture& inNormalRough,
@@ -99,7 +101,7 @@ class NvidiaDenoiser
 	NvidiaDenoiser(int width, int height, DenoiserTextures& texs);
 	~NvidiaDenoiser();
 
-	void RenderFrame(CommandList& commandList, const CameraCB& cam, int currentBackbufferIndex, int width, int height);
+	void RenderFrame(CommandList& commandList, const CameraCB& cam, const Camera& camera, int currentBackbufferIndex, int width, int height);
 	void OnGUI();
 
 	NrdIntegration NRD = NrdIntegration(3);

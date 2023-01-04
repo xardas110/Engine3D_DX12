@@ -33,17 +33,16 @@ VertexShaderOutput main(VertexPositionNormalTexture IN)
 {  
 	VertexShaderOutput OUT;
 	OUT.Position = mul(g_ObjectCB.mvp, float4(IN.Position, 1.0f));
+	
     OUT.PositionClip = OUT.Position;
     
     OUT.PrevPosition = mul(g_ObjectCB.prevMVP, float4(IN.Position, 1.f));
 		
 	OUT.PositionWS = mul(g_ObjectCB.model, float4(IN.Position, 1.f));
     OUT.PrevPositionWS = mul(g_ObjectCB.prevModel, float4(IN.Position, 1.f));
-		
-	
+			
     OUT.ViewZ = mul(g_ObjectCB.view, float4(OUT.PositionWS.xyz, 1.0f)).z;
-	
-	
+		
 	OUT.NormalWS = mul((float3x3)g_ObjectCB.transposeInverseModel, IN.Normal);
 	OUT.NormalWS = normalize(OUT.NormalWS);
 		

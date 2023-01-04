@@ -85,7 +85,7 @@ bool SponzaExe::LoadContent()
     */
     /*
     */
-    return true;
+
     meshManager.CreateCube();
     meshManager.CreateSphere();
    // meshManager.CreateTorus();
@@ -105,7 +105,7 @@ bool SponzaExe::LoadContent()
     MaterialInfo matInfo;
     material.CreateMaterialInstance(L"DefaultMaterialInstance", matInfo);
     material.SetMaterial(materialID);
-    material.SetFlags(INSTANCE_OPAQUE);
+    material.SetFlags(INSTANCE_LIGHT);
 
     //for (size_t i = 0; i < 20; i++)
     {

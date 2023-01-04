@@ -277,7 +277,7 @@ NvidiaDenoiser::~NvidiaDenoiser()
 	nri::DestroyDevice(*m_NRIDevice);
 }
 
-void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, int currentBackbufferIndex, int width, int height)
+void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, const Camera& camera, int currentBackbufferIndex, int width, int height)
 {
 	auto& commonSettings = denoiserSettings.commonSettings;
 	auto& settings = denoiserSettings.settings;
@@ -296,6 +296,10 @@ void NvidiaDenoiser::RenderFrame(CommandList& commandList, const CameraCB &cam, 
 
 	commonSettings.isMotionVectorInWorldSpace = true;
 	commonSettings.frameIndex = Application::GetFrameCount();
+
+	//TODO:Only send in camera and not camera constant buffer
+	commonSettings.cameraJitter[0] = camera.jitter.x;
+	commonSettings.cameraJitter[1] = camera.jitter.y;
 
 	NRD.SetMethodSettings(nrd::Method::REBLUR_DIFFUSE_SPECULAR, &settings);
 

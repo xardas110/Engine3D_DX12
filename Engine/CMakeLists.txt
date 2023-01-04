@@ -78,7 +78,7 @@ set( HEADER_FILES
     "Renderer/Skybox/Skybox.h" 
     "Renderer/HDR/HDR.h" 
     "Renderer/DLSS/DLSS.h" 
-    "core/Logger.h" "Lights/LightManager.h")
+    "core/Logger.h")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
@@ -132,7 +132,7 @@ set( SOURCE_FILES
     "Renderer/Denoiser/NvidiaDenoiser.cpp" 
     "Renderer/Skybox/Skybox.cpp" 
     "Renderer/HDR/HDR.cpp" 
-    "Renderer/DLSS/DLSS.cpp" "Lights/LightManager.cpp")
+    "Renderer/DLSS/DLSS.cpp")
 
 set( IMGUI_HEADERS
     external/ImGui/imgui.h
@@ -222,7 +222,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC assimp
     PUBLIC NRD
     PUBLIC NRI
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Libs/DLSS/Lib/Windows_x86_64/x86_64/nvsdk_ngx_d.lib
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Libs/DLSS/Lib/Windows_x86_64/x86_64/nvsdk_ngx_d_dbg.lib
     PUBLIC DirectXTex
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
