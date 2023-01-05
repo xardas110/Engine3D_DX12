@@ -302,7 +302,7 @@ SurfaceMaterial GetSurfaceMaterial(
    
     if (matInfo.flags & MATERIAL_FLAG_BASECOLOR_ALPHA)
     {
-        surface.opacity = baseColor.a;
+        surface.opacity = baseColor.a;       
     }
     
     bool bHasSpec;
@@ -339,11 +339,19 @@ void ApplyMaterial(in MaterialInfo matInfo, inout SurfaceMaterial surfaceMat, in
     Material mat = materials[matInfo.materialID];
    
     surfaceMat.albedo = matInfo.albedo == 0xffffffff ? mat.diffuse.rgb : (surfaceMat.albedo * mat.diffuse.rgb);
-    surfaceMat.emissive = matInfo.emissive == 0xffffffff ? mat.emissive : (surfaceMat.emissive * mat.emissive);
-    surfaceMat.opacity = matInfo.opacity == 0xffffffff ? mat.diffuse.a : (surfaceMat.opacity * mat.diffuse.a);
+    surfaceMat.emissive = matInfo.emissive == 0xffffffff ? mat.emissive : (surfaceMat.emissive * mat.emissive);    
     surfaceMat.transparent = mat.transparent;
     
     surfaceMat.emissive *= 20.f;
+    
+    if (!(matInfo.flags & MATERIAL_FLAG_BASECOLOR_ALPHA)) //hardcoded for bistro scene...
+    {
+        surfaceMat.opacity = matInfo.opacity == 0xffffffff ? mat.diffuse.a : (surfaceMat.opacity * mat.diffuse.a);
+    }
+    else
+    {
+        surfaceMat.opacity += 0.5f;
+    }
     
     if (!(matInfo.flags & MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR)) //weird convention on bistro scene...
     {   

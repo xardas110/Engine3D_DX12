@@ -270,12 +270,13 @@ bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5f,
 
     opacity = hitSurfaceMaterial.opacity;
     
-    if (hitSurfaceMaterial.opacity < cutOff)
+    
+    if (hitSurfaceMaterial.opacity < cutOff && materialInfo.flags & INSTANCE_ALPHA_CUTOFF)
         return true;
- 
+
     if (ANY_HIT_FLAGS_SKIP_BLEND & anyhitFlags && materialInfo.flags & INSTANCE_ALPHA_BLEND)
         return true;
-        
+
     return false;
 }
 
@@ -419,9 +420,11 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
     if (visibility > 0.f)
         directLight += EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
 
-    float3 ambientLight = hitSurfaceMaterial.albedo * ambientFactor * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+    float occlusion = REBLUR_FrontEnd_GetNormHitDist(traceResult.hit.minT, 0.0, g_RaytracingData.hitParams, 1.0);
 
-    radiance.rgb += troughput * (directLight + ambientLight + hitSurfaceMaterial.emissive);
+    float3 ambient = GetAmbientBRDF(V, hitSurfaceMaterial) * occlusion * ambientFactor;
+  
+    radiance.rgb += troughput * (directLight + ambient + hitSurfaceMaterial.emissive);
     
     /*  With RIS sampling
     Light selectedLight;
@@ -487,7 +490,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
     ray.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT; 
         
     TraceResult traceResult;
-    bool bResult = TraceDirectLight(ray, rng, 0.001f, DIRECT_LIGHT_FLAG_SAVE_OPACITY | DIRECT_LIGHT_FLAG_SKIP_OPAQUE | DIRECT_LIGHT_FLAG_SKIP_CUTOFF | DIRECT_LIGHT_FLAG_SKIP_SKY, troughput, radiance, traceResult);
+    bool bResult = TraceDirectLight(ray, rng, 0.20f, DIRECT_LIGHT_FLAG_SAVE_OPACITY | DIRECT_LIGHT_FLAG_SKIP_OPAQUE | DIRECT_LIGHT_FLAG_SKIP_CUTOFF | DIRECT_LIGHT_FLAG_SKIP_SKY, troughput, radiance, traceResult);
        
     if (!bResult)
         return bResult;
@@ -503,7 +506,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
         {           
             ray.desc.Origin = traceResult.hitPos;  
             troughput *= brdfWeight;
-            TraceDirectLight(ray, rng, 0.004f, DIRECT_LIGHT_FLAG_HARD_SHADOWS, troughput, radiance, traceResult);
+            TraceDirectLight(ray, rng, 0.20f, DIRECT_LIGHT_FLAG_HARD_SHADOWS, troughput, radiance, traceResult);
         }
     }
  
@@ -658,7 +661,7 @@ void IndirectLight(
         indirectRay.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
            
         TraceResult traceResult;
-        if (!TraceDirectLight(indirectRay, rngState, g_RaytracingData.numBounces > 1? 0.f : 0.00f, 0, troughput, indirectRadiance, traceResult))
+        if (!TraceDirectLight(indirectRay, rngState, g_RaytracingData.numBounces > 1? 0.f : 0.5f, 0, troughput, indirectRadiance, traceResult))
         {
             if (i == 0)
             {
@@ -674,10 +677,6 @@ void IndirectLight(
             indirectDiffuse.a = REBLUR_FrontEnd_GetNormHitDist(traceResult.hit.minT, viewZ, g_RaytracingData.hitParams, fi.roughness) * diffuseWeight;
             indirectSpecular.a = REBLUR_FrontEnd_GetNormHitDist(traceResult.hit.minT, viewZ, g_RaytracingData.hitParams, fi.roughness) * specWeight;
         }
-
-        float occlusion = REBLUR_FrontEnd_GetNormHitDist(traceResult.hit.minT, 0.0, g_RaytracingData.hitParams, 1.0);
-        float3 ambient = GetAmbientBRDF(V, currentMat) * occlusion;
-        indirectRadiance.rgb += troughput * ambient;
         
         currentMat = traceResult.mat;
         ray.Origin = traceResult.hitPos;

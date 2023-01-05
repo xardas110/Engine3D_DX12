@@ -21,6 +21,16 @@ bool SponzaExe::LoadContent()
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
 
     {
+        auto bathRoom = CreateEntity("BistroInterior");
+        auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroInterior.fbx",
+            MeshImport::BaseColorAlpha | MeshImport::AO_Rough_Metal_As_Spec_Tex | MeshImport::InvertMaterialNormals | MeshImport::ForceAlphaCutoff | MeshImport::AssimpTangent);
+        auto& trans = bathRoom.GetComponent<TransformComponent>();
+        trans.pos = { 0.f, 0.f, 0.f };
+        trans.scale = { 0.01f, 0.01f, 0.01f };
+        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
+    }  
+    /*
+    {
         auto bathRoom = CreateEntity("BistroExterior");
         auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroExterior.fbx", 
             MeshImport::BaseColorAlpha | MeshImport::AO_Rough_Metal_As_Spec_Tex | MeshImport::InvertMaterialNormals 
@@ -29,16 +39,7 @@ bool SponzaExe::LoadContent()
         trans.pos = { 0.f, 0.f, 0.f };
         trans.scale = { 0.01f, 0.01f, 0.01f };
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
-    } 
-    {
-        auto bathRoom = CreateEntity("BistroInterior");
-        auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroInterior.fbx",
-            MeshImport::BaseColorAlpha | MeshImport::AO_Rough_Metal_As_Spec_Tex | MeshImport::InvertMaterialNormals | MeshImport::ForceAlphaBlend | MeshImport::AssimpTangent);
-        auto& trans = bathRoom.GetComponent<TransformComponent>();
-        trans.pos = { 0.f, 0.f, 0.f };
-        trans.scale = { 0.01f, 0.01f, 0.01f };
-        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
-    }    
+    }   
     {
         auto mcLaren = CreateEntity("Mercedes");
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::ForceAlphaBlend);
@@ -47,8 +48,8 @@ bool SponzaExe::LoadContent()
         trans.pos = { 1.f, 0.23f, 12.f };
         trans.scale = { 1.f, 1.f, 1.f };
     }  
-    /*
-    * 
+   
+   
     {
         auto mcLaren = CreateEntity("Lambo");
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/lambo/scene.gltf", MeshImport::None);
@@ -57,16 +58,18 @@ bool SponzaExe::LoadContent()
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
     }
     */  
+
     /*
     {
         auto sponza = CreateEntity("sponza");
       
         sponza.AddComponent<StaticMeshComponent>("Assets/Models/sponza/sponza.fbx", 
-            MeshImport::HeightAsNormal | MeshImport::AmbientAsMetallic | MeshImport::ForceAlphaCutoff | MeshImport::IgnoreUserMaterial);
+            MeshImport::HeightAsNormal | MeshImport::AmbientAsMetallic | MeshImport::ForceAlphaCutoff | MeshImport::CustomTangent);
 
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.scale = { 0.015f, 0.015f, 0.015f };
     }
+    
     */
     /*
     {

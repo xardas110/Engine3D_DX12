@@ -230,6 +230,15 @@ float LengthSquared(float4 v)
     return dot(v, v);
 }
 
+// Taken out from NRD
+float GetSpecMagicCurve(float roughness)
+{
+    float f = 1.0 - exp2(-200.0 * roughness * roughness);
+    f *= Pow01(roughness, 0.5);
+
+    return f;
+}
+
 void ConvertBaseColorMetalnessToAlbedoRf0(float3 baseColor, float metalness, out float3 albedo, out float3 Rf0)
 {
     // TODO: ideally, STL_RF0_DIELECTRICS needs to be replaced with reflectance "STL_RF0_DIELECTRICS = 0.16 * reflectance * reflectance"
