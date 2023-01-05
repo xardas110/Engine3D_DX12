@@ -252,6 +252,12 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
     auto& directionalLight = game->m_DirectionalLight;
     directionalLight.UpdateUI();
 
+    {//Camera Settings
+        ImGui::Begin("Camera");
+        ImGui::Checkbox("Jitter", &game->m_Camera.bJitter);
+        ImGui::End();
+    }
+
     LightDataCB lightDataCB{};
     {//Lights
 

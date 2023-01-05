@@ -93,7 +93,7 @@ void Game::OnUpdate(UpdateEventArgs& e)
     halt.x -= -0.5f;
     halt.y -= -0.5f;
 
-    m_Camera.jitter = halt;
+    m_Camera.jitter = m_Camera.bJitter ? halt: DirectX::XMFLOAT2(0.f, 0.f);
 
     if (m_CameraController.forward > 0.f ||
         m_CameraController.backward > 0.f ||
