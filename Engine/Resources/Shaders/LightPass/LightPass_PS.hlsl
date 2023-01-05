@@ -399,30 +399,32 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
     traceResult.geoNormal = geometryNormal;
     traceResult.vert = hitSurface;
     traceResult.hitPos = rayHitOffset;
-                       
-    RayInfo shadowRayInfo;
-    shadowRayInfo.desc.TMin = 0.0f;
-    shadowRayInfo.desc.TMax = 1e10f;
-    shadowRayInfo.desc.Origin = rayHitOffset;
-    shadowRayInfo.desc.Direction = L;
-    shadowRayInfo.flags = 0;
-    shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
-         
-    float3 directLight = float3(0.f, 0.f, 0.f);
+                               
+    Light selectedLight;
+    float lightWeight;
+    if (SampleLightRIS(rng, X, geometryNormal, selectedLight, lightWeight))
+    {
+        float3 lightVector;
+        float lightDistance;
+        GetLightData(selectedLight, X, lightVector, lightDistance);
+        float3 L = normalize(lightVector);
     
-    if (!(flags & DIRECT_LIGHT_FLAG_HARD_SHADOWS))
-        shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(float2(Rand(rng), Rand(rng)), L, g_DirectionalLight.tanAngularRadius);
+        RayInfo shadowRayInfo;
+        shadowRayInfo.desc.TMin = 0.0f;
+        shadowRayInfo.desc.TMax = lightDistance;
+        shadowRayInfo.desc.Origin = X;
+        shadowRayInfo.desc.Direction = L;
+        shadowRayInfo.flags = 0;
+        shadowRayInfo.anyhitFlags = 0;
+        shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
+   
+        VisibilityResult visibilityResult;
+   
+        float visibility = TraceVisibility(shadowRayInfo, g_Scene, visibilityResult);
     
-    VisibilityResult visibilityResult;
-    float visibility = TraceVisibility(shadowRayInfo, g_Scene, visibilityResult);
-     
-    if (visibility > 0.f)
-    directLight += EvaluateBRDF(hitSurfaceMaterial.normal, L, V, hitSurfaceMaterial) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
+        radiance.rgb += EvaluateBRDF(traceResult.mat.normal, L, V, traceResult.mat) * (GetLightIntensityAtPoint(selectedLight, lightDistance) * lightWeight) * visibility;
+    }
     
-    float3 ambientLight = hitSurfaceMaterial.albedo * ambientFactor * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
-
-    radiance.rgb += troughput * (directLight + ambientLight + hitSurfaceMaterial.emissive);
-            
     return true;
 }
 
@@ -524,8 +526,7 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inou
     }
      
     Light selectedLight;
-    float lightWeight;
-    
+    float lightWeight;    
     if (SampleLightRIS(rng, X, fi.geometryNormal, selectedLight, lightWeight))
     {      
         float3 lightVector;
@@ -533,6 +534,8 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inou
         GetLightData(selectedLight, X, lightVector, lightDistance);
         float3 L = normalize(lightVector);
     
+        radiance.a = lightDistance;
+        
         RayInfo shadowRayInfo;
         shadowRayInfo.desc.TMin = 0.0f;
         shadowRayInfo.desc.TMax = lightDistance;
@@ -561,6 +564,7 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inou
         //radiance.rgb += fi.emissive; Has to be added at composition stage since shadow is seperated for denoising
         radiance.rgb += EvaluateBRDF(currentMat.normal, L, V, currentMat) * (GetLightIntensityAtPoint(selectedLight, lightDistance) * lightWeight) * visibility;
     }
+    
     return true;
 }
 
@@ -708,9 +712,8 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
         return OUT;
     }   
     float4 indirectLight = 0.f;
-    IndirectLight(TexCoord, rngState, viewZ, indirectLight, troughput, OUT.IndirectDiffuse, OUT.IndirectSpecular);
+    IndirectLight(TexCoord, rngState, viewZ, OUT.DirectLight, troughput, OUT.IndirectDiffuse, OUT.IndirectSpecular);
     
-
     if (DEBUG_FINAL_COLOR == g_RaytracingData.debugSettings)
     {
         return OUT;
