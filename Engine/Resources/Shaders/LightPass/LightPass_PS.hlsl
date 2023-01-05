@@ -658,11 +658,8 @@ void IndirectLight(
         indirectRay.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
            
         TraceResult traceResult;
-        if (!TraceDirectLight(indirectRay, rngState, g_RaytracingData.numBounces > 1? 0.f : 0.001f, 0, troughput, indirectRadiance, traceResult))
+        if (!TraceDirectLight(indirectRay, rngState, g_RaytracingData.numBounces > 1? 0.f : 0.025f, 0, troughput, indirectRadiance, traceResult))
         {
-            indirectDiffuse.rgb += indirectRadiance.rgb * diffuseWeight;
-            indirectSpecular.rgb += indirectRadiance.rgb * specWeight;      
-            
             if (i == 0)
             {
                 indirectDiffuse.a = REBLUR_FrontEnd_GetNormHitDist(50000.f, viewZ, g_RaytracingData.hitParams, fi.roughness) * diffuseWeight;
@@ -678,13 +675,13 @@ void IndirectLight(
             indirectSpecular.a = REBLUR_FrontEnd_GetNormHitDist(traceResult.hit.minT, viewZ, g_RaytracingData.hitParams, fi.roughness) * specWeight;
         }
 
-        indirectDiffuse.rgb += indirectRadiance * diffuseWeight;
-        indirectSpecular.rgb += indirectRadiance * specWeight;
-        
         currentMat = traceResult.mat;
         ray.Origin = traceResult.hitPos;
     }
     
+    indirectDiffuse.rgb = indirectRadiance * diffuseWeight;
+    indirectSpecular.rgb = indirectRadiance * specWeight;
+           
     float3 fenv = ApproxSpecularIntegralGGX(gBufferBRDF.specularF0, gBufferBRDF.alpha, gBufferBRDF.NdotV);
     float3 diffDemod = (1.f - fenv) * gBufferBRDF.diffuseReflectance;
     float3 specDemod = fenv;

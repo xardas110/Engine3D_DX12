@@ -27,7 +27,7 @@ private:
 	
 	std::string path = "";
 
-	unsigned int aiFlags = aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_Triangulate;
+	unsigned int aiFlags = aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_GenUVCoords;
 
 	struct AssimpTexture
 	{

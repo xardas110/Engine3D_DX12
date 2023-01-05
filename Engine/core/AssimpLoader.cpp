@@ -25,11 +25,6 @@ void GetTexturePath(aiTextureType type, aiMaterial* material, const std::string&
 
 AssimpLoader::AssimpLoader(const std::string& path, MeshImport::Flags flags)
 {
-    aiFlags &= ~aiProcess_CalcTangentSpace; // Use Mikktspace instead
-    aiFlags &= ~aiProcess_FindDegenerates; // Avoid converting degenerated triangles to lines
-    aiFlags &= ~aiProcess_OptimizeGraph; // Never use as it doesn't handle transforms with negative determinants
-    aiFlags &= ~aiProcess_OptimizeMeshes; // Avoid merging original meshes
-
     LoadModel(path, flags);
 }
 
@@ -166,7 +161,12 @@ void AssimpLoader::LoadModel(const std::string& path, MeshImport::Flags flags)
         std::cout << "Failed to load model from path: " << path << std::endl;
     }
 
-    scene = importer.ReadFile(path, aiFlags);
+    auto flagCopy = aiFlags;
+
+    if (flags & MeshImport::AssimpTangent)
+        flagCopy |= aiProcess_CalcTangentSpace;
+
+    scene = importer.ReadFile(path, flagCopy);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
     {

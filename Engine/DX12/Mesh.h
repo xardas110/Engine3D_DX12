@@ -65,7 +65,9 @@ namespace MeshImport
         BaseColorAlpha = 1 << 9,
         AO_Rough_Metal_As_Spec_Tex = 1 << 10,
         InvertNormals = 1 << 11, //Geometry normal only
-        InvertMaterialNormals = 1 << 12
+        InvertMaterialNormals = 1 << 12,
+        AssimpTangent = 1 << 13,
+        CustomTangent = 1 << 14,
     };
 }
 
@@ -204,7 +206,7 @@ public:
     static std::unique_ptr<Mesh> CreateTorus(CommandList& commandList, float diameter = 1, float thickness = 0.333f, size_t tessellation = 32, bool rhcoords = false);
     static std::unique_ptr<Mesh> CreatePlane(CommandList& commandList, float width = 1, float height = 1, bool rhcoords = false);
     //Used to create a mesh from a model
-    static std::unique_ptr<Mesh> CreateMesh(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords);
+    static std::unique_ptr<Mesh> CreateMesh(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords, bool calcTangent);
 
     virtual ~Mesh();
 
