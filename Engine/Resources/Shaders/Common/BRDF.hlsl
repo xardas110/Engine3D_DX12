@@ -809,7 +809,7 @@ float3 ApproxSpecularIntegralGGX(float3 specularReflectance, float alpha, float 
 
 float4 SampleSky(in float3 dir, in TextureCube<float4> cubemap, in SamplerState linearSampler)
 {
-    return cubemap.Sample(linearSampler, dir);
+    return float4(10.f, 10.f, 10.f, 1.f); //cubemap.Sample(linearSampler, dir);
 }
 
 void ReflectionDirection(float3 I, float3 N, inout float3 R)
