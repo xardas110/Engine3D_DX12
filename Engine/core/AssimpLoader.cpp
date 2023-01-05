@@ -25,6 +25,11 @@ void GetTexturePath(aiTextureType type, aiMaterial* material, const std::string&
 
 AssimpLoader::AssimpLoader(const std::string& path, MeshImport::Flags flags)
 {
+    aiFlags &= ~aiProcess_CalcTangentSpace; // Use Mikktspace instead
+    aiFlags &= ~aiProcess_FindDegenerates; // Avoid converting degenerated triangles to lines
+    aiFlags &= ~aiProcess_OptimizeGraph; // Never use as it doesn't handle transforms with negative determinants
+    aiFlags &= ~aiProcess_OptimizeMeshes; // Avoid merging original meshes
+
     LoadModel(path, flags);
 }
 
@@ -69,9 +74,10 @@ bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene, MeshImport::Flag
             { 
                 bool bInvertNormals = flags & MeshImport::InvertNormals;
 
-                vertex.normal.x = bInvertNormals ? -mesh->mNormals[i].x: mesh->mNormals[i].x;
+                vertex.normal.x = bInvertNormals ? -mesh->mNormals[i].x:  mesh->mNormals[i].x;
                 vertex.normal.y = bInvertNormals ? -mesh->mNormals[i].y : mesh->mNormals[i].y;
                 vertex.normal.z = bInvertNormals ? -mesh->mNormals[i].z : mesh->mNormals[i].z;
+
             }
         }
         {	//Texture coords

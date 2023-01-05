@@ -19,7 +19,7 @@ bool SponzaExe::LoadContent()
 {
 
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
-   /*
+    /*
     {
         auto bathRoom = CreateEntity("BistroExterior");
         auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroExterior.fbx", 
@@ -29,8 +29,7 @@ bool SponzaExe::LoadContent()
         trans.scale = { 0.01f, 0.01f, 0.01f };
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
     }     
-    */
-    /*
+   
     {
         auto bathRoom = CreateEntity("BistroInterior");
         auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroInterior.fbx",
@@ -38,18 +37,18 @@ bool SponzaExe::LoadContent()
         auto& trans = bathRoom.GetComponent<TransformComponent>();
         trans.pos = { 0.f, 0.f, 0.f };
         trans.scale = { 0.01f, 0.01f, 0.01f };
-        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
+        //trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
     }  
     {
         auto mcLaren = CreateEntity("Mercedes");
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::ForceAlphaBlend);
         auto& trans = mcLaren.GetComponent<TransformComponent>();
-        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);      
-        trans.pos = { 1.f, 0.3f, 12.f };
+        //trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
+        trans.pos = { 1.f, 0.23f, 12.f };
         trans.scale = { 1.f, 1.f, 1.f };
     } 
-    */
-    /*
+    
+  
     
     {
         auto mcLaren = CreateEntity("Lambo");
@@ -94,7 +93,7 @@ bool SponzaExe::LoadContent()
     std::cout << "game init" << std::endl;
 
     Material materialEmissive;
-    materialEmissive.diffuse = { 1.f, 1.f, 1.f, 1.f };
+    materialEmissive.diffuse = { 20.f, 20.f, 20.f, 1.f };
     materialEmissive.emissive = { 0.f, 0.f, 0.f };
     materialEmissive.roughness = 0.f;
     materialEmissive.metallic = 1.f;
@@ -107,20 +106,22 @@ bool SponzaExe::LoadContent()
     material.SetMaterial(materialID);
     material.SetFlags(INSTANCE_LIGHT);
 
-    //for (size_t i = 0; i < 20; i++)
+    for (size_t i = 0; i < 2; i++)
     {
         auto ent = CreateEntity("testSphere: ");
         auto& sm = ent.AddComponent<MeshComponent>(L"DefaultSphere");
         sm.SetMaterialInstance(material);
         auto& trans = ent.GetComponent<TransformComponent>();
         trans.scale = { 2.f, 2.f, 2.f };
-        float x = -10;
-        float y = 10;
+        float x = -25 + rand() % 50;
+        float y = 5;
         float z = -0.5f;
         trans.pos = { x, y, z };
         lights.emplace_back((std::uint32_t)ent.GetId());
     }
     
+    return true;
+
     {
         auto ent = CreateEntity("DxCube");
         auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");

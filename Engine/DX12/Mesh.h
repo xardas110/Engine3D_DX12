@@ -65,7 +65,7 @@ namespace MeshImport
         BaseColorAlpha = 1 << 9,
         AO_Rough_Metal_As_Spec_Tex = 1 << 10,
         InvertNormals = 1 << 11, //Geometry normal only
-        InvertMaterialNormals = 1 << 12,
+        InvertMaterialNormals = 1 << 12
     };
 }
 

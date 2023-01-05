@@ -496,6 +496,9 @@ std::unique_ptr<Mesh> Mesh::CreatePlane(CommandList& commandList, float width, f
 std::unique_ptr<Mesh> Mesh::CreateMesh(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords)
 {
     std::unique_ptr<Mesh> mesh(new Mesh());
+
+    CreateTangentAndBiTangent(vertices, indices);
+
     mesh->Initialize(commandList, vertices, indices, rhcoords);
     return mesh;
 }

@@ -444,7 +444,7 @@ float3 EvaluateBRDF(in float3 N, in float3 L, in float3 V, in SurfaceMaterial ma
     float3 specular = EvalSpecular(data);
     float3 diffuse = EvalDiffuse(data);
 
-    return (float3(1.0f, 1.0f, 1.0f) - data.F) * diffuse + specular;
+    return diffuse + specular;
 }
 
 float3 EvaluateDiffuseBRDF(in BRDFData data)

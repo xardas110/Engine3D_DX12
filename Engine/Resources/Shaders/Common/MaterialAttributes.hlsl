@@ -292,7 +292,7 @@ SurfaceMaterial GetSurfaceMaterial(
     surface.ao = GetAO(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
     float4 baseColor = GetAlbedo(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType); //* surface.ao;
 
-    surface.albedo = srgbToLinear(baseColor.rgb);
+    surface.albedo = SrgbToLinear(baseColor.rgb);
 
     surface.emissive = GetEmissive(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
     surface.height = GetHeight(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
@@ -321,8 +321,8 @@ SurfaceMaterial GetSurfaceMaterial(
     surface.normal = GetNormal(matInfo, v.textureCoordinate, bMatHasNormal, inSampler, globalTextureData, mipLevel, sampleType);
     
     if (bMatHasNormal == true)
-    {
-        surface.normal = TangentToWorldNormal(v.tangent, v.bitangent, v.normal, surface.normal, model);
+    {      
+        surface.normal = TangentToWorldNormal(v.tangent, v.bitangent, v.normal, surface.normal, model);       
         surface.normal *= matInfo.flags & MATERIAL_FLAG_INVERT_NORMALS ? -1.f : 1.f;
     }                          
     else

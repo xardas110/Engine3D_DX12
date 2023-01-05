@@ -200,7 +200,9 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
     auto& materials = assetManager->m_MaterialManager.materialData.materials;
     auto& meshInstance = assetManager->m_MeshManager.instanceData;
     auto& textures = assetManager->m_TextureManager.textureData.textures;
-    auto meshInstances = GetMeshInstances(game->registry);
+
+    std::vector<MeshInstanceWrapper> pointLights;
+    auto meshInstances = GetMeshInstances(game->registry, &pointLights);
 
     prevTrans.resize(meshInstances.size());
 
@@ -249,6 +251,30 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
 
     auto& directionalLight = game->m_DirectionalLight;
     directionalLight.UpdateUI();
+
+    LightDataCB lightDataCB{};
+    {//Lights
+
+        //Populate directional light first, to make sure it will always be importance sampled
+        lightDataCB.lights[0].type = LIGHT_DIRECTIONAL;
+        XMStoreFloat3(&lightDataCB.lights[0].intensity, directionalLight.GetData().color * directionalLight.GetData().color.m128_f32[3]);
+        XMStoreFloat3(&lightDataCB.lights[0].pos, -directionalLight.GetData().direction);
+        lightDataCB.numLights++;
+
+        for (size_t i = 0; i < pointLights.size(); i++)
+        {
+            if (i + 1 >= MAX_LIGHTS) break;
+
+            auto& ptLight = pointLights[i];
+            lightDataCB.numLights++;
+
+            auto& mat = ptLight.instance.GetUserMaterial();
+
+            lightDataCB.lights[i+1].type = LIGHT_POINT;
+            lightDataCB.lights[i+1].intensity = XMFLOAT3(20.f, 20.f, 20.f);
+            XMStoreFloat3(&lightDataCB.lights[i+1].pos, ptLight.trans.pos);
+        }
+    }
 
     {// Clear the render targets.
         PIXBeginEvent(gfxCommandList.Get(), 0, L"Clear buffers");
@@ -330,7 +356,6 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
             objectCB.model = transform.GetTransform();
 
             objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj * jitterMat;
-            objectCB.jitteredMVP = objectCB.model * objectCB.view * objectCB.proj * jitterMat;
             objectCB.prevMVP = prevTrans[i].GetTransform() * cameraCB.prevView * cameraCB.prevProj * jitterMat;
 
             objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
@@ -439,6 +464,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::CameraCB, cameraCB);
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::DirectionalLightCB, directionalLight.GetData());
         commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::RaytracingDataCB, rtData);
+        commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::LightDataCB, lightDataCB);
 
         commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_Skybox->heap.heap.Get());
         gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::Cubemap, m_Skybox->GetSRVView());

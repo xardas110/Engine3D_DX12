@@ -3,6 +3,7 @@
 
 #define hlsl
 #include "../Common/TypesCompat.h"
+#include "../Common/MaterialAttributes.hlsl"
 
 // Linear Tonemapping
 // Just normalizing based on some maximum luminance
@@ -38,29 +39,22 @@ float3 ACESFilmic(float3 x, float A, float B, float C, float D, float E, float F
     return ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - (E / F);
 }
 
-float Tonemap_Unreal(float x)
+float3 _UnchartedCurve(float3 color)
 {
-    // Unreal 3, Documentation: "Color Grading"
-    // Adapted to be close to Tonemap_ACES, with similar range
-    // Gamma 2.2 correction is baked in, don't use with sRGB conversion!
-    return x / (x + 0.155) * 1.019;
+    float A = 0.22; // Shoulder Strength
+    float B = 0.3; // Linear Strength
+    float C = 0.1; // Linear Angle
+    float D = 0.2; // Toe Strength
+    float E = 0.01; // Toe Numerator
+    float F = 0.3; // Toe Denominator
+
+    return saturate(((color * (A * color + C * B) + D * E) / (color * (A * color + B) + D * F)) - (E / F));
 }
 
-float3 Uncharted2ToneMapping(in float3 color, in TonemapCB p)
+float3 HdrToLinear_Uncharted(float3 color)
 {
-    float A = 0.15;
-    float B = 0.50;
-    float C = 0.10;
-    float D = 0.20;
-    float E = 0.02;
-    float F = 0.30;
-    float W = 11.2;
-    float exposure = 2.;
-    color *= exposure;
-    color = ((color * (A * color + C * B) + D * E) / (color * (A * color + B) + D * F)) - E / F;
-    float white = ((W * (A * W + C * B) + D * E) / (W * (A * W + B) + D * F)) - E / F;
-    color /= white;
-    return color;
+            // John Hable's Uncharted 2 filmic tone map (http://filmicgames.com/archives/75)
+    return saturate(_UnchartedCurve(color) / _UnchartedCurve(11.2).x);
 }
 
 float3 ApplyTonemap(in float3 hdr, in TonemapCB tonemapParamaters)
@@ -86,12 +80,11 @@ float3 ApplyTonemap(in float3 hdr, in TonemapCB tonemapParamaters)
               ACESFilmic(tonemapParamaters.LinearWhite, tonemapParamaters.A, tonemapParamaters.B, tonemapParamaters.C, tonemapParamaters.D, tonemapParamaters.E, tonemapParamaters.F);
             break;
         case TM_Uncharted:
-            SDR = Uncharted2ToneMapping(hdr, tonemapParamaters);
+            SDR = HdrToLinear_Uncharted(hdr);
             break;
     }
 
-    return pow(abs(SDR), 1.0f / tonemapParamaters.Gamma);
-
+    return LinearToSrgb(SDR);
 }
 
 #endif

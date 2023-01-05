@@ -58,7 +58,10 @@ using namespace DirectX;
 #define LIGHT_POINT 1
 #define LIGHT_SPOT 2
 #define LIGHT_DIRECTIONAL 3
-#define MAX_LIGHTS 10
+#define MAX_LIGHTS 4
+
+// Number of candidates used for resampling of analytical lights
+#define RIS_CANDIDATES_LIGHTS MAX_LIGHTS
 
 //0-7 color targets and 8 is depth
 #define GBUFFER_ALBEDO 0
@@ -148,7 +151,7 @@ inline float BeckmannAlphaToOrenNayarRoughness(float alpha)
 struct TonemapCB
 {
     // The method to use to perform tonemapping.
-    UINT TonemapMethod COMPAT_ONE;
+    UINT TonemapMethod COMPAT_INT(4);
     // Exposure should be expressed as a relative expsure value (-2, -1, 0, +1, +2 )
     float Exposure COMPAT_FLOAT(0.f);
 
@@ -191,7 +194,7 @@ struct TonemapCB
 
     float minLogLuminance COMPAT_FLOAT(-10.f); // TODO: figure out how to set these properly
     float maxLogLuminamce COMPAT_FLOAT(4.f);
-    int bEyeAdaption COMPAT_INT(1);
+    int bEyeAdaption COMPAT_INT(0);
     float pad2;
 };
 
@@ -200,15 +203,15 @@ struct Light
     XMFLOAT3 pos;
     UINT type;
     XMFLOAT3 intensity;
-    float pad;
+    UINT pad;
 };
 
 struct LightDataCB
 {
     UINT numLights;
-    UINT meshID;
-    UINT materialID;
-    UINT pad2;
+    UINT p0;
+    UINT p1;
+    UINT p2;
 
     Light lights[MAX_LIGHTS];
 };
@@ -293,8 +296,6 @@ struct ObjectCB
     XMMATRIX prevModel;
     XMMATRIX prevMVP;
     XMVECTOR objRotQuat;
-
-    XMMATRIX jitteredMVP;
 };
 
 struct MeshVertex

@@ -45,6 +45,8 @@ static float reflectiveAmbient = 0.005f;
 
 #define ANY_HIT_FLAGS_SKIP_BLEND (1 << 0)
 
+#define FLT_MAX 3.402823466e+38F
+
 struct PixelShaderOutput
 {
     float4 DirectLight      : SV_TARGET0;
@@ -96,22 +98,114 @@ float3 SphericalDirectionalLightRayDirection(in float2 rect, in float3 direction
     return normalize(direction + p.x * tangent + p.y * bitangent);
 }
 
-/*
+//Raytracing gems II Chapter 14, 20, 22
+// Returns intensity of given light at specified distance
+float3 GetLightIntensityAtPoint(Light light, float distance)
+{
+    if (light.type == LIGHT_POINT)
+    {
+		// Cem Yuksel's improved attenuation avoiding singularity at distance=0
+		// Source: http://www.cemyuksel.com/research/pointlightattenuation/
+        const float radius = 0.5f; //< We hardcode radius at 0.5, but this should be a light parameter
+        const float radiusSquared = radius * radius;
+        const float distanceSquared = distance * distance;
+        const float attenuation = 2.0f / (distanceSquared + radiusSquared + distance * sqrt(distanceSquared + radiusSquared));
+
+        return light.intensity * attenuation;
+    }
+    else if (light.type == LIGHT_DIRECTIONAL)
+    {
+        return light.intensity;
+    }
+    else
+    {
+        return float3(1.0f, 0.0f, 1.0f);
+    }
+}
+
+// Decodes light vector and distance from Light structure based on the light type
+void GetLightData(Light light, float3 hitPosition, out float3 lightVector, out float lightDistance)
+{
+    if (light.type == LIGHT_POINT)
+    {
+        lightVector = light.pos - hitPosition;
+        lightDistance = length(lightVector);
+    }
+    else if (light.type == LIGHT_DIRECTIONAL)
+    {
+        lightVector = light.pos; //< We use position field to store direction for directional light
+        lightDistance = FLT_MAX;
+    }
+    else
+    {
+        lightDistance = FLT_MAX;
+        lightVector = float3(0.0f, 1.0f, 0.0f);
+    }
+}
+
+//Raytracing gems II Chapter 14, 20, 22
 bool SampleLightUniform(inout RngStateType rngState, float3 hitPosition, float3 surfaceNormal, out Light light, out float lightSampleWeight)
 {
-
-    if (gData.lightCount == 0)
+    if (g_LightData.numLights == 0)
         return false;
 
-    uint randomLightIndex = min(gData.lightCount - 1, uint(rand(rngState) * gData.lightCount));
-    light = gData.lights[randomLightIndex];
+    uint randomLightIndex = min(g_LightData.numLights - 1, uint(Rand(rngState) * g_LightData.numLights));
+    light = g_LightData.lights[randomLightIndex];
 
 	// PDF of uniform distribution is (1/light count). Reciprocal of that PDF (simply a light count) is a weight of this sample
-    lightSampleWeight = float(gData.lightCount);
+    lightSampleWeight = float(g_LightData.numLights);
 
     return true;
 }
-*/
+
+//Raytracing gems II Chapter 14, 20, 22
+bool SampleLightRIS(inout RngStateType rngState, float3 hitPosition, float3 surfaceNormal, out Light selectedSample, out float lightSampleWeight)
+{	
+    if (g_LightData.numLights == 0)
+        return false;
+
+    selectedSample = (Light) 0;
+    float totalWeights = 0.0f;
+    float samplePdfG = 0.0f;
+
+    for (int i = 0; i < RIS_CANDIDATES_LIGHTS; i++)
+    {
+        float candidateWeight;
+        Light candidate;
+        if (SampleLightUniform(rngState, hitPosition, surfaceNormal, candidate, candidateWeight))
+        {
+
+            float3 lightVector;
+            float lightDistance;
+            GetLightData(candidate, hitPosition, lightVector, lightDistance);
+
+			// Ignore backfacing light
+            float3 L = normalize(lightVector);
+            if (dot(surfaceNormal, L) < 0.00001f)
+                continue;
+
+            float candidatePdfG = Luminance(GetLightIntensityAtPoint(candidate, length(lightVector)));
+            const float candidateRISWeight = candidatePdfG * candidateWeight;
+
+            totalWeights += candidateRISWeight;
+            if (Rand(rngState) < (candidateRISWeight / totalWeights))
+            {
+                selectedSample = candidate;
+                samplePdfG = candidatePdfG;
+            }
+        }
+    }
+
+    if (totalWeights == 0.0f)
+    {
+        return false;
+    }
+    else
+    {
+        lightSampleWeight = (totalWeights / float(RIS_CANDIDATES_LIGHTS)) / samplePdfG;
+        return true;
+    }
+}
 
 // https://en.wikipedia.org/wiki/Ordered_dithering
 uint Bayer4x4ui( uint2 samplePos, uint frameIndex)
@@ -422,38 +516,51 @@ bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inou
     X = OffsetRay(X, fi.geometryNormal) + fi.geometryNormal * 0.05f;
     
     float3 V = normalize(g_Camera.pos.rgb - X.rgb);
-    float3 L = -g_DirectionalLight.direction.rgb;
-    
+
     if (fi.shaderModel == SM_SKY)
     {
         radiance.rgb = SampleSky(-V, g_Cubemap, g_LinearClampSampler);
         return false;
     }
      
-    RayInfo shadowRayInfo;
-    shadowRayInfo.desc.TMin = 0.0f;
-    shadowRayInfo.desc.TMax = 10000.f;
-    shadowRayInfo.desc.Origin = X;
-    shadowRayInfo.desc.Direction = L;
-    shadowRayInfo.flags = 0;
-    shadowRayInfo.anyhitFlags = 0;
-    shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
+    Light selectedLight;
+    float lightWeight;
+    
+    if (SampleLightRIS(rng, X, fi.geometryNormal, selectedLight, lightWeight))
+    {      
+        float3 lightVector;
+        float lightDistance;
+        GetLightData(selectedLight, X, lightVector, lightDistance);
+        float3 L = normalize(lightVector);
+    
+        RayInfo shadowRayInfo;
+        shadowRayInfo.desc.TMin = 0.0f;
+        shadowRayInfo.desc.TMax = lightDistance;
+        shadowRayInfo.desc.Origin = X;
+        shadowRayInfo.desc.Direction = L;
+        shadowRayInfo.flags = 0;
+        shadowRayInfo.anyhitFlags = 0;
+        shadowRayInfo.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
    
-    uint2 pixelPos = texCoords * g_Camera.resolution;
-    float2 rnd = GetBlueNoise(pixelPos, 0, 0);
+        uint2 pixelPos = texCoords * g_Camera.resolution;
+        float2 rnd = GetBlueNoise(pixelPos, 0, 0);
 
-    shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(rnd, L, g_DirectionalLight.tanAngularRadius);
+        //shadowRayInfo.desc.Direction = SphericalDirectionalLightRayDirection(rnd, L, g_DirectionalLight.tanAngularRadius);
     
-    VisibilityResult visibilityResult;
+        VisibilityResult visibilityResult;
    
-    float visibility = TraceVisibility(shadowRayInfo, g_Scene, visibilityResult);
+        float visibility = TraceVisibility(shadowRayInfo, g_Scene, visibilityResult);
     
-    if (visibilityResult.bHit)
-        shadowData = SIGMA_FrontEnd_PackShadow(viewZ, visibilityResult.hitT, g_DirectionalLight.tanAngularRadius);
+        /*
+        if (visibilityResult.bHit)
+            shadowData = SIGMA_FrontEnd_PackShadow(viewZ, visibilityResult.hitT, 0.f);
+        else
+            shadowData = SIGMA_FrontEnd_PackShadow(viewZ, lightDistance, 0.f);
+        */
     
-    //radiance.rgb += fi.emissive; Has to be added at composition stage since shadow is seperated for denoising
-    radiance.rgb += EvaluateBRDF(currentMat.normal, L, V, currentMat) * g_DirectionalLight.color.w * g_DirectionalLight.color.rgb;
-      
+        //radiance.rgb += fi.emissive; Has to be added at composition stage since shadow is seperated for denoising
+        radiance.rgb += EvaluateBRDF(currentMat.normal, L, V, currentMat) * (GetLightIntensityAtPoint(selectedLight, lightDistance) * lightWeight) * visibility;
+    }
     return true;
 }
 
@@ -579,8 +686,6 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 {
     PixelShaderOutput OUT;
         
-    TexCoord += g_Camera.jitter;
-    
     uint2 pixelCoords = g_Camera.resolution * TexCoord;
 
     float viewZ = g_GBufferHeap[GBUFFER_LINEAR_DEPTH].Sample(g_NearestRepeatSampler, TexCoord).r;
@@ -591,7 +696,6 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     float3 troughput = float3(1.f, 1.f, 1.f);
     
     OUT.DirectLight = float4(0.f, 0.f, 0.f, 0.f);
-    OUT.ShadowData = SIGMA_FrontEnd_PackShadow(viewZ, NRD_FP16_MAX, g_DirectionalLight.tanAngularRadius);
     OUT.IndirectDiffuse = float4(0.f, 0.f, 0.f, 0.f);
     OUT.IndirectSpecular = float4(0.f, 0.f, 0.f, 0.f); 
     OUT.TransparentColor = float4(0.f, 0.f, 0.f, 0.f);
