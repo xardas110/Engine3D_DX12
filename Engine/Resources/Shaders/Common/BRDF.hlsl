@@ -214,6 +214,61 @@ struct BRDFData
     bool bVbackFacing;
     bool bLbackFacing;
 };
+//TODO insert into math header
+float LengthSquared(float2 v)
+{
+    return dot(v, v);
+}
+
+float LengthSquared(float3 v)
+{
+    return dot(v, v);
+}
+
+float LengthSquared(float4 v)
+{
+    return dot(v, v);
+}
+
+void ConvertBaseColorMetalnessToAlbedoRf0(float3 baseColor, float metalness, out float3 albedo, out float3 Rf0)
+{
+    // TODO: ideally, STL_RF0_DIELECTRICS needs to be replaced with reflectance "STL_RF0_DIELECTRICS = 0.16 * reflectance * reflectance"
+    // see https://google.github.io/filament/Filament.html#toc4.8
+    // see https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf (page 13)
+    albedo = baseColor * saturate(1.0 - metalness);
+    Rf0 = lerp(MIN_F0, baseColor, metalness);
+}
+
+// Shlick's approximation for Ross BRDF - makes Fresnel converge to less than 1.0 when NoV is low
+// https://hal.inria.fr/inria-00443630/file/article-1.pdf
+float3 EnvironmentTerm_Ross(float3 Rf0, float NoV, float linearRoughness)
+{
+    float m = linearRoughness * linearRoughness;
+
+    float f = Pow01(1.0 - NoV, 5.0 * exp(-2.69 * m)) / (1.0 + 22.7 * Pow01(m, 1.5));
+
+    float scale = 1.0 - f;
+    float bias = f;
+
+    return saturate(Rf0 * scale + bias);
+}
+
+//https://github.com/NVIDIAGameWorks/RayTracingDenoiser
+float3 GetAmbientBRDF(in float3 V, SurfaceMaterial materialProps, bool approximate = false)
+{
+    float3 albedo, Rf0;
+    ConvertBaseColorMetalnessToAlbedoRf0(materialProps.albedo, materialProps.metallic, albedo, Rf0);
+
+    float3 Fenv = Rf0;
+    if (!approximate)
+    {
+        float NoV = abs(dot(materialProps.normal, V));
+        Fenv = EnvironmentTerm_Ross(Rf0, NoV, materialProps.roughness);
+    }
+
+    float3 ambBRDF = albedo * (1.0 - Fenv) + Fenv;
+    return ambBRDF;
+}
 
 float3 BaseColorToSpecularF0(float3 baseColor, float metallic)
 {

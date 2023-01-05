@@ -658,7 +658,7 @@ void IndirectLight(
         indirectRay.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
            
         TraceResult traceResult;
-        if (!TraceDirectLight(indirectRay, rngState, g_RaytracingData.numBounces > 1? 0.f : 0.025f, 0, troughput, indirectRadiance, traceResult))
+        if (!TraceDirectLight(indirectRay, rngState, g_RaytracingData.numBounces > 1? 0.f : 0.00f, 0, troughput, indirectRadiance, traceResult))
         {
             if (i == 0)
             {
@@ -675,6 +675,10 @@ void IndirectLight(
             indirectSpecular.a = REBLUR_FrontEnd_GetNormHitDist(traceResult.hit.minT, viewZ, g_RaytracingData.hitParams, fi.roughness) * specWeight;
         }
 
+        float occlusion = REBLUR_FrontEnd_GetNormHitDist(traceResult.hit.minT, 0.0, g_RaytracingData.hitParams, 1.0);
+        float3 ambient = GetAmbientBRDF(V, currentMat) * occlusion;
+        indirectRadiance.rgb += troughput * ambient;
+        
         currentMat = traceResult.mat;
         ray.Origin = traceResult.hitPos;
     }
