@@ -29,7 +29,8 @@ bool SponzaExe::LoadContent()
         trans.scale = { 0.01f, 0.01f, 0.01f };
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
     }     
-   
+   */
+   /*
     {
         auto bathRoom = CreateEntity("BistroInterior");
         auto& sm = bathRoom.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroInterior.fbx",
@@ -37,8 +38,9 @@ bool SponzaExe::LoadContent()
         auto& trans = bathRoom.GetComponent<TransformComponent>();
         trans.pos = { 0.f, 0.f, 0.f };
         trans.scale = { 0.01f, 0.01f, 0.01f };
-        //trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
+        trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
     }  
+   
     {
         auto mcLaren = CreateEntity("Mercedes");
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::ForceAlphaBlend);
@@ -46,10 +48,7 @@ bool SponzaExe::LoadContent()
         //trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
         trans.pos = { 1.f, 0.23f, 12.f };
         trans.scale = { 1.f, 1.f, 1.f };
-    } 
-    
-  
-    
+    }  
     {
         auto mcLaren = CreateEntity("Lambo");
         auto& sm = mcLaren.AddComponent<StaticMeshComponent>("Assets/Models/lambo/scene.gltf", MeshImport::None);
@@ -57,10 +56,7 @@ bool SponzaExe::LoadContent()
         trans.pos = { 10.f, 0.f, 0.f };
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
     }
-    */
-    
-   
-   
+    */  
     {
         auto sponza = CreateEntity("sponza");
       
@@ -69,7 +65,8 @@ bool SponzaExe::LoadContent()
 
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.scale = { 0.015f, 0.015f, 0.015f };
-    }
+    }/*
+    */
     /*
     {
         auto modelEnt = CreateEntity("Mirror");
@@ -83,8 +80,9 @@ bool SponzaExe::LoadContent()
     }
     */
     /*
+    * 
     */
-
+    return true;
     meshManager.CreateCube();
     meshManager.CreateSphere();
    // meshManager.CreateTorus();
