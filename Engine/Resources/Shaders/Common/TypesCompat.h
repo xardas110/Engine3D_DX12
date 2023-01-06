@@ -350,7 +350,7 @@ struct RaytracingDataCB
     int numBounces COMPAT_INT(2);
     int frameIndex;
     float pad;
-    int pad3;
+    float oneBounceAmbientStrength;
     XMFLOAT4 hitParams;
 };
 

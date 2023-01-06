@@ -19,6 +19,21 @@ const D3D12_INPUT_ELEMENT_DESC VertexPositionNormalTexture::InputElements[] =
     { "BITANGENT",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 };
 
+// Helper for flipping winding of geometric primitives for LH vs. RH coords
+static void ReverseWinding(IndexCollection32& indices, VertexCollection& vertices)
+{
+    assert((indices.size() % 3) == 0);
+    for (auto it = indices.begin(); it != indices.end(); it += 3)
+    {
+        std::swap(*it, *(it + 2));
+    }
+
+    for (auto it = vertices.begin(); it != vertices.end(); ++it)
+    {
+        it->textureCoordinate.x = (1.f - it->textureCoordinate.x);
+    }
+}
+
 void CreateTangentAndBiTangent(VertexCollection& vertices, IndexCollection32& indices)
 {
     for (size_t j = 0; j < indices.size(); j += 3)
@@ -214,6 +229,8 @@ std::unique_ptr<Mesh> Mesh::CreateSphere(CommandList& commandList, float diamete
     // Create the primitive object.
     std::unique_ptr<Mesh> mesh(new Mesh());
 
+    ReverseWinding(indices, vertices);
+
     mesh->Initialize(commandList, vertices, indices, rhcoords);
 
     return mesh;
@@ -279,6 +296,8 @@ std::unique_ptr<Mesh> Mesh::CreateCube(CommandList& commandList, float size, boo
 
     // Create the primitive object.
     std::unique_ptr<Mesh> mesh(new Mesh());
+
+    ReverseWinding(indices, vertices);
 
     mesh->Initialize(commandList, vertices, indices, rhcoords);
 

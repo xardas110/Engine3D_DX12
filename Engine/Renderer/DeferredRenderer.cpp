@@ -240,11 +240,15 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
     auto& hitParams = m_NvidiaDenoiser->denoiserSettings.settings.hitDistanceParameters;
     rtData.hitParams = { hitParams.A, hitParams.B, hitParams.C, hitParams.D};
     rtData.frameIndex = window.m_CurrentBackBufferIndex;
+
     static int numBounces = 1;
+    static float bounceAmbientStrength = 0.5f;
 
     ImGui::Begin("Raytracing Settings");
     ImGui::SliderInt("Num Bounces", &numBounces, 0, 10);
+    ImGui::SliderFloat("1 bounce ambient strength", &bounceAmbientStrength, 0.f, 1.f);
     rtData.numBounces = numBounces;
+    rtData.oneBounceAmbientStrength = bounceAmbientStrength;
     ImGui::End();
 
     XMStoreFloat3(&cameraCB.pos, camera->get_Translation());

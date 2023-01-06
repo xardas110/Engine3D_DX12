@@ -67,7 +67,6 @@ private:
 		MeshID GetMeshID(const std::wstring& name);
 		const std::wstring& GetName(MeshID id);
 
-
 		void IncrementRef(const MeshID meshID);
 		void DecrementRef(const MeshID meshID);
 

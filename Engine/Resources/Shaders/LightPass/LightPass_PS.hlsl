@@ -661,7 +661,7 @@ void IndirectLight(
         indirectRay.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT;
            
         TraceResult traceResult;
-        if (!TraceDirectLight(indirectRay, rngState, g_RaytracingData.numBounces > 1? 0.f : 0.5f, 0, troughput, indirectRadiance, traceResult))
+        if (!TraceDirectLight(indirectRay, rngState, g_RaytracingData.numBounces > 1? 0.f : g_RaytracingData.oneBounceAmbientStrength, 0, troughput, indirectRadiance, traceResult))
         {
             if (i == 0)
             {
