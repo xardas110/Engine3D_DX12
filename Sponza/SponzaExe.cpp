@@ -54,27 +54,133 @@ bool SponzaExe::LoadContent()
     meshManager.CreateSphere();
     // meshManager.CreateTorus();
 
-    Material materialEmissive;
-    materialEmissive.diffuse = { 1.f, 1.f, 1.f, 1.f };
-    materialEmissive.emissive = { 0.f, 0.f, 0.f };
-    materialEmissive.roughness = 0.5f;
-    materialEmissive.metallic = 0.5f;
+    { //floor
+        Material materialEmissive;
+        materialEmissive.diffuse = { 1.f, 1.f, 1.f, 1.f };
+        materialEmissive.emissive = { 0.f, 0.f, 0.f };
+        materialEmissive.roughness = 0.8f;
+        materialEmissive.metallic = 0.5f;
 
-    auto materialID = MaterialInstance::CreateMaterial(L"Emissive Material", materialEmissive);
+        auto materialID = MaterialInstance::CreateMaterial(L"Emissive Material", materialEmissive);
 
-    MaterialInstance material;
-    MaterialInfo matInfo;
+        MaterialInstance material;
+        MaterialInfo matInfo;
 
-    material.CreateMaterialInstance(L"DefaultMaterialInstance", matInfo);
-    material.SetMaterial(materialID);
-    material.SetFlags(INSTANCE_OPAQUE);
+        material.CreateMaterialInstance(L"DefaultMaterialInstance", matInfo);
+        material.SetMaterial(materialID);
+        material.SetFlags(INSTANCE_OPAQUE);
 
-    auto ent = CreateEntity("Test Cube: ");
-    auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
-    sm.SetMaterialInstance(material);
-    auto& trans = ent.GetComponent<TransformComponent>();
-    trans.scale = { 20.f, 2.f, 20.f };
-    
+        {
+            auto ent = CreateEntity("Test Cube: ");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+            sm.SetMaterialInstance(material);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 100.f, 2.f, 100.f };
+        }
+    }
+    {//walls
+        Material material;
+        material.diffuse = { 1.f, 1.f, 0.f, 1.f };
+        material.emissive = { 0.f, 0.f, 0.f };
+        material.roughness = 0.5f;
+        material.metallic = 0.5f;
+
+        auto materialID = MaterialInstance::CreateMaterial(L"WallMaterial", material);
+
+        MaterialInstance materialInstance;
+        MaterialInfo matInfo;
+
+        materialInstance.CreateMaterialInstance(L"WallMaterialInstance", matInfo);
+        materialInstance.SetMaterial(materialID);
+        materialInstance.SetFlags(INSTANCE_OPAQUE);
+
+        {
+            auto ent = CreateEntity("Test Cube: ");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+            sm.SetMaterialInstance(materialInstance);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 2.f, 30.f, 2.f };
+            trans.pos = { -20.f, 15.f, 0.f };
+        }
+        {
+            auto ent = CreateEntity("Test Cube: ");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+            sm.SetMaterialInstance(materialInstance);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 2.f, 30.f, 2.f };
+            trans.pos = { 0.f, 15.f, 20.f };
+            trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
+        }
+        {
+            auto ent = CreateEntity("Test Cube: ");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+            sm.SetMaterialInstance(materialInstance);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 2.f, 30.f, 2.f };
+            trans.pos = { 0.f, 15.f, -20.f };
+            trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
+        }
+
+        //outer walls
+        {
+            auto ent = CreateEntity("Test Cube: ");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+            sm.SetMaterialInstance(materialInstance);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 2.f, 30.f, 100.f };
+            trans.pos = { -50.f, 15.f, 0.f };
+        }
+        {
+            auto ent = CreateEntity("Test Cube: ");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+            sm.SetMaterialInstance(materialInstance);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 2.f, 30.f, 100.f };
+            trans.pos = { 0.f, 15.f, 50.f };
+            trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
+        }
+        {
+            auto ent = CreateEntity("Test Cube: ");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+            sm.SetMaterialInstance(materialInstance);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 2.f, 30.f, 100.f };
+            trans.pos = { 0.f, 15.f, -50.f };
+            trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
+        }
+    } 
+    {
+        Material material;
+        material.diffuse = { 1.f, 0.f, 0.f, 1.f };
+        material.emissive = { 0.f, 0.f, 0.f };
+        material.roughness = 0.5f;
+        material.metallic = 0.5f;
+
+        auto materialID = MaterialInstance::CreateMaterial(L"CubeMaterial", material);
+
+        MaterialInstance materialInstance;
+        MaterialInfo matInfo;
+
+        materialInstance.CreateMaterialInstance(L"CubeMaterialInstance", matInfo);
+        materialInstance.SetMaterial(materialID);
+        materialInstance.SetFlags(INSTANCE_OPAQUE);
+
+        for (int i = 0 ; i < 10; i++)
+        {
+            auto ent = CreateEntity("Test Cube: ");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+            sm.SetMaterialInstance(materialInstance);
+            auto& trans = ent.GetComponent<TransformComponent>();
+            trans.scale = { 3.f, 3.f, 3.f };
+
+            float x = rand() % 20 - 10;
+            float y = rand() % 20;
+            float z = rand() % 20 - 10;
+
+            trans.pos = { x, y, z };
+
+        }
+    }
 
 	return true;
 }

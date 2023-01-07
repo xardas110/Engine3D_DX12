@@ -5,7 +5,6 @@
 void DirectionalLight::SetDirection(const XMFLOAT3 newDir)
 {
 	data.direction = XMLoadFloat3(&newDir);
-
 	data.direction = XMVector3Normalize(data.direction);
 }
 

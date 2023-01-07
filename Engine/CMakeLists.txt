@@ -217,8 +217,8 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC Renderer/Denoiser
     PUBLIC Libs/DLSS/include
     PUBLIC Lights
-    PUBLIC PhysX
-    PUBLIC PhysX/include
+    PUBLIC Physics
+    PUBLIC Libs/PhysX/physx/include
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
 
@@ -236,6 +236,25 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
 
  set (PHYSX_LIBS
     PUBLIC ${PHYSX_LIB_PATH}/LowLevel_static_64.lib
+
+    PUBLIC ${PHYSX_LIB_PATH}/LowLevelAABB_static_64.lib
+    PUBLIC ${PHYSX_LIB_PATH}/LowLevelDynamics_static_64.lib
+    PUBLIC ${PHYSX_LIB_PATH}/PhysX_64.lib
+    PUBLIC ${PHYSX_LIB_PATH}/PhysXCharacterKinematic_static_64.lib
+    PUBLIC ${PHYSX_LIB_PATH}/PhysXCommon_64.lib
+    PUBLIC ${PHYSX_LIB_PATH}/PhysXCooking_64.lib
+    PUBLIC ${PHYSX_LIB_PATH}/PhysXExtensions_static_64.lib
+
+    PUBLIC ${PHYSX_LIB_PATH}/PhysXFoundation_64.lib
+    PUBLIC ${PHYSX_LIB_PATH}/PhysXPvdSDK_static_64.lib
+    PUBLIC ${PHYSX_LIB_PATH}/PhysXTask_static_64.lib
+    PUBLIC ${PHYSX_LIB_PATH}/PhysXVehicle_static_64.lib
+    PUBLIC ${PHYSX_LIB_PATH}/PhysXVehicle2_static_64.lib
+
+    PUBLIC ${PHYSX_LIB_PATH}/PVDRuntime_64.lib
+    PUBLIC ${PHYSX_LIB_PATH}/SceneQuery_static_64.lib
+    PUBLIC ${PHYSX_LIB_PATH}/SimulationController_static_64.lib
+    PUBLIC ${PHYSX_LIB_PATH}/SnippetRender_static_64.lib
  )
 
 add_library( Engine STATIC

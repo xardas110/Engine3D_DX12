@@ -241,7 +241,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
     rtData.hitParams = { hitParams.A, hitParams.B, hitParams.C, hitParams.D};
     rtData.frameIndex = window.m_CurrentBackBufferIndex;
 
-    static int numBounces = 1;
+    static int numBounces = 3;
     static float bounceAmbientStrength = 0.5f;
 
     ImGui::Begin("Raytracing Settings");
