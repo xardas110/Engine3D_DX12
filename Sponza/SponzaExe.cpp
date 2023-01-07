@@ -19,6 +19,7 @@ bool SponzaExe::LoadContent()
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
 
+    /*
     {
         auto BistroInter = CreateEntity("BistroInterior");
         auto& sm = BistroInter.AddComponent<StaticMeshComponent>("Assets/Models/Bistro/BistroInterior.fbx",
@@ -46,6 +47,35 @@ bool SponzaExe::LoadContent()
         trans.pos = { 1.f, 0.23f, 12.f };
         trans.scale = { 1.f, 1.f, 1.f };
     }  
+    */
+
+
+    meshManager.CreateCube();
+    meshManager.CreateSphere();
+    // meshManager.CreateTorus();
+
+    Material materialEmissive;
+    materialEmissive.diffuse = { 1.f, 1.f, 1.f, 1.f };
+    materialEmissive.emissive = { 0.f, 0.f, 0.f };
+    materialEmissive.roughness = 0.5f;
+    materialEmissive.metallic = 0.5f;
+
+    auto materialID = MaterialInstance::CreateMaterial(L"Emissive Material", materialEmissive);
+
+    MaterialInstance material;
+    MaterialInfo matInfo;
+
+    material.CreateMaterialInstance(L"DefaultMaterialInstance", matInfo);
+    material.SetMaterial(materialID);
+    material.SetFlags(INSTANCE_OPAQUE);
+
+    auto ent = CreateEntity("Test Cube: ");
+    auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+    sm.SetMaterialInstance(material);
+    auto& trans = ent.GetComponent<TransformComponent>();
+    trans.scale = { 20.f, 2.f, 20.f };
+    
+
 	return true;
 }
 

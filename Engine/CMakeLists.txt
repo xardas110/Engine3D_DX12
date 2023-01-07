@@ -1,5 +1,7 @@
 cmake_minimum_required( VERSION 3.23.2 ) # Latest version of CMake when this file was created.
 
+set(PHYSX_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Libs/PhysX/physx/debug")
+
 add_compile_definitions(DEBUG_CMD)
 add_compile_definitions(ImTextureID=ImU64)
 add_compile_definitions(NRD_COMPILER_DXC)
@@ -215,6 +217,8 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC Renderer/Denoiser
     PUBLIC Libs/DLSS/include
     PUBLIC Lights
+    PUBLIC PhysX
+    PUBLIC PhysX/include
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
  )
 
@@ -222,12 +226,16 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC assimp
     PUBLIC NRD
     PUBLIC NRI
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Libs/DLSS/Lib/Windows_x86_64/x86_64/nvsdk_ngx_d.lib
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Libs/DLSS/Lib/Windows_x86_64/x86_64/nvsdk_ngx_d_dbg.lib
     PUBLIC DirectXTex
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
     PUBLIC dxguid.lib
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Libs/WinPixEventRuntime/Lib/WinPixEventRuntime.lib
+ )
+
+ set (PHYSX_LIBS
+    PUBLIC ${PHYSX_LIB_PATH}/LowLevel_static_64.lib
  )
 
 add_library( Engine STATIC
@@ -245,11 +253,13 @@ add_library( Engine STATIC
 
 target_link_libraries( Engine
 	${TARGET_LINK_LIBS}   
+    ${PHYSX_LIBS} 
    # PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Engine.dir/${CMAKE_CFG_INTDIR}/Engine.res # This is the only way I could figure out how to link the compiled resource file.
 )
 
 target_link_libraries( EngineBin
 	${TARGET_LINK_LIBS}
+    ${PHYSX_LIBS} 
    # PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Engine.dir/${CMAKE_CFG_INTDIR}/Engine.res # This is the only way I could figure out how to link the compiled resource file.
 )
 
