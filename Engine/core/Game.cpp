@@ -18,13 +18,14 @@ Game::Game( const std::wstring& name, int width, int height, bool vSync )
     , m_Width( width )
     , m_Height( height )
     , m_vSync( vSync )
+    , m_PhysicsSystem(&registry)
 {
     XMVECTOR cameraPos = XMVectorSet(0, 5, -20, 1);
     XMVECTOR cameraTarget = XMVectorSet(0, 5, 0, 1);
     XMVECTOR cameraUp = XMVectorSet(0, 1, 0, 0);
 
     m_Camera.set_LookAt(cameraPos, cameraTarget, cameraUp);
-    m_Camera.set_Projection(45.0f, width / (float)height, 0.1f, 10000.0f);
+    m_Camera.set_Projection(60.0f, width / (float)height, 0.1f, 10000.0f);
 
 }
 
@@ -102,6 +103,8 @@ void Game::OnUpdate(UpdateEventArgs& e)
     {
         bCamMoved = true;
     }
+
+    m_PhysicsSystem.OnUpdate(e.ElapsedTime);
 }
 
 void Game::OnRender(RenderEventArgs& e)

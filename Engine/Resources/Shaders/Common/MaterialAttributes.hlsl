@@ -322,8 +322,11 @@ SurfaceMaterial GetSurfaceMaterial(
     
     if (bMatHasNormal == true)
     {      
-        surface.normal = TangentToWorldNormal(v.tangent, v.bitangent, v.normal, surface.normal, model);       
-        surface.normal *= matInfo.flags & MATERIAL_FLAG_INVERT_NORMALS ? -1.f : 1.f;
+        float3 sampleNormal = v.normal;
+        sampleNormal *= matInfo.flags & MATERIAL_FLAG_INVERT_NORMALS ? -1.f : 1.f;
+        
+        surface.normal = TangentToWorldNormal(v.tangent, v.bitangent, sampleNormal, surface.normal, model);
+        
     }                          
     else
         surface.normal = RotatePoint(objRotQuat, v.normal);
@@ -342,7 +345,7 @@ void ApplyMaterial(in MaterialInfo matInfo, inout SurfaceMaterial surfaceMat, in
     surfaceMat.emissive = matInfo.emissive == 0xffffffff ? mat.emissive : (surfaceMat.emissive * mat.emissive);    
     surfaceMat.transparent = mat.transparent;
     
-    surfaceMat.emissive *= 20.f;
+    //surfaceMat.emissive *= 20.f;
     
     if (!(matInfo.flags & MATERIAL_FLAG_BASECOLOR_ALPHA)) //hardcoded for bistro scene...
     {
@@ -356,7 +359,7 @@ void ApplyMaterial(in MaterialInfo matInfo, inout SurfaceMaterial surfaceMat, in
     }
     else
     {
-        surfaceMat.roughness *= mat.roughness; 
+        //surfaceMat.roughness *= mat.roughness; 
     }
 }
 

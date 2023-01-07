@@ -424,7 +424,7 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
 
     float3 ambient = GetAmbientBRDF(V, hitSurfaceMaterial) * occlusion * ambientFactor;
   
-    radiance.rgb += troughput * (directLight + ambient + hitSurfaceMaterial.emissive);
+    radiance.rgb += troughput * (directLight + ambient + (hitSurfaceMaterial.emissive * 20.f));
     
     /*  With RIS sampling
     Light selectedLight;
@@ -490,7 +490,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
     ray.instanceMask = INSTANCE_OPAQUE | INSTANCE_TRANSLUCENT; 
         
     TraceResult traceResult;
-    bool bResult = TraceDirectLight(ray, rng, 0.20f, DIRECT_LIGHT_FLAG_SAVE_OPACITY | DIRECT_LIGHT_FLAG_SKIP_OPAQUE | DIRECT_LIGHT_FLAG_SKIP_CUTOFF | DIRECT_LIGHT_FLAG_SKIP_SKY, troughput, radiance, traceResult);
+    bool bResult = TraceDirectLight(ray, rng, 0.05f, DIRECT_LIGHT_FLAG_SAVE_OPACITY | DIRECT_LIGHT_FLAG_SKIP_OPAQUE | DIRECT_LIGHT_FLAG_SKIP_CUTOFF | DIRECT_LIGHT_FLAG_SKIP_SKY, troughput, radiance, traceResult);
        
     if (!bResult)
         return bResult;
@@ -506,7 +506,7 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
         {           
             ray.desc.Origin = traceResult.hitPos;  
             troughput *= brdfWeight;
-            TraceDirectLight(ray, rng, 0.20f, DIRECT_LIGHT_FLAG_HARD_SHADOWS, troughput, radiance, traceResult);
+            TraceDirectLight(ray, rng, 0.10f, DIRECT_LIGHT_FLAG_HARD_SHADOWS, troughput, radiance, traceResult);
         }
     }
  

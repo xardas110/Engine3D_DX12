@@ -59,7 +59,7 @@ namespace MeshImport
         RHCoords = 1 << 3,
         ConvertShininiessToAlpha = 1 << 4,
         AmbientAsMetallic = 1 << 5,
-        ForceAlphaBlend = 1 << 6, //Forces blending mode on all importet materials with opacity
+        ForceAlphaBlend = 1 << 6, //Forces blending mode on all imported materials with opacity
         ForceAlphaCutoff = 1 << 7,
         SkipTextures = 1 << 8,
         BaseColorAlpha = 1 << 9,

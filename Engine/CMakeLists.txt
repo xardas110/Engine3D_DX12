@@ -80,7 +80,7 @@ set( HEADER_FILES
     "Renderer/Skybox/Skybox.h" 
     "Renderer/HDR/HDR.h" 
     "Renderer/DLSS/DLSS.h" 
-    "core/Logger.h")
+    "core/Logger.h" "Physics/PhysicsActor.h")
 
 set( SOURCE_FILES
     "core/EnginePCH.cpp"
@@ -134,7 +134,7 @@ set( SOURCE_FILES
     "Renderer/Denoiser/NvidiaDenoiser.cpp" 
     "Renderer/Skybox/Skybox.cpp" 
     "Renderer/HDR/HDR.cpp" 
-    "Renderer/DLSS/DLSS.cpp")
+    "Renderer/DLSS/DLSS.cpp" "Physics/PhysicsActor.cpp")
 
 set( IMGUI_HEADERS
     external/ImGui/imgui.h
@@ -254,7 +254,6 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC ${PHYSX_LIB_PATH}/PVDRuntime_64.lib
     PUBLIC ${PHYSX_LIB_PATH}/SceneQuery_static_64.lib
     PUBLIC ${PHYSX_LIB_PATH}/SimulationController_static_64.lib
-    PUBLIC ${PHYSX_LIB_PATH}/SnippetRender_static_64.lib
  )
 
 add_library( Engine STATIC
@@ -468,5 +467,17 @@ add_custom_command(TARGET Engine POST_BUILD COMMAND
 add_custom_command(TARGET EngineBin POST_BUILD COMMAND
     ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/DLSS/lib/Windows_x86_64/dev
+    ${CMAKE_BINARY_DIR}/bin
+)
+
+add_custom_command(TARGET Engine POST_BUILD COMMAND
+    ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/Libs/PhysX/physx/debug
+    ${CMAKE_BINARY_DIR}/bin
+)
+
+add_custom_command(TARGET EngineBin POST_BUILD COMMAND
+    ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/Libs/PhysX/physx/debug
     ${CMAKE_BINARY_DIR}/bin
 )

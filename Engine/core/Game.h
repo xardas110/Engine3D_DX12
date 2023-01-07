@@ -41,6 +41,7 @@
 #include <windows.h>
 
 #include <DirectionalLight.h>
+#include <PhysicsSystem.h>
 
 class Window;
 class Entity;
@@ -51,6 +52,8 @@ class Game : public std::enable_shared_from_this<Game>
     friend class Entity;
     friend class DeferredRenderer;
     friend class World;
+    friend class PhysicsDynamic;
+    friend class PhysicsStatic;
 public:
     /**
      * Create the DirectX demo using the specified window dimensions.
@@ -162,6 +165,7 @@ protected:
     std::shared_ptr<Window> m_pWindow;
     DirectionalLight m_DirectionalLight;
 
+    PhysicsSystem m_PhysicsSystem;
 
     entt::registry registry;
 

@@ -41,7 +41,7 @@ struct EyeAdaption
 {
 	float lowPercentile = 0.8f;
 	float highPercentile = 0.95f;
-	float eyeAdaptionSpeedUp = 0.0f;
+	float eyeAdaptionSpeedUp = 5.0f;
 	float eyeAdaptionSpeedDown = 5.0f;
 	float minAdaptedLuminance = 0.1f;
 	float maxAdaptedLuminance = 5.f;
