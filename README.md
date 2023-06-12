@@ -23,20 +23,9 @@ Features:
   <img style='width: 1024px' src="/Images/BistroExterior.png"></img>
 </div>
 
-
 # Sponza
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/Sponza.png"></img>
-</div>
-
-## Sponza 0 Light Bounce
-<div style='float: center'>
-  <img style='width: 1024px' src="/Images/Sponza 0 bounce.png"></img>
-</div>
-
-## Sponza 3 Light Bounces
-<div style='float: center'>
-  <img style='width: 1024px' src="/Images/Sponza 3 Bounces.png"></img>
 </div>
 
 # PhysX
