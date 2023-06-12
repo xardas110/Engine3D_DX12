@@ -10,10 +10,10 @@ To build:
 
 Features:
 - DirectX 12 DXR 1.3 using Rayquery
-- Realtime Raytracing with denoising
-- Raytraced Soft Shadows
+- Realtime raytracing with denoising
+- Raytraced soft shadows
 - Raytraced reflections
-- Raytraced Translucency with Refractions
+- Raytraced translucency with refractions
 - DLSS
 - PhysX
 - GBuffer
