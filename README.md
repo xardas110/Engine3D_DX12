@@ -29,10 +29,6 @@ Features:
   <img style='width: 1024px' src="/Images/Sponza.png"></img>
 </div>
 
-<div style='float: center'>
-  <img style='width: 1024px' src="/Images/Sponza overview.png"></img>
-</div>
-
 ## Sponza 0 Light Bounce
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/Sponza 0 bounce.png"></img>
