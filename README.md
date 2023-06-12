@@ -13,8 +13,10 @@ Features:
 - Realtime Raytracing with denoising
 - Raytraced Soft Shadows
 - Raytraced reflections
+- Raytraced Translucency with Refractions
 - DLSS
 - PhysX
+- GBuffer
 
 ## Exterior Bistro
 <div style='float: center'>
