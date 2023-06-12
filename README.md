@@ -29,8 +29,26 @@ Features:
   <img style='width: 1024px' src="/Images/Sponza.png"></img>
 </div>
 
-# Buffers
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/Sponza overview.png"></img>
+</div>
 
+## Sponza 0 Light Bounce
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/Sponza 0 bounce.png"></img>
+</div>
+
+## Sponza 2 Light Bounces
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/Sponza 2 Bounces.png"></img>
+</div>
+
+# PhysX
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/PhysX Scene.png"></img>
+</div>
+
+# Buffers
 ## Indirect Diffuse (Noise)
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/Sponza Indirect Diffuse.png"></img>
