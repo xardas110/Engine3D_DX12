@@ -18,19 +18,52 @@ Features:
 - PhysX
 - GBuffer
 
-## Exterior Bistro
+# Exterior Bistro
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/BistroExterior.png"></img>
 </div>
 
 
-## Sponza
+# Sponza
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/Sponza.png"></img>
 </div>
 
 # Buffers
 
+## Indirect Diffuse (Noise)
 <div style='float: center'>
-  <img style='width: 1024px' src="/Images/Sponza.png"></img>
+  <img style='width: 1024px' src="/Images/Sponza Indirect Diffuse.png"></img>
 </div>
+
+## Indirect Diffuse (Denoised)
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/Sponza Denoised Indirect Diffuse.png"></img>
+</div>
+
+## Indirect Specular (Noise)
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/Sponza Indirect Specular.png"></img>
+</div>
+
+## Indirect Specular (Denoised)
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/Sponza Denoised Indirect Specular.png"></img>
+</div>
+
+## Soft Shadows (Blue Noise)
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/Sponza Soft Shadows.png"></img>
+</div>
+
+## Soft Shadows (Denoised)
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/Sponza Denoised Soft Shadows.png"></img>
+</div>
+
+## Final Image
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/Sponza Final Image.png"></img>
+</div>
+
+
