@@ -38,9 +38,9 @@ Features:
   <img style='width: 1024px' src="/Images/Sponza 0 bounce.png"></img>
 </div>
 
-## Sponza 2 Light Bounces
+## Sponza 3 Light Bounces
 <div style='float: center'>
-  <img style='width: 1024px' src="/Images/Sponza 2 Bounces.png"></img>
+  <img style='width: 1024px' src="/Images/Sponza 3 Bounces.png"></img>
 </div>
 
 # PhysX
