@@ -48,10 +48,10 @@ bool SponzaExe::LoadContent()
         trans.scale = { 1.f, 1.f, 1.f };
     }
     */
-    /*
+    
     meshManager.CreateCube();
     meshManager.CreateSphere();
-
+    /*
     {
         Material materialEmissive;
         materialEmissive.diffuse = { 1.f, 1.f, 1.f, 1.f };
@@ -84,8 +84,7 @@ bool SponzaExe::LoadContent()
         trans.pos = { 0.f, 0.0f, 0.5f };
         trans.scale = { 1.f, 1.f, 1.f };
     }
-    */
-
+    */ 
     {
         auto sponza = CreateEntity("sponza");
         auto& sm = sponza.AddComponent<StaticMeshComponent>("Assets/Models/sponza/Sponza.fbx",
@@ -97,7 +96,6 @@ bool SponzaExe::LoadContent()
     }
 
     return true;
-
     /*
     {
         { //floor
@@ -260,11 +258,11 @@ bool SponzaExe::LoadContent()
         materialInstance.SetMaterial(materialID);
         materialInstance.SetFlags(INSTANCE_OPAQUE);
 
-        /*
+       
         for (int i = 0 ; i < 100; i++)
         {
             auto ent = CreateEntity("Test Cube: ");
-            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultCube");
+            auto& sm = ent.AddComponent<MeshComponent>(L"DefaultSphere");
             sm.SetMaterialInstance(materialInstance);
             auto& trans = ent.GetComponent<TransformComponent>();
             trans.scale = { 3.f, 3.f, 3.f };
@@ -284,16 +282,15 @@ bool SponzaExe::LoadContent()
 
             auto& body = ent.AddComponent<PhysicsDynamicComponent>(dynamic);
 
-        }     
-        */
+        }          
     }
 
     {
         Material material;
-        material.diffuse = { 0.f, 0.f, 1.f, 1.f };
+        material.diffuse = { 1.f, 0.1f, 0.1f, 1.f };
         material.emissive = { 0.f, 0.f, 0.f };
-        material.roughness = 0.1f;
-        material.metallic = 0.9f;
+        material.roughness = 0.5f;
+        material.metallic = 0.5f;
 
         auto materialID = MaterialInstance::CreateMaterial(L"CubeMaterial1", material);
 
@@ -330,7 +327,7 @@ bool SponzaExe::LoadContent()
         }
     }
 
-
+    return true;
 
 }
 
