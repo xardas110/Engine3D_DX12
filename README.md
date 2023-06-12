@@ -6,5 +6,5 @@ To build:
 
 ## Sponza Realtime Raytracing
 <div style='float: center'>
-  <img style='width: 600px' src="/Images/Sponza.png"></img>
+  <img style='width: 1024px' src="/Images/Sponza.png"></img>
 </div>
