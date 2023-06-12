@@ -305,7 +305,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
        // ImGui::Begin("RtStructure");
        // ImGui::Checkbox("Build pr. frame", &m_Raytracer->bUpdate);
        // ImGui::End();
-        m_Raytracer->bUpdate = false;
+
     } 
     /*
     {//DEPTH PREPASS

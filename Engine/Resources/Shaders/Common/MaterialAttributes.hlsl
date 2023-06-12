@@ -357,10 +357,6 @@ void ApplyMaterial(in MaterialInfo matInfo, inout SurfaceMaterial surfaceMat, in
         surfaceMat.roughness = matInfo.roughness == 0xffffffff ? mat.roughness : (surfaceMat.roughness * mat.roughness);
         surfaceMat.metallic = matInfo.metallic == 0xffffffff ? mat.metallic : (surfaceMat.metallic * mat.metallic);
     }
-    else
-    {
-        //surfaceMat.roughness *= mat.roughness; 
-    }
 }
 
 #endif

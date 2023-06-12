@@ -7,6 +7,7 @@
 
 using namespace physx;
 
+
 class PhysicsSystem
 {
 	friend class Game;
@@ -19,13 +20,20 @@ class PhysicsSystem
 	void OnUpdate(float deltatime);
 
 	PxFoundation* mFoundation = NULL;
-	PxPhysics* mPhysics = NULL;
+	
 	PxDefaultCpuDispatcher* mDispatcher = NULL;
-	PxScene* mScene = NULL;
-	PxMaterial* mMaterial = NULL;
+	
 	PxPvd* mPvd = NULL;
-	PxDefaultAllocator	mDefaultAllocatorCallback;
-	PxDefaultErrorCallback	mDefaultErrorCallback;
+	PxDefaultAllocator	mAllocatorCallback;
+	PxDefaultErrorCallback	mErrorCallback;
+	PxTolerancesScale mToleranceScale;
+	physx::PxPvdTransport* transport{ nullptr };
+
 
 	entt::registry* mRegistry;
+
+public:
+	PxPhysics* mPhysics = NULL;
+	PxScene* mScene = NULL;
+
 };

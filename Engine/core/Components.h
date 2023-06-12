@@ -2,10 +2,14 @@
 #include <Transform.h>
 #include <Mesh.h>
 #include <Material.h>
+#include <PhysicsActor.h>
 
 using TransformComponent = Transform;
 using StaticMeshComponent = StaticMesh;
 using MeshComponent = MeshInstance;
+
+using PhysicsStaticComponent = PhysicsStatic;
+using PhysicsDynamicComponent = PhysicsDynamic;
 
 struct TagComponent
 {

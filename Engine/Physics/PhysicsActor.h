@@ -5,13 +5,13 @@ using namespace physx;
 
 struct PhysicsStatic
 {
-	PhysicsStatic(class Game* game, PxRigidStatic* pxStatic);
+	PhysicsStatic(PxRigidStatic* pxStatic);
 	PxRigidStatic* ptr;
 };
 
 struct PhysicsDynamic
 {
-	PhysicsDynamic(class Game* game, PxRigidDynamic* pxDynamic);
+	PhysicsDynamic(PxRigidDynamic* pxDynamic);
 	PxRigidDynamic* ptr;
 };
 

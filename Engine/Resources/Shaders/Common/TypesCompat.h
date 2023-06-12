@@ -153,7 +153,7 @@ struct TonemapCB
     // The method to use to perform tonemapping.
     UINT TonemapMethod COMPAT_INT(TM_ReinhardSq);
     // Exposure should be expressed as a relative expsure value (-2, -1, 0, +1, +2 )
-    float Exposure COMPAT_FLOAT(2.f);
+    float Exposure COMPAT_FLOAT(1.f);
 
     // The maximum luminance to use for linear tonemapping.
     float MaxLuminance COMPAT_FLOAT(1.f);
@@ -194,7 +194,7 @@ struct TonemapCB
 
     float minLogLuminance COMPAT_FLOAT(-10.f); // TODO: figure out how to set these properly
     float maxLogLuminamce COMPAT_FLOAT(4.f);
-    int bEyeAdaption COMPAT_INT(1);
+    int bEyeAdaption COMPAT_INT(0);
     float pad2;
 };
 

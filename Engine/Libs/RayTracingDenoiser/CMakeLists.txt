@@ -8,9 +8,9 @@ option(NRD_STATIC_LIBRARY "Build static library" OFF)
 # Cached
 set(NRD_DXC_CUSTOM_PATH "custom/path/to/dxc" CACHE STRING "Custom DXC to use if Vulkan SDK is not installed")
 set(NRD_SHADERS_PATH "" CACHE STRING "Shader output path override")
-set(NRD_NORMAL_ENCODING "2" CACHE STRING "Normal encoding variant (0-4, matches nrd::NormalEncoding)")
+set(NRD_NORMAL_ENCODING "3" CACHE STRING "Normal encoding variant (0-4, matches nrd::NormalEncoding)")
 set(NRD_ROUGHNESS_ENCODING "1" CACHE STRING "Roughness encoding variant (0-2, matches nrd::RoughnessEncoding)")
-set(GLOBAL_BIN_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin" CACHE STRING "")
+set(GLOBAL_BIN_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/_Build" CACHE STRING "")
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "")
 
 # Create project
@@ -154,7 +154,7 @@ if(NOT NRD_DISABLE_SHADER_COMPILATION)
     add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_Shaders)
 endif()
 
-set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${GLOBAL_BIN_OUTPUT_PATH}")
-set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${GLOBAL_BIN_OUTPUT_PATH}")
-set_target_properties(${PROJECT_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${GLOBAL_BIN_OUTPUT_PATH}")
+set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${GLOBAL_BIN_OUTPUT_PATH}/$<CONFIG>")
+set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${GLOBAL_BIN_OUTPUT_PATH}/$<CONFIG>")
+set_target_properties(${PROJECT_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${GLOBAL_BIN_OUTPUT_PATH}/$<CONFIG>")
 message("NRD output path: '${GLOBAL_BIN_OUTPUT_PATH}'")

@@ -611,9 +611,9 @@ void IndirectLight(
     float3 geometryNormal = fi.geometryNormal;
     
     RayDesc ray;
-    ray.TMin = 0.0f;
+    ray.TMin = 0.01f;
     ray.TMax = 1e10f;
-    ray.Origin = OffsetRay(X, fi.geometryNormal) + fi.geometryNormal * 0.05f;
+    ray.Origin = X;
     ray.Direction = -V;
         
     BRDFData gBufferBRDF = PrepareBRDFData(fi.normal, -g_DirectionalLight.direction.rgb, V, currentMat);
