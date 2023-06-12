@@ -16,7 +16,6 @@ Features:
 - Raytraced translucency with refractions
 - DLSS
 - PhysX
-- GBuffer
 
 # Exterior Bistro
 <div style='float: center'>
