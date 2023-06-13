@@ -72,5 +72,3 @@ Features:
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/Sponza Final Image.png"></img>
 </div>
-
-
