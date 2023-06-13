@@ -27,6 +27,11 @@ Features:
   <img style='width: 1024px' src="/Images/Sponza.png"></img>
 </div>
 
+# Car showcasing Reflections, Refractions and Translucency
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/RTX car, Tranclucency, Reflections and Refractions.png"></img>
+</div>
+
 # PhysX
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/PhysX Scene.png"></img>
