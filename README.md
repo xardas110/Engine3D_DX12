@@ -16,31 +16,15 @@ Features:
 - Raytraced translucency with refractions
 - DLSS
 - PhysX
-- GBuffer
 
 # Exterior Bistro
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/BistroExterior.png"></img>
 </div>
 
-
 # Sponza
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/Sponza.png"></img>
-</div>
-
-<div style='float: center'>
-  <img style='width: 1024px' src="/Images/Sponza overview.png"></img>
-</div>
-
-## Sponza 0 Light Bounce
-<div style='float: center'>
-  <img style='width: 1024px' src="/Images/Sponza 0 bounce.png"></img>
-</div>
-
-## Sponza 2 Light Bounces
-<div style='float: center'>
-  <img style='width: 1024px' src="/Images/Sponza 2 Bounces.png"></img>
 </div>
 
 # PhysX
