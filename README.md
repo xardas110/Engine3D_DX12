@@ -16,6 +16,7 @@ Features:
 - Raytraced translucency with refractions
 - DLSS
 - PhysX
+- Data Driven Programming (ECS)
 
 # Exterior Bistro
 <div style='float: center'>
