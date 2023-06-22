@@ -33,10 +33,6 @@ Features:
   <img style='width: 1024px' src="/Images/rtxcar4.png"></img>
 </div>
 
-<div style='float: center'>
-  <img style='width: 1024px' src="/Images/rtxcar5.png"></img>
-</div>
-
 # PhysX
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/PhysX Scene.png"></img>
