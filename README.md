@@ -18,6 +18,11 @@ Features:
 - PhysX
 - Data Driven Programming (ECS)
 
+# Exterior Bistro
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/BistroExterior.png"></img>
+</div>
+
 # Sponza
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/Sponza.png"></img>
@@ -34,11 +39,6 @@ Features:
 
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/rtxcar5.png"></img>
-</div>
-
-# Exterior Bistro
-<div style='float: center'>
-  <img style='width: 1024px' src="/Images/BistroExterior.png"></img>
 </div>
 
 # PhysX
