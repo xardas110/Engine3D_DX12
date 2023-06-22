@@ -6,7 +6,7 @@ To build:
 3. Right-Click CMakeLists.txt->delete and reconfigure then Select SponzaBin.exe as target.
 
 ## Engine Information
-3D engine created for my game engine course (2 Months).
+3D engine created for the game engine semester (2 Months).
 
 Features:
 - DirectX 12 DXR 1.3 using Rayquery
