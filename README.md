@@ -33,6 +33,10 @@ Features:
   <img style='width: 1024px' src="/Images/RTX car, Tranclucency, Reflections and Refractions.png"></img>
 </div>
 
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/rtxCar1.png"></img>
+</div>
+
 # PhysX
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/PhysX Scene.png"></img>
