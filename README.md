@@ -34,7 +34,7 @@ Features:
 </div>
 
 <div style='float: center'>
-  <img style='width: 1024px' src="/Images/rtxCar1.png"></img>
+  <img style='width: 1024px' src="/Images/rtxCAR1.png"></img>
 </div>
 
 # PhysX
