@@ -6,7 +6,7 @@ To build:
 3. Right-Click CMakeLists.txt->delete and reconfigure then Select SponzaBin.exe as target.
 
 ## Engine Information
-3D engine created for my game engine course (2 Months).
+3D engine created for the game engine semester (2 Months).
 
 Features:
 - DirectX 12 DXR 1.3 using Rayquery
@@ -16,6 +16,7 @@ Features:
 - Raytraced translucency with refractions
 - DLSS
 - PhysX
+- Data Driven Programming (ECS)
 
 # Exterior Bistro
 <div style='float: center'>
@@ -25,6 +26,11 @@ Features:
 # Sponza
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/Sponza.png"></img>
+</div>
+
+# Reflections, Refractions and Translucency
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/RTX car, Tranclucency, Reflections and Refractions.png"></img>
 </div>
 
 # PhysX
@@ -67,5 +73,3 @@ Features:
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/Sponza Final Image.png"></img>
 </div>
-
-
