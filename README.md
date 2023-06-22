@@ -30,10 +30,6 @@ Features:
 
 # Reflections, Refractions and Translucency
 <div style='float: center'>
-  <img style='width: 1024px' src="/Images/RTX car, Tranclucency, Reflections and Refractions.png"></img>
-</div>
-
-<div style='float: center'>
   <img style='width: 1024px' src="/Images/rtxcar4.png"></img>
 </div>
 
