@@ -28,6 +28,10 @@ Features:
   <img style='width: 1024px' src="/Images/Sponza.png"></img>
 </div>
 
+<div style='float: center'>
+  <img style='width: 1024px' src="/Images/Sponza1.png"></img>
+</div>
+
 # Reflections, Refractions and Translucency
 <div style='float: center'>
   <img style='width: 1024px' src="/Images/rtxcar4.png"></img>
