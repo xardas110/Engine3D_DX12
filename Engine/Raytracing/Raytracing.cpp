@@ -54,9 +54,7 @@ void AllocateUploadBuffer(ID3D12Device* pDevice, void* pData, UINT64 datasize, I
 void Raytracing::Init()
 {
     auto& meshData = Application::Get().GetAssetManager()->m_MeshManager.meshData;
-
     meshData.meshCreationEvent.attach(&Raytracing::OnMeshCreated, this);
-
 }
 
 void Raytracing::BuildAccelerationStructures()

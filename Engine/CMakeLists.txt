@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.23.2 ) # Latest version of CMake when this file was created.
 
-set(PHYSX_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Libs/PhysX/physx/debug")
+set(PHYSX_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Libs/PhysX/physx/release")
 
 add_compile_definitions(DEBUG_CMD)
 add_compile_definitions(ImTextureID=ImU64)
@@ -226,7 +226,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC assimp
     PUBLIC NRD
     PUBLIC NRI
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Libs/DLSS/Lib/Windows_x86_64/x86_64/nvsdk_ngx_d_dbg.lib
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Libs/DLSS/Lib/Windows_x86_64/x86_64/nvsdk_ngx_d.lib
     PUBLIC DirectXTex
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib

@@ -24,6 +24,7 @@ struct MaterialManager
 	TextureID GetTextureID(MaterialType::Type type, MaterialInstanceID matInstanceId);
 
 	const std::wstring& GetMaterialInstanceName(MaterialInstanceID matInstanceId) const;
+
 	const std::wstring& GetMaterialName(MaterialInstanceID matInstanceId) const;
 
 	Material& GetUserDefinedMaterial(MaterialInstanceID matInstanceId);

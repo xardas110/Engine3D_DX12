@@ -65,7 +65,6 @@ PhysicsSystem::~PhysicsSystem()
 
 void PhysicsSystem::OnUpdate(float deltatime)
 {
-
 	auto view = mRegistry->view<PhysicsDynamicComponent>();
 	for (int i = 0; i < view.size(); i++)
 	{

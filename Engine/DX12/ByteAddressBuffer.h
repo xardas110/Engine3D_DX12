@@ -75,7 +75,7 @@ public:
 protected:
 
 private:
-    size_t m_BufferSize;
+    size_t m_BufferSize{};
 
     DescriptorAllocation m_SRV;
     DescriptorAllocation m_UAV;

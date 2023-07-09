@@ -45,9 +45,4 @@ public:
      * Used by the CommandList when setting the buffer contents.
      */
     virtual void CreateViews(size_t numElements, size_t elementSize) = 0;
-
-protected:
-
-private:
-
 };

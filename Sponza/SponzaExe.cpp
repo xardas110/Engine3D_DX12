@@ -18,7 +18,6 @@ SponzaExe::~SponzaExe()
 bool SponzaExe::LoadContent()
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
-    
     /*
     {
         auto BistroInter = CreateEntity("BistroInterior");
@@ -47,8 +46,9 @@ bool SponzaExe::LoadContent()
         trans.pos = { 1.f, 0.28f, 12.f };
         trans.scale = { 1.f, 1.f, 1.f };
     }
-    */
     
+    return true;
+*/
     meshManager.CreateCube();
     meshManager.CreateSphere();
     /*

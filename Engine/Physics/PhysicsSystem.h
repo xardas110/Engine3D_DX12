@@ -29,7 +29,6 @@ class PhysicsSystem
 	PxTolerancesScale mToleranceScale;
 	physx::PxPvdTransport* transport{ nullptr };
 
-
 	entt::registry* mRegistry;
 
 public:

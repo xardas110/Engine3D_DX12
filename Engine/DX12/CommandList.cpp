@@ -31,7 +31,6 @@ CommandList::CommandList( D3D12_COMMAND_LIST_TYPE type )
 
     ThrowIfFailed( device->CreateCommandList( 0, m_d3d12CommandListType, m_d3d12CommandAllocator.Get(),
                                               nullptr, IID_PPV_ARGS( &m_d3d12CommandList ) ) );
-
     m_UploadBuffer = std::make_unique<UploadBuffer>();
 
     m_ResourceStateTracker = std::make_unique<ResourceStateTracker>();
@@ -951,7 +950,6 @@ void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex,
     TrackResource(resource);
 }
 
-
 void CommandList::SetRenderTarget(const RenderTarget& renderTarget )
 {
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> renderTargetDescriptors;
@@ -1046,7 +1044,6 @@ void CommandList::Close()
     FlushResourceBarriers();
     m_d3d12CommandList->Close();
 }
-
 
 void CommandList::Reset()
 {

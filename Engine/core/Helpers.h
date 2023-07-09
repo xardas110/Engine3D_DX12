@@ -85,7 +85,6 @@ inline void ThrowIfFalse(bool value, const wchar_t* msg)
     ThrowIfFailed(value ? S_OK : E_FAIL, msg);
 }
 
-
 // Hashers for view descriptions.
 namespace std
 {

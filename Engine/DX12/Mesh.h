@@ -210,8 +210,6 @@ public:
 
     virtual ~Mesh();
 
-protected:
-
 private:
     friend class AssetManager;
     friend struct std::default_delete<Mesh>;
@@ -243,7 +241,6 @@ public:
     StaticMesh() = default;
     StaticMesh(const std::string& path, MeshImport::Flags flags = MeshImport::None);
 
-    //IMPORTANT: Can cost performance in runtime!
     Material* FindMaterialByName(const std::wstring& materialName);
 private:
     std::uint32_t startOffset{0};

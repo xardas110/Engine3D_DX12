@@ -6,9 +6,7 @@
 
 World::World(const std::wstring& name, int width, int height, bool vSync)
     :Game(name, width, height, vSync)
-{
-
-}
+{}
 
 void World::LoadGameMode()
 {

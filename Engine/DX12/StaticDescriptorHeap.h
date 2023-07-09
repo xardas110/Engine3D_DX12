@@ -8,11 +8,7 @@ struct SRVHeapData
 	friend class MeshManager;
 	friend class DeferredRenderer;
 	friend class GUI;
-private:
-	mutable size_t lastIndex = 0;
-	const size_t increment = 0;
-	const int heapSize = 50000;
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
+
 public:
 	SRVHeapData(D3D12_DESCRIPTOR_HEAP_FLAGS flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 	SRVHeapData(int heapSize, D3D12_DESCRIPTOR_HEAP_FLAGS flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
@@ -50,4 +46,10 @@ public:
 	{
 		lastIndex = resetOffset;
 	}
+
+private:
+	mutable size_t lastIndex = 0;
+	const size_t increment = 0;
+	const int heapSize = 50000;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap;
 };

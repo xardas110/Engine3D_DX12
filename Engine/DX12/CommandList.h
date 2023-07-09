@@ -252,7 +252,6 @@ public:
         SetCompute32BitConstants( rootParameterIndex, sizeof( T ) / sizeof( uint32_t ), &constants );
     }
 
-
     /**
      * Set the vertex buffer to the rendering pipeline.
      */

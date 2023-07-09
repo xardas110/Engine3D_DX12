@@ -99,12 +99,15 @@ class NvidiaDenoiser
 	friend struct std::default_delete<NvidiaDenoiser>;
 
 	NvidiaDenoiser(int width, int height, DenoiserTextures& texs);
+
 	~NvidiaDenoiser();
 
 	void RenderFrame(CommandList& commandList, const CameraCB& cam, const Camera& camera, int currentBackbufferIndex, int width, int height);
+
 	void OnGUI();
 
 	NrdIntegration NRD = NrdIntegration(3);
+
 	NrdIntegration NRD_Sigma = NrdIntegration(3);
 
 	struct NriInterface

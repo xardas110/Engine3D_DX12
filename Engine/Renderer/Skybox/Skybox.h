@@ -3,7 +3,6 @@
 #include <RootSignature.h>
 #include <StaticDescriptorHeap.h>
 
-
 struct Skybox
 {
 private:

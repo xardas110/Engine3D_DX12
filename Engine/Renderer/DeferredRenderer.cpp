@@ -17,13 +17,6 @@
 #include <WinPixEventRuntime/pix3.h>
 #include <HighResolutionClock.h>
 
-//#include <NRIDescs.h>
-//#include <Extensions/NRIWrapperD3D12.h>
-//#include <Extensions/NRIHelper.h>
-
-//#include <NRD.h>
-//#include <NRDIntegration.h>
-
 using namespace DirectX;
 
 bool IsDirectXRaytracingSupported(IDXGIAdapter4* adapter)
@@ -61,23 +54,16 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_LightPass = std::unique_ptr<LightPass>(new LightPass(m_Width, m_Height));
     m_CompositionPass = std::unique_ptr<CompositionPass>(new CompositionPass(m_Width, m_Height));
     m_DebugTexturePass = std::unique_ptr<DebugTexturePass>(new DebugTexturePass(m_NativeWidth, m_NativeHeight));
-
     m_HDR = std::unique_ptr<HDR>(new HDR(m_NativeWidth, m_NativeHeight));
-
-    //auto adapter = Application::Get().GetAdapter(false);  
-    //assert(IsDirectXRaytracingSupported(adapter.Get()));
-    std::cout << "DeferredRenderer: Raytracing is supported on the device" << std::endl;
-
     m_Raytracer = std::unique_ptr<Raytracing>(new Raytracing());
+
     m_Raytracer->Init();
 
     m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height, GetDenoiserTextures()));
 
     m_Skybox = std::unique_ptr<Skybox>(new Skybox(L"Assets/Textures/belfast_sunset_puresky_4k.hdr"));
 
-
     m_DLSS->dlssChangeEvent.attach(&DeferredRenderer::OnDlssChanged, this);
-
 }
 
 void DeferredRenderer::LoadContent()
@@ -768,13 +754,11 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         PIXEndEvent(gfxCommandList.Get());
     }
     { //DLSS pass
-
         gfxCommandList->ResourceBarrier(1,
             &CD3DX12_RESOURCE_BARRIER::Transition(
                 m_DLSS->resolvedTexture.GetD3D12Resource().Get(),
                 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
-
 
         if (m_DLSS->bDlssOn)
         { 
@@ -1044,7 +1028,6 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         graphicsQueue->ExecuteCommandList(commandList);
         PIXEndEvent(graphicsQueue->GetD3D12CommandQueue().Get());
     }  
-
     {//prev transform for motion vector
         int i = 0;
         for (auto& [transform, mesh] : meshInstances)
@@ -1070,9 +1053,6 @@ void DeferredRenderer::OnDlssChanged(const bool& bDlssOn, const NVSDK_NGX_PerfQu
 
 void DeferredRenderer::OnResize(ResizeEventArgs& e)
 {
-    //This check happends via the window class
-    //if (m_Width == e.Width && m_Height == e.Height) return;
-
     Application::Get().Flush();
 
     m_NativeWidth = e.Width;
