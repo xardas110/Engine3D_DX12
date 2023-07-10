@@ -1,6 +1,14 @@
 cmake_minimum_required( VERSION 3.23.2 ) # Latest version of CMake when this file was created.
 
-set(PHYSX_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Libs/PhysX/physx/release")
+IF(CMAKE_BUILD_TYPE MATCHES Debug)
+    set(PHYSX_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Libs/PhysX/physx/debug")
+    set(NVSDK_LIB_VERSION nvsdk_ngx_d_dbg.lib)
+else ()
+    set(PHYSX_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Libs/PhysX/physx/release")
+    set(NVSDK_LIB_VERSION nvsdk_ngx_d.lib)
+ENDIF()
+
+
 
 add_compile_definitions(DEBUG_CMD)
 add_compile_definitions(ImTextureID=ImU64)
@@ -226,7 +234,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC assimp
     PUBLIC NRD
     PUBLIC NRI
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Libs/DLSS/Lib/Windows_x86_64/x86_64/nvsdk_ngx_d.lib
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Libs/DLSS/Lib/Windows_x86_64/x86_64/${NVSDK_LIB_VERSION}
     PUBLIC DirectXTex
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
@@ -236,7 +244,6 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
 
  set (PHYSX_LIBS
     PUBLIC ${PHYSX_LIB_PATH}/LowLevel_static_64.lib
-
     PUBLIC ${PHYSX_LIB_PATH}/LowLevelAABB_static_64.lib
     PUBLIC ${PHYSX_LIB_PATH}/LowLevelDynamics_static_64.lib
     PUBLIC ${PHYSX_LIB_PATH}/PhysX_64.lib
@@ -244,13 +251,11 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC ${PHYSX_LIB_PATH}/PhysXCommon_64.lib
     PUBLIC ${PHYSX_LIB_PATH}/PhysXCooking_64.lib
     PUBLIC ${PHYSX_LIB_PATH}/PhysXExtensions_static_64.lib
-
     PUBLIC ${PHYSX_LIB_PATH}/PhysXFoundation_64.lib
     PUBLIC ${PHYSX_LIB_PATH}/PhysXPvdSDK_static_64.lib
     PUBLIC ${PHYSX_LIB_PATH}/PhysXTask_static_64.lib
     PUBLIC ${PHYSX_LIB_PATH}/PhysXVehicle_static_64.lib
     PUBLIC ${PHYSX_LIB_PATH}/PhysXVehicle2_static_64.lib
-
     PUBLIC ${PHYSX_LIB_PATH}/PVDRuntime_64.lib
     PUBLIC ${PHYSX_LIB_PATH}/SceneQuery_static_64.lib
     PUBLIC ${PHYSX_LIB_PATH}/SimulationController_static_64.lib

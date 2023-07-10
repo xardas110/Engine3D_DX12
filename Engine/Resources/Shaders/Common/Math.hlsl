@@ -8,7 +8,6 @@ float3 RotatePoint(float4 q, float3 v)
     return 2.0f * dot(qAxis, v) * qAxis + (q.w * q.w - dot(qAxis, qAxis)) * v + 2.0f * q.w * cross(qAxis, v);
 }
 
-
 float3x3 ConstructTBN(
     in float3x3 model, 
     in float3 tangent, 
@@ -43,6 +42,7 @@ float2 UVToClip(float2 UV)
 {
     return float2(UV.x * 2 - 1, 1 - UV.y * 2);
 }
+
 float2 ClipToUV(float2 ClipPos)
 {
     return float2(ClipPos.x * 0.5 + 0.5, 0.5 - ClipPos.y * 0.5);

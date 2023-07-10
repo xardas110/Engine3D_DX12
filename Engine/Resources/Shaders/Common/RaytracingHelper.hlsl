@@ -196,7 +196,6 @@ MeshVertex GetHitSurface(in HitAttributes attr, in MeshInfo meshInfo, in Structu
     return result;
 }
 
-
 void GetCameraDirectionFromUV(in uint2 index, in float2 resolution, in float3 camPos, in float4x4 invViewProj, out float3 direction)
 {
     float2 xy = index + 0.5f;
