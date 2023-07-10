@@ -106,12 +106,10 @@ void Editor::ShowDockSpace(bool* p_open)
 
 Editor::Editor(World* world)
 	:m_World(world)
-{
-}
+{}
 
 void Editor::Destroy()
-{
-}
+{}
 
 void Editor::OnUpdate(UpdateEventArgs& e)
 {
@@ -312,9 +310,7 @@ void Editor::UpdateSceneGraph(entt::entity entity, const std::string& tag, Relat
 }
 
 void Editor::UpdateMaterialManager()
-{
-
-}
+{}
 
 void UpdateMaterial(Material& material)
 {
@@ -363,7 +359,6 @@ void Editor::UpdateSelectedEntity()
     {
         auto& meshManger = Application::Get().GetAssetManager()->m_MeshManager;
         auto& sm = reg.get<StaticMeshComponent>(selectedEntity);
-
 
         char buffer[40]{};
         static Material* matFound = nullptr;
@@ -439,7 +434,6 @@ void Editor::UpdateSelectedEntity()
             ImGui::TreePop();
          }
     }
-
     ImGui::End();
 }
 

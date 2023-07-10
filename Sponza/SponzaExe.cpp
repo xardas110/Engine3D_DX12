@@ -12,8 +12,7 @@ SponzaExe::SponzaExe(const std::wstring& name, int width, int height, bool vSync
 }
 
 SponzaExe::~SponzaExe()
-{
-}
+{}
 
 bool SponzaExe::LoadContent()
 {
@@ -75,7 +74,7 @@ bool SponzaExe::LoadContent()
         trans.scale = { 2.f, 2.f, 2.f };
         trans.pos = { -8.f, 1.f, 0.5f };
     }
-  
+   
     {
         auto mercedes = CreateEntity("Mercedes");
         auto& sm = mercedes.AddComponent<StaticMeshComponent>("Assets/Models/mercedes/scene.gltf", MeshImport::ForceAlphaBlend);
@@ -83,9 +82,8 @@ bool SponzaExe::LoadContent()
         trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(DirectX::XMConvertToRadians(90.f), DirectX::XMConvertToRadians(90.f), 0.f);
         trans.pos = { 0.f, 0.0f, 0.5f };
         trans.scale = { 1.f, 1.f, 1.f };
-    }  
-   */
-
+    } 
+    */
     {
         auto sponza = CreateEntity("sponza");
         auto& sm = sponza.AddComponent<StaticMeshComponent>("Assets/Models/sponza/Sponza.fbx",

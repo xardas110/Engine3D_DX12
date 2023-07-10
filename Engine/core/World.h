@@ -15,7 +15,7 @@ class World : public Game
 {
     friend class Editor;
 public:
-    using super = Game;
+    using Super = Game;
 
     World(const std::wstring& name, int width, int height, bool vSync = false);
         
@@ -42,10 +42,7 @@ public:
     /**
      *  Unload demo specific content that was loaded in LoadContent.
      */
-    virtual void UnloadContent() override
-    {
-
-    }
+    virtual void UnloadContent() override{}
 protected:
     /**
      *  Update the game logic.
@@ -79,7 +76,7 @@ private:
             hDLL = NULL;
             entry = nullptr;
         }
-    }runTimeGame;
+    } runTimeGame;
 
     std::unique_ptr<GameMode> m_GameMode{ nullptr };
 };

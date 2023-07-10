@@ -25,7 +25,7 @@ void World::UnLoadGameMode()
 
 void World::OnUpdate(UpdateEventArgs& e)
 {
-	super::OnUpdate(e);
+	Super::OnUpdate(e);
 
     if (m_GameMode)
         m_GameMode->OnUpdate(e);
@@ -33,7 +33,7 @@ void World::OnUpdate(UpdateEventArgs& e)
 
 void World::OnRender(RenderEventArgs& e)
 {
-	super::OnRender(e);
+	Super::OnRender(e);
 }
 
 bool World::LoadRuntimeGame(const std::string& name)

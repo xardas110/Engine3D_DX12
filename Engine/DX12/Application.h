@@ -42,7 +42,6 @@
 #include <Events.h>
 #include <DLSS/DLSS.h>
 
-
 class CommandQueue;
 class DescriptorAllocator;
 class Game;
@@ -157,7 +156,6 @@ public:
     }
 
     AssetManager* GetAssetManager();
-    //PipelineManager* GetPipelineManager();
 
     std::unique_ptr<DLSS> m_DLSS = nullptr;
 
