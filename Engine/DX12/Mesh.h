@@ -142,7 +142,7 @@ struct MeshInstance
     friend class MeshManager;
     friend class Raytracing;
     friend class Editor;
-    friend class StaticMesh;
+    friend class StaticMeshInstance;
 
     //Path or name
     MeshInstance(const std::wstring& path);
@@ -230,7 +230,7 @@ private:
     UINT m_IndexCount;
 };
 
-class StaticMesh
+class StaticMeshInstance
 {
     friend class AssetManager;
     friend class DeferredRenderer;
@@ -238,8 +238,8 @@ class StaticMesh
     friend class Editor;
 
 public:
-    StaticMesh() = default;
-    StaticMesh(const std::string& path, MeshImport::Flags flags = MeshImport::None);
+    StaticMeshInstance() = default;
+    StaticMeshInstance(const std::string& path, MeshImport::Flags flags = MeshImport::None);
 
     Material* FindMaterialByName(const std::wstring& materialName);
 private:

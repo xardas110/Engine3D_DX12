@@ -11,8 +11,7 @@ const std::wstring g_NoName = L"No Name";
 
 MeshManager::MeshManager(const SRVHeapData& srvHeapData)
 	:m_SrvHeapData(srvHeapData)
-{
-}
+{}
 
 void MeshManager::CreateCube(const std::wstring& cubeName)
 {
@@ -90,12 +89,11 @@ void MeshManager::CreateTorus(const std::wstring& name)
 	meshData.CreateMesh(name, tuple, m_SrvHeapData);
 }
 
-void MeshManager::LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh, MeshImport::Flags flags)
+void MeshManager::LoadStaticMesh(const std::string& path, StaticMeshInstance& outStaticMesh, MeshImport::Flags flags)
 {
 	auto commandQueue = Application::Get().GetCommandQueue();
 	auto commandList = commandQueue->GetCommandList();
 	auto rtCommandList = commandQueue->GetCommandList();
-	auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
 
 	AssimpLoader loader(path, flags);
 

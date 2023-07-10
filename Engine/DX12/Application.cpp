@@ -384,10 +384,6 @@ int Application::Run(std::shared_ptr<Game> pGame)
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
         }
-#ifdef DEBUG_EDITOR
-        RenderEventArgs renderEventArgs(0.0f, 0.0f, Application::ms_FrameCount);
-        m_Editor->OnRender(renderEventArgs);
-#endif
     }
 
     // Flush any commands in the commands queues before quiting.
@@ -522,15 +518,6 @@ MouseButtonEventArgs::MouseButton DecodeMouseButton(UINT messageID)
 void Application::UpdateEditor(UpdateEventArgs& e)
 {
     m_Editor->OnUpdate(e);
-}
-void Application::RenderEditor(RenderEventArgs& e)
-{
-    m_Editor->OnRender(e);
-}
-
-void Application::ResizeEditor(ResizeEventArgs& e, std::shared_ptr<Window>& window)
-{
-    m_Editor->OnResize(e, window);
 }
 #endif // DEBUG_EDITOR
 

@@ -40,6 +40,8 @@
 #include <mutex>
 #include <unordered_map>
 
+#define TEXTURE_INVALID UINT_MAX
+
 using TextureID = std::uint32_t;
 
 struct TextureInstance
@@ -52,7 +54,7 @@ struct TextureInstance
 
     bool IsValid() const
     {
-        return textureID != UINT_MAX;
+        return textureID != TEXTURE_INVALID;
     }
 
     TextureID GetTextureID() const
@@ -61,7 +63,7 @@ struct TextureInstance
     }
 
 private:
-    TextureID textureID = UINT_MAX;
+    TextureID textureID = TEXTURE_INVALID;
 };
 
 class Texture : public Resource

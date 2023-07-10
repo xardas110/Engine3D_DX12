@@ -7,6 +7,7 @@
 #include <MaterialManager.h>
 #include <TextureManager.h>
 #include <StaticDescriptorHeap.h>
+#include <event.hpp>
 
 using RefCounter = UINT;
 
@@ -23,12 +24,27 @@ private:
 	AssetManager();
 	~AssetManager();
 
-	static std::unique_ptr<AssetManager> CreateInstance();
+	static std::unique_ptr<AssetManager>	CreateInstance();
 
 public:
+	void LoadStaticMesh(const std::string& path, StaticMeshInstance& outStaticMesh, MeshImport::Flags flags);
 
-	SRVHeapData m_SrvHeapData;
-	TextureManager m_TextureManager;
-	MaterialManager m_MaterialManager;
-	MeshManager m_MeshManager;	
+	template<typename TClass, typename TRet, typename ...Args>
+	void AttachMeshCreatedEvent(TRet(TClass::* func) (Args...), TClass* obj)
+	{
+		m_MeshManager.meshData.meshCreationEvent.attach(func, *obj);
+	}
+
+	bool LoadTexture(const std::wstring& path, TextureInstance& outTextureInstance);
+
+	const SRVHeapData&		GetSRVHeapData() const;
+	const TextureManager&	GetTextureManager() const;
+	const MeshManager&		GetMeshManager() const;
+	MaterialManager&		GetMaterialManager();
+
+private:
+	SRVHeapData				m_SrvHeapData;
+	TextureManager			m_TextureManager;
+	MaterialManager			m_MaterialManager;
+	MeshManager				m_MeshManager;	
 };

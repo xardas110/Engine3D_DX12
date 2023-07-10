@@ -357,7 +357,6 @@ void Editor::UpdateSelectedEntity()
     }
     if (reg.any_of<StaticMeshComponent>(selectedEntity))
     {
-        auto& meshManger = Application::Get().GetAssetManager()->m_MeshManager;
         auto& sm = reg.get<StaticMeshComponent>(selectedEntity);
 
         char buffer[40]{};
@@ -445,7 +444,7 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
 
     if (!mesh.IsValid()) return;
   
-    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
+    const auto& materialManager = Application::Get().GetAssetManager()->GetMaterialManager();
   
     const auto& wMatName = mesh.GetUserMaterialName();
     auto& material = mesh.GetUserMaterial();

@@ -12,8 +12,9 @@ struct MeshManager
 	friend class Raytracing;
 	friend class DeferredRenderer;
 	friend class Editor;
-	friend class StaticMesh;
+	friend class StaticMeshInstance;
 
+private:
 	bool CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID);
 
 	void CreateCube(const std::wstring& cubeName = L"DefaultCube");
@@ -24,8 +25,8 @@ struct MeshManager
 
 	void CreateTorus(const std::wstring& name = L"DefaultTorus");
 
-	void LoadStaticMesh(const std::string& path, StaticMesh& outStaticMesh, MeshImport::Flags flags = MeshImport::None);
-private:
+	void LoadStaticMesh(const std::string& path, StaticMeshInstance& outStaticMesh, MeshImport::Flags flags = MeshImport::None);
+
 	MeshManager(const SRVHeapData& srvHeapData);
 
 	//Per component data
@@ -36,7 +37,7 @@ private:
 		friend class Raytracing;
 		friend class DeferredRenderer;
 		friend class Editor;
-		friend class StaticMesh;
+		friend class StaticMeshInstance;
 	private:
 
 		MeshInstanceID CreateInstance(MeshID meshID, const MeshInfo& meshInfo);
@@ -58,7 +59,7 @@ private:
 		friend class DeferredRenderer;
 		friend class Editor;
 		friend class MeshInstance;
-		friend class StaticMesh;
+		friend class StaticMeshInstance;
 
 		//Subscripe to this event to know about event creation
 		event::event<void(const Mesh&)> meshCreationEvent;

@@ -594,16 +594,14 @@ void Mesh::InitializeBlas(CommandList& commandList)
     commandList.GetGraphicsCommandList()->BuildRaytracingAccelerationStructure(&blasDesc, 0, nullptr);
 }
 
-StaticMesh::StaticMesh(const std::string& path, MeshImport::Flags flags)
+StaticMeshInstance::StaticMeshInstance(const std::string& path, MeshImport::Flags flags)
 {
-    auto& mm = Application::Get().GetAssetManager()->m_MeshManager;
-    mm.LoadStaticMesh(path, *this, flags);
+    auto* am = Application::Get().GetAssetManager();
+    am->LoadStaticMesh(path, *this, flags);
 }
 
-Material* StaticMesh::FindMaterialByName(const std::wstring& materialName)
+Material* StaticMeshInstance::FindMaterialByName(const std::wstring& materialName)
 {
-    auto& mm = Application::Get().GetAssetManager()->m_MeshManager;
-
     for (size_t i = startOffset; i < endOffset; i++)
     {
         MeshInstance inst((MeshInstanceID)i);

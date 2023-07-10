@@ -17,5 +17,6 @@ protected:
 	virtual void OnBeginPlay();
 	virtual void OnUpdate(UpdateEventArgs& e);
 	virtual void OnGui(RenderEventArgs& e);
+
 	Game* game{nullptr};
 };

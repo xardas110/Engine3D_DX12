@@ -195,12 +195,8 @@ private:
     //Contains all assets(Meshes, textures, materials) for game objects
     std::unique_ptr<AssetManager> m_AssetManager{nullptr};
 
-
 #ifdef DEBUG_EDITOR
     void UpdateEditor(UpdateEventArgs& e);
-    void RenderEditor(RenderEventArgs& e);
-
-    void ResizeEditor(ResizeEventArgs& e, std::shared_ptr<Window>& window);
     std::unique_ptr<Editor> m_Editor{ nullptr };
 #endif // DEBUG_EDITOR
 };

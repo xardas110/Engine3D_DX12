@@ -5,7 +5,7 @@
 #include <PhysicsActor.h>
 
 using TransformComponent = Transform;
-using StaticMeshComponent = StaticMesh;
+using StaticMeshComponent = StaticMeshInstance;
 using MeshComponent = MeshInstance;
 
 using PhysicsStaticComponent = PhysicsStatic;

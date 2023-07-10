@@ -8,8 +8,6 @@ else ()
     set(NVSDK_LIB_VERSION nvsdk_ngx_d.lib)
 ENDIF()
 
-
-
 add_compile_definitions(DEBUG_CMD)
 add_compile_definitions(ImTextureID=ImU64)
 add_compile_definitions(NRD_COMPILER_DXC)
@@ -485,4 +483,16 @@ add_custom_command(TARGET EngineBin POST_BUILD COMMAND
     ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_CURRENT_SOURCE_DIR}/Libs/PhysX/physx/debug
     ${CMAKE_BINARY_DIR}/bin
+)
+
+add_custom_command(TARGET EngineBin POST_BUILD COMMAND
+        ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_SOURCE_DIR}/Config/imgui.ini
+        ${CMAKE_BINARY_DIR}/bin/imgui.ini
+)
+
+add_custom_command(TARGET Engine POST_BUILD COMMAND
+        ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_SOURCE_DIR}/Config/imgui.ini
+        ${CMAKE_BINARY_DIR}/bin/imgui.ini
 )
