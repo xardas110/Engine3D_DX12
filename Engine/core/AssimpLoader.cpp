@@ -52,7 +52,7 @@ void AssToDX(A& a, B& b)
 
 bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene, MeshImport::Flags flags)
 {
-    AssimpLoader::AssimpMesh internalMesh;
+    AssimpMesh internalMesh;
 
     internalMesh.name = mesh->mName.C_Str();
 

@@ -9,6 +9,36 @@
 
 const std::wstring g_NoName = L"No Name";
 
+void ApplyMaterialInstanceImportFlags(MaterialInstance& matInstance, MeshImport::Flags flags, MaterialInfo matInfo)
+{
+	matInstance.SetFlags(INSTANCE_OPAQUE);
+
+	if (matInfo.opacity != 0xffffffff)
+	{
+		matInstance.SetFlags(INSTANCE_TRANSLUCENT);
+
+		if (MeshImport::ForceAlphaBlend & flags)
+			matInstance.AddFlag(INSTANCE_ALPHA_BLEND);
+		else if (MeshImport::ForceAlphaCutoff & flags)
+			matInstance.AddFlag(INSTANCE_ALPHA_CUTOFF);
+	}
+
+	if (flags & MeshImport::AO_Rough_Metal_As_Spec_Tex)
+	{
+		matInstance.AddFlag(MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR);
+	}
+
+	if (flags & MeshImport::BaseColorAlpha)
+	{
+		matInstance.AddFlag(MATERIAL_FLAG_BASECOLOR_ALPHA);
+	}
+
+	if (flags & MeshImport::InvertMaterialNormals)
+	{
+		matInstance.AddFlag(MATERIAL_FLAG_INVERT_NORMALS);
+	}
+}
+
 MeshManager::MeshManager(const SRVHeapData& srvHeapData)
 	:m_SrvHeapData(srvHeapData)
 {}
@@ -18,161 +48,48 @@ void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<Comma
 	AssimpLoader loader(path, flags);
 
 	auto sm = loader.GetAssimpStaticMesh();
-	outStaticMesh.startOffset = instanceData.meshInfo.size();
 
 	std::cout << "Num meshes in static mesh: " << sm.meshes.size() << std::endl;
 
-	int num = 0; 
+	outStaticMesh.startOffset = instanceData.meshInfo.size();
+
+	int numMeshes = 0;
 	for (auto& mesh : sm.meshes)
-	{		
-		std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(num++) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
+	{
+		std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(numMeshes++) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
 
-		MeshTuple tuple (std::move(*Mesh::CreateMesh(commandList, rtCommandList, mesh.vertices, mesh.indices, (MeshImport::RHCoords & flags), MeshImport::CustomTangent & flags)));
+		auto internalMesh = Mesh::CreateMesh(commandList, rtCommandList, mesh.vertices, mesh.indices, (MeshImport::RHCoords & flags), MeshImport::CustomTangent & flags);
 
-		meshData.CreateMesh(currentName, tuple, m_SrvHeapData);
+		meshData.CreateMesh(currentName, std::move(internalMesh), m_SrvHeapData);
 
 		MeshInstance meshInstance(currentName);
-		MaterialInfo matInfo;
-
-		if (mesh.material.HasTexture(AssimpMaterialType::Albedo))
-		{
-			const auto texPath = mesh.material.GetTexture(AssimpMaterialType::Albedo).path;
-			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-			matInfo.albedo = tex.GetTextureID();
-		}
-		if (mesh.material.HasTexture(AssimpMaterialType::Ambient))
-		{
-			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Ambient).path;
-			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-			
-
-			if (MeshImport::AmbientAsMetallic & flags)
-			{
-				matInfo.metallic = tex.GetTextureID();
-			}
-			else
-			{
-				matInfo.ao = tex.GetTextureID();
-			}
-		}
-		if (mesh.material.HasTexture(AssimpMaterialType::Normal))
-		{
-			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Normal).path;
-			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-			matInfo.normal = tex.GetTextureID();
-		}
-		if (mesh.material.HasTexture(AssimpMaterialType::Emissive))
-		{
-			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Emissive).path;
-			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-			matInfo.emissive = tex.GetTextureID();
-		}
-		if (mesh.material.HasTexture(AssimpMaterialType::Roughness))
-		{
-			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Roughness).path;
-			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-			matInfo.roughness = tex.GetTextureID();
-		}
-		if (mesh.material.HasTexture(AssimpMaterialType::Metallic))
-		{
-			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Metallic).path;
-			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-			matInfo.metallic = tex.GetTextureID();
-		}
-		if (mesh.material.HasTexture(AssimpMaterialType::Specular))
-		{
-			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Specular).path;
-			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-			matInfo.specular = tex.GetTextureID();
-		}
-		if (mesh.material.HasTexture(AssimpMaterialType::Height))
-		{
-			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Height).path;
-			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-			
-			if (MeshImport::HeightAsNormal & flags)
-			{ 
-				matInfo.normal = tex.GetTextureID();
-			}
-			else
-			{
-				matInfo.height = tex.GetTextureID();
-			}
-		}
-		if (mesh.material.HasTexture(AssimpMaterialType::Opacity))
-		{
-			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Opacity).path;
-			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-			matInfo.opacity = tex.GetTextureID();
-		}
-		bool bHasAnyMat = false;
-		for (size_t i = 0; i < AssimpMaterialType::Size; i++)
-		{
-			if(mesh.material.HasTexture((AssimpMaterialType::Type)i))
-			{ 
-				bHasAnyMat = true;
-				break;
-			}
-		}
+		MaterialInfo matInfo = MaterialInfoHelper::PopulateMaterialInfo(mesh, flags);
 
 		MaterialInstance matInstance(currentName, matInfo);
-		
-		matInstance.SetFlags(INSTANCE_OPAQUE);
-
-		if (matInfo.opacity != 0xffffffff)
-		{
-			matInstance.SetFlags(INSTANCE_TRANSLUCENT);
-
-			if (MeshImport::ForceAlphaBlend & flags)
-				matInstance.AddFlag(INSTANCE_ALPHA_BLEND);
-			else if (MeshImport::ForceAlphaCutoff & flags)
-				matInstance.AddFlag(INSTANCE_ALPHA_CUTOFF);
-		}
-
-		if (flags & MeshImport::AO_Rough_Metal_As_Spec_Tex)
-		{
-			matInstance.AddFlag(MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR);
-		}
-
-		if (flags & MeshImport::BaseColorAlpha)
-		{
-			matInstance.AddFlag(MATERIAL_FLAG_BASECOLOR_ALPHA);
-		}
-
-		if (flags & MeshImport::InvertMaterialNormals)
-		{
-			matInstance.AddFlag(MATERIAL_FLAG_INVERT_NORMALS);
-		}
-
+		ApplyMaterialInstanceImportFlags(matInstance, flags, matInfo);
+	
 		if (mesh.materialData.bHasMaterial)
 		{
-			Material materialData;
-			materialData.diffuse = { mesh.materialData.albedo.x, mesh.materialData.albedo.y, mesh.materialData.albedo.z,  mesh.materialData.opacity };
-			materialData.specular = { mesh.materialData.specular.x, mesh.materialData.specular.y, mesh.materialData.specular.z,  mesh.materialData.shininess };
-			materialData.transparent = mesh.materialData.transparent;
-			materialData.metallic = mesh.materialData.metallic;
-			materialData.roughness = mesh.materialData.roughness;
-			materialData.emissive = mesh.materialData.emissive;
+			Material materialData = MaterialHelper::CreateMaterial(mesh.materialData);
 
-			if (mesh.materialData.opacity < 1.f) 
-			{ 
+			if (mesh.materialData.opacity < 1.f)
+			{
 				matInstance.SetFlags(INSTANCE_TRANSLUCENT);
 
 				if (MeshImport::ForceAlphaBlend & flags)
 					matInstance.AddFlag(INSTANCE_ALPHA_BLEND);
 				else if (MeshImport::ForceAlphaCutoff & flags)
 					matInstance.AddFlag(INSTANCE_ALPHA_CUTOFF);
-
 			}
-				
+
 			auto mat = MaterialInstance::CreateMaterial(currentName + L"/" + std::wstring(mesh.materialData.name.begin(), mesh.materialData.name.end()), materialData);
 			matInstance.SetMaterial(mat);
 		}
 
-		meshInstance.SetMaterialInstance(matInstance);				
+		meshInstance.SetMaterialInstance(matInstance);
 	}
 
-	outStaticMesh.endOffset = outStaticMesh.startOffset + num;
+	outStaticMesh.endOffset = outStaticMesh.startOffset + numMeshes;
 }
 
 bool MeshManager::CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID)
@@ -216,11 +133,11 @@ void MeshManager::MeshData::AddMesh(const std::wstring& name, MeshTuple& tuple)
 	meshes.emplace_back(std::move(tuple));
 }
 
-void MeshManager::MeshData::CreateMesh(const std::wstring& name, MeshTuple& tuple, const SRVHeapData& heap)
+MeshManager::MeshTuple MeshManager::MeshData::CreateMesh(const std::wstring& name, Mesh&& mesh, const SRVHeapData& heap)
 {
+	MeshInfo meshInfo;
+
 	auto device = Application::Get().GetDevice();
-	auto& mesh = tuple.mesh;
-	auto& meshInfo = tuple.meshInfo;
 
 	{
 		const auto cpuHandle = heap.IncrementHandle(meshInfo.vertexOffset);
@@ -239,6 +156,7 @@ void MeshManager::MeshData::CreateMesh(const std::wstring& name, MeshTuple& tupl
 	}
 	{
 		const auto cpuHandle = heap.IncrementHandle(meshInfo.indexOffset);
+
 		D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
 		D3D12_BUFFER_SRV bufferSRV;
 		bufferSRV.FirstElement = 0;
@@ -253,10 +171,15 @@ void MeshManager::MeshData::CreateMesh(const std::wstring& name, MeshTuple& tupl
 		device->CreateShaderResourceView(mesh.m_IndexBuffer.GetD3D12Resource().Get(), &desc, cpuHandle);
 	}
 
-	meshCreationEvent(tuple.mesh);
+	MeshTuple meshTuple(std::move(mesh), meshInfo);
 
-	AddMesh(name, tuple);
+	meshCreationEvent(meshTuple.mesh);
+
+	AddMesh(name, meshTuple);
+
+	return meshTuple;
 }
+
 
 MeshInstanceID MeshManager::InstanceData::CreateInstance(MeshID meshID, const MeshInfo& meshInfo)
 {

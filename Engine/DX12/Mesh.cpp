@@ -75,8 +75,7 @@ void CreateTangentAndBiTangent(VertexCollection& vertices, IndexCollection32& in
 
 MeshInstance::MeshInstance(const std::wstring& path)
 {
-    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
-    meshManager.CreateMeshInstance(path, *this);
+    Application::Get().GetAssetManager()->m_MeshManager.CreateMeshInstance(path, *this);
 }
 
 void MeshInstance::SetMaterialInstance(const MaterialInstance& matInstance)
@@ -532,20 +531,20 @@ std::unique_ptr<Mesh> Mesh::CreatePlane(CommandList& commandList, std::shared_pt
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreateMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords, bool calcTangent)
+Mesh Mesh::CreateMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords, bool calcTangent)
 {
-    std::unique_ptr<Mesh> mesh(new Mesh());
+    Mesh mesh;
 
     if (calcTangent)
     { 
         CreateTangentAndBiTangent(vertices, indices);
     }
 
-    mesh->Initialize(commandList, vertices, indices, rhcoords);
+    mesh.Initialize(commandList, vertices, indices, rhcoords);
 
     if (rtCommandList)
     {
-        mesh->InitializeBlas(*rtCommandList);
+        mesh.InitializeBlas(*rtCommandList);
     }
 
     return mesh;

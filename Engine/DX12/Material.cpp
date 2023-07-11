@@ -1,5 +1,6 @@
 #include <EnginePCH.h>
 #include "Material.h"
+#include <AssimpLoader.h>
 #include <Application.h>
 
 MaterialInstanceID MaterialInstance::CreateMaterialInstance(const std::wstring& name, const MaterialInfo& textureIDs)
@@ -53,4 +54,115 @@ UINT MaterialInstance::GetGPUFlags()
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 	return materialManager.instanceData.gpuInfo[materialInstanceID].flags;
+}
+
+MaterialInfo MaterialInfoHelper::PopulateMaterialInfo(const AssimpMesh& mesh, int flags)
+{
+	MaterialInfo matInfo;
+
+	if (mesh.material.HasTexture(AssimpMaterialType::Albedo))
+	{
+		const auto texPath = mesh.material.GetTexture(AssimpMaterialType::Albedo).path;
+		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+		matInfo.albedo = tex.GetTextureID();
+	}
+	if (mesh.material.HasTexture(AssimpMaterialType::Ambient))
+	{
+		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Ambient).path;
+		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+
+		if (MeshImport::AmbientAsMetallic & flags)
+		{
+			matInfo.metallic = tex.GetTextureID();
+		}
+		else
+		{
+			matInfo.ao = tex.GetTextureID();
+		}
+	}
+	if (mesh.material.HasTexture(AssimpMaterialType::Normal))
+	{
+		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Normal).path;
+		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+		matInfo.normal = tex.GetTextureID();
+	}
+	if (mesh.material.HasTexture(AssimpMaterialType::Emissive))
+	{
+		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Emissive).path;
+		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+		matInfo.emissive = tex.GetTextureID();
+	}
+	if (mesh.material.HasTexture(AssimpMaterialType::Roughness))
+	{
+		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Roughness).path;
+		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+		matInfo.roughness = tex.GetTextureID();
+	}
+	if (mesh.material.HasTexture(AssimpMaterialType::Metallic))
+	{
+		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Metallic).path;
+		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+		matInfo.metallic = tex.GetTextureID();
+	}
+	if (mesh.material.HasTexture(AssimpMaterialType::Specular))
+	{
+		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Specular).path;
+		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+		matInfo.specular = tex.GetTextureID();
+	}
+	if (mesh.material.HasTexture(AssimpMaterialType::Height))
+	{
+		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Height).path;
+		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+
+		if (MeshImport::HeightAsNormal & flags)
+		{
+			matInfo.normal = tex.GetTextureID();
+		}
+		else
+		{
+			matInfo.height = tex.GetTextureID();
+		}
+	}
+	if (mesh.material.HasTexture(AssimpMaterialType::Opacity))
+	{
+		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Opacity).path;
+		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
+		matInfo.opacity = tex.GetTextureID();
+	}
+	bool bHasAnyMat = false;
+	for (size_t i = 0; i < AssimpMaterialType::Size; i++)
+	{
+		if (mesh.material.HasTexture((AssimpMaterialType::Type)i))
+		{
+			bHasAnyMat = true;
+			break;
+		}
+	}
+
+	return matInfo;
+}
+
+Material MaterialHelper::CreateMaterial(const AssimpMaterialData& materialData)
+{
+	Material material;
+
+	material.diffuse = {
+	materialData.albedo.x,
+	materialData.albedo.y,
+	materialData.albedo.z,
+	materialData.opacity };
+
+	material.specular = {
+		materialData.specular.x,
+		materialData.specular.y,
+		materialData.specular.z,
+		materialData.shininess };
+
+	material.transparent = materialData.transparent;
+	material.metallic = materialData.metallic;
+	material.roughness = materialData.roughness;
+	material.emissive = materialData.emissive;
+
+	return material;
 }

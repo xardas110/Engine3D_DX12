@@ -15,9 +15,8 @@ namespace DebugTextureParam
 
 struct DebugTexturePass
 {
-private:
 	friend class DeferredRenderer;
-	friend class Window;
+private:
 
 	DebugTexturePass(int width, int height)
 		:srvHeap(5)

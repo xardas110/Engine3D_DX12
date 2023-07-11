@@ -42,3 +42,15 @@ struct MaterialInstance
 private:
 	MaterialInstanceID materialInstanceID{UINT_MAX};
 };
+
+class MaterialInfoHelper
+{
+public:
+	static MaterialInfo PopulateMaterialInfo(const struct AssimpMesh& mesh, int flags);
+};
+
+class MaterialHelper
+{
+public:
+	static Material CreateMaterial(const struct AssimpMaterialData& materialData);
+};

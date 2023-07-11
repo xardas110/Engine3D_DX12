@@ -212,7 +212,7 @@ public:
 
     static std::unique_ptr<Mesh> CreatePlane(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, float width = 1, float height = 1, bool rhcoords = false);
 
-    static std::unique_ptr<Mesh> CreateMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords, bool calcTangent);
+    static Mesh CreateMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords, bool calcTangent);
 
 private:
     friend class AssetManager;

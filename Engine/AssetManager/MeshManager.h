@@ -28,6 +28,7 @@ private:
 	MeshManager(const SRVHeapData& srvHeapData);
 
 	bool CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID);
+
 	void LoadStaticMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, const std::string& path, StaticMeshInstance& outStaticMesh, MeshImport::Flags flags = MeshImport::None);
 
 	//Per component data
@@ -56,7 +57,7 @@ private:
 		friend class Raytracing;
 		friend class DeferredRenderer;
 	private:
-		MeshTuple(Mesh&& mesh) : mesh(std::move(mesh)) {};
+		MeshTuple(Mesh&& mesh, MeshInfo meshInfo) : mesh(std::move(mesh)), meshInfo(meshInfo) {};
 
 		// CPU information.
 		Mesh mesh;
@@ -87,7 +88,7 @@ private:
 
 		void AddMesh(const std::wstring& name, MeshTuple& tuple);
 
-		void CreateMesh(const std::wstring& name, MeshTuple& tuple, const SRVHeapData& heap);
+		MeshTuple CreateMesh(const std::wstring& name, Mesh&& mesh, const SRVHeapData& heap);
 
 		std::map<std::wstring, MeshID> map;
 		std::vector<MeshTuple> meshes;

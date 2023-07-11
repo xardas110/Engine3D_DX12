@@ -24,12 +24,14 @@ namespace CompositionPassParam
 
 struct CompositionPass
 {
-private:
 	friend class DeferredRenderer;
-	friend class Window;
+
+private:
 
 	CompositionPass(const int& width, const int& height);
+
 	void CreateRenderTarget(int width, int height);
+
 	void CreatePipeline();
 
 	void ClearRendetTarget(CommandList& commandlist, float clearColor[4]);

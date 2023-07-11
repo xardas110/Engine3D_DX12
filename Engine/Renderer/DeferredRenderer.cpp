@@ -188,6 +188,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
     auto& textures = assetManager->m_TextureManager.textureData.textures;
 
     std::vector<MeshInstanceWrapper> pointLights;
+
     auto meshInstances = GetMeshInstances(game->registry, &pointLights);
 
     prevTrans.resize(meshInstances.size());
@@ -287,43 +288,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         PIXBeginEvent(gfxCommandList.Get(), 0, L"Building DXR structure");    
         m_Raytracer->BuildAccelerationStructure(*commandList, meshInstances, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);      
         PIXEndEvent(gfxCommandList.Get());
-
-       // ImGui::Begin("RtStructure");
-       // ImGui::Checkbox("Build pr. frame", &m_Raytracer->bUpdate);
-       // ImGui::End();
-
     } 
-    /*
-    {//DEPTH PREPASS
-        PIXBeginEvent(gfxCommandList.Get(), 0, L"zPrePass");
-
-        commandList->SetRenderTarget(m_GBuffer->renderTarget);
-        commandList->SetViewport(m_GBuffer->renderTarget.GetViewport());
-        commandList->SetScissorRect(m_ScissorRect);
-        commandList->SetPipelineState(m_GBuffer->zPrePassPipeline);
-        commandList->SetGraphicsRootSignature(m_GBuffer->zPrePassRS);
-
-        for (auto [transform, mesh] : meshInstances)
-        {     
-            objectCB.model = transform.GetTransform();
-            objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj;
-            objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
-            objectCB.meshId = mesh.id;
-
-            objectCB.transposeInverseModel = (XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model)));
-
-            objectCB.objRotQuat = transform.rot;
-            globalMeshInfo[mesh.id].objRot = transform.rot;
-
-            commandList->SetGraphicsDynamicConstantBuffer(DepthPrePassParam::ObjectCB, objectCB);
-
-            if (mesh.HasOpacity()) continue;
-
-            assetManager->m_MeshManager.meshData.meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
-        }
-        PIXEndEvent(gfxCommandList.Get());
-    }
-    */
     {//GBuffer Pass
         PIXBeginEvent(gfxCommandList.Get(), 0, L"GBufferPass");
         commandList->SetRenderTarget(m_GBuffer->renderTarget);
