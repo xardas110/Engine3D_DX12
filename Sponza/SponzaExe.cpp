@@ -16,15 +16,22 @@ SponzaExe::~SponzaExe()
 
 bool SponzaExe::LoadContent()
 {
+    auto CQ = Application::Get().GetCommandQueue();
+    auto CL = CQ->GetCommandList();
+    auto RTCL = CQ->GetCommandList();
+
     {
         auto sponza = CreateEntity("sponza");
-        auto& sm = sponza.AddComponent<StaticMeshComponent>("Assets/Models/sponza/Sponza.fbx",
+        auto& sm = sponza.AddComponent<StaticMeshComponent>(*CL, RTCL, "Assets/Models/sponza/Sponza.fbx",
             MeshImport::ForceAlphaCutoff | MeshImport::CustomTangent | MeshImport::IgnoreUserMaterial);
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.pos = { 0.f, 0.f, 0.f };
         trans.scale = { 0.01f, 0.01f, 0.01f };
         //trans.rot = DirectX::XMQuaternionRotationRollPitchYaw(0, DirectX::XMConvertToRadians(90.f), 0.f);
     }
+
+    CQ->ExecuteCommandList(CL);
+    CQ->ExecuteCommandList(RTCL);
 
     return true;
 }

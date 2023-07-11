@@ -49,7 +49,7 @@ Sponza::~Sponza()
 
 bool Sponza::LoadContent()
 {
-    
+/*
     auto ent = game->CreateEntity("Sponza");
     auto& sm = ent.AddComponent<StaticMeshComponent>("Assets/Models/crytek-sponza-noflag/sponza.dae");
     auto& trans = ent.GetComponent<TransformComponent>().scale = { 0.020f, 0.020f, 0.020f };
@@ -76,7 +76,8 @@ bool Sponza::LoadContent()
     ent3.AddChild(ent4);
     ent2.AddChild(ent6);
     ent2.AddChild(ent5);
-    
+*/
+
     return true;
 }
 

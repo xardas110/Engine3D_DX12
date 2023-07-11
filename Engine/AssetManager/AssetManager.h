@@ -32,7 +32,9 @@ public:
 	};
 
 	bool					LoadTexture(const std::wstring& path, TextureInstance& outTextureInstance);
-	void					LoadStaticMesh(	const std::string& path, 
+	void					LoadStaticMesh(CommandList& commandList, 
+											std::shared_ptr<CommandList> rtCommandList, 
+											const std::string& path,
 											StaticMeshInstance& outStaticMesh, 
 											MeshImport::Flags flags);
 

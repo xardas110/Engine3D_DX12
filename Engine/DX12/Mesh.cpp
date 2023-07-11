@@ -162,7 +162,7 @@ void Mesh::Draw(CommandList& commandList)
     commandList.DrawIndexed(m_IndexCount);
 }
 
-std::unique_ptr<Mesh> Mesh::CreateSphere(CommandList& commandList, float diameter, size_t tessellation, bool rhcoords, bool bCreateBLAS)
+std::unique_ptr<Mesh> Mesh::CreateSphere(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, float diameter, size_t tessellation, bool rhcoords)
 {
     VertexCollection vertices;
     IndexCollection32 indices;
@@ -236,7 +236,7 @@ std::unique_ptr<Mesh> Mesh::CreateSphere(CommandList& commandList, float diamete
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreateCube(CommandList& commandList, float size, bool rhcoords, bool bCreateBLAS)
+std::unique_ptr<Mesh> Mesh::CreateCube(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, float size, bool rhcoords)
 {
     // A cube has six faces, each one pointing in a different direction.
     const int FaceCount = 6;
@@ -301,9 +301,9 @@ std::unique_ptr<Mesh> Mesh::CreateCube(CommandList& commandList, float size, boo
 
     mesh->Initialize(commandList, vertices, indices, rhcoords);
 
-    if (bCreateBLAS) 
+    if (rtCommandList)
     { 
-        mesh->InitializeBlas(commandList);
+        mesh->InitializeBlas(*rtCommandList);
     }
        
     return mesh;
@@ -375,7 +375,7 @@ static void CreateCylinderCap(VertexCollection& vertices, IndexCollection32& ind
     }
 }
 
-std::unique_ptr<Mesh> Mesh::CreateCone(CommandList& commandList, float diameter, float height, size_t tessellation, bool rhcoords, bool bCreateBLAS)
+std::unique_ptr<Mesh> Mesh::CreateCone(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, float diameter, float height, size_t tessellation, bool rhcoords)
 {
     VertexCollection vertices;
     IndexCollection32 indices;
@@ -425,15 +425,15 @@ std::unique_ptr<Mesh> Mesh::CreateCone(CommandList& commandList, float diameter,
 
     mesh->Initialize(commandList, vertices, indices, rhcoords);
 
-    if (bCreateBLAS)
+    if (rtCommandList)
     {
-        mesh->InitializeBlas(commandList);
+        mesh->InitializeBlas(*rtCommandList);
     }
 
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreateTorus(CommandList& commandList, float diameter, float thickness, size_t tessellation, bool rhcoords, bool bCreateBLAS)
+std::unique_ptr<Mesh> Mesh::CreateTorus(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, float diameter, float thickness, size_t tessellation, bool rhcoords)
 {
     VertexCollection vertices;
     IndexCollection32 indices;
@@ -495,15 +495,15 @@ std::unique_ptr<Mesh> Mesh::CreateTorus(CommandList& commandList, float diameter
 
     mesh->Initialize(commandList, vertices, indices, rhcoords);
 
-    if (bCreateBLAS)
+    if (rtCommandList)
     {
-        mesh->InitializeBlas(commandList);
+        mesh->InitializeBlas(*rtCommandList);
     }
 
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreatePlane(CommandList& commandList, float width, float height, bool rhcoords, bool bCreateBLAS)
+std::unique_ptr<Mesh> Mesh::CreatePlane(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, float width, float height, bool rhcoords)
 {
     VertexCollection vertices = 
     {
@@ -524,15 +524,15 @@ std::unique_ptr<Mesh> Mesh::CreatePlane(CommandList& commandList, float width, f
 
     mesh->Initialize(commandList, vertices, indices, rhcoords);
 
-    if (bCreateBLAS)
+    if (rtCommandList)
     {
-        mesh->InitializeBlas(commandList);
+        mesh->InitializeBlas(*rtCommandList);
     }
 
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreateMesh(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords, bool calcTangent, bool bCreateBLAS)
+std::unique_ptr<Mesh> Mesh::CreateMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords, bool calcTangent)
 {
     std::unique_ptr<Mesh> mesh(new Mesh());
 
@@ -543,9 +543,9 @@ std::unique_ptr<Mesh> Mesh::CreateMesh(CommandList& commandList, VertexCollectio
 
     mesh->Initialize(commandList, vertices, indices, rhcoords);
 
-    if (bCreateBLAS)
+    if (rtCommandList)
     {
-        mesh->InitializeBlas(commandList);
+        mesh->InitializeBlas(*rtCommandList);
     }
 
     return mesh;
@@ -622,10 +622,10 @@ void Mesh::InitializeBlas(CommandList& commandList)
     commandList.GetGraphicsCommandList()->BuildRaytracingAccelerationStructure(&blasDesc, 0, nullptr);
 }
 
-StaticMeshInstance::StaticMeshInstance(const std::string& path, MeshImport::Flags flags)
+StaticMeshInstance::StaticMeshInstance(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList,
+    const std::string& path, MeshImport::Flags flags)
 {
-    auto* am = Application::Get().GetAssetManager();
-    am->LoadStaticMesh(path, *this, flags);
+    Application::Get().GetAssetManager()->LoadStaticMesh(commandList, rtCommandList, path, *this, flags);
 }
 
 Material* StaticMeshInstance::FindMaterialByName(const std::wstring& materialName)

@@ -13,59 +13,8 @@ MeshManager::MeshManager(const SRVHeapData& srvHeapData)
 	:m_SrvHeapData(srvHeapData)
 {}
 
-void MeshManager::CreateCube(const std::wstring& cubeName)
+void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, const std::string& path, StaticMeshInstance& outStaticMesh, MeshImport::Flags flags)
 {
-	auto commandQueue = Application::Get().GetCommandQueue();
-	auto commandList = commandQueue->GetCommandList();
-
-	MeshTuple tuple(std::move(*Mesh::CreateCube(*commandList)));
-
-	commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
-
-	meshData.CreateMesh(cubeName, tuple, m_SrvHeapData);
-}
-
-void MeshManager::CreateSphere(const std::wstring& sphereName)
-{
-	auto commandQueue = Application::Get().GetCommandQueue();
-	auto commandList = commandQueue->GetCommandList();
-
-	MeshTuple tuple(std::move(*Mesh::CreateSphere(*commandList)));
-
-	commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
-
-	meshData.CreateMesh(sphereName, tuple, m_SrvHeapData);
-}
-
-void MeshManager::CreateCone(const std::wstring& name)
-{
-	auto commandQueue = Application::Get().GetCommandQueue();
-	auto commandList = commandQueue->GetCommandList();
-
-	MeshTuple tuple(std::move(*Mesh::CreateCone(*commandList)));
-
-	commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
-
-	meshData.CreateMesh(name, tuple, m_SrvHeapData);
-}
-
-void MeshManager::CreateTorus(const std::wstring& name)
-{
-	auto commandQueue = Application::Get().GetCommandQueue();
-	auto commandList = commandQueue->GetCommandList();
-
-	MeshTuple tuple(std::move(*Mesh::CreateTorus(*commandList)));
-
-	commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
-
-	meshData.CreateMesh(name, tuple, m_SrvHeapData);
-}
-
-void MeshManager::LoadStaticMesh(const std::string& path, StaticMeshInstance& outStaticMesh, MeshImport::Flags flags)
-{
-	auto commandQueue = Application::Get().GetCommandQueue();
-	auto commandList = commandQueue->GetCommandList();
-
 	AssimpLoader loader(path, flags);
 
 	auto sm = loader.GetAssimpStaticMesh();
@@ -78,7 +27,7 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMeshInstance& ou
 	{		
 		std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(num++) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
 
-		MeshTuple tuple (std::move(*Mesh::CreateMesh(*commandList, mesh.vertices, mesh.indices, (MeshImport::RHCoords & flags), MeshImport::CustomTangent & flags)));
+		MeshTuple tuple (std::move(*Mesh::CreateMesh(commandList, rtCommandList, mesh.vertices, mesh.indices, (MeshImport::RHCoords & flags), MeshImport::CustomTangent & flags)));
 
 		meshData.CreateMesh(currentName, tuple, m_SrvHeapData);
 
@@ -223,8 +172,6 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMeshInstance& ou
 		meshInstance.SetMaterialInstance(matInstance);				
 	}
 
-	commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
-
 	outStaticMesh.endOffset = outStaticMesh.startOffset + num;
 }
 
@@ -276,7 +223,7 @@ void MeshManager::MeshData::CreateMesh(const std::wstring& name, MeshTuple& tupl
 	auto& meshInfo = tuple.meshInfo;
 
 	{
-		auto cpuHandle = heap.IncrementHandle(meshInfo.vertexOffset);
+		const auto cpuHandle = heap.IncrementHandle(meshInfo.vertexOffset);
 		D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
 		D3D12_BUFFER_SRV bufferSRV;
 		bufferSRV.FirstElement = 0;
@@ -291,7 +238,7 @@ void MeshManager::MeshData::CreateMesh(const std::wstring& name, MeshTuple& tupl
 		device->CreateShaderResourceView(mesh.m_VertexBuffer.GetD3D12Resource().Get(), &desc, cpuHandle);
 	}
 	{
-		auto cpuHandle = heap.IncrementHandle(meshInfo.indexOffset);
+		const auto cpuHandle = heap.IncrementHandle(meshInfo.indexOffset);
 		D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
 		D3D12_BUFFER_SRV bufferSRV;
 		bufferSRV.FirstElement = 0;

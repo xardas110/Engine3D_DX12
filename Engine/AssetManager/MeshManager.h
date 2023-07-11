@@ -28,16 +28,7 @@ private:
 	MeshManager(const SRVHeapData& srvHeapData);
 
 	bool CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID);
-
-	void CreateCube(const std::wstring& cubeName = L"DefaultCube");
-
-	void CreateSphere(const std::wstring& sphereName = L"DefaultSphere");
-
-	void CreateCone(const std::wstring& name = L"DefaultCone");
-
-	void CreateTorus(const std::wstring& name = L"DefaultTorus");
-
-	void LoadStaticMesh(const std::string& path, StaticMeshInstance& outStaticMesh, MeshImport::Flags flags = MeshImport::None);
+	void LoadStaticMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, const std::string& path, StaticMeshInstance& outStaticMesh, MeshImport::Flags flags = MeshImport::None);
 
 	//Per component data
 	struct InstanceData

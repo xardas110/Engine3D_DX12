@@ -198,22 +198,21 @@ public:
     Mesh(Mesh&& move) = default;
     Mesh& operator=(Mesh&&) = default;
 
+    virtual ~Mesh();
+
     void Draw(CommandList& commandList);
 
-    static std::unique_ptr<Mesh> CreateCube(CommandList& commandList, float size = 1, bool rhcoords = false, bool bCreateBLAS = true);
+    static std::unique_ptr<Mesh> CreateCube(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, float size = 1, bool rhcoords = false);
 
-    static std::unique_ptr<Mesh> CreateSphere(CommandList& commandList, float diameter = 1, size_t tessellation = 16, bool rhcoords = false, bool bCreateBLAS = true);
+    static std::unique_ptr<Mesh> CreateSphere(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, float diameter = 1, size_t tessellation = 16, bool rhcoords = false);
 
-    static std::unique_ptr<Mesh> CreateCone(CommandList& commandList, float diameter = 1, float height = 1, size_t tessellation = 32, bool rhcoords = false, bool bCreateBLAS = true);
+    static std::unique_ptr<Mesh> CreateCone(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, float diameter = 1, float height = 1, size_t tessellation = 32, bool rhcoords = false);
 
-    static std::unique_ptr<Mesh> CreateTorus(CommandList& commandList, float diameter = 1, float thickness = 0.333f, size_t tessellation = 32, bool rhcoords = false, bool bCreateBLAS = true);
+    static std::unique_ptr<Mesh> CreateTorus(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, float diameter = 1, float thickness = 0.333f, size_t tessellation = 32, bool rhcoords = false);
 
-    static std::unique_ptr<Mesh> CreatePlane(CommandList& commandList, float width = 1, float height = 1, bool rhcoords = false, bool bCreateBLAS = true);
+    static std::unique_ptr<Mesh> CreatePlane(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, float width = 1, float height = 1, bool rhcoords = false);
 
-    //Used to create a mesh from a model
-    static std::unique_ptr<Mesh> CreateMesh(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords, bool calcTangent, bool bCreateBLAS = true);
-
-    virtual ~Mesh();
+    static std::unique_ptr<Mesh> CreateMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords, bool calcTangent);
 
 private:
     friend class AssetManager;
@@ -243,12 +242,13 @@ class StaticMeshInstance
 
 public:
     StaticMeshInstance() = default;
-    StaticMeshInstance(const std::string& path, MeshImport::Flags flags = MeshImport::None);
+    StaticMeshInstance(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, 
+        const std::string& path, MeshImport::Flags flags = MeshImport::None);
 
     Material* FindMaterialByName(const std::wstring& materialName);
 private:
-    std::uint32_t startOffset{0};
-    std::uint32_t endOffset{0};
+    std::uint32_t startOffset{0U};
+    std::uint32_t endOffset{0U};
 };
 
 struct MeshInstanceWrapper
