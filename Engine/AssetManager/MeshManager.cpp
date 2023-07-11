@@ -17,17 +17,10 @@ void MeshManager::CreateCube(const std::wstring& cubeName)
 {
 	auto commandQueue = Application::Get().GetCommandQueue();
 	auto commandList = commandQueue->GetCommandList();
-	auto rtCommandList = commandQueue->GetCommandList();
 
-	MeshTuple tuple;
-	tuple.mesh = std::move(*Mesh::CreateCube(*commandList));
-	tuple.mesh.InitializeBlas(*rtCommandList);
+	MeshTuple tuple(std::move(*Mesh::CreateCube(*commandList)));
 
-	auto fenceVal1 = commandQueue->ExecuteCommandList(commandList);
-	auto fenceVal2 = commandQueue->ExecuteCommandList(rtCommandList);
-
-	commandQueue->WaitForFenceValue(fenceVal1);
-	commandQueue->WaitForFenceValue(fenceVal2);
+	commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
 
 	meshData.CreateMesh(cubeName, tuple, m_SrvHeapData);
 }
@@ -36,17 +29,10 @@ void MeshManager::CreateSphere(const std::wstring& sphereName)
 {
 	auto commandQueue = Application::Get().GetCommandQueue();
 	auto commandList = commandQueue->GetCommandList();
-	auto rtCommandList = commandQueue->GetCommandList();
 
-	MeshTuple tuple;
-	tuple.mesh = std::move(*Mesh::CreateSphere(*commandList));
-	tuple.mesh.InitializeBlas(*rtCommandList);
+	MeshTuple tuple(std::move(*Mesh::CreateSphere(*commandList)));
 
-	auto fenceVal1 = commandQueue->ExecuteCommandList(commandList);
-	auto fenceVal2 = commandQueue->ExecuteCommandList(rtCommandList);
-
-	commandQueue->WaitForFenceValue(fenceVal1);
-	commandQueue->WaitForFenceValue(fenceVal2);
+	commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
 
 	meshData.CreateMesh(sphereName, tuple, m_SrvHeapData);
 }
@@ -55,17 +41,10 @@ void MeshManager::CreateCone(const std::wstring& name)
 {
 	auto commandQueue = Application::Get().GetCommandQueue();
 	auto commandList = commandQueue->GetCommandList();
-	auto rtCommandList = commandQueue->GetCommandList();
 
-	MeshTuple tuple;
-	tuple.mesh = std::move(*Mesh::CreateCone(*commandList));
-	tuple.mesh.InitializeBlas(*rtCommandList);
+	MeshTuple tuple(std::move(*Mesh::CreateCone(*commandList)));
 
-	auto fenceVal1 = commandQueue->ExecuteCommandList(commandList);
-	auto fenceVal2 = commandQueue->ExecuteCommandList(rtCommandList);
-
-	commandQueue->WaitForFenceValue(fenceVal1);
-	commandQueue->WaitForFenceValue(fenceVal2);
+	commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
 
 	meshData.CreateMesh(name, tuple, m_SrvHeapData);
 }
@@ -74,17 +53,10 @@ void MeshManager::CreateTorus(const std::wstring& name)
 {
 	auto commandQueue = Application::Get().GetCommandQueue();
 	auto commandList = commandQueue->GetCommandList();
-	auto rtCommandList = commandQueue->GetCommandList();
 
-	MeshTuple tuple;
-	tuple.mesh = std::move(*Mesh::CreateTorus(*commandList));
-	tuple.mesh.InitializeBlas(*rtCommandList);
+	MeshTuple tuple(std::move(*Mesh::CreateTorus(*commandList)));
 
-	auto fenceVal1 = commandQueue->ExecuteCommandList(commandList);
-	auto fenceVal2 = commandQueue->ExecuteCommandList(rtCommandList);
-
-	commandQueue->WaitForFenceValue(fenceVal1);
-	commandQueue->WaitForFenceValue(fenceVal2);
+	commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
 
 	meshData.CreateMesh(name, tuple, m_SrvHeapData);
 }
@@ -93,7 +65,6 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMeshInstance& ou
 {
 	auto commandQueue = Application::Get().GetCommandQueue();
 	auto commandList = commandQueue->GetCommandList();
-	auto rtCommandList = commandQueue->GetCommandList();
 
 	AssimpLoader loader(path, flags);
 
@@ -107,10 +78,8 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMeshInstance& ou
 	{		
 		std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(num++) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
 
-		MeshTuple tuple;
-		tuple.mesh = std::move(*Mesh::CreateMesh(*commandList, mesh.vertices, mesh.indices, (MeshImport::RHCoords & flags), MeshImport::CustomTangent & flags));
-		tuple.mesh.InitializeBlas(*rtCommandList);
-		
+		MeshTuple tuple (std::move(*Mesh::CreateMesh(*commandList, mesh.vertices, mesh.indices, (MeshImport::RHCoords & flags), MeshImport::CustomTangent & flags)));
+
 		meshData.CreateMesh(currentName, tuple, m_SrvHeapData);
 
 		MeshInstance meshInstance(currentName);
@@ -118,7 +87,7 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMeshInstance& ou
 
 		if (mesh.material.HasTexture(AssimpMaterialType::Albedo))
 		{
-			auto texPath = mesh.material.GetTexture(AssimpMaterialType::Albedo).path;
+			const auto texPath = mesh.material.GetTexture(AssimpMaterialType::Albedo).path;
 			TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
 			matInfo.albedo = tex.GetTextureID();
 		}
@@ -254,11 +223,7 @@ void MeshManager::LoadStaticMesh(const std::string& path, StaticMeshInstance& ou
 		meshInstance.SetMaterialInstance(matInstance);				
 	}
 
-	auto fenceVal1 = commandQueue->ExecuteCommandList(commandList);
-	auto fenceVal2 = commandQueue->ExecuteCommandList(rtCommandList);
-
-	commandQueue->WaitForFenceValue(fenceVal1);
-	commandQueue->WaitForFenceValue(fenceVal2);
+	commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
 
 	outStaticMesh.endOffset = outStaticMesh.startOffset + num;
 }
@@ -284,7 +249,6 @@ MeshID MeshManager::MeshData::GetMeshID(const std::wstring& name)
 {
 	assert(map.find(name) != map.end() && "AssetManager::MeshManager::MeshData::GetMeshID name or path not found!");
 	const auto id = map[name];
-	IncrementRef(id);
 	return id;
 }
 
@@ -298,23 +262,11 @@ const std::wstring& MeshManager::MeshData::GetName(MeshID id)
 	return g_NoName;
 }
 
-void MeshManager::MeshData::IncrementRef(const MeshID meshID)
-{
-	refCounter[meshID]++;
-}
-
-void MeshManager::MeshData::DecrementRef(const MeshID meshID)
-{
-	assert(refCounter[meshID] > 0U && "AssetManager::MeshManager::MeshData::DeReferenceMesh unable to de-refernce a mesh with no references");
-	refCounter[meshID]--;
-}
-
 void MeshManager::MeshData::AddMesh(const std::wstring& name, MeshTuple& tuple)
 {
 	const auto currentIndex = meshes.size();
 	map[name] = currentIndex;
 	meshes.emplace_back(std::move(tuple));
-	refCounter.emplace_back(UINT(1U));
 }
 
 void MeshManager::MeshData::CreateMesh(const std::wstring& name, MeshTuple& tuple, const SRVHeapData& heap)

@@ -1,7 +1,6 @@
 #pragma once
 #include <Texture.h>
 
-
 class SRVHeapData;
 
 struct TextureManager

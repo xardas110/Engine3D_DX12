@@ -9,8 +9,6 @@
 #include <StaticDescriptorHeap.h>
 #include <event.hpp>
 
-using RefCounter = UINT;
-
 class AssetManager
 {
 	friend class Application;
@@ -27,15 +25,16 @@ private:
 	static std::unique_ptr<AssetManager>	CreateInstance();
 
 public:
-	void LoadStaticMesh(const std::string& path, StaticMeshInstance& outStaticMesh, MeshImport::Flags flags);
-
 	template<typename TClass, typename TRet, typename ...Args>
 	void AttachMeshCreatedEvent(TRet(TClass::* func) (Args...), TClass* obj)
 	{
-		m_MeshManager.meshData.meshCreationEvent.attach(func, *obj);
-	}
+		m_MeshManager.meshData.AttachMeshCreatedEvent(func, obj);
+	};
 
-	bool LoadTexture(const std::wstring& path, TextureInstance& outTextureInstance);
+	bool					LoadTexture(const std::wstring& path, TextureInstance& outTextureInstance);
+	void					LoadStaticMesh(	const std::string& path, 
+											StaticMeshInstance& outStaticMesh, 
+											MeshImport::Flags flags);
 
 	const SRVHeapData&		GetSRVHeapData() const;
 	const TextureManager&	GetTextureManager() const;

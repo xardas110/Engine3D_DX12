@@ -162,7 +162,7 @@ void Mesh::Draw(CommandList& commandList)
     commandList.DrawIndexed(m_IndexCount);
 }
 
-std::unique_ptr<Mesh> Mesh::CreateSphere(CommandList& commandList, float diameter, size_t tessellation, bool rhcoords)
+std::unique_ptr<Mesh> Mesh::CreateSphere(CommandList& commandList, float diameter, size_t tessellation, bool rhcoords, bool bCreateBLAS)
 {
     VertexCollection vertices;
     IndexCollection32 indices;
@@ -236,7 +236,7 @@ std::unique_ptr<Mesh> Mesh::CreateSphere(CommandList& commandList, float diamete
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreateCube(CommandList& commandList, float size, bool rhcoords)
+std::unique_ptr<Mesh> Mesh::CreateCube(CommandList& commandList, float size, bool rhcoords, bool bCreateBLAS)
 {
     // A cube has six faces, each one pointing in a different direction.
     const int FaceCount = 6;
@@ -301,6 +301,11 @@ std::unique_ptr<Mesh> Mesh::CreateCube(CommandList& commandList, float size, boo
 
     mesh->Initialize(commandList, vertices, indices, rhcoords);
 
+    if (bCreateBLAS) 
+    { 
+        mesh->InitializeBlas(commandList);
+    }
+       
     return mesh;
 }
 
@@ -370,7 +375,7 @@ static void CreateCylinderCap(VertexCollection& vertices, IndexCollection32& ind
     }
 }
 
-std::unique_ptr<Mesh> Mesh::CreateCone(CommandList& commandList, float diameter, float height, size_t tessellation, bool rhcoords)
+std::unique_ptr<Mesh> Mesh::CreateCone(CommandList& commandList, float diameter, float height, size_t tessellation, bool rhcoords, bool bCreateBLAS)
 {
     VertexCollection vertices;
     IndexCollection32 indices;
@@ -420,10 +425,15 @@ std::unique_ptr<Mesh> Mesh::CreateCone(CommandList& commandList, float diameter,
 
     mesh->Initialize(commandList, vertices, indices, rhcoords);
 
+    if (bCreateBLAS)
+    {
+        mesh->InitializeBlas(commandList);
+    }
+
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreateTorus(CommandList& commandList, float diameter, float thickness, size_t tessellation, bool rhcoords)
+std::unique_ptr<Mesh> Mesh::CreateTorus(CommandList& commandList, float diameter, float thickness, size_t tessellation, bool rhcoords, bool bCreateBLAS)
 {
     VertexCollection vertices;
     IndexCollection32 indices;
@@ -485,10 +495,15 @@ std::unique_ptr<Mesh> Mesh::CreateTorus(CommandList& commandList, float diameter
 
     mesh->Initialize(commandList, vertices, indices, rhcoords);
 
+    if (bCreateBLAS)
+    {
+        mesh->InitializeBlas(commandList);
+    }
+
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreatePlane(CommandList& commandList, float width, float height, bool rhcoords)
+std::unique_ptr<Mesh> Mesh::CreatePlane(CommandList& commandList, float width, float height, bool rhcoords, bool bCreateBLAS)
 {
     VertexCollection vertices = 
     {
@@ -509,17 +524,30 @@ std::unique_ptr<Mesh> Mesh::CreatePlane(CommandList& commandList, float width, f
 
     mesh->Initialize(commandList, vertices, indices, rhcoords);
 
+    if (bCreateBLAS)
+    {
+        mesh->InitializeBlas(commandList);
+    }
+
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreateMesh(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords, bool calcTangent)
+std::unique_ptr<Mesh> Mesh::CreateMesh(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords, bool calcTangent, bool bCreateBLAS)
 {
     std::unique_ptr<Mesh> mesh(new Mesh());
 
     if (calcTangent)
+    { 
         CreateTangentAndBiTangent(vertices, indices);
+    }
 
     mesh->Initialize(commandList, vertices, indices, rhcoords);
+
+    if (bCreateBLAS)
+    {
+        mesh->InitializeBlas(commandList);
+    }
+
     return mesh;
 }
 

@@ -1,4 +1,13 @@
 #pragma once
+
+/**
+ *  @file MeshManager.h
+ *  @date October 20, 2022
+ *  @author Xardas110
+ *
+ *  @brief The MeshManager, based on the factory pattern is a struct which manages all the meshes for the application.
+ */
+
 #include <Mesh.h>
 #include <eventcpp/event.hpp>
 #include <TypesCompat.h>
@@ -15,6 +24,9 @@ struct MeshManager
 	friend class StaticMeshInstance;
 
 private:
+
+	MeshManager(const SRVHeapData& srvHeapData);
+
 	bool CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID);
 
 	void CreateCube(const std::wstring& cubeName = L"DefaultCube");
@@ -26,8 +38,6 @@ private:
 	void CreateTorus(const std::wstring& name = L"DefaultTorus");
 
 	void LoadStaticMesh(const std::string& path, StaticMeshInstance& outStaticMesh, MeshImport::Flags flags = MeshImport::None);
-
-	MeshManager(const SRVHeapData& srvHeapData);
 
 	//Per component data
 	struct InstanceData
@@ -46,10 +56,22 @@ private:
 		std::vector<MeshInfo> meshInfo; //flags and material can change per instance
 	} instanceData; //instance id
 
+	/**
+	* MeshTuple is a struct which contains information about a mesh for both CPU and GPU side
+	*/
 	struct MeshTuple
 	{
+		friend struct MeshManager;
+		friend class Raytracing;
+		friend class DeferredRenderer;
+	private:
+		MeshTuple(Mesh&& mesh) : mesh(std::move(mesh)) {};
+
+		// CPU information.
 		Mesh mesh;
-		MeshInfo meshInfo; // default mesh info
+
+		// GPU information.
+		MeshInfo meshInfo;
 	};
 
 	struct MeshData
@@ -60,17 +82,17 @@ private:
 		friend class Editor;
 		friend class MeshInstance;
 		friend class StaticMeshInstance;
+	public:
+		template<typename TClass, typename TRet, typename ...Args>
+		void AttachMeshCreatedEvent(TRet(TClass::* func) (Args...), TClass* obj)
+		{
+			meshCreationEvent.attach(func, *obj);
+		}
 
-		//Subscripe to this event to know about event creation
-		event::event<void(const Mesh&)> meshCreationEvent;
 	private:
 
-		//Warning: Using this function will increment ref counter
 		MeshID GetMeshID(const std::wstring& name);
 		const std::wstring& GetName(MeshID id);
-
-		void IncrementRef(const MeshID meshID);
-		void DecrementRef(const MeshID meshID);
 
 		void AddMesh(const std::wstring& name, MeshTuple& tuple);
 
@@ -78,7 +100,7 @@ private:
 
 		std::map<std::wstring, MeshID> map;
 		std::vector<MeshTuple> meshes;
-		std::vector<UINT> refCounter;
+		event::event<void(const Mesh&)> meshCreationEvent;
 	} meshData;
 
 	const SRVHeapData& m_SrvHeapData;
