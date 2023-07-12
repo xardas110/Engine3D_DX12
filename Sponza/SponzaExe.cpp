@@ -23,7 +23,7 @@ bool SponzaExe::LoadContent()
     {
         auto sponza = CreateEntity("sponza");
         auto& sm = sponza.AddComponent<StaticMeshComponent>(*CL, RTCL, "Assets/Models/sponza/Sponza.fbx",
-            MeshImport::ForceAlphaCutoff | MeshImport::CustomTangent);
+            MeshImport::ForceAlphaCutoff | MeshImport::CustomTangent | MeshImport::IgnoreUserMaterial);
         auto& trans = sponza.GetComponent<TransformComponent>();
         trans.pos = { 0.f, 0.f, 0.f };
         trans.scale = { 0.01f, 0.01f, 0.01f };

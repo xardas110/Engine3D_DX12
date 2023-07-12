@@ -13,7 +13,7 @@ void ApplyMaterialInstanceImportFlags(MaterialInstance& matInstance, MeshImport:
 {
 	matInstance.SetFlags(INSTANCE_OPAQUE);
 
-	if (matInfo.opacity != 0xffffffff)
+	if (matInfo.opacity != UINT_MAX)
 	{
 		matInstance.SetFlags(INSTANCE_TRANSLUCENT);
 
@@ -47,27 +47,25 @@ void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<Comma
 {
 	AssimpLoader loader(path, flags);
 
-	auto sm = loader.GetAssimpStaticMesh();
+	const auto& sm = loader.GetAssimpStaticMesh();
 
 	std::cout << "Num meshes in static mesh: " << sm.meshes.size() << std::endl;
 
 	outStaticMesh.startOffset = instanceData.meshInfo.size();
 
 	int numMeshes = 0;
-	for (auto& mesh : sm.meshes)
+	for (auto mesh : sm.meshes)
 	{
 		std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(numMeshes++) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
 
 		auto internalMesh = Mesh::CreateMesh(commandList, rtCommandList, mesh.vertices, mesh.indices, (MeshImport::RHCoords & flags), MeshImport::CustomTangent & flags);
-
 		meshData.CreateMesh(currentName, std::move(internalMesh), m_SrvHeapData);
 
 		MeshInstance meshInstance(currentName);
 		MaterialInfo matInfo = MaterialInfoHelper::PopulateMaterialInfo(mesh, flags);
-
 		MaterialInstance matInstance(currentName, matInfo);
 		ApplyMaterialInstanceImportFlags(matInstance, flags, matInfo);
-	
+
 		if (mesh.materialData.bHasMaterial)
 		{
 			Material materialData = MaterialHelper::CreateMaterial(mesh.materialData);
@@ -82,8 +80,8 @@ void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<Comma
 					matInstance.AddFlag(INSTANCE_ALPHA_CUTOFF);
 			}
 
-			auto mat = MaterialInstance::CreateMaterial(currentName + L"/" + std::wstring(mesh.materialData.name.begin(), mesh.materialData.name.end()), materialData);
-			matInstance.SetMaterial(mat);
+			const auto materialID = MaterialInstance::CreateMaterial(currentName + L"/" + std::wstring(mesh.materialData.name.begin(), mesh.materialData.name.end()), materialData);
+			matInstance.SetMaterial(materialID);
 		}
 
 		meshInstance.SetMaterialInstance(matInstance);
