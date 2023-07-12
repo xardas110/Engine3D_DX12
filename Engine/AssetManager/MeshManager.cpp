@@ -9,34 +9,89 @@
 
 const std::wstring g_NoName = L"No Name";
 
-void ApplyMaterialInstanceImportFlags(MaterialInstance& matInstance, MeshImport::Flags flags, MaterialInfo matInfo)
+/**
+ * Applies alpha flags to a material instance if applicable.
+ *
+ * @param materialInstance Reference to the material instance being modified.
+ * @param importFlags Flags that specify how the material instance should be modified.
+ */
+void ApplyAlphaFlags(MaterialInstance& materialInstance, MeshImport::Flags importFlags)
 {
-	matInstance.SetFlags(INSTANCE_OPAQUE);
-
-	if (matInfo.opacity != UINT_MAX)
+	// If alpha blending is forced by the import flags, apply alpha blending
+	if (importFlags & MeshImport::ForceAlphaBlend)
 	{
-		matInstance.SetFlags(INSTANCE_TRANSLUCENT);
+		materialInstance.AddFlag(INSTANCE_ALPHA_BLEND);
+	}
+	// If alpha cutoff is forced by the import flags, apply alpha cutoff
+	else if (importFlags & MeshImport::ForceAlphaCutoff)
+	{
+		materialInstance.AddFlag(INSTANCE_ALPHA_CUTOFF);
+	}
+}
 
-		if (MeshImport::ForceAlphaBlend & flags)
-			matInstance.AddFlag(INSTANCE_ALPHA_BLEND);
-		else if (MeshImport::ForceAlphaCutoff & flags)
-			matInstance.AddFlag(INSTANCE_ALPHA_CUTOFF);
+/**
+ * Applies transparency to a material instance if applicable.
+ *
+ * @param materialInstance Reference to the material instance being modified.
+ * @param importFlags Flags that specify how the material instance should be modified.
+ * @param materialInfo Information about the material.
+ */
+void ApplyTransparency(MaterialInstance& materialInstance, MeshImport::Flags importFlags, MaterialInfo materialInfo)
+{
+	if (MaterialInfoHelper::IsTextureValid(materialInfo.opacity))
+	{
+		// Apply translucency flag to the material instance
+		materialInstance.SetFlags(INSTANCE_TRANSLUCENT);
+
+		// Apply appropriate alpha blending or cutoff based on the import flags
+		ApplyAlphaFlags(materialInstance, importFlags);
+	}
+}
+
+/**
+ * Applies import flags to a material instance.
+ *
+ * @param materialInstance Reference to the material instance being modified.
+ * @param importFlags Flags that specify how the material instance should be modified.
+ */
+void ApplySpecificImportFlags(MaterialInstance& materialInstance, MeshImport::Flags importFlags)
+{
+	// Apply Ambient Occlusion, Roughness, and Metalness as Specular Texture if specified in import flags
+	if (importFlags & MeshImport::AO_Rough_Metal_As_Spec_Tex)
+	{
+		materialInstance.AddFlag(MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR);
 	}
 
-	if (flags & MeshImport::AO_Rough_Metal_As_Spec_Tex)
+	// Apply Base Color Alpha if specified in import flags
+	if (importFlags & MeshImport::BaseColorAlpha)
 	{
-		matInstance.AddFlag(MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR);
+		materialInstance.AddFlag(MATERIAL_FLAG_BASECOLOR_ALPHA);
 	}
 
-	if (flags & MeshImport::BaseColorAlpha)
+	// Invert Material Normals if specified in import flags
+	if (importFlags & MeshImport::InvertMaterialNormals)
 	{
-		matInstance.AddFlag(MATERIAL_FLAG_BASECOLOR_ALPHA);
+		materialInstance.AddFlag(MATERIAL_FLAG_INVERT_NORMALS);
 	}
+}
 
-	if (flags & MeshImport::InvertMaterialNormals)
-	{
-		matInstance.AddFlag(MATERIAL_FLAG_INVERT_NORMALS);
-	}
+/**
+ * Applies import flags to a material instance.
+ *
+ * @param materialInstance Reference to the material instance being modified.
+ * @param importFlags Flags that specify how the material instance should be modified.
+ * @param materialInfo Information about the material.
+ */
+void ApplyMaterialInstanceImportFlags(MaterialInstance& materialInstance, MeshImport::Flags importFlags, MaterialInfo materialInfo)
+{
+	// Set default flags for the material instance
+	materialInstance.SetFlags(INSTANCE_OPAQUE);
+
+	// Check and apply transparency if required
+	ApplyTransparency(materialInstance, importFlags, materialInfo);
+
+	// Apply specific import flags based on the provided importFlags
+	ApplySpecificImportFlags(materialInstance, importFlags);
 }
 
 MeshManager::MeshManager(const SRVHeapData& srvHeapData)
@@ -45,50 +100,45 @@ MeshManager::MeshManager(const SRVHeapData& srvHeapData)
 
 void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, const std::string& path, StaticMeshInstance& outStaticMesh, MeshImport::Flags flags)
 {
-	AssimpLoader loader(path, flags);
+    AssimpLoader loader(path, flags);
+    const auto& sm = loader.GetAssimpStaticMesh();
+    std::cout << "Num meshes in static mesh: " << sm.meshes.size() << '\n';
 
-	const auto& sm = loader.GetAssimpStaticMesh();
+    outStaticMesh.startOffset = instanceData.meshInfo.size();
+    size_t numMeshes = 0;
 
-	std::cout << "Num meshes in static mesh: " << sm.meshes.size() << std::endl;
+    for (auto mesh : sm.meshes)
+    {
+        const std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(numMeshes++) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
 
-	outStaticMesh.startOffset = instanceData.meshInfo.size();
+        auto internalMesh = Mesh::CreateMesh(commandList, rtCommandList, mesh.vertices, mesh.indices, flags & MeshImport::RHCoords, flags & MeshImport::CustomTangent);
+        meshData.CreateMesh(currentName, std::move(internalMesh), m_SrvHeapData);
 
-	int numMeshes = 0;
-	for (auto mesh : sm.meshes)
-	{
-		std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(numMeshes++) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
+        MaterialInfo matInfo = MaterialInfoHelper::PopulateMaterialInfo(mesh, flags);
+        MaterialInstance matInstance(currentName, matInfo);
+        ApplyMaterialInstanceImportFlags(matInstance, flags, matInfo);
 
-		auto internalMesh = Mesh::CreateMesh(commandList, rtCommandList, mesh.vertices, mesh.indices, (MeshImport::RHCoords & flags), MeshImport::CustomTangent & flags);
-		meshData.CreateMesh(currentName, std::move(internalMesh), m_SrvHeapData);
+        if (mesh.materialData.bHasMaterial)
+        {
+            Material materialData = MaterialHelper::CreateMaterial(mesh.materialData);
 
-		MeshInstance meshInstance(currentName);
-		MaterialInfo matInfo = MaterialInfoHelper::PopulateMaterialInfo(mesh, flags);
-		MaterialInstance matInstance(currentName, matInfo);
-		ApplyMaterialInstanceImportFlags(matInstance, flags, matInfo);
+            if (MaterialHelper::IsTransparent(materialData))
+            {
+                ApplyTransparency(matInstance, flags, matInfo);
+            }
 
-		if (mesh.materialData.bHasMaterial)
-		{
-			Material materialData = MaterialHelper::CreateMaterial(mesh.materialData);
+            const std::wstring materialName = currentName + L"/" + std::wstring(mesh.materialData.name.begin(), mesh.materialData.name.end());
+            const auto materialID = MaterialInstance::CreateMaterial(materialName, materialData);
+            matInstance.SetMaterial(materialID);
+        }
 
-			if (mesh.materialData.opacity < 1.f)
-			{
-				matInstance.SetFlags(INSTANCE_TRANSLUCENT);
+        MeshInstance meshInstance(currentName);
+        meshInstance.SetMaterialInstance(matInstance);
+    }
 
-				if (MeshImport::ForceAlphaBlend & flags)
-					matInstance.AddFlag(INSTANCE_ALPHA_BLEND);
-				else if (MeshImport::ForceAlphaCutoff & flags)
-					matInstance.AddFlag(INSTANCE_ALPHA_CUTOFF);
-			}
-
-			const auto materialID = MaterialInstance::CreateMaterial(currentName + L"/" + std::wstring(mesh.materialData.name.begin(), mesh.materialData.name.end()), materialData);
-			matInstance.SetMaterial(materialID);
-		}
-
-		meshInstance.SetMaterialInstance(matInstance);
-	}
-
-	outStaticMesh.endOffset = outStaticMesh.startOffset + numMeshes;
+    outStaticMesh.endOffset = outStaticMesh.startOffset + sm.meshes.size();
 }
+
 
 bool MeshManager::CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID)
 {

@@ -143,6 +143,11 @@ MaterialInfo MaterialInfoHelper::PopulateMaterialInfo(const AssimpMesh& mesh, in
 	return matInfo;
 }
 
+bool MaterialInfoHelper::IsTextureValid(UINT texture)
+{
+	return texture != UINT_MAX;
+}
+
 Material MaterialHelper::CreateMaterial(const AssimpMaterialData& materialData)
 {
 	Material material;
@@ -165,4 +170,9 @@ Material MaterialHelper::CreateMaterial(const AssimpMaterialData& materialData)
 	material.emissive = materialData.emissive;
 
 	return material;
+}
+
+bool MaterialHelper::IsTransparent(const struct Material& materialData)
+{
+	return materialData.diffuse.z < 1.f;
 }

@@ -47,10 +47,12 @@ class MaterialInfoHelper
 {
 public:
 	static MaterialInfo PopulateMaterialInfo(const struct AssimpMesh& mesh, int flags);
+	static bool IsTextureValid(UINT texture);
 };
 
 class MaterialHelper
 {
 public:
 	static Material CreateMaterial(const struct AssimpMaterialData& materialData);
+	static bool IsTransparent(const struct Material& materialData);
 };
