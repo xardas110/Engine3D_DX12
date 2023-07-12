@@ -141,8 +141,6 @@ public:
 	const AssimpStaticMesh& GetAssimpStaticMesh() const;
 
 private:
-	void AssimpLoader::LoadUserMaterial(aiMaterial* material, AssimpMaterialData& inoutMatData, MeshImport::Flags flags);
-
 	void ProcessNode(aiNode* node, const aiScene* scene, MeshImport::Flags flags);
 
 	// Loads a mesh from Assimp and stores the data into our custom Mesh class.
@@ -191,6 +189,40 @@ private:
 
 	// Loads textures associated with a material.
 	void LoadTextures(AssimpMesh& internalMesh, aiMaterial* material, MeshImport::Flags flags);
+
+	// Loads user material data from Assimp material.
+   // This method iterates over material properties and processes each one based on its key.
+	void LoadUserMaterial(aiMaterial* material, AssimpMaterialData& matData, MeshImport::Flags flags);
+
+	//Handle functions for all the material properties
+	void HandleMaterialName(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleBumpscaling(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleBlendMode(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleAmbient(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleTransparencyFactor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleShadingModel(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleDiffuseColor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData, MeshImport::Flags flags);
+	void HandleSpecularColor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleRoughnessFactor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleMetallicFactor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleShininess(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleEmissiveColor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleTransparentColor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleOpacity(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleTwoSided(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleAlphaMode(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+	void HandleAlphaCutoff(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
+
+	// Template function to get a property value from an Assimp material based on its key.
+	// The type of the property value is determined by the template argument.
+	template <typename T>
+	T GetProperty(const std::string& key, aiMaterial* material)
+	{
+		T value;
+		material->Get(key.c_str(), 0, 0, value);
+
+		return value;
+	}
 
 	unsigned int aiFlags = aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_GenUVCoords;
 
