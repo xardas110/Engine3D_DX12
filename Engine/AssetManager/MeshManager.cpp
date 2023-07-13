@@ -6,8 +6,7 @@
 #include <CommandQueue.h>
 #include <AssimpLoader.h>
 #include <Material.h>
-
-const std::wstring g_NoName = L"No Name";
+#include <Logger.h>
 
 /**
  * Applies alpha flags to a material instance if applicable.
@@ -102,14 +101,14 @@ void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<Comma
 {
     AssimpLoader loader(path, flags);
     const auto& sm = loader.GetAssimpStaticMesh();
-    std::cout << "Num meshes in static mesh: " << sm.meshes.size() << '\n';
+    LOG_INFO("Num meshes in static mesh: %i", (int)sm.meshes.size());
 
     outStaticMesh.startOffset = instanceData.meshInfo.size();
-    size_t numMeshes = 0;
+    size_t numMeshesIncrement = 0;
 
     for (auto mesh : sm.meshes)
     {
-        const std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(numMeshes++) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
+        const std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(numMeshesIncrement++) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
 
         auto internalMesh = Mesh::CreateMesh(commandList, rtCommandList, mesh.vertices, mesh.indices, flags & MeshImport::RHCoords, flags & MeshImport::CustomTangent);
         meshData.CreateMesh(currentName, std::move(internalMesh), m_SrvHeapData);
@@ -138,7 +137,6 @@ void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<Comma
 
     outStaticMesh.endOffset = outStaticMesh.startOffset + sm.meshes.size();
 }
-
 
 bool MeshManager::CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID)
 {
@@ -171,7 +169,7 @@ const std::wstring& MeshManager::MeshData::GetName(MeshID id)
 		if (id == mId) return name;
 	}
 
-	return g_NoName;
+	return L"No Name";
 }
 
 void MeshManager::MeshData::AddMesh(const std::wstring& name, MeshTuple& tuple)
@@ -227,7 +225,6 @@ MeshManager::MeshTuple MeshManager::MeshData::CreateMesh(const std::wstring& nam
 
 	return meshTuple;
 }
-
 
 MeshInstanceID MeshManager::InstanceData::CreateInstance(MeshID meshID, const MeshInfo& meshInfo)
 {

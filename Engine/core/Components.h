@@ -20,7 +20,7 @@ struct TagComponent
 		return tag;
 	}
 private:
-	std::string tag = "";
+	std::string tag;
 };
 
 struct RelationComponent

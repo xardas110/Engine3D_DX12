@@ -8,9 +8,6 @@ class Editor;
 
 typedef GameMode* (CALLBACK* GameEntry)(Game*, Application*);
 
-/**
-*  GameWorld class, presitent trought different games.
-*/
 class World : public Game
 {
     friend class Editor;

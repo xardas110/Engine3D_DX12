@@ -116,19 +116,19 @@ class NvidiaDenoiser
 		, public nri::WrapperD3D12Interface
 	{};
 
-	nri::Device* m_NRIDevice;
+	nri::Device* m_NRIDevice{nullptr};
 
-	NriInterface NRI;
+	NriInterface NRI{};
 
-	nri::CommandBuffer* nriCommandBuffer = nullptr;
+	nri::CommandBuffer* nriCommandBuffer{nullptr};
 
 	NRITextures nriTextures[nriTypes::size];
 
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> m_Adapter;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 
-	const int width, height;
-	DenoiserSettings denoiserSettings;
+	const int width{}, height{};
+	DenoiserSettings denoiserSettings{};
 
-	nrd::SigmaSettings shadowSettings = {};
+	nrd::SigmaSettings shadowSettings{};
 };

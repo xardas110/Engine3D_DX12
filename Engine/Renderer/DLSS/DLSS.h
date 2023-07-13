@@ -106,14 +106,14 @@ private:
 	bool bDlssOn = false;
 	int list_item = 3; //balanced
 
-	Texture resolvedTexture;
+	Texture resolvedTexture{};
 
 	SRVHeapData heap = SRVHeapData(1);
 
-	NVSDK_NGX_Parameter* m_ngxParameters = nullptr;
-	NVSDK_NGX_Handle* m_dlssFeature = nullptr;
+	NVSDK_NGX_Parameter* m_ngxParameters{ nullptr };
+	NVSDK_NGX_Handle* m_dlssFeature{ nullptr };
 
-	DlssRecommendedSettings recommendedSettings;
+	DlssRecommendedSettings recommendedSettings{};
 	NVSDK_NGX_PerfQuality_Value qualityMode = NVSDK_NGX_PerfQuality_Value::NVSDK_NGX_PerfQuality_Value_Balanced;
 
 	event::event<void(const bool&, const NVSDK_NGX_PerfQuality_Value&)> dlssChangeEvent;

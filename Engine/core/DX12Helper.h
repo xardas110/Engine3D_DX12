@@ -2,7 +2,7 @@
 #include <d3d12.h>
 #include <DirectXMath.h>
 
-inline D3D12_CLEAR_VALUE ClearValue(DXGI_FORMAT format, DirectX::XMFLOAT4 color)
+inline D3D12_CLEAR_VALUE ClearValue(const DXGI_FORMAT format, const DirectX::XMFLOAT4& color)
 {
 	D3D12_CLEAR_VALUE aoMetallicHeightClearValue;
 	aoMetallicHeightClearValue.Format = format;

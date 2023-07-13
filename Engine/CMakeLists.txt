@@ -73,7 +73,7 @@ set( HEADER_FILES
     "AssetManager/MeshManager.h"
     "AssetManager/TextureManager.h"
     "AssetManager/MaterialManager.h"
-    "external/eventcpp/event.hpp"  
+    "Libs/eventcpp/event.hpp"  
     "Renderer/GBuffer/GBuffer.h" 
     "Renderer/Lightpass/LightPass.h" 
     "Renderer/Lightpass/LightPass.cpp" 
@@ -143,26 +143,26 @@ set( SOURCE_FILES
     "Renderer/DLSS/DLSS.cpp" "Physics/PhysicsActor.cpp")
 
 set( IMGUI_HEADERS
-    external/ImGui/imgui.h
-    external/ImGui/imconfig.h
-    external/ImGui/imgui_impl_win32.h
-    external/ImGui/imgui_impl_dx12.h
+    Libs/ImGui/imgui.h
+    Libs/ImGui/imconfig.h
+    Libs/ImGui/imgui_impl_win32.h
+    Libs/ImGui/imgui_impl_dx12.h
 )
 
 source_group( "Header Files\\ImGUI" FILES ${IMGUI_HEADERS} )
 
 set( IMGUI_SOURCE
-    "external/ImGui/imgui.cpp"
-    "external/ImGui/imgui_demo.cpp"
-    "external/ImGui/imgui_draw.cpp"
-    "external/ImGui/imgui_widgets.cpp"
-    "external/ImGui/imgui_impl_win32.cpp"
-    external/ImGui/imgui_impl_dx12.cpp
-    external/ImGui/imgui_tables.cpp
+    "Libs/ImGui/imgui.cpp"
+    "Libs/ImGui/imgui_demo.cpp"
+    "Libs/ImGui/imgui_draw.cpp"
+    "Libs/ImGui/imgui_widgets.cpp"
+    "Libs/ImGui/imgui_impl_win32.cpp"
+    Libs/ImGui/imgui_impl_dx12.cpp
+    Libs/ImGui/imgui_tables.cpp
 )
 
 set( ENTT_HEADERS
-    external/entt/entt.h
+    Libs/entt/entt.h
 )
 
 source_group( "Source Files\\ImGUI" FILES ${IMGUI_SOURCE} )
@@ -197,8 +197,8 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
 
  set ( TARGET_INCLUDES
     PUBLIC DX12
-    PUBLIC external
-    PUBLIC external/ImGui
+    PUBLIC Libs
+    PUBLIC Libs/ImGui
     PUBLIC Libs/assimp/include
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/Libs/assimp/include
     PUBLIC Libs/RayTracingDenoiser/include
@@ -212,7 +212,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC AssetManager
     PUBLIC Resources/Shaders
     PUBLIC Resources/Shaders/Common
-    PUBLIC external/eventcpp
+    PUBLIC Libs/eventcpp
     PUBLIC Libs/WinPixEventRuntime/include
     PUBLIC Raytracing
     PUBLIC Renderer

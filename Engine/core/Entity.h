@@ -2,42 +2,36 @@
 
 #include <entt/entt.hpp>
 #include <Game.h>
+#include <stdexcept>
 
 class Entity
 {
 	friend class Game;
-	
-	entt::entity id{ entt::null };
-	std::weak_ptr<Game> pGame;
 public:
-	Entity(entt::entity id, std::shared_ptr<Game> game);
+	explicit Entity(entt::entity id, std::shared_ptr<Game> game);
 
 	template<typename T>
-	T& GetComponent()
+	T& GetComponent() const
 	{
-		auto game = pGame.lock(); assert(game);
-		return game->registry.get<T>(id);
+		return GetGame()->registry.get<T>(id);
 	}
 
 	template<typename T, typename... Args>
 	T& AddComponent(Args&&... args)
 	{
-		auto game = pGame.lock(); assert(game);		
-		return game->registry.emplace<T>(id, std::forward<Args>(args)...);
+		return GetGame()->registry.emplace<T>(id, std::forward<Args>(args)...);
 	}
 
 	template<typename T>
-	bool HasComponent()
+	bool HasComponent() const
 	{
-		auto game = pGame.lock(); assert(game);	
-		return game->registry.any_of<T>(id);
+		return GetGame()->registry.any_of<T>(id);
 	}
 
 	template<typename T>
 	size_t RemoveComponent()
 	{
-		auto game = pGame.lock(); assert(game);
-		return game->registry.remove<T>(id);
+		return GetGame()->registry.remove<T>(id);
 	}
 
 	entt::entity GetId() const
@@ -52,4 +46,18 @@ public:
 	}
 
 	void AddChild(Entity& child);
+
+private:
+	std::shared_ptr<Game> GetGame() const
+	{
+		auto game = pGame.lock();
+		if (!game)
+		{
+			throw std::runtime_error("Game object has been destroyed");
+		}
+		return game;
+	}
+
+	entt::entity id{ entt::null };
+	std::weak_ptr<Game> pGame;
 };
