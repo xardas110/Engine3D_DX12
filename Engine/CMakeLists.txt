@@ -122,7 +122,7 @@ set( SOURCE_FILES
     
     "Physics/PhysicsSystem.cpp"
     "core/GameMode.cpp"
-    "main.cpp"
+    "core/main.cpp"
     "Editor/Editor.cpp"  
     "core/World.cpp"   
     "core/Entity.cpp" 

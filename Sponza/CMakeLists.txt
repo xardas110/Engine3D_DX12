@@ -4,11 +4,12 @@ cmake_minimum_required( VERSION 3.20.0 ) # Latest version of CMake when this fil
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DEBUG:FULL")
 
 set( HEADER_FILES
-    "SponzaExe.h")
+ "SponzaExe.h")
 
 set( SRC_FILES   
     "main.cpp"
-    "SponzaExe.cpp")
+
+ "SponzaExe.cpp")
 
 add_library ( Sponza SHARED
     ${HEADER_FILES} 
@@ -24,6 +25,7 @@ target_link_libraries( Sponza
     D3DCompiler.lib
     Shlwapi.lib
 )
+
 
 add_executable ( SponzaBin WIN32
     ${HEADER_FILES} 
