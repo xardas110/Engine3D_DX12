@@ -191,6 +191,7 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::ve
         D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
        
         instanceDesc.InstanceID = mesh.id;
+
         instanceDesc.Transform[0][0] = transform.r[0].m128_f32[0];
         instanceDesc.Transform[1][0] = transform.r[0].m128_f32[1];
         instanceDesc.Transform[2][0] = transform.r[0].m128_f32[2];

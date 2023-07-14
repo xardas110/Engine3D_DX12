@@ -5,19 +5,6 @@
 #include "HlslCompat.h"
 #endif
 
-#ifndef HLSL
-#define UINT_MAX_NULL = 0xffffffff;
-using namespace DirectX;
-#else 
-#define UINT_MAX_NULL
-#endif // !HLSL
-
-#ifndef HLSL
-#define DEFAULT_NULL = 0;
-#else 
-#define DEFAULT_NULL
-#endif // !HLSL
-
 #define INSTANCE_OPAQUE (1<<0)
 #define INSTANCE_TRANSLUCENT (1<<1)
 #define INSTANCE_ALPHA_BLEND (1<<2)
@@ -30,6 +17,13 @@ using namespace DirectX;
 #define MATERIAL_FLAG_INVERT_NORMALS (1 << 6)
 
 #ifndef HLSL
+
+using namespace DirectX;
+
+using ResourceID = UINT;
+
+#define UINT_MAX_NULL = 0xffffffff;
+#define DEFAULT_NULL = 0;
 #define COMPAT_ONE = 1;
 #define COMPAT_VEC3F_ONE = XMFLOAT3(1.f, 1.f, 1.f)
 #define COMPAT_VEC3F_NULL = XMFLOAT3(0.f, 0.f, 0.f)
@@ -38,6 +32,8 @@ using namespace DirectX;
 #define COMPAT_FLOAT(val) = val
 #define COMPAT_INT(val) = val
 #else 
+#define UINT_MAX_NULL
+#define DEFAULT_NULL
 #define COMPAT_ONE
 #define COMPAT_VEC3F_ONE
 #define COMPAT_VEC3F_NULL
@@ -46,6 +42,22 @@ using namespace DirectX;
 #define COMPAT_VEC4F(v0, v1, v2, v3)
 #define COMPAT_INT(val)
 #endif // !HLSL
+
+#ifndef HLSL
+namespace MaterialType
+{
+    enum Type
+    {
+        ao, albedo, normal, roughness, metallic, opacity, emissive, lightmap, height, NumMaterialTypes
+    };
+
+    inline const char* typeNames[NumMaterialTypes] =
+    {
+        "ao", "albedo", "normal", "roughness", "metallic", "opacity", "emissive", "lightmap", "height"
+    };
+}
+
+#endif // !hlsl
 
 #define TEXTURE_NULL UINT_MAX_NULL
 #define MATERIAL_ID_NULL UINT_MAX_NULL
@@ -232,25 +244,9 @@ struct Material
     float metallic COMPAT_FLOAT(0.5f);
 };
 
-#ifndef HLSL
-    namespace MaterialType
-    {
-        enum Type
-        {
-            ao, albedo, normal, roughness, metallic, opacity, emissive, lightmap, height, NumMaterialTypes
-        };
-
-        inline const char* typeNames[NumMaterialTypes] =
-        {
-            "ao", "albedo", "normal", "roughness", "metallic", "opacity", "emissive", "lightmap", "height"
-        };
-    }
-   
-#endif // !hlsl
-
 struct MaterialInfo
 {
-    UINT ao TEXTURE_NULL;
+    ResourceID ao TEXTURE_NULL;
     UINT albedo TEXTURE_NULL;
     UINT normal TEXTURE_NULL;
     UINT roughness TEXTURE_NULL;

@@ -32,63 +32,42 @@ MaterialInstanceID MaterialManager::CreateMaterialInstance(const std::wstring& n
 	if (IsMaterialValid(textureIDs.albedo))
 	{
 		instanceData.gpuInfo[currentIndex].albedo = textureData.textures[textureIDs.albedo].heapID;
-
-		m_TextureManager.IncrementRef(textureIDs.albedo);
-
 	}
 	if (IsMaterialValid(textureIDs.normal))
 	{
 		instanceData.gpuInfo[currentIndex].normal = textureData.textures[textureIDs.normal].heapID;
-
-		m_TextureManager.IncrementRef(textureIDs.normal);
 	}
 	if (IsMaterialValid(textureIDs.ao))
 	{
 		instanceData.gpuInfo[currentIndex].ao = textureData.textures[textureIDs.ao].heapID;
-
-		m_TextureManager.IncrementRef(textureIDs.ao);
 	}
 	if (IsMaterialValid(textureIDs.emissive))
 	{
 		instanceData.gpuInfo[currentIndex].emissive = textureData.textures[textureIDs.emissive].heapID;
-
-		m_TextureManager.IncrementRef(textureIDs.emissive);
 	}
 	if (IsMaterialValid(textureIDs.roughness))
 	{
 		instanceData.gpuInfo[currentIndex].roughness = textureData.textures[textureIDs.roughness].heapID;
-
-		m_TextureManager.IncrementRef(textureIDs.roughness);
 	}
 	if (IsMaterialValid(textureIDs.specular))
 	{
 		instanceData.gpuInfo[currentIndex].specular = textureData.textures[textureIDs.specular].heapID;
-
-		m_TextureManager.IncrementRef(textureIDs.specular);
 	}
 	if (IsMaterialValid(textureIDs.metallic))
 	{
 		instanceData.gpuInfo[currentIndex].metallic = textureData.textures[textureIDs.metallic].heapID;
-
-		m_TextureManager.IncrementRef(textureIDs.metallic);
 	}
 	if (IsMaterialValid(textureIDs.lightmap))
 	{
 		instanceData.gpuInfo[currentIndex].lightmap = textureData.textures[textureIDs.lightmap].heapID;
-
-		m_TextureManager.IncrementRef(textureIDs.lightmap);
 	}
 	if (IsMaterialValid(textureIDs.opacity))
 	{
 		instanceData.gpuInfo[currentIndex].opacity = textureData.textures[textureIDs.opacity].heapID;
-
-		m_TextureManager.IncrementRef(textureIDs.opacity);
 	}
 	if (IsMaterialValid(textureIDs.height))
 	{
 		instanceData.gpuInfo[currentIndex].height = textureData.textures[textureIDs.height].heapID;
-
-		m_TextureManager.IncrementRef(textureIDs.height);
 	}
 
 	instanceData.map[name] = currentIndex;

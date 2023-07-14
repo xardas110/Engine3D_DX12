@@ -20,8 +20,6 @@ private:
 	struct TextureTuple
 	{
 		Texture texture;
-		//Muteable so MeshManager can increment refcount when having const access to this class
-		mutable UINT refCounter{0U};
 		SRVHeapID heapID{ UINT_MAX };
 	};
 
@@ -32,9 +30,6 @@ private:
 	} textureData;
 
 	TextureID CreateTexture(const std::wstring& path);
-
-	void IncrementRef(TextureID id) const;
-	void DecrementRef(TextureID id) const;
 
 	const SRVHeapData& m_SrvHeapData;
 };
