@@ -484,7 +484,7 @@ TextureInstance::TextureInstance(const TextureInstance& other)
     try
     {
         auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
-        textureManager.IncreaseRefCount(textureID);  // Increase ref count
+        textureManager.IncreaseRefCount(other.textureID);  // Increase ref count
     }
     catch (const std::out_of_range& e)
     {

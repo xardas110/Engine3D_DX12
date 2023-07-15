@@ -15,7 +15,7 @@ struct TextureManager
 
 public:
     using SRVHeapID = UINT;
-    using TextureID = size_t; // Assuming TextureID is size_t
+    using TextureID = UINT;
 
     TextureManager(const SRVHeapData& srvHeapData);
 
