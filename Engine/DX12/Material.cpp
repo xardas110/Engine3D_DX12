@@ -2,8 +2,9 @@
 #include "Material.h"
 #include <AssimpLoader.h>
 #include <Application.h>
+#include <TypesCompat.h>
 
-MaterialInstanceID MaterialInstance::CreateMaterialInstance(const std::wstring& name, const MaterialInfo& textureIDs)
+MaterialInstanceID MaterialInstance::CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 	materialInstanceID = materialManager.CreateMaterialInstance(name, textureIDs);
@@ -56,15 +57,14 @@ UINT MaterialInstance::GetGPUFlags()
 	return materialManager.instanceData.gpuInfo[materialInstanceID].flags;
 }
 
-MaterialInfo MaterialInfoHelper::PopulateMaterialInfo(const AssimpMesh& mesh, int flags)
+MaterialInfoCPU MaterialInfoHelper::PopulateMaterialInfo(const AssimpMesh& mesh, int flags)
 {
-	MaterialInfo matInfo;
+	MaterialInfoCPU matInfo;
 
 	if (mesh.material.HasTexture(AssimpMaterialType::Albedo))
 	{
 		const auto texPath = mesh.material.GetTexture(AssimpMaterialType::Albedo).path;
-		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-		matInfo.albedo = tex.GetTextureID();
+		matInfo.albedo = TextureInstance(std::wstring(texPath.begin(), texPath.end()));
 	}
 	if (mesh.material.HasTexture(AssimpMaterialType::Ambient))
 	{
@@ -73,42 +73,37 @@ MaterialInfo MaterialInfoHelper::PopulateMaterialInfo(const AssimpMesh& mesh, in
 
 		if (MeshImport::AmbientAsMetallic & flags)
 		{
-			matInfo.metallic = tex.GetTextureID();
+			matInfo.metallic = tex;
 		}
 		else
 		{
-			matInfo.ao = tex.GetTextureID();
+			matInfo.ao = tex;
 		}
 	}
 	if (mesh.material.HasTexture(AssimpMaterialType::Normal))
 	{
-		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Normal).path;
-		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-		matInfo.normal = tex.GetTextureID();
+		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Normal).path;		
+		matInfo.normal = TextureInstance(std::wstring(texPath.begin(), texPath.end()));;
 	}
 	if (mesh.material.HasTexture(AssimpMaterialType::Emissive))
 	{
 		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Emissive).path;
-		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-		matInfo.emissive = tex.GetTextureID();
+		matInfo.emissive = TextureInstance(std::wstring(texPath.begin(), texPath.end()));
 	}
 	if (mesh.material.HasTexture(AssimpMaterialType::Roughness))
 	{
-		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Roughness).path;
-		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-		matInfo.roughness = tex.GetTextureID();
+		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Roughness).path;		
+		matInfo.roughness = TextureInstance(std::wstring(texPath.begin(), texPath.end()));
 	}
 	if (mesh.material.HasTexture(AssimpMaterialType::Metallic))
 	{
-		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Metallic).path;
-		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-		matInfo.metallic = tex.GetTextureID();
+		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Metallic).path;		
+		matInfo.metallic = TextureInstance(std::wstring(texPath.begin(), texPath.end()));
 	}
 	if (mesh.material.HasTexture(AssimpMaterialType::Specular))
 	{
-		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Specular).path;
-		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-		matInfo.specular = tex.GetTextureID();
+		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Specular).path;		
+		matInfo.specular = TextureInstance(std::wstring(texPath.begin(), texPath.end()));
 	}
 	if (mesh.material.HasTexture(AssimpMaterialType::Height))
 	{
@@ -117,18 +112,17 @@ MaterialInfo MaterialInfoHelper::PopulateMaterialInfo(const AssimpMesh& mesh, in
 
 		if (MeshImport::HeightAsNormal & flags)
 		{
-			matInfo.normal = tex.GetTextureID();
+			matInfo.normal = tex;
 		}
 		else
 		{
-			matInfo.height = tex.GetTextureID();
+			matInfo.height = tex;
 		}
 	}
 	if (mesh.material.HasTexture(AssimpMaterialType::Opacity))
 	{
-		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Opacity).path;
-		TextureInstance tex(std::wstring(texPath.begin(), texPath.end()));
-		matInfo.opacity = tex.GetTextureID();
+		auto texPath = mesh.material.GetTexture(AssimpMaterialType::Opacity).path;	
+		matInfo.opacity = TextureInstance(std::wstring(texPath.begin(), texPath.end()));
 	}
 	bool bHasAnyMat = false;
 	for (size_t i = 0; i < AssimpMaterialType::Size; i++)

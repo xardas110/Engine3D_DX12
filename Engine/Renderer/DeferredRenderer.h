@@ -86,14 +86,14 @@ class DeferredRenderer
 
 	void ExecuteGBufferPass(
 		std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap,
-		std::vector<Material>& materials, std::vector<MaterialInfo>& globalMaterialInfo,
+		std::vector<Material>& materials, std::vector<MaterialInfoGPU>& globalMaterialInfo,
 		std::vector<MeshInstanceWrapper>& meshInstances, ObjectCB& objectCB,
 		const DirectX::XMMATRIX& jitterMat, std::vector<MeshInfo>& globalMeshInfo,
 		AssetManager* assetManager, MeshManager::InstanceData& meshInstance);
 
 	void ExcecuteLightPass(
 		std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap, 
-		std::vector<Material>& materials, std::vector<MaterialInfo>& globalMaterialInfo, 
+		std::vector<Material>& materials, std::vector<MaterialInfoGPU>& globalMaterialInfo,
 		std::vector<MeshInfo>& globalMeshInfo, struct DirectionalLight& directionalLight, 
 		RaytracingDataCB& rtData, LightDataCB& lightDataCB);
 
@@ -103,7 +103,7 @@ class DeferredRenderer
 
 	void ExecuteCompositionPass(
 		std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap,
-		std::vector<Material>& materials, std::vector<MaterialInfo>& globalMaterialInfo,
+		std::vector<Material>& materials, std::vector<MaterialInfoGPU>& globalMaterialInfo,
 		std::vector<MeshInfo>& globalMeshInfo, RaytracingDataCB& rtData);
 
 	void ExecuteHistogramExposurePass(std::shared_ptr<CommandList>& commandList);

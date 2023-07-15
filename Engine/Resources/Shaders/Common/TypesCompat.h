@@ -3,6 +3,8 @@
 
 #ifdef HLSL
 #include "HlslCompat.h"
+#else
+#include <Texture.h>
 #endif
 
 #define INSTANCE_OPAQUE (1<<0)
@@ -244,9 +246,9 @@ struct Material
     float metallic COMPAT_FLOAT(0.5f);
 };
 
-struct MaterialInfo
+struct MaterialInfoGPU
 {
-    ResourceID ao TEXTURE_NULL;
+    UINT ao TEXTURE_NULL;
     UINT albedo TEXTURE_NULL;
     UINT normal TEXTURE_NULL;
     UINT roughness TEXTURE_NULL;
@@ -261,6 +263,26 @@ struct MaterialInfo
     UINT materialID MATERIAL_ID_NULL; //User defined material
     UINT flags DEFAULT_NULL;
 };
+
+#ifndef HLSL
+struct MaterialInfoCPU
+{
+    TextureInstance ao;
+    TextureInstance albedo;
+    TextureInstance normal;
+    TextureInstance roughness;
+
+    TextureInstance metallic;
+    TextureInstance opacity;
+    TextureInstance emissive;
+    TextureInstance lightmap;
+
+    TextureInstance height;
+    TextureInstance specular;
+    UINT materialID MATERIAL_ID_NULL; //User defined material
+    UINT flags DEFAULT_NULL;
+};
+#endif // !HLSL
 
 struct MeshInfo
 {

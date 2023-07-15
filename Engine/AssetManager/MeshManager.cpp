@@ -35,9 +35,9 @@ void ApplyAlphaFlags(MaterialInstance& materialInstance, MeshImport::Flags impor
  * @param importFlags Flags that specify how the material instance should be modified.
  * @param materialInfo Information about the material.
  */
-void ApplyTransparency(MaterialInstance& materialInstance, MeshImport::Flags importFlags, MaterialInfo materialInfo)
+void ApplyTransparency(MaterialInstance& materialInstance, MeshImport::Flags importFlags, MaterialInfoCPU materialInfo)
 {
-	if (MaterialInfoHelper::IsTextureValid(materialInfo.opacity))
+	if (MaterialInfoHelper::IsTextureValid(materialInfo.opacity.GetTextureID()))
 	{
 		// Apply translucency flag to the material instance
 		materialInstance.SetFlags(INSTANCE_TRANSLUCENT);
@@ -81,7 +81,7 @@ void ApplySpecificImportFlags(MaterialInstance& materialInstance, MeshImport::Fl
  * @param importFlags Flags that specify how the material instance should be modified.
  * @param materialInfo Information about the material.
  */
-void ApplyMaterialInstanceImportFlags(MaterialInstance& materialInstance, MeshImport::Flags importFlags, MaterialInfo materialInfo)
+void ApplyMaterialInstanceImportFlags(MaterialInstance& materialInstance, MeshImport::Flags importFlags, MaterialInfoCPU materialInfo)
 {
 	// Set default flags for the material instance
 	materialInstance.SetFlags(INSTANCE_OPAQUE);
@@ -104,16 +104,17 @@ void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<Comma
     LOG_INFO("Num meshes in static mesh: %i", (int)sm.meshes.size());
 
     outStaticMesh.startOffset = instanceData.meshInfo.size();
-    size_t numMeshesIncrement = 0;
 
-    for (auto mesh : sm.meshes)
+    for (size_t i = 0; i < sm.meshes.size(); i++)
     {
-        const std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(numMeshesIncrement++) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
+		auto mesh = sm.meshes[i];
+
+        const std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(i) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
 
         auto internalMesh = Mesh::CreateMesh(commandList, rtCommandList, mesh.vertices, mesh.indices, flags & MeshImport::RHCoords, flags & MeshImport::CustomTangent);
         meshData.CreateMesh(currentName, std::move(internalMesh), m_SrvHeapData);
 
-        MaterialInfo matInfo = MaterialInfoHelper::PopulateMaterialInfo(mesh, flags);
+        MaterialInfoCPU matInfo = MaterialInfoHelper::PopulateMaterialInfo(mesh, flags);
         MaterialInstance matInstance(currentName, matInfo);
         ApplyMaterialInstanceImportFlags(matInstance, flags, matInfo);
 

@@ -39,6 +39,7 @@
 
 #include <mutex>
 #include <unordered_map>
+#include <Logger.h>
 
 #define TEXTURE_INVALID UINT_MAX
 
@@ -49,7 +50,16 @@ struct TextureInstance
     friend class DeferredRenderer;
     friend class TextureManager;
 
+    TextureInstance() = default;
+
     TextureInstance(const std::wstring& path);
+
+    TextureInstance(const TextureInstance& other);
+    TextureInstance& operator=(const TextureInstance& other);
+
+    TextureInstance(TextureInstance&& other) = default;
+    TextureInstance& operator= (TextureInstance&& other) = default;
+
     ~TextureInstance();
 
     bool IsValid() const
@@ -60,6 +70,11 @@ struct TextureInstance
     TextureID GetTextureID() const
     {
         return textureID;
+    }
+
+    static void HandleRefCountException(const std::exception& e, const char* action)
+    {
+        LOG_ERROR("Failed to %s TextureInstance: %s", action, e.what());
     }
 
 private:

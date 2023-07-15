@@ -7,22 +7,10 @@
 #include <ResourceStateTracker.h>
 #include <AssetManager.h>
 
-TextureInstance::TextureInstance(const std::wstring& path)
-{
-    auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
-    textureManager.LoadTexture(path, *this);
-}
-
-TextureInstance::~TextureInstance()
-{
-
-}
-
 Texture::Texture( TextureUsage textureUsage, const std::wstring& name )
     : Resource(name)
     , m_TextureUsage(textureUsage)
-{
-}
+{}
 
 Texture::Texture( const D3D12_RESOURCE_DESC& resourceDesc,
                   const D3D12_CLEAR_VALUE* clearValue, 
@@ -482,3 +470,48 @@ DXGI_FORMAT Texture::GetUAVCompatableFormat(DXGI_FORMAT format)
     return uavFormat;
 }
 
+TextureInstance::TextureInstance(const std::wstring& path)
+{
+    auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
+
+    //Load texture increases the ref count automatically
+    textureManager.LoadTexture(path, *this);
+}
+
+TextureInstance::TextureInstance(const TextureInstance& other) 
+    :textureID(other.textureID)
+{
+    try
+    {
+        auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
+        textureManager.IncreaseRefCount(textureID);  // Increase ref count
+    }
+    catch (const std::out_of_range& e)
+    {
+        HandleRefCountException(e, "copy");
+    }
+}
+
+TextureInstance& TextureInstance::operator=(const TextureInstance& other)
+{
+    if (this != &other)
+    {
+        try
+        {
+            auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
+            textureID = other.textureID;
+            textureManager.IncreaseRefCount(textureID);  // Increase ref count for new texture
+        }
+        catch (const std::out_of_range& e)
+        {
+            HandleRefCountException(e, "assign");
+        }
+    }
+    return *this;
+}
+
+TextureInstance::~TextureInstance()
+{
+    auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
+    //textureManager.DecreaseRefCount(textureID);
+}

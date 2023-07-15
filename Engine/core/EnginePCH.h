@@ -80,6 +80,7 @@ using namespace DirectX;
 #include <array>
 #include <iostream>
 #include <sstream>
+#include <optional>
 
 //Assimp
 #include <assimp/Importer.hpp>

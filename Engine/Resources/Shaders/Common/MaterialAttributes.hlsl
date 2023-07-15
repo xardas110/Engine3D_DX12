@@ -129,7 +129,7 @@ float3 srgbToLinear(float3 srgbColor)
 
 }
 
-float4 GetAlbedo(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float4 GetAlbedo(in MaterialInfoGPU matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.albedo != 0xffffffff)
     {
@@ -145,7 +145,7 @@ float4 GetAlbedo(in MaterialInfo matInfo, in float2 texCoords, in SamplerState i
     return float4(1.f, 1.f, 1.f, 1.f);
 }
 
-float3 GetNormal(in MaterialInfo matInfo, in float2 texCoords, out bool bMatHasNormal, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float3 GetNormal(in MaterialInfoGPU matInfo, in float2 texCoords, out bool bMatHasNormal, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.normal != 0xffffffff)
     {
@@ -163,7 +163,7 @@ float3 GetNormal(in MaterialInfo matInfo, in float2 texCoords, out bool bMatHasN
     return float3(0.f, 1.f, 0.f);
 }
 
-float3 GetSpecular(in MaterialInfo matInfo, in float2 texCoords, out bool bMatHasSpecular, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float3 GetSpecular(in MaterialInfoGPU matInfo, in float2 texCoords, out bool bMatHasSpecular, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.specular != 0xffffffff)
     {
@@ -181,7 +181,7 @@ float3 GetSpecular(in MaterialInfo matInfo, in float2 texCoords, out bool bMatHa
     return float3(1.f, 0.f, 0.f);
 }
 
-float GetAO(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float GetAO(in MaterialInfoGPU matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.ao != 0xffffffff)
     {
@@ -197,7 +197,7 @@ float GetAO(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSamp
     return 1.f;
 }
 
-float GetRoughness(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float GetRoughness(in MaterialInfoGPU matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.roughness != 0xffffffff)
     {
@@ -213,7 +213,7 @@ float GetRoughness(in MaterialInfo matInfo, in float2 texCoords, in SamplerState
     return 0.6f;
 }
 
-float GetMetallic(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float GetMetallic(in MaterialInfoGPU matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.metallic != 0xffffffff)
     {
@@ -229,7 +229,7 @@ float GetMetallic(in MaterialInfo matInfo, in float2 texCoords, in SamplerState 
     return 0.0f;
 }
 
-float GetHeight(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float GetHeight(in MaterialInfoGPU matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.height != 0xffffffff)
     {
@@ -245,7 +245,7 @@ float GetHeight(in MaterialInfo matInfo, in float2 texCoords, in SamplerState in
     return 1.f;
 }
 
-float3 GetEmissive(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float3 GetEmissive(in MaterialInfoGPU matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.emissive != 0xffffffff)
     {
@@ -261,7 +261,7 @@ float3 GetEmissive(in MaterialInfo matInfo, in float2 texCoords, in SamplerState
     return float3(0.f, 0.f, 0.f);
 }
 
-float GetOpacity(in MaterialInfo matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float GetOpacity(in MaterialInfoGPU matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     if (matInfo.opacity != 0xffffffff)
     {
@@ -285,7 +285,7 @@ float3 TangentToWorldNormal(in float3 localTangent, in float3 localBiTangent, in
 }
 
 SurfaceMaterial GetSurfaceMaterial(
-    in MaterialInfo matInfo, in MeshVertex v, in float3x4 model, in float4 objRotQuat,
+    in MaterialInfoGPU matInfo, in MeshVertex v, in float3x4 model, in float4 objRotQuat,
     in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     SurfaceMaterial surface;    
@@ -334,7 +334,7 @@ SurfaceMaterial GetSurfaceMaterial(
     return surface;
 }
 
-void ApplyMaterial(in MaterialInfo matInfo, inout SurfaceMaterial surfaceMat, in StructuredBuffer<Material> materials)
+void ApplyMaterial(in MaterialInfoGPU matInfo, inout SurfaceMaterial surfaceMat, in StructuredBuffer<Material> materials)
 {
     if (matInfo.materialID == 0xffffffff)
         return;

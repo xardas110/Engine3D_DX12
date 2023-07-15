@@ -8,7 +8,7 @@ ConstantBuffer<ObjectCB>            g_ObjectCB                  : register(b0);
 ConstantBuffer<CameraCB>            g_CameraCB                  : register(b1);
     
 Texture2D                           g_GlobalTextureData[]       : register(t1, space0);
-StructuredBuffer<MaterialInfo>      g_GlobalMaterialInfo        : register(t3, space4);
+StructuredBuffer<MaterialInfoGPU>   g_GlobalMaterialInfo : register(t3, space4);
 StructuredBuffer<Material>          g_GlobalMaterials           : register(t4, space5);
   
 SamplerState                        g_LinearRepeatSampler       : register(s0);
@@ -48,7 +48,7 @@ PixelShaderOutput main(PixelShaderInput IN)
 {
     PixelShaderOutput OUT;
     
-    MaterialInfo matInfo = g_GlobalMaterialInfo[g_ObjectCB.materialGPUID];   
+    MaterialInfoGPU matInfo = g_GlobalMaterialInfo[g_ObjectCB.materialGPUID];
        
     if (matInfo.flags & INSTANCE_ALPHA_BLEND)
         discard;

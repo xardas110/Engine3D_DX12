@@ -7,24 +7,24 @@
 #include "../Common/MaterialAttributes.hlsl"
 #include "../Common/BRDF.hlsl"
 
-RaytracingAccelerationStructure g_Scene                     : register(t0);
-Texture2D                       g_GlobalTextureData[]       : register(t1, space0);
-StructuredBuffer<MeshVertex>    g_GlobalMeshVertexData[]    : register(t1, space1);
-StructuredBuffer<uint>          g_GlobalMeshIndexData[]     : register(t1, space2);
+RaytracingAccelerationStructure     g_Scene                     : register(t0);
+Texture2D                           g_GlobalTextureData[]       : register(t1, space0);
+StructuredBuffer<MeshVertex>        g_GlobalMeshVertexData[]    : register(t1, space1);
+StructuredBuffer<uint>              g_GlobalMeshIndexData[]     : register(t1, space2);
 
-StructuredBuffer<MeshInfo>      g_GlobalMeshInfo            : register(t2, space3);
-StructuredBuffer<MaterialInfo>  g_GlobalMaterialInfo        : register(t3, space4);
-StructuredBuffer<Material>      g_GlobalMaterials           : register(t4, space5);
+StructuredBuffer<MeshInfo>          g_GlobalMeshInfo            : register(t2, space3);
+StructuredBuffer<MaterialInfoGPU>   g_GlobalMaterialInfo        : register(t3, space4);
+StructuredBuffer<Material>          g_GlobalMaterials           : register(t4, space5);
 
-Texture2D                       g_GBufferHeap[]             : register(t5, space6);
+Texture2D                           g_GBufferHeap[]             : register(t5, space6);
 
-TextureCube<float4>             g_Cubemap                   : register(t7, space8);
+TextureCube<float4>                 g_Cubemap                   : register(t7, space8);
 
-Texture2D<uint4>                g_BlueNoise[]               : register(t8, space9);
+Texture2D<uint4>                    g_BlueNoise[]               : register(t8, space9);
     
-SamplerState                    g_NearestRepeatSampler      : register(s0);
-SamplerState                    g_LinearRepeatSampler       : register(s1);
-SamplerState                    g_LinearClampSampler        : register(s2);
+SamplerState                        g_NearestRepeatSampler      : register(s0);
+SamplerState                        g_LinearRepeatSampler       : register(s1);
+SamplerState                        g_LinearClampSampler        : register(s2);
 
 ConstantBuffer<DirectionalLightCB> g_DirectionalLight       : register(b0);
 ConstantBuffer<CameraCB>           g_Camera                 : register(b1);
@@ -261,7 +261,7 @@ float2 GetBlueNoise(uint2 pixelPos, uint seed, uint sampleIndex, uint sppVirtual
 bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5f, uint anyhitFlags = 0)
 {
     MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
-    MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
+    MaterialInfoGPU materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
          
     MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
 
@@ -361,7 +361,7 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
     }
            
     MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
-    MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
+    MaterialInfoGPU materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
           
     if (flags & DIRECT_LIGHT_FLAG_SKIP_OPAQUE && materialInfo.flags & INSTANCE_OPAQUE)
         return false;
@@ -753,7 +753,7 @@ void TestRT(RayDesc ray, inout float3 debugColor)
         return;
       
     MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
-    MaterialInfo materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
+    MaterialInfoGPU materialInfo = g_GlobalMaterialInfo[meshInfo.materialInstanceID];
     MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
 
     SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData);

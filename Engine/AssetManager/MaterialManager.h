@@ -11,7 +11,7 @@ struct MaterialManager
 	friend class Editor;
 	friend class MaterialInstance;
 
-	MaterialInstanceID CreateMaterialInstance(const std::wstring& name, const MaterialInfo& textureIDs);
+	MaterialInstanceID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
 	bool GetMaterialInstance(const std::wstring& name, MaterialInstance& outMaterialInstance);
 
 	MaterialID CreateMaterial(const std::wstring& name, const Material& material);
@@ -39,8 +39,8 @@ private:
 	struct InstanceData
 	{
 		//1:1 relations. GPU info will be batched to gpu
-		std::vector<MaterialInfo> cpuInfo;
-		std::vector<MaterialInfo> gpuInfo;	
+		std::vector<MaterialInfoCPU> cpuInfo;
+		std::vector<MaterialInfoGPU> gpuInfo;	
 
 		std::vector<UINT> refCounter;
 		std::map<std::wstring, MaterialInstanceID> map;

@@ -15,12 +15,12 @@ struct MaterialInstance
 
 	MaterialInstance(UINT instanceID) { materialInstanceID = instanceID; };
 
-	MaterialInstance(const std::wstring& name, const MaterialInfo& textureIDs)
+	MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
 	{
 		materialInstanceID = CreateMaterialInstance(name, textureIDs);
 	}
 
-	MaterialInstanceID CreateMaterialInstance(const std::wstring& name, const MaterialInfo& textureIDs);
+	MaterialInstanceID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
 	bool GetMaterialInstance(const std::wstring& name);
 
 	static MaterialID CreateMaterial(const std::wstring& name, const Material& material);
@@ -46,7 +46,7 @@ private:
 class MaterialInfoHelper
 {
 public:
-	static MaterialInfo PopulateMaterialInfo(const struct AssimpMesh& mesh, int flags);
+	static MaterialInfoCPU PopulateMaterialInfo(const struct AssimpMesh& mesh, int flags);
 	static bool IsTextureValid(UINT texture);
 };
 

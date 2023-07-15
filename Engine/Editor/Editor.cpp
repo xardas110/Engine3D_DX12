@@ -108,9 +108,6 @@ Editor::Editor(World* world)
 	:m_World(world)
 {}
 
-void Editor::Destroy()
-{}
-
 void Editor::OnUpdate(UpdateEventArgs& e)
 {
     ImGui::ShowMetricsWindow();
