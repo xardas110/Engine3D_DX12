@@ -159,14 +159,27 @@ DenoiserTextures DeferredRenderer::GetDenoiserTextures()
     return dt;
 }
 
-void DeferredRenderer::ExecuteGBufferPass(
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList5>& gfxCommandList, 
+void DeferredRenderer::ExecuteAccelerationStructurePass(
+    std::shared_ptr<CommandList>& commandList, 
+    std::vector<MeshInstanceWrapper>& meshInstances, 
+    Window& window)
+{
+    auto gfxCommandList = commandList->GetGraphicsCommandList();
+
+    PIXBeginEvent(gfxCommandList.Get(), 0, L"Building DXR structure");
+    m_Raytracer->BuildAccelerationStructure(*commandList, meshInstances, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);
+    PIXEndEvent(gfxCommandList.Get());
+}
+
+void DeferredRenderer::ExecuteGBufferPass( 
     std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap, 
     std::vector<Material>& materials, std::vector<MaterialInfo>& globalMaterialInfo, 
     std::vector<MeshInstanceWrapper>& meshInstances, ObjectCB& objectCB, 
     const DirectX::XMMATRIX& jitterMat, std::vector<MeshInfo>& globalMeshInfo, 
     AssetManager* assetManager, MeshManager::InstanceData& meshInstance)
 {
+    auto gfxCommandList = commandList->GetGraphicsCommandList();
+
     PIXBeginEvent(gfxCommandList.Get(), 0, L"GBufferPass");
     commandList->SetRenderTarget(m_GBuffer->renderTarget);
     commandList->SetViewport(m_GBuffer->renderTarget.GetViewport());
@@ -230,6 +243,394 @@ void DeferredRenderer::ExecuteGBufferPass(
     PIXEndEvent(gfxCommandList.Get());
 }
 
+void DeferredRenderer::ExcecuteLightPass(
+    std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap,
+    std::vector<Material>& materials, std::vector<MaterialInfo>& globalMaterialInfo,
+    std::vector<MeshInfo>& globalMeshInfo, DirectionalLight& directionalLight,
+    RaytracingDataCB& rtData, LightDataCB& lightDataCB)
+{
+    auto gfxCommandList = commandList->GetGraphicsCommandList();
+
+    PIXBeginEvent(gfxCommandList.Get(), 0, L"LightPass");
+
+    // Set render targets, viewport, scissor rect, pipeline state and root signature
+    commandList->SetRenderTarget(m_LightPass->renderTarget);
+    commandList->SetViewport(m_LightPass->renderTarget.GetViewport());
+    commandList->SetScissorRect(m_ScissorRect);
+    commandList->SetPipelineState(m_LightPass->pipeline);
+    gfxCommandList->SetGraphicsRootSignature(m_LightPass->rootSignature.GetRootSignature().Get());
+
+    // Set primitive topology and acceleration structure
+    commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    gfxCommandList->SetGraphicsRootShaderResourceView(LightPassParam::AccelerationStructure, m_Raytracer->GetCurrentTLAS()->GetGPUVirtualAddress());
+
+    // Set Descriptor Heap and Graphics Root Descriptor Table for various buffers and heaps
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.heap.Get());
+    gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::GlobalHeapData, srvHeap.heap->GetGPUDescriptorHandleForHeapStart());
+
+    // Set Graphics Dynamic Structured Buffer for global materials, info
+    commandList->SetGraphicsDynamicStructuredBuffer(LightPassParam::GlobalMaterials, materials);
+    commandList->SetGraphicsDynamicStructuredBuffer(LightPassParam::GlobalMatInfo, globalMaterialInfo);
+    commandList->SetGraphicsDynamicStructuredBuffer(LightPassParam::GlobalMeshInfo, globalMeshInfo);
+
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
+    gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::GBufferHeap, m_GBuffer->m_SRVHeap.GetGPUHandle(0));
+
+    // Set Graphics Dynamic Constant Buffer for camera, light, raytracing data
+    commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::CameraCB, cameraCB);
+    commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::DirectionalLightCB, directionalLight.GetData());
+    commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::RaytracingDataCB, rtData);
+    commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::LightDataCB, lightDataCB);
+
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_Skybox->heap.heap.Get());
+    gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::Cubemap, m_Skybox->GetSRVView());
+
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, heap.heap.Get());
+    gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::BlueNoiseTextures, heap.GetHandleAtStart());
+
+    commandList->Draw(3);
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            m_LightPass->GetTexture(LIGHTBUFFER_DIRECT_LIGHT).GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            m_LightPass->GetTexture(LIGHTBUFFER_SHADOW_DATA).GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            m_LightPass->renderTarget.GetTexture(AttachmentPoint::Color4).GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            m_LightPass->GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE).GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            m_LightPass->GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR).GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            m_LightPass->GetTexture(LIGHTBUFFER_RT_DEBUG).GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+
+    PIXEndEvent(gfxCommandList.Get());
+}
+
+void DeferredRenderer::ExecuteDenoisingPass(
+    std::shared_ptr<CommandList>& commandList, 
+    const Camera* camera, Window& window)
+{
+    auto gfxCommandList = commandList->GetGraphicsCommandList();
+
+    PIXBeginEvent(gfxCommandList.Get(), 0, L"Denoising Pass");
+
+    DenoiserTextures dt = GetDenoiserTextures();
+
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.inMV.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.inNormalRough.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.inViewZ.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_LightPass->m_SRVHeap.heap.Get());
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.inIndirectDiffuse.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.inIndirectSpecular.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.inShadowData.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.outIndirectDiffuse.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_PRESENT,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.outIndirectSpecular.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_PRESENT,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.outShadow.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_PRESENT,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+
+    m_NvidiaDenoiser->RenderFrame(*commandList, cameraCB, *camera, window.m_CurrentBackBufferIndex, m_Width, m_Height);
+
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.inMV.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.inNormalRough.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.inViewZ.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_LightPass->m_SRVHeap.heap.Get());
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.inIndirectDiffuse.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.inIndirectSpecular.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.inShadowData.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.outIndirectDiffuse.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.outIndirectSpecular.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            dt.outShadow.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    PIXEndEvent(gfxCommandList.Get());
+}
+
+void DeferredRenderer::ExecuteCompositionPass(
+    std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap, 
+    std::vector<Material>& materials, std::vector<MaterialInfo>& globalMaterialInfo, 
+    std::vector<MeshInfo>& globalMeshInfo, RaytracingDataCB& rtData)
+{
+    auto gfxCommandList = commandList->GetGraphicsCommandList();
+
+    PIXBeginEvent(gfxCommandList.Get(), 0, L"CompositionPass");
+
+    commandList->SetRenderTarget(m_CompositionPass->renderTarget);
+    commandList->SetViewport(m_CompositionPass->renderTarget.GetViewport());
+    commandList->SetScissorRect(m_ScissorRect);
+    commandList->SetPipelineState(m_CompositionPass->pipeline);
+    gfxCommandList->SetGraphicsRootSignature(m_CompositionPass->rootSignature.GetRootSignature().Get());
+    commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.heap.Get());
+    gfxCommandList->SetGraphicsRootDescriptorTable(CompositionPassParam::GlobalHeapData, srvHeap.heap->GetGPUDescriptorHandleForHeapStart());
+
+    commandList->SetGraphicsDynamicStructuredBuffer(CompositionPassParam::GlobalMaterials, materials);
+
+    commandList->SetGraphicsDynamicStructuredBuffer(CompositionPassParam::GlobalMatInfo, globalMaterialInfo);
+
+    commandList->SetGraphicsDynamicStructuredBuffer(CompositionPassParam::GlobalMeshInfo, globalMeshInfo);
+
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
+
+    gfxCommandList->SetGraphicsRootDescriptorTable(CompositionPassParam::GBufferHeap, m_GBuffer->m_SRVHeap.GetGPUHandle(0));
+
+    gfxCommandList->SetGraphicsRootShaderResourceView(
+        CompositionPassParam::AccelerationStructure,
+        m_Raytracer->GetCurrentTLAS()->GetGPUVirtualAddress());
+
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_LightPass->m_SRVHeap.heap.Get());
+    gfxCommandList->SetGraphicsRootDescriptorTable(CompositionPassParam::LightMapHeap, m_LightPass->m_SRVHeap.GetGPUHandle(0));
+
+    commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::RaytracingDataCB, rtData);
+    commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::CameraCB, cameraCB);
+    commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::TonemapCB, m_HDR->GetTonemapCB());
+
+    commandList->Draw(3);
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    PIXEndEvent(gfxCommandList.Get());
+}
+
+void DeferredRenderer::ExecuteHistogramExposurePass(std::shared_ptr<CommandList>& commandList)  
+{
+    auto gfxCommandList = commandList->GetGraphicsCommandList();
+
+    PIXBeginEvent(gfxCommandList.Get(), 0, L"Histogram Pass");
+
+    UINT histoClear[4] = { 0, 0, 0, 0 };
+
+    gfxCommandList->ClearUnorderedAccessViewUint(
+        m_HDR->histogramClearHeap.heap->GetGPUDescriptorHandleForHeapStart(),
+        m_HDR->histogramClearHeap.heap->GetCPUDescriptorHandleForHeapStart(),
+        m_HDR->histogram.GetD3D12Resource().Get(), histoClear, 0, nullptr);
+
+    commandList->SetPipelineState(m_HDR->histogramPSO);
+    commandList->SetComputeRootSignature(m_HDR->histogramRT);
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_CompositionPass->heap.heap.Get());
+    gfxCommandList->SetComputeRootDescriptorTable(HistogramParam::SourceTex, m_CompositionPass->heap.GetGPUHandle(0));
+
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_HDR->histogramHeap.heap.Get());
+    gfxCommandList->SetComputeRootDescriptorTable(HistogramParam::Histogram, m_HDR->histogramHeap.GetGPUHandle(0));
+
+    auto tonemapCB = m_HDR->GetTonemapCB();
+    tonemapCB.logLuminanceScale = 1.0f / (tonemapCB.maxLogLuminamce - tonemapCB.minLogLuminance);
+    tonemapCB.logLuminanceBias = -tonemapCB.minLogLuminance * tonemapCB.logLuminanceScale;
+
+    tonemapCB.viewOrigin = { 0.f, 0.f };
+    tonemapCB.viewSize = { (float)m_Width, (float)m_Height };
+    tonemapCB.sourceSlice = 0;
+
+    commandList->SetComputeDynamicConstantBuffer(HistogramParam::TonemapCB, tonemapCB);
+
+    commandList->Dispatch((tonemapCB.viewSize.x + 15) / HISTROGRAM_GROUP_X, (tonemapCB.viewSize.y + 15) / HISTROGRAM_GROUP_Y, 1);
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    PIXEndEvent(gfxCommandList.Get());
+}
+
+void DeferredRenderer::ExecuteExposurePass(std::shared_ptr<CommandList>& commandList, const RenderEventArgs& e)
+{
+    auto gfxCommandList = commandList->GetGraphicsCommandList();
+
+    PIXBeginEvent(gfxCommandList.Get(), 0, L"Exposure Pass");
+    commandList->SetPipelineState(m_HDR->exposurePSO);
+    commandList->SetComputeRootSignature(m_HDR->exposureRT);
+
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_HDR->exposureHeap.heap.Get());
+    gfxCommandList->SetComputeRootDescriptorTable(ExposureParam::ExposureTex, m_HDR->exposureHeap.GetGPUHandle(0));
+
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_HDR->histogramHeap.heap.Get());
+    gfxCommandList->SetComputeRootDescriptorTable(ExposureParam::Histogram, m_HDR->histogramHeap.GetGPUHandle(0));
+
+    auto tonemapCB = m_HDR->GetTonemapCB();
+    auto& eyeAdapt = m_HDR->eyeAdaption;
+
+    tonemapCB.logLuminanceScale = tonemapCB.maxLogLuminamce - tonemapCB.minLogLuminance;
+    tonemapCB.logLuminanceBias = tonemapCB.minLogLuminance;
+    tonemapCB.histogramLowPercentile = std::min(0.99f, std::max(0.f, eyeAdapt.lowPercentile));
+    tonemapCB.histogramHighPercentile = std::min(1.f, std::max(tonemapCB.histogramLowPercentile, eyeAdapt.highPercentile));
+    tonemapCB.eyeAdaptationSpeedUp = eyeAdapt.eyeAdaptionSpeedUp;
+    tonemapCB.eyeAdaptationSpeedDown = eyeAdapt.eyeAdaptionSpeedDown;
+    tonemapCB.minAdaptedLuminance = eyeAdapt.minAdaptedLuminance;
+    tonemapCB.maxAdaptedLuminance = eyeAdapt.maxAdaptedLuminance;
+    tonemapCB.frameTime = e.ElapsedTime;
+
+    commandList->SetComputeDynamicConstantBuffer(ExposureParam::TonemapCB, tonemapCB);
+
+    commandList->Dispatch(1, 1, 1);
+    PIXEndEvent(gfxCommandList.Get());
+}
+
+void DeferredRenderer::ExecuteDlssPass(std::shared_ptr<CommandList>& commandList, const Camera* camera)
+{
+    auto gfxCommandList = commandList->GetGraphicsCommandList();
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            m_DLSS->resolvedTexture.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+
+    if (m_DLSS->bDlssOn)
+    {
+        PIXBeginEvent(gfxCommandList.Get(), 0, L"DLSS Pass");
+        DlssTextures dlssTextures
+        (
+            &m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0),
+            &m_DLSS->resolvedTexture,
+            &m_GBuffer->GetTexture(GBUFFER_GEOMETRY_MV2D),
+            &m_GBuffer->GetTexture(GBUFFER_STANDARD_DEPTH),
+            &m_HDR->exposureTex
+        );
+
+        dlssTextures.linearDepth = &m_GBuffer->GetTexture(GBUFFER_LINEAR_DEPTH);
+        dlssTextures.motionVectors3D = &m_GBuffer->GetTexture(GBUFFER_MOTION_VECTOR);
+
+        m_DLSS->EvaluateSuperSampling(commandList.get(), dlssTextures, m_NativeWidth, m_NativeHeight, *camera);
+
+        PIXEndEvent(gfxCommandList.Get());
+    }
+
+    gfxCommandList->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            m_DLSS->resolvedTexture.GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+}
+
 void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
 {
     if (!window.m_pGame.lock()) return;
@@ -255,7 +656,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
     auto& globalMaterialInfo = assetManager->m_MaterialManager.instanceData.gpuInfo;
     auto& globalMaterialInfoCPU = assetManager->m_MaterialManager.instanceData.cpuInfo;
     auto& materials = assetManager->m_MaterialManager.materialData.materials;
-    auto& meshInstance = assetManager->m_MeshManager.instanceData;
+    auto& meshInstanceData = assetManager->m_MeshManager.instanceData;
     auto& textures = assetManager->m_TextureManager.textureData.textures;
 
     std::vector<MeshInstanceWrapper> pointLights;
@@ -356,12 +757,13 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         PIXEndEvent(gfxCommandList.Get());
     }
     {// BUILD DXR STRUCTURE
-        PIXBeginEvent(gfxCommandList.Get(), 0, L"Building DXR structure");    
-        m_Raytracer->BuildAccelerationStructure(*commandList, meshInstances, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);      
-        PIXEndEvent(gfxCommandList.Get());
+        ExecuteAccelerationStructurePass(
+            commandList,
+            meshInstances,
+            window);   
     } 
     {//GBuffer Pass
-        ExecuteGBufferPass(gfxCommandList,
+        ExecuteGBufferPass(
             commandList,
             srvHeap,
             materials,
@@ -371,364 +773,43 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
             jitterMat,
             globalMeshInfo,
             assetManager,
-            meshInstance);
+            meshInstanceData);
     }  
     {//LIGHT PASS
-        PIXBeginEvent(gfxCommandList.Get(), 0, L"LightPass");
-        
-        commandList->SetRenderTarget(m_LightPass->renderTarget);
-        commandList->SetViewport(m_LightPass->renderTarget.GetViewport());
-        commandList->SetScissorRect(m_ScissorRect);
-        commandList->SetPipelineState(m_LightPass->pipeline);
-        gfxCommandList->SetGraphicsRootSignature(m_LightPass->rootSignature.GetRootSignature().Get());
-
-        commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        
-        gfxCommandList->SetGraphicsRootShaderResourceView(
-            LightPassParam::AccelerationStructure,
-            m_Raytracer->GetCurrentTLAS()->GetGPUVirtualAddress());
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.heap.Get());
-
-        gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::GlobalHeapData, srvHeap.heap->GetGPUDescriptorHandleForHeapStart());
-
-        commandList->SetGraphicsDynamicStructuredBuffer(LightPassParam::GlobalMaterials, materials);
-
-        commandList->SetGraphicsDynamicStructuredBuffer(LightPassParam::GlobalMatInfo, globalMaterialInfo);
-
-        commandList->SetGraphicsDynamicStructuredBuffer(LightPassParam::GlobalMeshInfo, globalMeshInfo);
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
-        gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::GBufferHeap, m_GBuffer->m_SRVHeap.GetGPUHandle(0));
-
-        commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::CameraCB, cameraCB);
-        commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::DirectionalLightCB, directionalLight.GetData());
-        commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::RaytracingDataCB, rtData);
-        commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::LightDataCB, lightDataCB);
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_Skybox->heap.heap.Get());
-        gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::Cubemap, m_Skybox->GetSRVView());
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, heap.heap.Get());
-        gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::BlueNoiseTextures, heap.GetHandleAtStart());
-
-        commandList->Draw(3);
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_LightPass->GetTexture(LIGHTBUFFER_DIRECT_LIGHT).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_LightPass->GetTexture(LIGHTBUFFER_SHADOW_DATA).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_LightPass->renderTarget.GetTexture(AttachmentPoint::Color4).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_LightPass->GetTexture(LIGHTBUFFER_INDIRECT_DIFFUSE).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_LightPass->GetTexture(LIGHTBUFFER_INDIRECT_SPECULAR).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_LightPass->GetTexture(LIGHTBUFFER_RT_DEBUG).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-
-        PIXEndEvent(gfxCommandList.Get());
+        ExcecuteLightPass(
+            commandList,
+            srvHeap,
+            materials,
+            globalMaterialInfo,
+            globalMeshInfo,
+            directionalLight,
+            rtData,
+            lightDataCB);        
     }
     {//Denoising 
-        PIXBeginEvent(gfxCommandList.Get(), 0, L"Denoising Pass");
-
-        DenoiserTextures dt = GetDenoiserTextures();
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
-
-        gfxCommandList->ResourceBarrier(1, 
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-            dt.inMV.GetD3D12Resource().Get(), 
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.inNormalRough.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.inViewZ.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_LightPass->m_SRVHeap.heap.Get());
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.inIndirectDiffuse.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1, 
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-            dt.inIndirectSpecular.GetD3D12Resource().Get(), 
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.inShadowData.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.outIndirectDiffuse.GetD3D12Resource().Get(), 
-                D3D12_RESOURCE_STATE_PRESENT,
-                D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.outIndirectSpecular.GetD3D12Resource().Get(), 
-                D3D12_RESOURCE_STATE_PRESENT,
-                D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.outShadow.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_PRESENT,
-                D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
-
-        m_NvidiaDenoiser->RenderFrame(*commandList, cameraCB, *camera, window.m_CurrentBackBufferIndex, m_Width, m_Height);
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.inMV.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.inNormalRough.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.inViewZ.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_LightPass->m_SRVHeap.heap.Get());
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.inIndirectDiffuse.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.inIndirectSpecular.GetD3D12Resource().Get(), 
-                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.inShadowData.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.outIndirectDiffuse.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.outIndirectSpecular.GetD3D12Resource().Get(), 
-                D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                dt.outShadow.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        PIXEndEvent(gfxCommandList.Get());
+        ExecuteDenoisingPass(
+            commandList,
+            camera,
+            window);
     }
     {//Composition branch
-        PIXBeginEvent(gfxCommandList.Get(), 0, L"CompositionPass");
-
-        commandList->SetRenderTarget(m_CompositionPass->renderTarget);
-        commandList->SetViewport(m_CompositionPass->renderTarget.GetViewport());
-        commandList->SetScissorRect(m_ScissorRect);
-        commandList->SetPipelineState(m_CompositionPass->pipeline);
-        gfxCommandList->SetGraphicsRootSignature(m_CompositionPass->rootSignature.GetRootSignature().Get());
-        commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.heap.Get());
-        gfxCommandList->SetGraphicsRootDescriptorTable(CompositionPassParam::GlobalHeapData, srvHeap.heap->GetGPUDescriptorHandleForHeapStart());
-
-        commandList->SetGraphicsDynamicStructuredBuffer(CompositionPassParam::GlobalMaterials, materials);
-
-        commandList->SetGraphicsDynamicStructuredBuffer(CompositionPassParam::GlobalMatInfo, globalMaterialInfo);
-
-        commandList->SetGraphicsDynamicStructuredBuffer(CompositionPassParam::GlobalMeshInfo, globalMeshInfo);
-  
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
-
-        gfxCommandList->SetGraphicsRootDescriptorTable(CompositionPassParam::GBufferHeap, m_GBuffer->m_SRVHeap.GetGPUHandle(0));
-
-        gfxCommandList->SetGraphicsRootShaderResourceView(
-            CompositionPassParam::AccelerationStructure,
-            m_Raytracer->GetCurrentTLAS()->GetGPUVirtualAddress());
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_LightPass->m_SRVHeap.heap.Get());
-        gfxCommandList->SetGraphicsRootDescriptorTable(CompositionPassParam::LightMapHeap, m_LightPass->m_SRVHeap.GetGPUHandle(0));
-
-        commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::RaytracingDataCB, rtData);
-        commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::CameraCB, cameraCB);
-        commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::TonemapCB, m_HDR->GetTonemapCB());
-
-        commandList->Draw(3);
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        PIXEndEvent(gfxCommandList.Get());
+        ExecuteCompositionPass(
+            commandList,
+            srvHeap,
+            materials,
+            globalMaterialInfo,
+            globalMeshInfo,
+            rtData
+        );
     } 
     {//Histogram pass
-        PIXBeginEvent(gfxCommandList.Get(), 0, L"Histogram Pass");
-
-        UINT histoClear[4] = { 0, 0, 0, 0 };
-
-        gfxCommandList->ClearUnorderedAccessViewUint(
-            m_HDR->histogramClearHeap.heap->GetGPUDescriptorHandleForHeapStart(),
-            m_HDR->histogramClearHeap.heap->GetCPUDescriptorHandleForHeapStart(),
-            m_HDR->histogram.GetD3D12Resource().Get(), histoClear, 0, nullptr);
-
-        commandList->SetPipelineState(m_HDR->histogramPSO);
-        commandList->SetComputeRootSignature(m_HDR->histogramRT);
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_CompositionPass->heap.heap.Get());
-        gfxCommandList->SetComputeRootDescriptorTable(HistogramParam::SourceTex, m_CompositionPass->heap.GetGPUHandle(0));
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_HDR->histogramHeap.heap.Get());
-        gfxCommandList->SetComputeRootDescriptorTable(HistogramParam::Histogram, m_HDR->histogramHeap.GetGPUHandle(0));
-   
-        auto tonemapCB = m_HDR->GetTonemapCB();
-        tonemapCB.logLuminanceScale = 1.0f / (tonemapCB.maxLogLuminamce - tonemapCB.minLogLuminance);
-        tonemapCB.logLuminanceBias = -tonemapCB.minLogLuminance * tonemapCB.logLuminanceScale;
-
-        tonemapCB.viewOrigin = { 0.f, 0.f };
-        tonemapCB.viewSize = { (float)m_Width, (float)m_Height };
-        tonemapCB.sourceSlice = 0;
-        
-        commandList->SetComputeDynamicConstantBuffer(HistogramParam::TonemapCB, tonemapCB);
-
-        commandList->Dispatch((tonemapCB.viewSize.x + 15) / HISTROGRAM_GROUP_X , (tonemapCB.viewSize.y + 15) / HISTROGRAM_GROUP_Y, 1);
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        PIXEndEvent(gfxCommandList.Get());
+        ExecuteHistogramExposurePass(commandList);
     }
     { //Exposure pass
-        PIXBeginEvent(gfxCommandList.Get(), 0, L"Exposure Pass");      
-        commandList->SetPipelineState(m_HDR->exposurePSO);     
-        commandList->SetComputeRootSignature(m_HDR->exposureRT);
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_HDR->exposureHeap.heap.Get());
-        gfxCommandList->SetComputeRootDescriptorTable(ExposureParam::ExposureTex, m_HDR->exposureHeap.GetGPUHandle(0));
-
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_HDR->histogramHeap.heap.Get());
-        gfxCommandList->SetComputeRootDescriptorTable(ExposureParam::Histogram, m_HDR->histogramHeap.GetGPUHandle(0));
-
-
-        auto tonemapCB = m_HDR->GetTonemapCB();
-        auto& eyeAdapt = m_HDR->eyeAdaption;
-
-        tonemapCB.logLuminanceScale = tonemapCB.maxLogLuminamce - tonemapCB.minLogLuminance;
-        tonemapCB.logLuminanceBias = tonemapCB.minLogLuminance;
-        tonemapCB.histogramLowPercentile = std::min(0.99f, std::max(0.f, eyeAdapt.lowPercentile));
-        tonemapCB.histogramHighPercentile = std::min(1.f, std::max(tonemapCB.histogramLowPercentile, eyeAdapt.highPercentile));
-        tonemapCB.eyeAdaptationSpeedUp = eyeAdapt.eyeAdaptionSpeedUp;
-        tonemapCB.eyeAdaptationSpeedDown = eyeAdapt.eyeAdaptionSpeedDown;
-        tonemapCB.minAdaptedLuminance = eyeAdapt.minAdaptedLuminance;
-        tonemapCB.maxAdaptedLuminance = eyeAdapt.maxAdaptedLuminance;
-        tonemapCB.frameTime = e.ElapsedTime;
-        
-        commandList->SetComputeDynamicConstantBuffer(ExposureParam::TonemapCB, tonemapCB);
-
-        commandList->Dispatch(1,1,1);
-        PIXEndEvent(gfxCommandList.Get());
+        ExecuteExposurePass(commandList, e);
     }
     { //DLSS pass
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_DLSS->resolvedTexture.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
-
-        if (m_DLSS->bDlssOn)
-        { 
-            PIXBeginEvent(gfxCommandList.Get(), 0, L"DLSS Pass");
-            DlssTextures dlssTextures
-            (
-                &m_CompositionPass->renderTarget.GetTexture(AttachmentPoint::Color0),
-                &m_DLSS->resolvedTexture,
-                &m_GBuffer->GetTexture(GBUFFER_GEOMETRY_MV2D),
-                &m_GBuffer->GetTexture(GBUFFER_STANDARD_DEPTH),
-                &m_HDR->exposureTex
-            );
-
-            dlssTextures.linearDepth = &m_GBuffer->GetTexture(GBUFFER_LINEAR_DEPTH);
-            dlssTextures.motionVectors3D = &m_GBuffer->GetTexture(GBUFFER_MOTION_VECTOR);
-
-            m_DLSS->EvaluateSuperSampling(commandList.get(), dlssTextures, m_NativeWidth, m_NativeHeight, *camera);
-
-            PIXEndEvent(gfxCommandList.Get());
-        }
-
-        gfxCommandList->ResourceBarrier(1,
-            &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_DLSS->resolvedTexture.GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+        ExecuteDlssPass(commandList, camera);
     }
     { //HDR pass
         PIXBeginEvent(gfxCommandList.Get(), 0, L"HDR Pass");

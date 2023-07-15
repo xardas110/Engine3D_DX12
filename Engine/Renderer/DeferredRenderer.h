@@ -64,13 +64,38 @@ class DeferredRenderer
 	
 	DenoiserTextures GetDenoiserTextures();
 
+	void ExecuteAccelerationStructurePass(
+		std::shared_ptr<CommandList>& commandList,
+		std::vector<MeshInstanceWrapper>& meshInstances,
+		Window& window);
+
 	void ExecuteGBufferPass(
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList5>& gfxCommandList,
 		std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap,
 		std::vector<Material>& materials, std::vector<MaterialInfo>& globalMaterialInfo,
 		std::vector<MeshInstanceWrapper>& meshInstances, ObjectCB& objectCB,
 		const DirectX::XMMATRIX& jitterMat, std::vector<MeshInfo>& globalMeshInfo,
 		AssetManager* assetManager, MeshManager::InstanceData& meshInstance);
+
+	void ExcecuteLightPass(
+		std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap, 
+		std::vector<Material>& materials, std::vector<MaterialInfo>& globalMaterialInfo, 
+		std::vector<MeshInfo>& globalMeshInfo, struct DirectionalLight& directionalLight, 
+		RaytracingDataCB& rtData, LightDataCB& lightDataCB);
+
+	void ExecuteDenoisingPass(
+		std::shared_ptr<CommandList>& commandList,
+		const Camera* camera, Window& window);
+
+	void ExecuteCompositionPass(
+		std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap,
+		std::vector<Material>& materials, std::vector<MaterialInfo>& globalMaterialInfo,
+		std::vector<MeshInfo>& globalMeshInfo, RaytracingDataCB& rtData);
+
+	void ExecuteHistogramExposurePass(std::shared_ptr<CommandList>& commandList);
+
+	void ExecuteExposurePass(std::shared_ptr<CommandList>& commandList, const RenderEventArgs& e);
+
+	void ExecuteDlssPass(std::shared_ptr<CommandList>& commandList, const Camera* camera);
 
 	int m_Width, m_Height;
 	int m_NativeWidth, m_NativeHeight;
