@@ -132,11 +132,11 @@ class DeferredRenderer
 	int m_Width, m_Height;
 	int m_NativeWidth, m_NativeHeight;
 
-	CameraCB cameraCB;
+	CameraCB m_CachedCameraCB{};
 
 	const Texture* renderTexture{ nullptr };
 
-	std::vector<Transform> prevTrans;
+	std::vector<Transform> m_LastFrameMeshTransforms{};
 
 	D3D12_RECT m_ScissorRect{ 0, 0, LONG_MAX, LONG_MAX };
 
@@ -152,7 +152,7 @@ class DeferredRenderer
 	std::unique_ptr<NvidiaDenoiser> m_NvidiaDenoiser;
 	std::unique_ptr<Raytracing> m_Raytracer;
 
-	std::unique_ptr<DebugTexturePass> m_DebugTexturePass;
 	std::unique_ptr<BlueNoise> m_BlueNoise;
+	std::unique_ptr<DebugTexturePass> m_DebugTexturePass;
 };
 

@@ -4,12 +4,12 @@
 #include <CommandQueue.h>
 #include <Application.h>
 
-void BlueNoise::LoadTextures(std::shared_ptr<CommandList>& commandList)
+void BlueNoise::LoadContent(std::shared_ptr<CommandList>& commandList)
 {
+    auto device = Application::Get().GetDevice();
+
     commandList->LoadTextureFromFile(scrambling, L"Assets/Textures/BlueNoise/scrambling_ranking_128x128_2d_1spp.png");
     commandList->LoadTextureFromFile(sobol, L"Assets/Textures/BlueNoise/sobol_256_4d.png");
-
-    auto device = Application::Get().GetDevice();
 
     D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
     desc.Format = DXGI_FORMAT_R8G8B8A8_UINT;

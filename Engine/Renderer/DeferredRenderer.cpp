@@ -175,7 +175,7 @@ void DeferredRenderer::ExecuteGBufferPass(
 
     commandList->SetGraphicsDynamicStructuredBuffer(GBufferParam::GlobalMaterials, materials);
     commandList->SetGraphicsDynamicStructuredBuffer(GBufferParam::GlobalMatInfo, globalMaterialInfo);
-    commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::CameraCB, cameraCB);
+    commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::CameraCB, m_CachedCameraCB);
 
     for (int i = 0; i < meshInstances.size(); i++)
     {
@@ -188,10 +188,10 @@ void DeferredRenderer::ExecuteGBufferPass(
 
         objectCB.model = transform.GetTransform();
         objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj * jitterMat;
-        objectCB.prevMVP = prevTrans[i].GetTransform() * cameraCB.prevView * cameraCB.prevProj * jitterMat;
+        objectCB.prevMVP = m_LastFrameMeshTransforms[i].GetTransform() * m_CachedCameraCB.prevView * m_CachedCameraCB.prevProj * jitterMat;
         objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
         objectCB.meshId = mesh.id;
-        objectCB.prevModel = prevTrans[i].GetTransform();
+        objectCB.prevModel = m_LastFrameMeshTransforms[i].GetTransform();
         objectCB.transposeInverseModel = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model));
         objectCB.objRotQuat = transform.rot;
 
@@ -260,7 +260,7 @@ void DeferredRenderer::ExcecuteLightPass(
     gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::GBufferHeap, m_GBuffer->m_SRVHeap.GetGPUHandle(0));
 
     // Set Graphics Dynamic Constant Buffer for camera, light, raytracing data
-    commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::CameraCB, cameraCB);
+    commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::CameraCB, m_CachedCameraCB);
     commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::DirectionalLightCB, directionalLight.GetData());
     commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::RaytracingDataCB, rtData);
     commandList->SetGraphicsDynamicConstantBuffer(LightPassParam::LightDataCB, lightDataCB);
@@ -381,7 +381,7 @@ void DeferredRenderer::ExecuteDenoisingPass(
             D3D12_RESOURCE_STATE_PRESENT,
             D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 
-    m_NvidiaDenoiser->RenderFrame(*commandList, cameraCB, *camera, window.m_CurrentBackBufferIndex, m_Width, m_Height);
+    m_NvidiaDenoiser->RenderFrame(*commandList, m_CachedCameraCB, *camera, window.m_CurrentBackBufferIndex, m_Width, m_Height);
 
     commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_GBuffer->m_SRVHeap.heap.Get());
 
@@ -481,7 +481,7 @@ void DeferredRenderer::ExecuteCompositionPass(
     gfxCommandList->SetGraphicsRootDescriptorTable(CompositionPassParam::LightMapHeap, m_LightPass->m_SRVHeap.GetGPUHandle(0));
 
     commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::RaytracingDataCB, rtData);
-    commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::CameraCB, cameraCB);
+    commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::CameraCB, m_CachedCameraCB);
     commandList->SetGraphicsDynamicConstantBuffer(CompositionPassParam::TonemapCB, m_HDR->GetTonemapCB());
 
     commandList->Draw(3);
@@ -874,7 +874,7 @@ void DeferredRenderer::CachePreviousFrameData(std::vector<MeshInstanceWrapper>& 
     for (size_t i = 0; i < meshInstances.size(); i++)
     {
         auto& [transform, mesh] = meshInstances[i];
-        prevTrans[i] = transform;
+        m_LastFrameMeshTransforms[i] = transform;
     }
 
     cameraCB.prevView = cameraCB.view;
@@ -920,18 +920,18 @@ void DeferredRenderer::SetupJitterMatrix(const XMFLOAT2& jitterScaled, XMMATRIX&
 
 void DeferredRenderer::SetupCameraConstantBuffer(const Camera* camera, const DirectX::XMFLOAT2& scaledCameraJitter)
 {
-    cameraCB.view = camera->get_ViewMatrix();
-    cameraCB.proj = camera->get_ProjectionMatrix();
-    cameraCB.invView = XMMatrixInverse(nullptr, cameraCB.view);
-    cameraCB.invProj = XMMatrixInverse(nullptr, cameraCB.proj);
-    cameraCB.viewProj = cameraCB.view * cameraCB.proj;
-    cameraCB.invViewProj = XMMatrixInverse(nullptr, cameraCB.viewProj);
-    cameraCB.resolution = { (float)m_Width, (float)m_Height };
-    cameraCB.zNear = camera->GetNear();
-    cameraCB.zFar = camera->GetFar();
-    cameraCB.eyeToPixelConeSpreadAngle = atanf((2.0f * tanf(camera->get_FoV() * 0.5f)) / (float)m_Height);
-    cameraCB.jitter = scaledCameraJitter;
-    XMStoreFloat3(&cameraCB.pos, camera->get_Translation());
+    m_CachedCameraCB.view = camera->get_ViewMatrix();
+    m_CachedCameraCB.proj = camera->get_ProjectionMatrix();
+    m_CachedCameraCB.invView = XMMatrixInverse(nullptr, m_CachedCameraCB.view);
+    m_CachedCameraCB.invProj = XMMatrixInverse(nullptr, m_CachedCameraCB.proj);
+    m_CachedCameraCB.viewProj = m_CachedCameraCB.view * m_CachedCameraCB.proj;
+    m_CachedCameraCB.invViewProj = XMMatrixInverse(nullptr, m_CachedCameraCB.viewProj);
+    m_CachedCameraCB.resolution = { (float)m_Width, (float)m_Height };
+    m_CachedCameraCB.zNear = camera->GetNear();
+    m_CachedCameraCB.zFar = camera->GetFar();
+    m_CachedCameraCB.eyeToPixelConeSpreadAngle = atanf((2.0f * tanf(camera->get_FoV() * 0.5f)) / (float)m_Height);
+    m_CachedCameraCB.jitter = scaledCameraJitter;
+    XMStoreFloat3(&m_CachedCameraCB.pos, camera->get_Translation());
 }
 
 void DeferredRenderer::SetupLightDataConstantBuffer(
@@ -1019,7 +1019,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
 
     std::vector<MeshInstanceWrapper> pointLights;
     auto meshInstances = GetMeshInstances(game->registry, &pointLights);
-    prevTrans.resize(meshInstances.size());
+    m_LastFrameMeshTransforms.resize(meshInstances.size());
 
     ObjectCB objectCB;
     SetupObjectConstantBuffer(objectCB, camera);
@@ -1086,7 +1086,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
     //Graphics execute
     ExecuteCommandLists(graphicsQueue, commandList);      
 
-    CachePreviousFrameData(meshInstances, cameraCB);
+    CachePreviousFrameData(meshInstances, m_CachedCameraCB);
     
     auto clockEnd = std::chrono::high_resolution_clock::now();
 

@@ -7,7 +7,7 @@ class BlueNoise
 	friend class DeferredRenderer;
 private:
 
-	void LoadTextures(std::shared_ptr<class CommandList>& commandList);
+	void LoadContent(std::shared_ptr<class CommandList>& commandList);
 
 	Texture scrambling;
 	Texture sobol;
