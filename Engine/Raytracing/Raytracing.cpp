@@ -51,7 +51,7 @@ void AllocateUploadBuffer(ID3D12Device* pDevice, void* pData, UINT64 datasize, I
     (*ppResource)->Unmap(0, nullptr);
 }
 
-void Raytracing::Init()
+Raytracing::Raytracing()
 {
     auto* assetManager = Application::Get().GetAssetManager();
     assetManager->AttachMeshCreatedEvent(&Raytracing::OnMeshCreated, this);

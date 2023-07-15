@@ -28,7 +28,7 @@ class Raytracing
 {
 	friend class DeferredRenderer;
 
-	void Init();
+    Raytracing();
 
     // Build raytracing acceleration structures from the generated geometry.
     void BuildAccelerationStructures();

@@ -65,6 +65,8 @@ class DeferredRenderer
 	
 	DenoiserTextures GetDenoiserTextures();
 
+	void DeferredRenderer::SetupDLSSResolution(int width, int height);
+
 	void SetupScaledCameraJitter(const Camera* camera, XMFLOAT2& inoutJitterScaled);
 
 	void SetupJitterMatrix(const XMFLOAT2& jitterScaled, XMMATRIX& inoutJitterMatrix);
@@ -129,9 +131,6 @@ class DeferredRenderer
 	/// \param cameraCB The camera's constant buffer data for the current frame.
 	void CachePreviousFrameData(std::vector<MeshInstanceWrapper>& meshInstances, CameraCB& cameraCB);
 
-	int m_Width, m_Height;
-	int m_NativeWidth, m_NativeHeight;
-
 	CameraCB m_CachedCameraCB{};
 
 	const Texture* renderTexture{ nullptr };
@@ -154,5 +153,9 @@ class DeferredRenderer
 
 	std::unique_ptr<BlueNoise> m_BlueNoise;
 	std::unique_ptr<DebugTexturePass> m_DebugTexturePass;
+
+	int m_Width{}, m_Height{};
+	int m_NativeWidth{}, m_NativeHeight{};
+
 };
 

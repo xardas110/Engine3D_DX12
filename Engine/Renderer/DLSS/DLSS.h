@@ -59,6 +59,7 @@ struct DLSS
 {
 private:
 	friend class DeferredRenderer;
+	friend class Editor;
 	friend struct std::default_delete<DLSS>;
 
 	DLSS(int width, int height);

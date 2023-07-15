@@ -53,6 +53,7 @@ struct HDR
 {
 private:
 	friend class DeferredRenderer;
+	friend class Editor;
 
 	HDR(int nativeWidth, int nativeHeight);
 

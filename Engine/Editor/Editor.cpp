@@ -7,6 +7,12 @@
 #include <Components.h>
 #include <Entity.h>
 #include <imgui_impl_dx12.h>
+#include <DeferredRenderer.h>
+#include <DirectionalLight.h>
+#include <../Renderer/DLSS/DLSS.h>
+#include <../Renderer/HDR/HDR.h>
+#include <../Renderer/Denoiser/NvidiaDenoiser.h>
+#include <Camera.h>
 
 static ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow
 | ImGuiTreeNodeFlags_OpenOnDoubleClick;
@@ -118,6 +124,7 @@ void Editor::OnUpdate(UpdateEventArgs& e)
     UpdateWorldHierarchy();
     UpdateMaterialManager();
     UpdateSelectedEntity();
+    UpdateRenderSettings();
 }
 
 MouseButtonEventArgs::MouseButton DecodeMouseButton(KeyCode::Key key)
@@ -143,6 +150,27 @@ MouseButtonEventArgs::MouseButton DecodeMouseButton(KeyCode::Key key)
     }
 
     return mouseButton;
+}
+
+void Editor::UpdateRenderSettings()
+{
+    if (!m_World) return;
+
+    m_World->m_pWindow->m_DeferredRenderer.m_HDR->UpdateGUI();
+    m_World->m_pWindow->m_DeferredRenderer.m_DLSS->OnGUI();
+    m_World->m_pWindow->m_DeferredRenderer.m_NvidiaDenoiser->OnGUI();
+
+    if (auto game = m_World->m_pWindow->m_pGame.lock())
+    {
+        auto& directionalLight = game->m_DirectionalLight;
+        directionalLight.UpdateUI();
+
+        {//Camera Settings
+            ImGui::Begin("Camera");
+            ImGui::Checkbox("Jitter", &game->m_Camera.bJitter);
+            ImGui::End();
+        }
+    }
 }
 
 void Editor::UpdateGameMenuBar()

@@ -21,6 +21,8 @@ private:
 
 	void OnUpdate(UpdateEventArgs& e);
 
+	void UpdateRenderSettings();
+
 	void UpdateGameMenuBar();
 	void UpdateRuntimeGame(UpdateEventArgs& e);
 

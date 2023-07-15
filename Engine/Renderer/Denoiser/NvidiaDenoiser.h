@@ -96,6 +96,7 @@ struct DenoiserSettings
 class NvidiaDenoiser
 {
 	friend class DeferredRenderer;
+	friend class Editor;
 	friend struct std::default_delete<NvidiaDenoiser>;
 
 	NvidiaDenoiser(int width, int height, DenoiserTextures& texs);

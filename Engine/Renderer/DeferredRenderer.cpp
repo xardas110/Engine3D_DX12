@@ -19,16 +19,7 @@
 
 using namespace DirectX;
 
-bool IsDirectXRaytracingSupported(IDXGIAdapter4* adapter)
-{
-    ComPtr<ID3D12Device> testDevice;
-    D3D12_FEATURE_DATA_D3D12_OPTIONS5 featureSupportData = {};
-    featureSupportData.RaytracingTier = D3D12_RAYTRACING_TIER_1_1;
-
-    return SUCCEEDED(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&testDevice)))
-        && SUCCEEDED(testDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &featureSupportData, sizeof(featureSupportData)))
-        && featureSupportData.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED;
-}
+static int listbox_item_debug = 0;
 
 DeferredRenderer::DeferredRenderer(int width, int height)
     : m_Width(width), m_Height(height)
@@ -37,8 +28,148 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_NativeHeight = height;
 
     m_DLSS = std::unique_ptr<DLSS>(new DLSS(width, height));
-    m_BlueNoise = std::unique_ptr<BlueNoise>(new BlueNoise);
+    m_DLSS->dlssChangeEvent.attach(&DeferredRenderer::OnDlssChanged, this);
+    SetupDLSSResolution(width, height);
 
+    m_BlueNoise = std::unique_ptr<BlueNoise>(new BlueNoise);
+    m_GBuffer = std::unique_ptr<GBuffer>(new GBuffer(m_Width, m_Height));
+    m_LightPass = std::unique_ptr<LightPass>(new LightPass(m_Width, m_Height));
+    m_CompositionPass = std::unique_ptr<CompositionPass>(new CompositionPass(m_Width, m_Height));
+    m_DebugTexturePass = std::unique_ptr<DebugTexturePass>(new DebugTexturePass(m_NativeWidth, m_NativeHeight));
+    m_HDR = std::unique_ptr<HDR>(new HDR(m_NativeWidth, m_NativeHeight));
+    m_Raytracer = std::unique_ptr<Raytracing>(new Raytracing());
+    m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height, GetDenoiserTextures()));
+    m_Skybox = std::unique_ptr<Skybox>(new Skybox(L"Assets/Textures/belfast_sunset_puresky_4k.hdr"));  
+}
+
+DeferredRenderer::~DeferredRenderer()
+{
+    m_DLSS->dlssChangeEvent.detach(&DeferredRenderer::OnDlssChanged, this);
+    Application::Get().m_DLSS = std::move(m_DLSS);
+}
+
+void DeferredRenderer::LoadContent()
+{
+    auto copyQueue = Application::Get().GetCommandQueue();
+    auto commandList = copyQueue->GetCommandList();
+
+    m_BlueNoise->LoadContent(commandList);
+
+    copyQueue->WaitForFenceValue(copyQueue->ExecuteCommandList(commandList));
+}
+
+void SetupObjectConstantBuffer(ObjectCB& inoutObjectCB, const Camera* camera)
+{
+    inoutObjectCB.view = camera->get_ViewMatrix();
+    inoutObjectCB.proj = camera->get_ProjectionMatrix();
+    inoutObjectCB.invView = XMMatrixInverse(nullptr, inoutObjectCB.view);
+    inoutObjectCB.invProj = XMMatrixInverse(nullptr, inoutObjectCB.proj);
+}
+
+void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
+{
+    if (!window.m_pGame.lock()) return;
+    auto game = window.m_pGame.lock();
+
+    auto clockNow = std::chrono::high_resolution_clock::now();
+
+    auto* camera = game->GetRenderCamera();
+    auto graphicsQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+    auto commandList = graphicsQueue->GetCommandList();
+    auto gfxCommandList = commandList->GetGraphicsCommandList();
+
+    auto assetManager = Application::Get().GetAssetManager();
+
+    auto& srvHeap = assetManager->m_SrvHeapData;
+    auto& globalMeshInfo = assetManager->m_MeshManager.instanceData.meshInfo;
+    auto& globalMaterialInfo = assetManager->m_MaterialManager.instanceData.gpuInfo;
+    auto& globalMaterialInfoCPU = assetManager->m_MaterialManager.instanceData.cpuInfo;
+    auto& materials = assetManager->m_MaterialManager.materialData.materials;
+    auto& meshInstanceData = assetManager->m_MeshManager.instanceData;
+    auto& textures = assetManager->m_TextureManager.textureData.textures;
+    auto& directionalLight = game->m_DirectionalLight;
+
+    std::vector<MeshInstanceWrapper> pointLights;
+    auto meshInstances = GetMeshInstances(game->registry, &pointLights);
+    m_LastFrameMeshTransforms.resize(meshInstances.size());
+
+    ObjectCB objectCB;
+    SetupObjectConstantBuffer(objectCB, camera);
+
+    XMFLOAT2 scaledCameraJitter;
+    SetupScaledCameraJitter(camera, scaledCameraJitter);
+
+    XMMATRIX jitterMat;
+    SetupJitterMatrix(scaledCameraJitter, jitterMat);
+    SetupCameraConstantBuffer(camera, scaledCameraJitter);
+
+    RaytracingDataCB rtData;
+    SetupRaytracingConstantBuffer(rtData, listbox_item_debug, window);
+
+    LightDataCB lightDataCB{};
+    SetupLightDataConstantBuffer(lightDataCB, directionalLight, pointLights);
+
+    ClearRenderTargets(commandList);
+
+    ExecuteAccelerationStructurePass(
+        commandList,
+        meshInstances,
+        window);
+    ExecuteGBufferPass(
+        commandList,
+        srvHeap,
+        materials,
+        globalMaterialInfo,
+        meshInstances,
+        objectCB,
+        jitterMat,
+        globalMeshInfo,
+        assetManager,
+        meshInstanceData);
+    ExcecuteLightPass(
+        commandList,
+        srvHeap,
+        materials,
+        globalMaterialInfo,
+        globalMeshInfo,
+        directionalLight,
+        rtData,
+        lightDataCB);
+    ExecuteDenoisingPass(
+        commandList,
+        camera,
+        window);
+    ExecuteCompositionPass(
+        commandList,
+        srvHeap,
+        materials,
+        globalMaterialInfo,
+        globalMeshInfo,
+        rtData
+    );
+    ExecuteHistogramExposurePass(commandList);
+    ExecuteExposurePass(commandList, e);
+    ExecuteDlssPass(commandList, camera);
+    ExecuteHDRPass(commandList);
+    ExecuteDebugPass(commandList, listbox_item_debug);
+
+    TransitionResourcesBackToRenderState(commandList);
+
+    //Graphics execute
+    ExecuteCommandLists(graphicsQueue, commandList);
+
+    CachePreviousFrameData(meshInstances, m_CachedCameraCB);
+
+    auto clockEnd = std::chrono::high_resolution_clock::now();
+
+    ImGui::Begin("RenderStats");
+    std::string elapsedTime = "CPU MS: " + std::to_string((clockEnd - clockNow).count() * 1e-6);
+    ImGui::Text(elapsedTime.c_str());
+    ImGui::End();
+}
+
+void DeferredRenderer::SetupDLSSResolution(int width, int height)
+{
     auto dlssRes = m_DLSS->recommendedSettings.m_ngxRecommendedOptimalRenderSize;
 
     if (m_DLSS->bDlssOn)
@@ -51,39 +182,6 @@ DeferredRenderer::DeferredRenderer(int width, int height)
         m_Width = width;
         m_Height = height;
     }
-
-    m_GBuffer = std::unique_ptr<GBuffer>(new GBuffer(m_Width, m_Height));
-    m_LightPass = std::unique_ptr<LightPass>(new LightPass(m_Width, m_Height));
-    m_CompositionPass = std::unique_ptr<CompositionPass>(new CompositionPass(m_Width, m_Height));
-    m_DebugTexturePass = std::unique_ptr<DebugTexturePass>(new DebugTexturePass(m_NativeWidth, m_NativeHeight));
-    m_HDR = std::unique_ptr<HDR>(new HDR(m_NativeWidth, m_NativeHeight));
-    m_Raytracer = std::unique_ptr<Raytracing>(new Raytracing());
-
-    m_Raytracer->Init();
-
-    m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height, GetDenoiserTextures()));
-
-    m_Skybox = std::unique_ptr<Skybox>(new Skybox(L"Assets/Textures/belfast_sunset_puresky_4k.hdr"));
-
-    m_DLSS->dlssChangeEvent.attach(&DeferredRenderer::OnDlssChanged, this);
-}
-
-void DeferredRenderer::LoadContent()
-{
-    auto copyQueue = Application::Get().GetCommandQueue();
-
-    auto commandList = copyQueue->GetCommandList();
-
-    m_BlueNoise->LoadContent(commandList);
-
-    auto fVal = copyQueue->ExecuteCommandList(commandList);
-    copyQueue->WaitForFenceValue(fVal);
-}
-
-DeferredRenderer::~DeferredRenderer()
-{
-    m_DLSS->dlssChangeEvent.detach(&DeferredRenderer::OnDlssChanged, this);
-    Application::Get().m_DLSS = std::move(m_DLSS);
 }
 
 std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(entt::registry& registry, std::vector<MeshInstanceWrapper>* pointLights)
@@ -896,14 +994,6 @@ void DeferredRenderer::ClearRenderTargets(std::shared_ptr<CommandList>& commandL
     PIXEndEvent(gfxCommandList.Get());
 }
 
-void SetupObjectConstantBuffer(ObjectCB& inoutObjectCB, const Camera* camera)
-{
-    inoutObjectCB.view = camera->get_ViewMatrix();
-    inoutObjectCB.proj = camera->get_ProjectionMatrix();
-    inoutObjectCB.invView = XMMatrixInverse(nullptr, inoutObjectCB.view);
-    inoutObjectCB.invProj = XMMatrixInverse(nullptr, inoutObjectCB.proj);
-}
-
 void DeferredRenderer::SetupScaledCameraJitter(const Camera* camera, XMFLOAT2& inoutJitterScaled)
 {
     inoutJitterScaled = camera->jitter;
@@ -976,123 +1066,6 @@ void DeferredRenderer::SetupRaytracingConstantBuffer(RaytracingDataCB& rtData, i
     ImGui::SliderFloat("1 bounce ambient strength", &bounceAmbientStrength, 0.f, 1.f);
     rtData.numBounces = numBounces;
     rtData.oneBounceAmbientStrength = bounceAmbientStrength;
-    ImGui::End();
-}
-
-void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
-{
-    if (!window.m_pGame.lock()) return;
-    auto game = window.m_pGame.lock();
-
-    auto clockNow = std::chrono::high_resolution_clock::now();
-
-    m_HDR->UpdateGUI();
-    m_DLSS->OnGUI();
-    m_NvidiaDenoiser->OnGUI();
-
-    auto& directionalLight = game->m_DirectionalLight;
-    directionalLight.UpdateUI();
-
-    static int listbox_item_debug = 0;
-
-    auto* camera = game->GetRenderCamera();
-
-    {//Camera Settings
-        ImGui::Begin("Camera");
-        ImGui::Checkbox("Jitter", &game->m_Camera.bJitter);
-        ImGui::End();
-    }
-
-    auto graphicsQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
-    auto commandList = graphicsQueue->GetCommandList();
-    auto gfxCommandList = commandList->GetGraphicsCommandList();
-
-    auto assetManager = Application::Get().GetAssetManager();
-
-    auto& srvHeap = assetManager->m_SrvHeapData;
-    auto& globalMeshInfo = assetManager->m_MeshManager.instanceData.meshInfo;
-    auto& globalMaterialInfo = assetManager->m_MaterialManager.instanceData.gpuInfo;
-    auto& globalMaterialInfoCPU = assetManager->m_MaterialManager.instanceData.cpuInfo;
-    auto& materials = assetManager->m_MaterialManager.materialData.materials;
-    auto& meshInstanceData = assetManager->m_MeshManager.instanceData;
-    auto& textures = assetManager->m_TextureManager.textureData.textures;
-
-    std::vector<MeshInstanceWrapper> pointLights;
-    auto meshInstances = GetMeshInstances(game->registry, &pointLights);
-    m_LastFrameMeshTransforms.resize(meshInstances.size());
-
-    ObjectCB objectCB;
-    SetupObjectConstantBuffer(objectCB, camera);
-
-    XMFLOAT2 scaledCameraJitter;
-    SetupScaledCameraJitter(camera, scaledCameraJitter);
-
-    XMMATRIX jitterMat;
-    SetupJitterMatrix(scaledCameraJitter, jitterMat);
-    SetupCameraConstantBuffer(camera, scaledCameraJitter);
-
-    RaytracingDataCB rtData;
-    SetupRaytracingConstantBuffer(rtData, listbox_item_debug, window);
-
-    LightDataCB lightDataCB{};
-    SetupLightDataConstantBuffer(lightDataCB, directionalLight, pointLights);
-
-    ClearRenderTargets(commandList);
-
-    ExecuteAccelerationStructurePass(
-        commandList,
-        meshInstances,
-        window);    
-    ExecuteGBufferPass(
-        commandList,
-        srvHeap,
-        materials,
-        globalMaterialInfo,
-        meshInstances,
-        objectCB,
-        jitterMat,
-        globalMeshInfo,
-        assetManager,
-        meshInstanceData); 
-    ExcecuteLightPass(
-        commandList,
-        srvHeap,
-        materials,
-        globalMaterialInfo,
-        globalMeshInfo,
-        directionalLight,
-        rtData,
-        lightDataCB);        
-    ExecuteDenoisingPass(
-        commandList,
-        camera,
-        window);
-    ExecuteCompositionPass(
-        commandList,
-        srvHeap,
-        materials,
-        globalMaterialInfo,
-        globalMeshInfo,
-        rtData
-    );
-    ExecuteHistogramExposurePass(commandList);
-    ExecuteExposurePass(commandList, e);
-    ExecuteDlssPass(commandList, camera);
-    ExecuteHDRPass(commandList);
-    ExecuteDebugPass(commandList, listbox_item_debug);
-
-    TransitionResourcesBackToRenderState(commandList);
-
-    //Graphics execute
-    ExecuteCommandLists(graphicsQueue, commandList);      
-
-    CachePreviousFrameData(meshInstances, m_CachedCameraCB);
-    
-    auto clockEnd = std::chrono::high_resolution_clock::now();
-
-    ImGui::Begin("RenderStats");
-    std::string elapsedTime = "CPU MS: " + std::to_string((clockEnd - clockNow).count() * 1e-6);
-    ImGui::Text(elapsedTime.c_str());
     ImGui::End();
 }
 
