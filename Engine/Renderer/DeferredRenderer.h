@@ -97,6 +97,14 @@ class DeferredRenderer
 
 	void ExecuteDlssPass(std::shared_ptr<CommandList>& commandList, const Camera* camera);
 
+	void ExecuteHDRPass(std::shared_ptr<CommandList>& commandList);
+
+	void ExecuteDebugPass(std::shared_ptr<CommandList>& commandList, int& listbox_item_debug);
+
+	void TransitionResourcesBackToRenderState(std::shared_ptr<CommandList>& commandList);
+
+	void ExecuteCommandLists(std::shared_ptr<CommandQueue>& graphicsQueue, std::shared_ptr<CommandList>& commandList);
+
 	int m_Width, m_Height;
 	int m_NativeWidth, m_NativeHeight;
 
