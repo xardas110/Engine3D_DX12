@@ -40,7 +40,7 @@ void DirectionalLight::UpdateUI()
         }
     }
     ImGui::SliderFloat("Angular Diameter", &data.angularDiameter, 0.f, 10.f);
-    ImGui::SliderFloat("Lux", &data.color.m128_f32[3], 0, 20.f);
+    ImGui::SliderFloat("Lux", &data.color.m128_f32[3], 0, 1000.f);
     ImGui::ColorPicker3("Color", &data.color.m128_f32[0], ImGuiColorEditFlags_Float);
     ImGui::End();
 }
