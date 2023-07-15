@@ -64,6 +64,8 @@ class DeferredRenderer
 	
 	DenoiserTextures GetDenoiserTextures();
 
+	void ClearRenderTargets(std::shared_ptr<CommandList>& commandList);
+
 	void ExecuteAccelerationStructurePass(
 		std::shared_ptr<CommandList>& commandList,
 		std::vector<MeshInstanceWrapper>& meshInstances,
@@ -104,6 +106,8 @@ class DeferredRenderer
 	void TransitionResourcesBackToRenderState(std::shared_ptr<CommandList>& commandList);
 
 	void ExecuteCommandLists(std::shared_ptr<CommandQueue>& graphicsQueue, std::shared_ptr<CommandList>& commandList);
+
+	void CachePreviousFrameData(std::vector<MeshInstanceWrapper>& meshInstances, CameraCB& cameraCB);
 
 	int m_Width, m_Height;
 	int m_NativeWidth, m_NativeHeight;

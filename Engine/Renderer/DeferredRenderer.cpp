@@ -886,6 +886,33 @@ void DeferredRenderer::ExecuteCommandLists(std::shared_ptr<CommandQueue>& graphi
     PIXEndEvent(graphicsQueue->GetD3D12CommandQueue().Get());
 }
 
+void DeferredRenderer::CachePreviousFrameData(std::vector<MeshInstanceWrapper>& meshInstances, CameraCB& cameraCB)
+{
+    for (size_t i = 0; i < meshInstances.size(); i++)
+    {
+        auto& [transform, mesh] = meshInstances[i];
+        prevTrans[i] = transform;
+    }
+
+    cameraCB.prevView = cameraCB.view;
+    cameraCB.prevProj = cameraCB.proj;
+}
+
+void DeferredRenderer::ClearRenderTargets(std::shared_ptr<CommandList>& commandList)
+{
+    auto gfxCommandList = commandList->GetGraphicsCommandList();
+
+    PIXBeginEvent(gfxCommandList.Get(), 0, L"Clear buffers");
+    FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
+    commandList->SetRenderTarget(m_GBuffer->renderTarget);
+    m_GBuffer->ClearRendetTarget(*commandList, clearColor);
+
+    commandList->SetRenderTarget(m_LightPass->renderTarget);
+    m_LightPass->ClearRendetTarget(*commandList, clearColor);
+
+    PIXEndEvent(gfxCommandList.Get());
+}
+
 void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
 {
     if (!window.m_pGame.lock()) return;
@@ -1000,95 +1027,55 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         }
     }
 
-    {// Clear the render targets.
-        PIXBeginEvent(gfxCommandList.Get(), 0, L"Clear buffers");
-        FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
-        commandList->SetRenderTarget(m_GBuffer->renderTarget);
-        m_GBuffer->ClearRendetTarget(*commandList, clearColor);
-
-        commandList->SetRenderTarget(m_LightPass->renderTarget);
-        m_LightPass->ClearRendetTarget(*commandList, clearColor);
-
-        PIXEndEvent(gfxCommandList.Get());
-    }
-    {// BUILD DXR STRUCTURE
-        ExecuteAccelerationStructurePass(
-            commandList,
-            meshInstances,
-            window);   
-    } 
-    {//GBuffer Pass
-        ExecuteGBufferPass(
-            commandList,
-            srvHeap,
-            materials,
-            globalMaterialInfo,
-            meshInstances,
-            objectCB,
-            jitterMat,
-            globalMeshInfo,
-            assetManager,
-            meshInstanceData);
-    }  
-    {//LIGHT PASS
-        ExcecuteLightPass(
-            commandList,
-            srvHeap,
-            materials,
-            globalMaterialInfo,
-            globalMeshInfo,
-            directionalLight,
-            rtData,
-            lightDataCB);        
-    }
-    {//Denoising 
-        ExecuteDenoisingPass(
-            commandList,
-            camera,
-            window);
-    }
-    {//Composition branch
-        ExecuteCompositionPass(
-            commandList,
-            srvHeap,
-            materials,
-            globalMaterialInfo,
-            globalMeshInfo,
-            rtData
-        );
-    } 
-    {//Histogram pass
-        ExecuteHistogramExposurePass(commandList);
-    }
-    { //Exposure pass
-        ExecuteExposurePass(commandList, e);
-    }
-    { //DLSS pass
-        ExecuteDlssPass(commandList, camera);
-    }
-    { //HDR pass
-        ExecuteHDRPass(commandList);
-    }
-    { //Debug pass
-        ExecuteDebugPass(commandList, listbox_item_debug);
-    }
-
+        
+    ClearRenderTargets(commandList);
+    ExecuteAccelerationStructurePass(
+        commandList,
+        meshInstances,
+        window);    
+    ExecuteGBufferPass(
+        commandList,
+        srvHeap,
+        materials,
+        globalMaterialInfo,
+        meshInstances,
+        objectCB,
+        jitterMat,
+        globalMeshInfo,
+        assetManager,
+        meshInstanceData); 
+    ExcecuteLightPass(
+        commandList,
+        srvHeap,
+        materials,
+        globalMaterialInfo,
+        globalMeshInfo,
+        directionalLight,
+        rtData,
+        lightDataCB);        
+    ExecuteDenoisingPass(
+        commandList,
+        camera,
+        window);
+    ExecuteCompositionPass(
+        commandList,
+        srvHeap,
+        materials,
+        globalMaterialInfo,
+        globalMeshInfo,
+        rtData
+    );
+    ExecuteHistogramExposurePass(commandList);
+    ExecuteExposurePass(commandList, e);
+    ExecuteDlssPass(commandList, camera);
+    ExecuteHDRPass(commandList);
+    ExecuteDebugPass(commandList, listbox_item_debug);
     TransitionResourcesBackToRenderState(commandList);
+    //Graphics execute
+    ExecuteCommandLists(graphicsQueue, commandList);      
 
-    {//Graphics execute
-        ExecuteCommandLists(graphicsQueue, commandList);
-    }  
-    {//prev transform for motion vector
-        for (size_t i = 0; i < meshInstances.size(); i++)
-        {
-            auto& [transform, mesh] = meshInstances[i];
-            prevTrans[i] = transform;
-        }
-    }
+    CachePreviousFrameData(meshInstances, cameraCB);
     
-    cameraCB.prevView = cameraCB.view;
-    cameraCB.prevProj = cameraCB.proj;  
-
     auto clockEnd = std::chrono::high_resolution_clock::now();
 
     ImGui::Begin("RenderStats");
