@@ -17,8 +17,6 @@ public:
 private:
 	void ShowDockSpace(bool* p_open);
 	
-	void Destroy(); //Destructor has to be public, Application will clean.
-
 	void OnUpdate(UpdateEventArgs& e);
 
 	void UpdateRenderSettings();

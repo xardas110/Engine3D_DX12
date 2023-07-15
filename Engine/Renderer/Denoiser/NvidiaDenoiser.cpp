@@ -116,7 +116,6 @@ NvidiaDenoiser::NvidiaDenoiser(int width, int height, DenoiserTextures& texs)
 			throw std::exception("Failed to create NRI interface");
 		}
 	}
-
 	{//Normalrough
 		nri::TextureD3D12Desc normalRoughDesc = {};
 

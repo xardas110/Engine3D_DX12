@@ -9,6 +9,7 @@
 #include <StaticDescriptorHeap.h>
 #include <event.hpp>
 
+
 class AssetManager
 {
 	friend class Application;

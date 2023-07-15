@@ -7,12 +7,6 @@
 #include <Components.h>
 #include <Entity.h>
 #include <imgui_impl_dx12.h>
-#include <DeferredRenderer.h>
-#include <DirectionalLight.h>
-#include <../Renderer/DLSS/DLSS.h>
-#include <../Renderer/HDR/HDR.h>
-#include <../Renderer/Denoiser/NvidiaDenoiser.h>
-#include <Camera.h>
 
 static ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow
 | ImGuiTreeNodeFlags_OpenOnDoubleClick;

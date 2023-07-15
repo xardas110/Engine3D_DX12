@@ -5,7 +5,6 @@
 #include <CommandQueue.h>
 #include <AssetManager.h>
 
-
 TextureManager::TextureManager(const SRVHeapData& srvHeapData)
 	:m_SrvHeapData(srvHeapData)
 {}
