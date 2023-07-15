@@ -159,6 +159,77 @@ DenoiserTextures DeferredRenderer::GetDenoiserTextures()
     return dt;
 }
 
+void DeferredRenderer::ExecuteGBufferPass(
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList5>& gfxCommandList, 
+    std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap, 
+    std::vector<Material>& materials, std::vector<MaterialInfo>& globalMaterialInfo, 
+    std::vector<MeshInstanceWrapper>& meshInstances, ObjectCB& objectCB, 
+    const DirectX::XMMATRIX& jitterMat, std::vector<MeshInfo>& globalMeshInfo, 
+    AssetManager* assetManager, MeshManager::InstanceData& meshInstance)
+{
+    PIXBeginEvent(gfxCommandList.Get(), 0, L"GBufferPass");
+    commandList->SetRenderTarget(m_GBuffer->renderTarget);
+    commandList->SetViewport(m_GBuffer->renderTarget.GetViewport());
+    commandList->SetScissorRect(m_ScissorRect);
+    commandList->SetPipelineState(m_GBuffer->pipeline);
+
+    gfxCommandList->SetGraphicsRootSignature(m_GBuffer->rootSignature.GetRootSignature().Get());
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.heap.Get());
+    gfxCommandList->SetGraphicsRootDescriptorTable(GBufferParam::GlobalHeapData, srvHeap.heap->GetGPUDescriptorHandleForHeapStart());
+
+    commandList->SetGraphicsDynamicStructuredBuffer(GBufferParam::GlobalMaterials, materials);
+    commandList->SetGraphicsDynamicStructuredBuffer(GBufferParam::GlobalMatInfo, globalMaterialInfo);
+    commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::CameraCB, cameraCB);
+
+    for (int i = 0; i < meshInstances.size(); i++)
+    {
+        auto& [transform, mesh] = meshInstances[i];
+
+        if (mesh.IsPointlight())
+        {
+            continue;
+        }
+
+        objectCB.model = transform.GetTransform();
+        objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj * jitterMat;
+        objectCB.prevMVP = prevTrans[i].GetTransform() * cameraCB.prevView * cameraCB.prevProj * jitterMat;
+        objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
+        objectCB.meshId = mesh.id;
+        objectCB.prevModel = prevTrans[i].GetTransform();
+        objectCB.transposeInverseModel = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model));
+        objectCB.objRotQuat = transform.rot;
+
+        globalMeshInfo[mesh.id].objRot = transform.rot;
+        objectCB.materialGPUID = globalMeshInfo[mesh.id].materialInstanceID;
+
+        commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
+        assetManager->m_MeshManager.meshData.meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
+    }
+
+    auto TransitionRenderTargetToPixelShaderResource = [&](UINT textureType) {
+        gfxCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+            m_GBuffer->GetTexture(textureType).GetD3D12Resource().Get(),
+            D3D12_RESOURCE_STATE_RENDER_TARGET,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+    };
+
+    TransitionRenderTargetToPixelShaderResource(GBUFFER_ALBEDO);
+    TransitionRenderTargetToPixelShaderResource(GBUFFER_AO_METALLIC_HEIGHT);
+    TransitionRenderTargetToPixelShaderResource(GBUFFER_EMISSIVE_SHADER_MODEL);
+    TransitionRenderTargetToPixelShaderResource(GBUFFER_LINEAR_DEPTH);
+    TransitionRenderTargetToPixelShaderResource(GBUFFER_MOTION_VECTOR);
+    TransitionRenderTargetToPixelShaderResource(GBUFFER_NORMAL_ROUGHNESS);
+    TransitionRenderTargetToPixelShaderResource(GBUFFER_GEOMETRY_NORMAL);
+    TransitionRenderTargetToPixelShaderResource(GBUFFER_GEOMETRY_MV2D);
+
+    gfxCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+        m_GBuffer->GetTexture(GBUFFER_STANDARD_DEPTH).GetD3D12Resource().Get(),
+        D3D12_RESOURCE_STATE_DEPTH_WRITE,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+    PIXEndEvent(gfxCommandList.Get());
+}
+
 void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
 {
     if (!window.m_pGame.lock()) return;
@@ -290,67 +361,17 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         PIXEndEvent(gfxCommandList.Get());
     } 
     {//GBuffer Pass
-        PIXBeginEvent(gfxCommandList.Get(), 0, L"GBufferPass");
-        commandList->SetRenderTarget(m_GBuffer->renderTarget);
-        commandList->SetViewport(m_GBuffer->renderTarget.GetViewport());
-        commandList->SetScissorRect(m_ScissorRect);
-        commandList->SetPipelineState(m_GBuffer->pipeline);
-
-        gfxCommandList->SetGraphicsRootSignature(m_GBuffer->rootSignature.GetRootSignature().Get());
-        commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.heap.Get());
-        gfxCommandList->SetGraphicsRootDescriptorTable(GBufferParam::GlobalHeapData, srvHeap.heap->GetGPUDescriptorHandleForHeapStart());
-
-        commandList->SetGraphicsDynamicStructuredBuffer(GBufferParam::GlobalMaterials, materials);       
-        commandList->SetGraphicsDynamicStructuredBuffer(GBufferParam::GlobalMatInfo, globalMaterialInfo);
-        commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::CameraCB, cameraCB);
-
-        for (int i = 0; i< meshInstances.size(); i++)
-        {  
-            auto& [transform, mesh] = meshInstances[i];
-
-            if (mesh.IsPointlight())
-            {
-                continue;
-            }
-
-            objectCB.model = transform.GetTransform();
-            objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj * jitterMat;
-            objectCB.prevMVP = prevTrans[i].GetTransform() * cameraCB.prevView * cameraCB.prevProj * jitterMat;
-            objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
-            objectCB.meshId = mesh.id;
-            objectCB.prevModel = prevTrans[i].GetTransform();
-            objectCB.transposeInverseModel = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model));
-            objectCB.objRotQuat = transform.rot;
-
-            globalMeshInfo[mesh.id].objRot = transform.rot;
-            objectCB.materialGPUID = globalMeshInfo[mesh.id].materialInstanceID;
-
-            commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
-            assetManager->m_MeshManager.meshData.meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
-        }
-
-        auto TransitionRenderTargetToPixelShaderResource = [&](UINT textureType) {
-            gfxCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
-                m_GBuffer->GetTexture(textureType).GetD3D12Resource().Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-        };
-
-        TransitionRenderTargetToPixelShaderResource(GBUFFER_ALBEDO);
-        TransitionRenderTargetToPixelShaderResource(GBUFFER_AO_METALLIC_HEIGHT);
-        TransitionRenderTargetToPixelShaderResource(GBUFFER_EMISSIVE_SHADER_MODEL);
-        TransitionRenderTargetToPixelShaderResource(GBUFFER_LINEAR_DEPTH);
-        TransitionRenderTargetToPixelShaderResource(GBUFFER_MOTION_VECTOR);
-        TransitionRenderTargetToPixelShaderResource(GBUFFER_NORMAL_ROUGHNESS);
-        TransitionRenderTargetToPixelShaderResource(GBUFFER_GEOMETRY_NORMAL);
-        TransitionRenderTargetToPixelShaderResource(GBUFFER_GEOMETRY_MV2D);
-
-        gfxCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
-            m_GBuffer->GetTexture(GBUFFER_STANDARD_DEPTH).GetD3D12Resource().Get(),
-            D3D12_RESOURCE_STATE_DEPTH_WRITE,
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-        PIXEndEvent(gfxCommandList.Get());
+        ExecuteGBufferPass(gfxCommandList,
+            commandList,
+            srvHeap,
+            materials,
+            globalMaterialInfo,
+            meshInstances,
+            objectCB,
+            jitterMat,
+            globalMeshInfo,
+            assetManager,
+            meshInstance);
     }  
     {//LIGHT PASS
         PIXBeginEvent(gfxCommandList.Get(), 0, L"LightPass");

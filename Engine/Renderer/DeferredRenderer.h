@@ -64,6 +64,14 @@ class DeferredRenderer
 	
 	DenoiserTextures GetDenoiserTextures();
 
+	void ExecuteGBufferPass(
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList5>& gfxCommandList,
+		std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap,
+		std::vector<Material>& materials, std::vector<MaterialInfo>& globalMaterialInfo,
+		std::vector<MeshInstanceWrapper>& meshInstances, ObjectCB& objectCB,
+		const DirectX::XMMATRIX& jitterMat, std::vector<MeshInfo>& globalMeshInfo,
+		AssetManager* assetManager, MeshManager::InstanceData& meshInstance);
+
 	int m_Width, m_Height;
 	int m_NativeWidth, m_NativeHeight;
 
