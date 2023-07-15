@@ -13,6 +13,7 @@
 #include <Skybox/Skybox.h>
 #include <HDR/HDR.h>
 #include <DLSS/DLSS.h>
+#include <Noise/BlueNoise.h>
 
 class Game;
 class MeshTuple;
@@ -152,9 +153,6 @@ class DeferredRenderer
 	std::unique_ptr<Raytracing> m_Raytracer;
 
 	std::unique_ptr<DebugTexturePass> m_DebugTexturePass;
-
-	Texture scrambling;
-	Texture sobol;
-	SRVHeapData heap = SRVHeapData(2);
+	std::unique_ptr<BlueNoise> m_BlueNoise;
 };
 

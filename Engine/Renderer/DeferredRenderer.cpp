@@ -37,6 +37,8 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_NativeHeight = height;
 
     m_DLSS = std::unique_ptr<DLSS>(new DLSS(width, height));
+    m_BlueNoise = std::unique_ptr<BlueNoise>(new BlueNoise);
+
     auto dlssRes = m_DLSS->recommendedSettings.m_ngxRecommendedOptimalRenderSize;
 
     if (m_DLSS->bDlssOn)
@@ -70,31 +72,12 @@ void DeferredRenderer::LoadContent()
 {
     auto copyQueue = Application::Get().GetCommandQueue();
 
-    auto cl = copyQueue->GetCommandList();
+    auto commandList = copyQueue->GetCommandList();
 
-    cl->LoadTextureFromFile(scrambling, L"Assets/Textures/BlueNoise/scrambling_ranking_128x128_2d_1spp.png");
-    cl->LoadTextureFromFile(sobol, L"Assets/Textures/BlueNoise/sobol_256_4d.png");
+    m_BlueNoise->LoadContent(commandList);
 
-    auto fVal = copyQueue->ExecuteCommandList(cl);
+    auto fVal = copyQueue->ExecuteCommandList(commandList);
     copyQueue->WaitForFenceValue(fVal);
-
-    auto device = Application::Get().GetDevice();
-
-    D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
-    desc.Format = DXGI_FORMAT_R8G8B8A8_UINT;
-    desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    desc.Texture2D.MipLevels = 1;
-    desc.Texture2D.MostDetailedMip = 0;
-
-    device->CreateShaderResourceView(
-        scrambling.GetD3D12Resource().Get(), &desc,
-        heap.SetHandle(DENOISER_TEX_SCRAMBLING));
-
-    device->CreateShaderResourceView(
-        sobol.GetD3D12Resource().Get(), &desc,
-        heap.SetHandle(DENOISER_TEX_SOBOL));
-     
 }
 
 DeferredRenderer::~DeferredRenderer()
@@ -285,8 +268,8 @@ void DeferredRenderer::ExcecuteLightPass(
     commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_Skybox->heap.heap.Get());
     gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::Cubemap, m_Skybox->GetSRVView());
 
-    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, heap.heap.Get());
-    gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::BlueNoiseTextures, heap.GetHandleAtStart());
+    commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_BlueNoise->heap.heap.Get());
+    gfxCommandList->SetGraphicsRootDescriptorTable(LightPassParam::BlueNoiseTextures, m_BlueNoise->heap.GetHandleAtStart());
 
     commandList->Draw(3);
 
