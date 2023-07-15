@@ -64,6 +64,16 @@ class DeferredRenderer
 	
 	DenoiserTextures GetDenoiserTextures();
 
+	void SetupScaledCameraJitter(const Camera* camera, XMFLOAT2& inoutJitterScaled);
+
+	void SetupJitterMatrix(const XMFLOAT2& jitterScaled, XMMATRIX& inoutJitterMatrix);
+
+	void SetupCameraConstantBuffer(const Camera* camera, const DirectX::XMFLOAT2& scaledCameraJitter);
+
+	void SetupLightDataConstantBuffer(LightDataCB& lightDataCB, struct DirectionalLight& directionalLight, std::vector<MeshInstanceWrapper>& pointLights);
+
+	void SetupRaytracingConstantBuffer(RaytracingDataCB& rtData, int listbox_item_debug, Window& window);
+
 	void ClearRenderTargets(std::shared_ptr<CommandList>& commandList);
 
 	void ExecuteAccelerationStructurePass(
@@ -107,6 +117,15 @@ class DeferredRenderer
 
 	void ExecuteCommandLists(std::shared_ptr<CommandQueue>& graphicsQueue, std::shared_ptr<CommandList>& commandList);
 
+
+	/// \brief Caches the previous frame's data for use in motion vectors calculation and other temporal effects.
+	///
+	/// This function caches the previous frame's data which can be used in the next frame for various purposes. These uses include 
+	/// the calculation of motion vectors, which require the positions from the current and the previous frame. The cached data 
+	/// can also be used for other temporal effects like motion blur, temporal anti-aliasing, and more.
+	///
+	/// \param meshInstances The instances of meshes rendered in the current frame.
+	/// \param cameraCB The camera's constant buffer data for the current frame.
 	void CachePreviousFrameData(std::vector<MeshInstanceWrapper>& meshInstances, CameraCB& cameraCB);
 
 	int m_Width, m_Height;

@@ -913,19 +913,112 @@ void DeferredRenderer::ClearRenderTargets(std::shared_ptr<CommandList>& commandL
     PIXEndEvent(gfxCommandList.Get());
 }
 
+void SetupObjectConstantBuffer(ObjectCB& inoutObjectCB, const Camera* camera)
+{
+    inoutObjectCB.view = camera->get_ViewMatrix();
+    inoutObjectCB.proj = camera->get_ProjectionMatrix();
+    inoutObjectCB.invView = XMMatrixInverse(nullptr, inoutObjectCB.view);
+    inoutObjectCB.invProj = XMMatrixInverse(nullptr, inoutObjectCB.proj);
+}
+
+void DeferredRenderer::SetupScaledCameraJitter(const Camera* camera, XMFLOAT2& inoutJitterScaled)
+{
+    inoutJitterScaled = camera->jitter;
+    inoutJitterScaled.x /= float(m_Width);
+    inoutJitterScaled.y /= float(m_Height);
+}
+
+void DeferredRenderer::SetupJitterMatrix(const XMFLOAT2& jitterScaled, XMMATRIX& inoutJitterMatrix)
+{
+    inoutJitterMatrix = XMMatrixIdentity();
+    inoutJitterMatrix.r[3].m128_f32[0] = jitterScaled.x;
+    inoutJitterMatrix.r[3].m128_f32[1] = jitterScaled.y;
+}
+
+void DeferredRenderer::SetupCameraConstantBuffer(const Camera* camera, const DirectX::XMFLOAT2& scaledCameraJitter)
+{
+    cameraCB.view = camera->get_ViewMatrix();
+    cameraCB.proj = camera->get_ProjectionMatrix();
+    cameraCB.invView = XMMatrixInverse(nullptr, cameraCB.view);
+    cameraCB.invProj = XMMatrixInverse(nullptr, cameraCB.proj);
+    cameraCB.viewProj = cameraCB.view * cameraCB.proj;
+    cameraCB.invViewProj = XMMatrixInverse(nullptr, cameraCB.viewProj);
+    cameraCB.resolution = { (float)m_Width, (float)m_Height };
+    cameraCB.zNear = camera->GetNear();
+    cameraCB.zFar = camera->GetFar();
+    cameraCB.eyeToPixelConeSpreadAngle = atanf((2.0f * tanf(camera->get_FoV() * 0.5f)) / (float)m_Height);
+    cameraCB.jitter = scaledCameraJitter;
+    XMStoreFloat3(&cameraCB.pos, camera->get_Translation());
+}
+
+void DeferredRenderer::SetupLightDataConstantBuffer(
+    LightDataCB& lightDataCB, 
+    DirectionalLight& directionalLight, 
+    std::vector<MeshInstanceWrapper>& pointLights)
+{
+    //Populate directional light first, to make sure it will always be importance sampled
+    lightDataCB.lights[0].type = LIGHT_DIRECTIONAL;
+    XMStoreFloat3(&lightDataCB.lights[0].intensity, directionalLight.GetData().color * directionalLight.GetData().color.m128_f32[3]);
+    XMStoreFloat3(&lightDataCB.lights[0].pos, -directionalLight.GetData().direction);
+    lightDataCB.numLights++;
+
+    for (size_t i = 0; i < pointLights.size(); i++)
+    {
+        if (i + 1 >= MAX_LIGHTS) break;
+
+        auto& ptLight = pointLights[i];
+        lightDataCB.numLights++;
+
+        auto& mat = ptLight.instance.GetUserMaterial();
+
+        lightDataCB.lights[i + 1].type = LIGHT_POINT;
+        lightDataCB.lights[i + 1].intensity = XMFLOAT3(20.f, 20.f, 20.f);
+        XMStoreFloat3(&lightDataCB.lights[i + 1].pos, ptLight.trans.pos);
+    }
+}
+
+void DeferredRenderer::SetupRaytracingConstantBuffer(RaytracingDataCB& rtData, int listbox_item_debug, Window& window)
+{
+    rtData.frameNumber = Application::GetFrameCount();
+    rtData.debugSettings = listbox_item_debug;
+    auto& hitParams = m_NvidiaDenoiser->denoiserSettings.settings.hitDistanceParameters;
+    rtData.hitParams = { hitParams.A, hitParams.B, hitParams.C, hitParams.D };
+    rtData.frameIndex = window.m_CurrentBackBufferIndex;
+
+    static int numBounces = 3;
+    static float bounceAmbientStrength = 0.5f;
+
+    ImGui::Begin("Raytracing Settings");
+    ImGui::SliderInt("Num Bounces", &numBounces, 0, 10);
+    ImGui::SliderFloat("1 bounce ambient strength", &bounceAmbientStrength, 0.f, 1.f);
+    rtData.numBounces = numBounces;
+    rtData.oneBounceAmbientStrength = bounceAmbientStrength;
+    ImGui::End();
+}
+
 void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
 {
     if (!window.m_pGame.lock()) return;
- 
+    auto game = window.m_pGame.lock();
+
     auto clockNow = std::chrono::high_resolution_clock::now();
 
     m_HDR->UpdateGUI();
     m_DLSS->OnGUI();
     m_NvidiaDenoiser->OnGUI();
 
+    auto& directionalLight = game->m_DirectionalLight;
+    directionalLight.UpdateUI();
+
     static int listbox_item_debug = 0;
 
-    auto game = window.m_pGame.lock();
+    auto* camera = game->GetRenderCamera();
+
+    {//Camera Settings
+        ImGui::Begin("Camera");
+        ImGui::Checkbox("Jitter", &game->m_Camera.bJitter);
+        ImGui::End();
+    }
 
     auto graphicsQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
     auto commandList = graphicsQueue->GetCommandList();
@@ -942,93 +1035,27 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
     auto& textures = assetManager->m_TextureManager.textureData.textures;
 
     std::vector<MeshInstanceWrapper> pointLights;
-
     auto meshInstances = GetMeshInstances(game->registry, &pointLights);
-
     prevTrans.resize(meshInstances.size());
 
-    auto* camera = game->GetRenderCamera();
+    ObjectCB objectCB;
+    SetupObjectConstantBuffer(objectCB, camera);
 
-    XMFLOAT2 jitter = camera->jitter;
-    jitter.x /= float(m_Width);
-    jitter.y /= float(m_Height);
+    XMFLOAT2 scaledCameraJitter;
+    SetupScaledCameraJitter(camera, scaledCameraJitter);
 
-    ObjectCB objectCB; //todo move to cam
-    objectCB.view = camera->get_ViewMatrix();
-    objectCB.proj = camera->get_ProjectionMatrix();
-    objectCB.invView = XMMatrixInverse(nullptr, objectCB.view);
-    objectCB.invProj = XMMatrixInverse(nullptr, objectCB.proj);
-
-    XMMATRIX jitterMat = XMMatrixIdentity();
-    jitterMat.r[3].m128_f32[0] = jitter.x;
-    jitterMat.r[3].m128_f32[1] = jitter.y;
-
-    cameraCB.view = camera->get_ViewMatrix();
-    cameraCB.proj = camera->get_ProjectionMatrix();
-    cameraCB.invView = XMMatrixInverse(nullptr, cameraCB.view);
-    cameraCB.invProj = XMMatrixInverse(nullptr, cameraCB.proj);
-    cameraCB.viewProj = cameraCB.view * cameraCB.proj;
-    cameraCB.invViewProj = XMMatrixInverse(nullptr, cameraCB.viewProj);
-    cameraCB.resolution = { (float)m_Width, (float)m_Height };
-    cameraCB.zNear = camera->GetNear();
-    cameraCB.zFar = camera->GetFar();
-    cameraCB.eyeToPixelConeSpreadAngle = atanf((2.0f * tanf(camera->get_FoV() * 0.5f)) / (float)m_Height);
-    cameraCB.jitter = jitter;
+    XMMATRIX jitterMat;
+    SetupJitterMatrix(scaledCameraJitter, jitterMat);
+    SetupCameraConstantBuffer(camera, scaledCameraJitter);
 
     RaytracingDataCB rtData;
-    rtData.frameNumber = Application::GetFrameCount();
-    rtData.debugSettings = listbox_item_debug;
-    auto& hitParams = m_NvidiaDenoiser->denoiserSettings.settings.hitDistanceParameters;
-    rtData.hitParams = { hitParams.A, hitParams.B, hitParams.C, hitParams.D};
-    rtData.frameIndex = window.m_CurrentBackBufferIndex;
-
-    static int numBounces = 3;
-    static float bounceAmbientStrength = 0.5f;
-
-    ImGui::Begin("Raytracing Settings");
-    ImGui::SliderInt("Num Bounces", &numBounces, 0, 10);
-    ImGui::SliderFloat("1 bounce ambient strength", &bounceAmbientStrength, 0.f, 1.f);
-    rtData.numBounces = numBounces;
-    rtData.oneBounceAmbientStrength = bounceAmbientStrength;
-    ImGui::End();
-
-    XMStoreFloat3(&cameraCB.pos, camera->get_Translation());
-
-    auto& directionalLight = game->m_DirectionalLight;
-    directionalLight.UpdateUI();
-
-    {//Camera Settings
-        ImGui::Begin("Camera");
-        ImGui::Checkbox("Jitter", &game->m_Camera.bJitter);
-        ImGui::End();
-    }
+    SetupRaytracingConstantBuffer(rtData, listbox_item_debug, window);
 
     LightDataCB lightDataCB{};
-    {//Lights
+    SetupLightDataConstantBuffer(lightDataCB, directionalLight, pointLights);
 
-        //Populate directional light first, to make sure it will always be importance sampled
-        lightDataCB.lights[0].type = LIGHT_DIRECTIONAL;
-        XMStoreFloat3(&lightDataCB.lights[0].intensity, directionalLight.GetData().color * directionalLight.GetData().color.m128_f32[3]);
-        XMStoreFloat3(&lightDataCB.lights[0].pos, -directionalLight.GetData().direction);
-        lightDataCB.numLights++;
-
-        for (size_t i = 0; i < pointLights.size(); i++)
-        {
-            if (i + 1 >= MAX_LIGHTS) break;
-
-            auto& ptLight = pointLights[i];
-            lightDataCB.numLights++;
-
-            auto& mat = ptLight.instance.GetUserMaterial();
-
-            lightDataCB.lights[i+1].type = LIGHT_POINT;
-            lightDataCB.lights[i+1].intensity = XMFLOAT3(20.f, 20.f, 20.f);
-            XMStoreFloat3(&lightDataCB.lights[i+1].pos, ptLight.trans.pos);
-        }
-    }
-
-        
     ClearRenderTargets(commandList);
+
     ExecuteAccelerationStructurePass(
         commandList,
         meshInstances,
@@ -1070,7 +1097,9 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
     ExecuteDlssPass(commandList, camera);
     ExecuteHDRPass(commandList);
     ExecuteDebugPass(commandList, listbox_item_debug);
+
     TransitionResourcesBackToRenderState(commandList);
+
     //Graphics execute
     ExecuteCommandLists(graphicsQueue, commandList);      
 
