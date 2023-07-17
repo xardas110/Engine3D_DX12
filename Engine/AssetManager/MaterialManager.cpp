@@ -27,45 +27,45 @@ MaterialInstanceID MaterialManager::CreateMaterialInstance(const std::wstring& n
 
 	const auto& textureData = m_TextureManager.textureData;
 
-	if (IsMaterialValid(textureIDs.albedo.GetTextureID()))
+	if (IsMaterialValid(textureIDs.albedo.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].albedo = textureData.textures[textureIDs.albedo.GetTextureID()].heapID;
+		instanceData.gpuInfo[currentIndex].albedo = textureData.textures[textureIDs.albedo.textureID].heapID;
 	}
-	if (IsMaterialValid(textureIDs.normal.GetTextureID()))
+	if (IsMaterialValid(textureIDs.normal.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].normal = textureData.textures[textureIDs.normal.GetTextureID()].heapID;
+		instanceData.gpuInfo[currentIndex].normal = textureData.textures[textureIDs.normal.textureID].heapID;
 	}
-	if (IsMaterialValid(textureIDs.ao.GetTextureID()))
+	if (IsMaterialValid(textureIDs.ao.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].ao = textureData.textures[textureIDs.ao.GetTextureID()].heapID;
+		instanceData.gpuInfo[currentIndex].ao = textureData.textures[textureIDs.ao.textureID].heapID;
 	}
-	if (IsMaterialValid(textureIDs.emissive.GetTextureID()))
+	if (IsMaterialValid(textureIDs.emissive.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].emissive = textureData.textures[textureIDs.emissive.GetTextureID()].heapID;
+		instanceData.gpuInfo[currentIndex].emissive = textureData.textures[textureIDs.emissive.textureID].heapID;
 	}
-	if (IsMaterialValid(textureIDs.roughness.GetTextureID()))
+	if (IsMaterialValid(textureIDs.roughness.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].roughness = textureData.textures[textureIDs.roughness.GetTextureID()].heapID;
+		instanceData.gpuInfo[currentIndex].roughness = textureData.textures[textureIDs.roughness.textureID].heapID;
 	}
-	if (IsMaterialValid(textureIDs.specular.GetTextureID()))
+	if (IsMaterialValid(textureIDs.specular.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].specular = textureData.textures[textureIDs.specular.GetTextureID()].heapID;
+		instanceData.gpuInfo[currentIndex].specular = textureData.textures[textureIDs.specular.textureID].heapID;
 	}
-	if (IsMaterialValid(textureIDs.metallic.GetTextureID()))
+	if (IsMaterialValid(textureIDs.metallic.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].metallic = textureData.textures[textureIDs.metallic.GetTextureID()].heapID;
+		instanceData.gpuInfo[currentIndex].metallic = textureData.textures[textureIDs.metallic.textureID].heapID;
 	}
-	if (IsMaterialValid(textureIDs.lightmap.GetTextureID()))
+	if (IsMaterialValid(textureIDs.lightmap.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].lightmap = textureData.textures[textureIDs.lightmap.GetTextureID()].heapID;
+		instanceData.gpuInfo[currentIndex].lightmap = textureData.textures[textureIDs.lightmap.textureID].heapID;
 	}
-	if (IsMaterialValid(textureIDs.opacity.GetTextureID()))
+	if (IsMaterialValid(textureIDs.opacity.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].opacity = textureData.textures[textureIDs.opacity.GetTextureID()].heapID;
+		instanceData.gpuInfo[currentIndex].opacity = textureData.textures[textureIDs.opacity.textureID].heapID;
 	}
-	if (IsMaterialValid(textureIDs.height.GetTextureID()))
+	if (IsMaterialValid(textureIDs.height.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].height = textureData.textures[textureIDs.height.GetTextureID()].heapID;
+		instanceData.gpuInfo[currentIndex].height = textureData.textures[textureIDs.height.textureID].heapID;
 	}
 
 	instanceData.map[name] = currentIndex;
@@ -112,33 +112,32 @@ void MaterialManager::SetMaterial(MaterialID materialId, MaterialInstanceID matI
 	instanceData.gpuInfo[matInstanceID].materialID = materialId;
 }
 
-TextureID MaterialManager::GetTextureID(MaterialType::Type type, MaterialInstanceID matInstanceId)
+TextureInstance MaterialManager::GetTextureInstance(MaterialType::Type type, MaterialInstanceID matInstanceId)
 {
 	auto& matInfo = instanceData.cpuInfo[matInstanceId];
 
 	switch (type)
 	{
 	case MaterialType::ao:
-		return matInfo.ao.GetTextureID();
+		return matInfo.ao;
 	case MaterialType::albedo:
-		return matInfo.albedo.GetTextureID();
+		return matInfo.albedo;
 	case MaterialType::normal:
-		return matInfo.normal.GetTextureID();
+		return matInfo.normal;
 	case MaterialType::roughness:
-		return matInfo.roughness.GetTextureID();
+		return matInfo.roughness;
 	case MaterialType::metallic:
-		return matInfo.metallic.GetTextureID();
+		return matInfo.metallic;
 	case MaterialType::opacity:
-		return matInfo.opacity.GetTextureID();
+		return matInfo.opacity;
 	case MaterialType::emissive:
-		return matInfo.emissive.GetTextureID();
+		return matInfo.emissive;
 	case MaterialType::lightmap:
-		return matInfo.lightmap.GetTextureID();
+		return matInfo.lightmap;
 	case MaterialType::height:
-		return matInfo.height.GetTextureID();
+		return matInfo.height;
 	default:
-		return UINT_MAX;
-		break;
+		return TextureInstance();
 	}
 }
 

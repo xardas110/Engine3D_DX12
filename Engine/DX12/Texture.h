@@ -49,6 +49,7 @@ struct TextureInstance
 {
     friend class DeferredRenderer;
     friend class TextureManager;
+    friend struct MaterialManager;
 
     TextureInstance() = default;
 
@@ -65,11 +66,6 @@ struct TextureInstance
     bool IsValid() const
     {
         return textureID != TEXTURE_INVALID;
-    }
-
-    TextureID GetTextureID() const
-    {
-        return textureID;
     }
 
     static void HandleRefCountException(const std::exception& e, const char* action)

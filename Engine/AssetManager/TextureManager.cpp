@@ -9,7 +9,7 @@
 TextureManager::TextureManager(const SRVHeapData& srvHeapData)
     :m_SrvHeapData(srvHeapData) {}
 
-std::optional<TextureManager::TextureID> TextureManager::CreateTexture(const std::wstring& path)
+const TextureInstance& TextureManager::CreateTexture(const std::wstring& path)
 {
     auto device = Application::Get().GetDevice();
     auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
@@ -20,42 +20,39 @@ std::optional<TextureManager::TextureID> TextureManager::CreateTexture(const std
     commandList->LoadTextureFromFile(textureTuple.texture, path);
     commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
 
+    if (!textureTuple.texture.IsValid())
+    {
+       throw std::exception("Failed to create texture resource.");
+    }
+
     // Create the Shader Resource View. If it fails, return an empty optional.
     device->CreateShaderResourceView(
         textureTuple.texture.GetD3D12Resource().Get(), nullptr,
         m_SrvHeapData.IncrementHandle(textureTuple.heapID));
 
     // If everything succeeded, insert the texture in the textures list and update the map.
-    const auto currentIndex = textureData.textures.size();
-    textureData.textureMap[path] = currentIndex;
+    textureData.textureMap[path].textureID = (TextureID)textureData.textures.size();
     textureData.textures.emplace_back(std::move(textureTuple));
 
-    // Return the index to the new texture
-    return currentIndex;
+    // Return the instance
+    return textureData.textureMap[path];
 }
 
-bool TextureManager::LoadTexture(const std::wstring& path, TextureInstance& outTextureInstance)
+const TextureInstance& TextureManager::LoadTexture(const std::wstring& path)
 {
     auto it = textureData.textureMap.find(path);
     if (it != textureData.textureMap.end())
     {
-        outTextureInstance.textureID = it->second;
-        return true;
+        return it->second;
     }
 
-    std::optional<TextureID> textureID = CreateTexture(path);
-    if (!textureID.has_value()) // Failed to create texture
-        return false;
-
-    outTextureInstance.textureID = textureID.value();
-    IncreaseRefCount(textureID.value());
-    return true;
+    return CreateTexture(path);
 }
 
-const Texture* TextureManager::GetTexture(TextureID textureID) const
+const Texture* TextureManager::GetTexture(TextureInstance textureInstance) const
 {
-    if (textureID >= textureData.textures.size()) return nullptr;
-    return &textureData.textures[textureID].texture;
+    if (!textureInstance.IsValid()) return nullptr;
+    return &textureData.textures[textureInstance.textureID].texture;
 }
 
 void TextureManager::IncreaseRefCount(TextureID textureID)
@@ -63,10 +60,6 @@ void TextureManager::IncreaseRefCount(TextureID textureID)
     if (textureID < textureData.textures.size())
     {
         textureData.textures[textureID].refCount++;
-    }
-    else
-    {
-        throw std::out_of_range("Invalid texture ID.");
     }
 }
 
@@ -79,9 +72,5 @@ void TextureManager::DecreaseRefCount(TextureID textureID)
             LOG_WARNING("Removing texture with id %i", (int)textureID);
             textureData.textures[textureID].texture = Texture();
         }
-    }
-    else
-    {
-        throw std::out_of_range("Invalid texture ID or the texture was not referenced.");
     }
 }

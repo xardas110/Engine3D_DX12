@@ -17,6 +17,9 @@ class AssetManager
 	friend class MaterialInstance;
 	friend class MeshInstance;
 	friend class DeferredRenderer;
+
+	friend struct StaticMeshInstance;
+
 	friend class std::default_delete<AssetManager>;
 
 private:
@@ -31,13 +34,6 @@ public:
 	{
 		m_MeshManager.meshData.AttachMeshCreatedEvent(func, obj);
 	};
-
-	bool					LoadTexture(const std::wstring& path, TextureInstance& outTextureInstance);
-	void					LoadStaticMesh(CommandList& commandList, 
-											std::shared_ptr<CommandList> rtCommandList, 
-											const std::string& path,
-											StaticMeshInstance& outStaticMesh, 
-											MeshImport::Flags flags);
 
 	const SRVHeapData&		GetSRVHeapData() const;
 	const TextureManager&	GetTextureManager() const;

@@ -473,9 +473,7 @@ DXGI_FORMAT Texture::GetUAVCompatableFormat(DXGI_FORMAT format)
 TextureInstance::TextureInstance(const std::wstring& path)
 {
     auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
-
-    //Load texture increases the ref count automatically
-    textureManager.LoadTexture(path, *this);
+    *this = textureManager.LoadTexture(path);
 }
 
 TextureInstance::TextureInstance(const TextureInstance& other) 

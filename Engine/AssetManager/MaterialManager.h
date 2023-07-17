@@ -20,7 +20,7 @@ struct MaterialManager
 
 	void SetMaterial(MaterialID materialId, MaterialInstanceID matInstanceID);
 
-	TextureID GetTextureID(MaterialType::Type type, MaterialInstanceID matInstanceId);
+	TextureInstance GetTextureInstance(MaterialType::Type type, MaterialInstanceID matInstanceId);
 
 	const std::wstring& GetMaterialInstanceName(MaterialInstanceID matInstanceId) const;
 

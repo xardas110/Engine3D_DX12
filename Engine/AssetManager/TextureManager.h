@@ -11,22 +11,23 @@ struct TextureManager
 	friend class DeferredRenderer;
     friend struct TextureInstance;
 
-	using SRVHeapID = UINT;
-
-public:
     using SRVHeapID = UINT;
     using TextureID = UINT;
 
     TextureManager(const SRVHeapData& srvHeapData);
 
-    bool LoadTexture(const std::wstring& path, TextureInstance& outTextureInstance);
+public:
 
-    const Texture* GetTexture(TextureID textureID) const;
+    const TextureInstance& LoadTexture(const std::wstring& path);
+
+    const Texture* GetTexture(TextureInstance textureInstance) const;
 
 private:
 
     void IncreaseRefCount(TextureID textureID);
     void DecreaseRefCount(TextureID textureID);
+
+    const TextureInstance& CreateTexture(const std::wstring& path);
 
     struct TextureTuple
     {
@@ -37,11 +38,9 @@ private:
 
     struct TextureData
     {
-        std::unordered_map<std::wstring, TextureID> textureMap;
+        std::unordered_map<std::wstring, TextureInstance> textureMap;
         std::vector<TextureTuple> textures;
     } textureData;
 
-    const SRVHeapData& m_SrvHeapData;
-
-    std::optional<TextureID> CreateTexture(const std::wstring& path);
+    const SRVHeapData& m_SrvHeapData;    
 };

@@ -37,8 +37,7 @@ bool SponzaExe::LoadContent()
 }
 
 void SponzaExe::UnloadContent()
-{
-}
+{}
 
 void SponzaExe::OnUpdate(UpdateEventArgs& e)
 {

@@ -22,16 +22,6 @@ std::unique_ptr<AssetManager> AssetManager::CreateInstance()
 	return std::unique_ptr<AssetManager>(new AssetManager);
 }
 
-void AssetManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, const std::string& path, StaticMeshInstance& outStaticMesh, MeshImport::Flags flags)
-{
-	m_MeshManager.LoadStaticMesh(commandList, rtCommandList, path, outStaticMesh, flags);
-}
-
-bool AssetManager::LoadTexture(const std::wstring& path, TextureInstance& outTextureInstance)
-{
-	return m_TextureManager.LoadTexture(path, outTextureInstance);
-}
-
 const SRVHeapData& AssetManager::GetSRVHeapData() const
 {
 	return m_SrvHeapData;
