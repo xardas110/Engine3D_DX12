@@ -118,30 +118,6 @@ bool TextureManager::IsTextureInstanceValid(const TextureInstance& textureInstan
     return textureRegistry.textures[textureInstance.textureID].IsValid();
 }
 
-const std::vector<Texture>& TextureManager::GetTexturesNotThreadSafe() const
-{
-    SHARED_LOCK(Textures, textureRegistry.texturesMutex);
-    return textureRegistry.textures;
-}
-
-const std::vector<Texture> TextureManager::GetTexturesThreadSafe() const
-{
-    SHARED_LOCK(Textures, textureRegistry.texturesMutex);
-    return textureRegistry.textures;
-}
-
-const std::vector<TextureGPUHandle>& TextureManager::GetTextureGPUHandlesNotThreadSafe() const
-{
-    SHARED_LOCK(GPUHandles, textureRegistry.gpuHandlesMutex);
-    return textureRegistry.gpuHandles;
-}
-
-const std::vector<TextureGPUHandle> TextureManager::GetTextureGPUHandlesThreadSafe() const
-{
-    SHARED_LOCK(GPUHandles, textureRegistry.gpuHandlesMutex);
-    return textureRegistry.gpuHandles;
-}
-
 void TextureManager::IncreaseRefCount(const TextureID textureID)
 {
     UNIQUE_LOCK(Refs, textureRegistry.refCountsMutex);

@@ -66,10 +66,35 @@ public:
     // Public interface for managing textures
     const TextureInstance& LoadTexture(const std::wstring& path);
     bool IsTextureInstanceValid(const TextureInstance& textureInstance) const;
-    const std::vector<Texture>& GetTexturesNotThreadSafe() const;
-    const std::vector<Texture> GetTexturesThreadSafe() const;
-    const std::vector<TextureGPUHandle>& GetTextureGPUHandlesNotThreadSafe() const;
-    const std::vector<TextureGPUHandle> GetTextureGPUHandlesThreadSafe() const;
+
+    template <bool ThreadSafe = TEXTURE_MANAGER_THREAD_SAFE>
+    auto GetTextures() const
+    {
+        if constexpr (ThreadSafe)
+        {
+            SHARED_LOCK(Textures, textureRegistry.texturesMutex);
+            return std::ref(textureRegistry.textures); // TODO: This isn't thread safe. A copy needs to be returned.
+        }
+        else
+        {
+            return std::ref(textureRegistry.textures); // Returns a std::reference_wrapper
+        }
+    }
+
+    template <bool ThreadSafe = TEXTURE_MANAGER_THREAD_SAFE>
+    auto GetTextureGPUHandles() const
+    {
+        if constexpr (ThreadSafe)
+        {
+            SHARED_LOCK(GPUHandles, textureRegistry.gpuHandlesMutex);
+            return textureRegistry.gpuHandles; // Returns a copy
+        }
+        else
+        {
+            return std::ref(textureRegistry.gpuHandles); // Returns a std::reference_wrapper
+        }
+    }
+
     const Texture* GetTexture(const TextureInstance& textureInstance) const;
     const std::optional<TextureGPUHandle> GetTextureGPUHandle(const TextureInstance& textureInstance) const;
     const std::optional<TextureRefCount> GetTextureRefCount(const TextureInstance& textureInstance) const;

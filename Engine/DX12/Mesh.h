@@ -168,9 +168,7 @@ struct MeshInstance
 
     bool HasOpacity()
     {
-        const auto* tex = GetTexture(MaterialType::opacity);
-
-        if (tex) return true;
+        if (GetTexture(MaterialType::opacity)) return true;
 
         auto& mat = GetUserMaterial();
         
