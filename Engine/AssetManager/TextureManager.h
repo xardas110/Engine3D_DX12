@@ -33,7 +33,7 @@ private:
     void DecreaseRefCount(const TextureID textureID);
 
     // Member variables
-    std::vector<UINT> releasedTextureIDs;
+    std::vector<TextureID> releasedTextureIDs;
     TextureRegistry textureRegistry;
     const SRVHeapData& m_SrvHeapData;
 };

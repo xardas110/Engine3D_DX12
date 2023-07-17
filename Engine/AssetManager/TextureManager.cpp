@@ -33,10 +33,23 @@ const TextureInstance& TextureManager::CreateTexture(const std::wstring& path)
         m_SrvHeapData.IncrementHandle(textureGPUHandle));
 
     // If everything succeeded, insert the texture in the textures list and update the map.
-    textureRegistry.textureInstanceMap[path].textureID = (TextureID)textureRegistry.textures.size();
-    textureRegistry.textures.emplace_back(std::move(texture));
-    textureRegistry.refCounts.emplace_back(textureRefCount);
-    textureRegistry.gpuHandles.emplace_back(textureGPUHandle);
+    if (!releasedTextureIDs.empty())
+    {
+        const TextureID textureID = releasedTextureIDs.front();
+        releasedTextureIDs.erase(releasedTextureIDs.begin());
+
+        textureRegistry.textureInstanceMap[path].textureID = (TextureID)textureID;
+        textureRegistry.textures[textureID] = std::move(texture);
+        textureRegistry.refCounts[textureID] = textureRefCount;
+        textureRegistry.gpuHandles[textureID] = textureGPUHandle;
+    }
+    else
+    { 
+        textureRegistry.textureInstanceMap[path].textureID = (TextureID)textureRegistry.textures.size();
+        textureRegistry.textures.emplace_back(std::move(texture));
+        textureRegistry.refCounts.emplace_back(textureRefCount);
+        textureRegistry.gpuHandles.emplace_back(textureGPUHandle);
+    }
 
     assert((textureRegistry.textures.size() == textureRegistry.refCounts.size() &&
         textureRegistry.textures.size() == textureRegistry.gpuHandles.size()) &&
@@ -133,6 +146,7 @@ void TextureManager::DecreaseRefCount(const TextureID textureID)
         if (--textureRegistry.refCounts[textureID] == 0)
         {           
             ReleaseTexture(textureID, textureRegistry);
+            releasedTextureIDs.emplace_back(textureID);
         }
     }
 }
