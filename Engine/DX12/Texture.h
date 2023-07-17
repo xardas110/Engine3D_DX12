@@ -46,7 +46,7 @@
 
 using TextureID = std::uint32_t;
 using TextureRefCount = std::uint32_t;
-using TextureGPUHeapID = std::uint32_t;
+using TextureGPUHandle = std::uint32_t;
 
 struct TextureInstance
 {
@@ -68,7 +68,7 @@ public:
 
     bool IsValid() const;
 
-    const std::optional<TextureGPUHeapID> GetHeapHandle() const;
+    const std::optional<TextureGPUHandle> GetTextureGPUHandle() const;
 
     static void HandleRefCountException(const std::exception& e, const char* action)
     {

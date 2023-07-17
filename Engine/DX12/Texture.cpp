@@ -39,9 +39,9 @@ bool TextureInstance::IsValid() const
     return Application::Get().GetAssetManager()->m_TextureManager.IsTextureInstanceValid(*this);
 }
 
-const std::optional<TextureGPUHeapID> TextureInstance::GetHeapHandle() const
+const std::optional<TextureGPUHandle> TextureInstance::GetTextureGPUHandle() const
 {
-    return Application::Get().GetAssetManager()->m_TextureManager.GetTextureHeapID(*this);
+    return Application::Get().GetAssetManager()->m_TextureManager.GetTextureGPUHandle(*this);
 }
 
 Texture::Texture( TextureUsage textureUsage, const std::wstring& name )

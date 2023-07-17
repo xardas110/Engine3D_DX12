@@ -5,9 +5,9 @@
 struct TextureManager
 {
 	friend class AssetManager;
-    friend class DeferredRenderer;
-	friend struct MaterialManager;
     friend struct TextureInstance;
+
+private:
 
     TextureManager(const SRVHeapData& srvHeapData);
 
@@ -15,11 +15,13 @@ public:
 
     const TextureInstance& LoadTexture(const std::wstring& path);
     const Texture* GetTexture(TextureInstance textureInstance) const;
-    const std::optional<TextureGPUHeapID> GetTextureHeapID(TextureInstance textureInstance) const;
+    const std::optional<TextureGPUHandle> GetTextureGPUHandle(TextureInstance textureInstance) const;
     const std::optional<TextureRefCount> GetTextureRefCount(TextureInstance textureInstance) const;
 
     bool IsTextureInstanceValid(TextureInstance textureInstance) const;
 
+    const std::vector<Texture>& GetTextures() const;
+    const std::vector<TextureGPUHandle>& GetTextureGPUHandles() const;
 private:
 
     const TextureInstance& CreateTexture(const std::wstring& path);
@@ -30,9 +32,9 @@ private:
     struct TextureRegistry
     {
         std::unordered_map<std::wstring, TextureInstance> textureInstanceMap;
-        std::vector<Texture> textures;
-        std::vector<TextureGPUHeapID> heapIds;
+        std::vector<Texture> textures;        
         std::vector<TextureRefCount> refCounts;
+        std::vector<TextureGPUHandle> gpuHandles;
     } textureRegistry;
 
     const SRVHeapData& m_SrvHeapData;    

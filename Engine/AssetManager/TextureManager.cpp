@@ -13,7 +13,7 @@ TextureManager::TextureManager(const SRVHeapData& srvHeapData)
 const TextureInstance& TextureManager::CreateTexture(const std::wstring& path)
 {
     Texture texture{};
-    TextureGPUHeapID heapID{};
+    TextureGPUHandle textureGPUHandle{};
     TextureRefCount textureRefCount{};
 
     auto device = Application::Get().GetDevice();
@@ -31,16 +31,16 @@ const TextureInstance& TextureManager::CreateTexture(const std::wstring& path)
     // Create the Shader Resource View. If it fails, return an empty optional.
     device->CreateShaderResourceView(
         texture.GetD3D12Resource().Get(), nullptr,
-        m_SrvHeapData.IncrementHandle(heapID));
+        m_SrvHeapData.IncrementHandle(textureGPUHandle));
 
     // If everything succeeded, insert the texture in the textures list and update the map.
     textureRegistry.textureInstanceMap[path].textureID = (TextureID)textureRegistry.textures.size();
     textureRegistry.textures.emplace_back(std::move(texture));
     textureRegistry.refCounts.emplace_back(textureRefCount);
-    textureRegistry.heapIds.emplace_back(heapID);
+    textureRegistry.gpuHandles.emplace_back(textureGPUHandle);
 
     assert((textureRegistry.textures.size() == textureRegistry.refCounts.size() &&
-        textureRegistry.textures.size() == textureRegistry.heapIds.size()) &&
+        textureRegistry.textures.size() == textureRegistry.gpuHandles.size()) &&
         "Texture Registry data should have a 1-to-1 relationship.");
 
     assert((textureRefCount == 0U) && "First texture reference count should always be zero.");
@@ -66,10 +66,10 @@ const Texture* TextureManager::GetTexture(TextureInstance textureInstance) const
     return &textureRegistry.textures[textureInstance.textureID];
 }
 
-const std::optional<TextureGPUHeapID> TextureManager::GetTextureHeapID(TextureInstance textureInstance) const
+const std::optional<TextureGPUHandle> TextureManager::GetTextureGPUHandle(TextureInstance textureInstance) const
 {
     if (!IsTextureInstanceValid(textureInstance)) return std::nullopt;
-    return textureRegistry.heapIds[textureInstance.textureID];
+    return textureRegistry.gpuHandles[textureInstance.textureID];
 }
 
 const std::optional<TextureRefCount> TextureManager::GetTextureRefCount(TextureInstance textureInstance) const
@@ -85,6 +85,16 @@ bool TextureManager::IsTextureInstanceValid(TextureInstance textureInstance) con
     if (!textureRegistry.textures[textureInstance.textureID].IsValid()) return false;
 
     return true;
+}
+
+const std::vector<Texture>& TextureManager::GetTextures() const
+{
+    return textureRegistry.textures;
+}
+
+const std::vector<TextureGPUHandle>& TextureManager::GetTextureGPUHandles() const
+{
+    return textureRegistry.gpuHandles;
 }
 
 void TextureManager::IncreaseRefCount(TextureID textureID)
