@@ -7,6 +7,43 @@
 #include <ResourceStateTracker.h>
 #include <AssetManager.h>
 
+TextureInstance::TextureInstance(const std::wstring& path)
+{
+    *this = Application::Get().GetAssetManager()->m_TextureManager.LoadTexture(path);
+}
+
+TextureInstance::TextureInstance(const TextureInstance& other)
+    :textureID(other.textureID)
+{
+    Application::Get().GetAssetManager()->m_TextureManager.IncreaseRefCount(other.textureID);  // Increase ref count
+}
+
+TextureInstance& TextureInstance::operator=(const TextureInstance& other)
+{
+    if (this != &other)
+    {     
+        auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
+        textureID = other.textureID;
+        textureManager.IncreaseRefCount(textureID);  // Increase ref count for new texture
+    }
+    return *this;
+}
+
+TextureInstance::~TextureInstance()
+{
+    //Application::Get().GetAssetManager()->m_TextureManager.DecreaseRefCount(textureID);
+}
+
+bool TextureInstance::IsValid() const
+{
+    return Application::Get().GetAssetManager()->m_TextureManager.IsTextureInstanceValid(*this);
+}
+
+const std::optional<TextureGPUHeapID> TextureInstance::GetHeapHandle() const
+{
+    return Application::Get().GetAssetManager()->m_TextureManager.GetTextureHeapID(*this);
+}
+
 Texture::Texture( TextureUsage textureUsage, const std::wstring& name )
     : Resource(name)
     , m_TextureUsage(textureUsage)
@@ -468,48 +505,4 @@ DXGI_FORMAT Texture::GetUAVCompatableFormat(DXGI_FORMAT format)
     }
 
     return uavFormat;
-}
-
-TextureInstance::TextureInstance(const std::wstring& path)
-{
-    auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
-    *this = textureManager.LoadTexture(path);
-}
-
-TextureInstance::TextureInstance(const TextureInstance& other) 
-    :textureID(other.textureID)
-{
-    try
-    {
-        auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
-        textureManager.IncreaseRefCount(other.textureID);  // Increase ref count
-    }
-    catch (const std::out_of_range& e)
-    {
-        HandleRefCountException(e, "copy");
-    }
-}
-
-TextureInstance& TextureInstance::operator=(const TextureInstance& other)
-{
-    if (this != &other)
-    {
-        try
-        {
-            auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
-            textureID = other.textureID;
-            textureManager.IncreaseRefCount(textureID);  // Increase ref count for new texture
-        }
-        catch (const std::out_of_range& e)
-        {
-            HandleRefCountException(e, "assign");
-        }
-    }
-    return *this;
-}
-
-TextureInstance::~TextureInstance()
-{
-    auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
-    //textureManager.DecreaseRefCount(textureID);
 }

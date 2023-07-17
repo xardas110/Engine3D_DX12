@@ -40,16 +40,19 @@
 #include <mutex>
 #include <unordered_map>
 #include <Logger.h>
+#include <optional>
 
 #define TEXTURE_INVALID UINT_MAX
 
 using TextureID = std::uint32_t;
+using TextureRefCount = std::uint32_t;
+using TextureGPUHeapID = std::uint32_t;
 
 struct TextureInstance
 {
-    friend class DeferredRenderer;
-    friend class TextureManager;
-    friend struct MaterialManager;
+    friend struct TextureManager;
+
+public:
 
     TextureInstance() = default;
 
@@ -63,15 +66,16 @@ struct TextureInstance
 
     ~TextureInstance();
 
-    bool IsValid() const
-    {
-        return textureID != TEXTURE_INVALID;
-    }
+    bool IsValid() const;
+
+    const std::optional<TextureGPUHeapID> GetHeapHandle() const;
 
     static void HandleRefCountException(const std::exception& e, const char* action)
     {
         LOG_ERROR("Failed to %s TextureInstance: %s", action, e.what());
     }
+
+protected:
 
 private:
     TextureID textureID = TEXTURE_INVALID;

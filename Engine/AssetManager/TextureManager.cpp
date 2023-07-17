@@ -5,6 +5,7 @@
 #include <CommandQueue.h>
 #include <AssetManager.h>
 #include <Logger.h>
+#include <StaticDescriptorHeap.h>
 
 TextureManager::TextureManager(const SRVHeapData& srvHeapData)
     :m_SrvHeapData(srvHeapData) {}
@@ -12,7 +13,7 @@ TextureManager::TextureManager(const SRVHeapData& srvHeapData)
 const TextureInstance& TextureManager::CreateTexture(const std::wstring& path)
 {
     Texture texture{};
-    SRVHeapID heapID{};
+    TextureGPUHeapID heapID{};
     TextureRefCount textureRefCount{};
 
     auto device = Application::Get().GetDevice();
@@ -61,13 +62,34 @@ const TextureInstance& TextureManager::LoadTexture(const std::wstring& path)
 
 const Texture* TextureManager::GetTexture(TextureInstance textureInstance) const
 {
-    if (!textureInstance.IsValid()) return nullptr;
+    if (!IsTextureInstanceValid(textureInstance)) return nullptr;
     return &textureRegistry.textures[textureInstance.textureID];
+}
+
+const std::optional<TextureGPUHeapID> TextureManager::GetTextureHeapID(TextureInstance textureInstance) const
+{
+    if (!IsTextureInstanceValid(textureInstance)) return std::nullopt;
+    return textureRegistry.heapIds[textureInstance.textureID];
+}
+
+const std::optional<TextureRefCount> TextureManager::GetTextureRefCount(TextureInstance textureInstance) const
+{
+    if (!IsTextureInstanceValid(textureInstance)) return std::nullopt;
+    return textureRegistry.refCounts[textureInstance.textureID];
+}
+
+bool TextureManager::IsTextureInstanceValid(TextureInstance textureInstance) const
+{
+    if (textureInstance.textureID == TEXTURE_INVALID) return false;
+    if (textureInstance.textureID >= textureRegistry.textures.size()) return false;
+    if (!textureRegistry.textures[textureInstance.textureID].IsValid()) return false;
+
+    return true;
 }
 
 void TextureManager::IncreaseRefCount(TextureID textureID)
 {
-    if (textureID < textureRegistry.textures.size())
+    if (textureID < textureRegistry.refCounts.size())
     {
         textureRegistry.refCounts[textureID]++;
     }

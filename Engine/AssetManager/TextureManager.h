@@ -1,8 +1,6 @@
 #pragma once
 #include <Texture.h>
-#include <optional>
-
-class SRVHeapData;
+#include <StaticDescriptorHeap.h>
 
 struct TextureManager
 {
@@ -11,16 +9,16 @@ struct TextureManager
 	friend struct MaterialManager;
     friend struct TextureInstance;
 
-    using SRVHeapID = UINT;
-    using TextureID = UINT;
-    using TextureRefCount = UINT;
-
     TextureManager(const SRVHeapData& srvHeapData);
 
 public:
 
     const TextureInstance& LoadTexture(const std::wstring& path);
     const Texture* GetTexture(TextureInstance textureInstance) const;
+    const std::optional<TextureGPUHeapID> GetTextureHeapID(TextureInstance textureInstance) const;
+    const std::optional<TextureRefCount> GetTextureRefCount(TextureInstance textureInstance) const;
+
+    bool IsTextureInstanceValid(TextureInstance textureInstance) const;
 
 private:
 
@@ -33,7 +31,7 @@ private:
     {
         std::unordered_map<std::wstring, TextureInstance> textureInstanceMap;
         std::vector<Texture> textures;
-        std::vector<SRVHeapID> heapIds;
+        std::vector<TextureGPUHeapID> heapIds;
         std::vector<TextureRefCount> refCounts;
     } textureRegistry;
 
