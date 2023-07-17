@@ -45,13 +45,12 @@
 #define TEXTURE_INVALID UINT_MAX
 
 using TextureID = std::uint32_t;
-using TextureRefCount = std::uint32_t;
+using TextureRefCount = std::uint32_t; //Not atomic because these are usually stored inside a vector for data driven design
 using TextureGPUHandle = std::uint32_t;
 
 struct TextureInstance
 {
     friend struct TextureManager;
-    friend void ReleaseTexture(const TextureID textureID, struct TextureRegistry& textureRegistry);
 public:
 
     TextureInstance();

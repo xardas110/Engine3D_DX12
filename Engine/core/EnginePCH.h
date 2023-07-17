@@ -81,6 +81,7 @@ using namespace DirectX;
 #include <iostream>
 #include <sstream>
 #include <optional>
+#include <shared_mutex>
 
 //Assimp
 #include <assimp/Importer.hpp>
