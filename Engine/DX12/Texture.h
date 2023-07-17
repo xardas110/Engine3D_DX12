@@ -54,26 +54,21 @@ struct TextureInstance
 
 public:
 
-    TextureInstance() = default;
+    TextureInstance();
 
     TextureInstance(const std::wstring& path);
 
     TextureInstance(const TextureInstance& other);
     TextureInstance& operator=(const TextureInstance& other);
 
-    TextureInstance(TextureInstance&& other) = default;
-    TextureInstance& operator= (TextureInstance&& other) = default;
+    TextureInstance(TextureInstance&& other) noexcept;
+    TextureInstance& operator= (TextureInstance&& other) noexcept;
 
     ~TextureInstance();
 
     bool IsValid() const;
 
     const std::optional<TextureGPUHandle> GetTextureGPUHandle() const;
-
-    static void HandleRefCountException(const std::exception& e, const char* action)
-    {
-        LOG_ERROR("Failed to %s TextureInstance: %s", action, e.what());
-    }
 
 protected:
 

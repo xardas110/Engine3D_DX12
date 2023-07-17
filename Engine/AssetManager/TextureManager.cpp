@@ -60,25 +60,25 @@ const TextureInstance& TextureManager::LoadTexture(const std::wstring& path)
     return CreateTexture(path);
 }
 
-const Texture* TextureManager::GetTexture(TextureInstance textureInstance) const
+const Texture* TextureManager::GetTexture(const TextureInstance& textureInstance) const
 {
     if (!IsTextureInstanceValid(textureInstance)) return nullptr;
     return &textureRegistry.textures[textureInstance.textureID];
 }
 
-const std::optional<TextureGPUHandle> TextureManager::GetTextureGPUHandle(TextureInstance textureInstance) const
+const std::optional<TextureGPUHandle> TextureManager::GetTextureGPUHandle(const TextureInstance& textureInstance) const
 {
     if (!IsTextureInstanceValid(textureInstance)) return std::nullopt;
     return textureRegistry.gpuHandles[textureInstance.textureID];
 }
 
-const std::optional<TextureRefCount> TextureManager::GetTextureRefCount(TextureInstance textureInstance) const
+const std::optional<TextureRefCount> TextureManager::GetTextureRefCount(const TextureInstance& textureInstance) const
 {
     if (!IsTextureInstanceValid(textureInstance)) return std::nullopt;
     return textureRegistry.refCounts[textureInstance.textureID];
 }
 
-bool TextureManager::IsTextureInstanceValid(TextureInstance textureInstance) const
+bool TextureManager::IsTextureInstanceValid(const TextureInstance& textureInstance) const
 {
     if (textureInstance.textureID == TEXTURE_INVALID) return false;
     if (textureInstance.textureID >= textureRegistry.textures.size()) return false;
@@ -97,7 +97,7 @@ const std::vector<TextureGPUHandle>& TextureManager::GetTextureGPUHandles() cons
     return textureRegistry.gpuHandles;
 }
 
-void TextureManager::IncreaseRefCount(TextureID textureID)
+void TextureManager::IncreaseRefCount(const TextureID textureID)
 {
     if (textureID < textureRegistry.refCounts.size())
     {
@@ -105,7 +105,7 @@ void TextureManager::IncreaseRefCount(TextureID textureID)
     }
 }
 
-void TextureManager::DecreaseRefCount(TextureID textureID)
+void TextureManager::DecreaseRefCount(const TextureID textureID)
 {
     if (textureID < textureRegistry.textures.size() && textureRegistry.refCounts[textureID] > 0)
     {

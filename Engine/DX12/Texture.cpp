@@ -7,6 +7,10 @@
 #include <ResourceStateTracker.h>
 #include <AssetManager.h>
 
+TextureInstance::TextureInstance()
+    :textureID(TEXTURE_INVALID)
+{}
+
 TextureInstance::TextureInstance(const std::wstring& path)
 {
     *this = Application::Get().GetAssetManager()->m_TextureManager.LoadTexture(path);
@@ -18,20 +22,46 @@ TextureInstance::TextureInstance(const TextureInstance& other)
     Application::Get().GetAssetManager()->m_TextureManager.IncreaseRefCount(other.textureID);  // Increase ref count
 }
 
+TextureInstance::TextureInstance(TextureInstance&& other) noexcept
+    : textureID(other.textureID)
+{
+    // Invalidate the source object
+    other.textureID = TEXTURE_INVALID;
+}
+
 TextureInstance& TextureInstance::operator=(const TextureInstance& other)
 {
     if (this != &other)
     {     
-        auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
+        Application::Get().GetAssetManager()->m_TextureManager.DecreaseRefCount(textureID);
+
         textureID = other.textureID;
-        textureManager.IncreaseRefCount(textureID);  // Increase ref count for new texture
+
+        // Increase ref count for new texture
+        Application::Get().GetAssetManager()->m_TextureManager.IncreaseRefCount(textureID);
+    }
+    return *this;
+}
+
+TextureInstance& TextureInstance::operator=(TextureInstance&& other) noexcept
+{
+    if (this != &other)
+    {
+        // Decrease the ref count of the current texture
+        Application::Get().GetAssetManager()->m_TextureManager.DecreaseRefCount(textureID);
+
+        // Transfer ownership from other object
+        textureID = other.textureID;
+
+        // Invalidate the source object
+        other.textureID = TEXTURE_INVALID;
     }
     return *this;
 }
 
 TextureInstance::~TextureInstance()
 {
-    //Application::Get().GetAssetManager()->m_TextureManager.DecreaseRefCount(textureID);
+    Application::Get().GetAssetManager()->m_TextureManager.DecreaseRefCount(textureID);
 }
 
 bool TextureInstance::IsValid() const

@@ -14,11 +14,11 @@ private:
 public:
 
     const TextureInstance& LoadTexture(const std::wstring& path);
-    const Texture* GetTexture(TextureInstance textureInstance) const;
-    const std::optional<TextureGPUHandle> GetTextureGPUHandle(TextureInstance textureInstance) const;
-    const std::optional<TextureRefCount> GetTextureRefCount(TextureInstance textureInstance) const;
+    const Texture* GetTexture(const TextureInstance& textureInstance) const;
+    const std::optional<TextureGPUHandle> GetTextureGPUHandle(const TextureInstance& textureInstance) const;
+    const std::optional<TextureRefCount> GetTextureRefCount(const TextureInstance& textureInstance) const;
 
-    bool IsTextureInstanceValid(TextureInstance textureInstance) const;
+    bool IsTextureInstanceValid(const TextureInstance& textureInstance) const;
 
     const std::vector<Texture>& GetTextures() const;
     const std::vector<TextureGPUHandle>& GetTextureGPUHandles() const;
@@ -26,8 +26,8 @@ private:
 
     const TextureInstance& CreateTexture(const std::wstring& path);
 
-    void IncreaseRefCount(TextureID textureID);
-    void DecreaseRefCount(TextureID textureID);
+    void IncreaseRefCount(const TextureID textureID);
+    void DecreaseRefCount(const TextureID textureID);
 
     struct TextureRegistry
     {
