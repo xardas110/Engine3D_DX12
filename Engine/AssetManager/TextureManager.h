@@ -3,8 +3,26 @@
 #include <StaticDescriptorHeap.h>
 #include <shared_mutex>
 
+// Macros for thread safety
+#define TEXTURE_MANAGER_THREAD_SAFE true
+
+#if TEXTURE_MANAGER_THREAD_SAFE
+#define UNIQUE_LOCK(type, mutex) std::unique_lock<std::shared_mutex> lock##type(mutex)
+#define SHARED_LOCK(type, mutex) std::shared_lock<std::shared_mutex> lock##type(mutex)
+#define CREATE_MUTEX(type) mutable std::shared_mutex type##Mutex
+#define UNIQUE_UNLOCK(type) lock##type.unlock();
+#define SHARED_UNLOCK(type) lock##type.unlock_shared();
+#else
+#define UNIQUE_UNLOCK(type);
+#define SHARED_UNLOCK(type);
+#define UNIQUE_LOCK(type, mutex)
+#define SHARED_LOCK(type, mutex)
+#define CREATE_MUTEX(type)
+#define UNLOCK_MUTEX(mutex)
+#endif
+
 // The registry that holds texture data
-struct TextureRegistry 
+struct TextureRegistry
 {
     friend class TextureManager;
 
@@ -25,13 +43,13 @@ private:
     std::vector<TextureGPUHandle> gpuHandles;
 
     // Mutexes for thread safety
-    mutable std::shared_mutex textureInstanceMapMutex;
-    mutable std::shared_mutex texturesMutex;
-    mutable std::shared_mutex refCountsMutex;
-    mutable std::shared_mutex gpuHandlesMutex;
+    CREATE_MUTEX(textureInstanceMap);
+    CREATE_MUTEX(textures);
+    CREATE_MUTEX(refCounts);
+    CREATE_MUTEX(gpuHandles);
 };
 
-class TextureManager 
+class TextureManager
 {
     friend class AssetManager;
     friend struct TextureInstance;
@@ -39,7 +57,6 @@ class TextureManager
     explicit TextureManager(const SRVHeapData& srvHeapData);
 
 public:
-
     TextureManager(const TextureManager&) = delete;
     TextureManager& operator=(const TextureManager&) = delete;
 

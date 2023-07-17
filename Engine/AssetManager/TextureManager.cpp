@@ -32,54 +32,46 @@ const TextureInstance& TextureManager::CreateTexture(const std::wstring& path)
         texture.GetD3D12Resource().Get(), nullptr,
         m_SrvHeapData.IncrementHandle(textureGPUHandle));
 
+    
+    UNIQUE_LOCK(Instance, textureRegistry.textureInstanceMapMutex);
+    UNIQUE_LOCK(ReleasedTextureIDs, releasedTextureIDsMutex);
+    UNIQUE_LOCK(Textures, textureRegistry.texturesMutex);
+    UNIQUE_LOCK(Refs, textureRegistry.refCountsMutex);
+    UNIQUE_LOCK(GPUHandles, textureRegistry.gpuHandlesMutex);
+
+    // If everything succeeded, insert the texture in the textures list and update the map.
+    if (!releasedTextureIDs.empty())
     {
-        std::unique_lock<std::shared_mutex> lockReleasedTextureIDs(releasedTextureIDsMutex);
-        std::unique_lock<std::shared_mutex> lockInstance(textureRegistry.textureInstanceMapMutex);
-        std::unique_lock<std::shared_mutex> lockTextures(textureRegistry.texturesMutex);
-        std::unique_lock<std::shared_mutex> lockRefs(textureRegistry.refCountsMutex);
-        std::unique_lock<std::shared_mutex> lockGPUHandles(textureRegistry.gpuHandlesMutex);
+        const TextureID textureID = releasedTextureIDs.front();
+        releasedTextureIDs.erase(releasedTextureIDs.begin());
 
-        // If everything succeeded, insert the texture in the textures list and update the map.
-        if (!releasedTextureIDs.empty())
-        {
-            const TextureID textureID = releasedTextureIDs.front();
-            releasedTextureIDs.erase(releasedTextureIDs.begin());
 
-            textureRegistry.textureInstanceMap[path].textureID = (TextureID)textureID;
-            textureRegistry.textures[textureID] = std::move(texture);
-            textureRegistry.refCounts[textureID] = textureRefCount;
-            textureRegistry.gpuHandles[textureID] = textureGPUHandle;
-        }
-        else
-        {
-            textureRegistry.textureInstanceMap[path].textureID = (TextureID)textureRegistry.textures.size();
-            textureRegistry.textures.emplace_back(std::move(texture));
-            textureRegistry.refCounts.emplace_back(textureRefCount);
-            textureRegistry.gpuHandles.emplace_back(textureGPUHandle);
-        }
-
-        lockGPUHandles.unlock();
-        lockRefs.unlock();
-        lockTextures.unlock();
-        lockInstance.unlock();
-        lockReleasedTextureIDs.unlock();
+        textureRegistry.textureInstanceMap[path].textureID = (TextureID)textureID;
+        textureRegistry.textures[textureID] = std::move(texture);
+        textureRegistry.refCounts[textureID] = textureRefCount;
+        textureRegistry.gpuHandles[textureID] = textureGPUHandle;
+    }
+    else
+    {
+        textureRegistry.textureInstanceMap[path].textureID = (TextureID)textureRegistry.textures.size();
+        textureRegistry.textures.emplace_back(std::move(texture));
+        textureRegistry.refCounts.emplace_back(textureRefCount);
+        textureRegistry.gpuHandles.emplace_back(textureGPUHandle);
     }
 
-    assert((textureRegistry.textures.size() == textureRegistry.refCounts.size() &&
-        textureRegistry.textures.size() == textureRegistry.gpuHandles.size()) &&
-        "Texture Registry data should have a 1-to-1 relationship.");
+    UNIQUE_UNLOCK(ReleasedTextureIDs);
+    UNIQUE_UNLOCK(Textures);
+    UNIQUE_UNLOCK(Refs);
+    UNIQUE_UNLOCK(GPUHandles);
 
-    assert((textureRefCount == 0U) && "First texture reference count should always be zero.");
-
-    // Return the instance
     return textureRegistry.textureInstanceMap[path];
 }
 
 const TextureInstance& TextureManager::LoadTexture(const std::wstring& path)
 {
-    std::shared_lock<std::shared_mutex> lock(textureRegistry.textureInstanceMapMutex);
+    SHARED_LOCK(TextureInstanceMap, textureRegistry.textureInstanceMapMutex);
     auto it = textureRegistry.textureInstanceMap.find(path);
-    lock.unlock(); // we don't need the lock beyond this point
+    UNIQUE_UNLOCK(TextureInstanceMap);
 
     if (it != textureRegistry.textureInstanceMap.end())
     {
@@ -91,31 +83,34 @@ const TextureInstance& TextureManager::LoadTexture(const std::wstring& path)
 
 const Texture* TextureManager::GetTexture(const TextureInstance& textureInstance) const
 {
-    if (!IsTextureInstanceValid(textureInstance)) return nullptr;
+    if (!IsTextureInstanceValid(textureInstance))
+        return nullptr;
 
-    std::shared_lock<std::shared_mutex> lockTextures(textureRegistry.texturesMutex);
+    SHARED_LOCK(Textures, textureRegistry.texturesMutex);
     return &textureRegistry.textures[textureInstance.textureID];
 }
 
 const std::optional<TextureGPUHandle> TextureManager::GetTextureGPUHandle(const TextureInstance& textureInstance) const
 {
-    if (!IsTextureInstanceValid(textureInstance)) return std::nullopt;
+    if (!IsTextureInstanceValid(textureInstance))
+        return std::nullopt;
 
-    std::shared_lock<std::shared_mutex> lockHandles(textureRegistry.gpuHandlesMutex);
+    SHARED_LOCK(GPUHandles, textureRegistry.gpuHandlesMutex);
     return textureRegistry.gpuHandles[textureInstance.textureID];
 }
 
 const std::optional<TextureRefCount> TextureManager::GetTextureRefCount(const TextureInstance& textureInstance) const
 {
-    if (!IsTextureInstanceValid(textureInstance)) return std::nullopt;
+    if (!IsTextureInstanceValid(textureInstance))
+        return std::nullopt;
 
-    std::shared_lock<std::shared_mutex> lockRefCounts(textureRegistry.refCountsMutex);
+    SHARED_LOCK(RefCounts, textureRegistry.refCountsMutex);
     return textureRegistry.refCounts[textureInstance.textureID];
 }
 
 bool TextureManager::IsTextureInstanceValid(const TextureInstance& textureInstance) const
 {
-    std::shared_lock<std::shared_mutex> lock(textureRegistry.texturesMutex);
+    SHARED_LOCK(Textures, textureRegistry.texturesMutex);
 
     if (textureInstance.textureID == TEXTURE_INVALID || textureInstance.textureID >= textureRegistry.textures.size())
         return false;
@@ -125,32 +120,31 @@ bool TextureManager::IsTextureInstanceValid(const TextureInstance& textureInstan
 
 const std::vector<Texture>& TextureManager::GetTexturesNotThreadSafe() const
 {
-    std::shared_lock<std::shared_mutex> lock(textureRegistry.texturesMutex);
+    SHARED_LOCK(Textures, textureRegistry.texturesMutex);
     return textureRegistry.textures;
 }
 
 const std::vector<Texture> TextureManager::GetTexturesThreadSafe() const
 {
-    std::shared_lock<std::shared_mutex> lock(textureRegistry.texturesMutex);
+    SHARED_LOCK(Textures, textureRegistry.texturesMutex);
     return textureRegistry.textures;
 }
 
 const std::vector<TextureGPUHandle>& TextureManager::GetTextureGPUHandlesNotThreadSafe() const
 {
-    std::shared_lock<std::shared_mutex> lock(textureRegistry.gpuHandlesMutex);
+    SHARED_LOCK(GPUHandles, textureRegistry.gpuHandlesMutex);
     return textureRegistry.gpuHandles;
 }
 
-
 const std::vector<TextureGPUHandle> TextureManager::GetTextureGPUHandlesThreadSafe() const
 {
-    std::shared_lock<std::shared_mutex> lock(textureRegistry.gpuHandlesMutex);
+    SHARED_LOCK(GPUHandles, textureRegistry.gpuHandlesMutex);
     return textureRegistry.gpuHandles;
 }
 
 void TextureManager::IncreaseRefCount(const TextureID textureID)
 {
-    std::unique_lock lock(textureRegistry.refCountsMutex);
+    UNIQUE_LOCK(Refs, textureRegistry.refCountsMutex);
     if (textureID < textureRegistry.refCounts.size())
     {
         textureRegistry.refCounts[textureID]++;
@@ -160,7 +154,7 @@ void TextureManager::IncreaseRefCount(const TextureID textureID)
 void TextureManager::DecreaseRefCount(const TextureID textureID)
 {
     {
-        std::unique_lock lock(textureRegistry.refCountsMutex);
+        UNIQUE_LOCK(Refs, textureRegistry.refCountsMutex);
         if (textureID >= textureRegistry.textures.size() || textureRegistry.refCounts[textureID] <= 0)
             return;
 
@@ -172,18 +166,18 @@ void TextureManager::DecreaseRefCount(const TextureID textureID)
 
     // Release the texture
     {
-        std::unique_lock lock(textureRegistry.texturesMutex);
+        UNIQUE_LOCK(Textures, textureRegistry.texturesMutex);
         textureRegistry.textures[textureID] = Texture();
     }
 
     {
-        std::unique_lock lock(textureRegistry.gpuHandlesMutex);
+        UNIQUE_LOCK(GPUHandles, textureRegistry.gpuHandlesMutex);
         textureRegistry.gpuHandles[textureID] = 0U;
     }
 
-    //Delete from Texture Instance Map
+    // Delete from Texture Instance Map
     {
-        std::unique_lock lock(textureRegistry.textureInstanceMapMutex);
+        UNIQUE_LOCK(Instance, textureRegistry.textureInstanceMapMutex);
         for (auto it = textureRegistry.textureInstanceMap.begin(); it != textureRegistry.textureInstanceMap.end(); )
         {
             if (it->second.textureID == textureID)
