@@ -7,40 +7,35 @@ class SRVHeapData;
 struct TextureManager
 {
 	friend class AssetManager;
-	friend class MaterialManager;
-	friend class DeferredRenderer;
+    friend class DeferredRenderer;
+	friend struct MaterialManager;
     friend struct TextureInstance;
 
     using SRVHeapID = UINT;
     using TextureID = UINT;
+    using TextureRefCount = UINT;
 
     TextureManager(const SRVHeapData& srvHeapData);
 
 public:
 
     const TextureInstance& LoadTexture(const std::wstring& path);
-
     const Texture* GetTexture(TextureInstance textureInstance) const;
 
 private:
 
+    const TextureInstance& CreateTexture(const std::wstring& path);
+
     void IncreaseRefCount(TextureID textureID);
     void DecreaseRefCount(TextureID textureID);
 
-    const TextureInstance& CreateTexture(const std::wstring& path);
-
-    struct TextureTuple
+    struct TextureRegistry
     {
-        Texture texture;
-        SRVHeapID heapID{ UINT_MAX };
-        UINT refCount{ 0 };
-    };
-
-    struct TextureData
-    {
-        std::unordered_map<std::wstring, TextureInstance> textureMap;
-        std::vector<TextureTuple> textures;
-    } textureData;
+        std::unordered_map<std::wstring, TextureInstance> textureInstanceMap;
+        std::vector<Texture> textures;
+        std::vector<SRVHeapID> heapIds;
+        std::vector<TextureRefCount> refCounts;
+    } textureRegistry;
 
     const SRVHeapData& m_SrvHeapData;    
 };

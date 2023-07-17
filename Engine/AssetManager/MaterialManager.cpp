@@ -25,47 +25,47 @@ MaterialInstanceID MaterialManager::CreateMaterialInstance(const std::wstring& n
 	instanceData.gpuInfo.emplace_back(MaterialInfoGPU());
 	instanceData.refCounter.emplace_back(UINT(1U));
 
-	const auto& textureData = m_TextureManager.textureData;
+	const auto& textureData = m_TextureManager.textureRegistry;
 
 	if (IsMaterialValid(textureIDs.albedo.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].albedo = textureData.textures[textureIDs.albedo.textureID].heapID;
+		instanceData.gpuInfo[currentIndex].albedo = textureData.heapIds[textureIDs.albedo.textureID];
 	}
 	if (IsMaterialValid(textureIDs.normal.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].normal = textureData.textures[textureIDs.normal.textureID].heapID;
+		instanceData.gpuInfo[currentIndex].normal = textureData.heapIds[textureIDs.normal.textureID];
 	}
 	if (IsMaterialValid(textureIDs.ao.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].ao = textureData.textures[textureIDs.ao.textureID].heapID;
+		instanceData.gpuInfo[currentIndex].ao = textureData.heapIds[textureIDs.ao.textureID];
 	}
 	if (IsMaterialValid(textureIDs.emissive.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].emissive = textureData.textures[textureIDs.emissive.textureID].heapID;
+		instanceData.gpuInfo[currentIndex].emissive = textureData.heapIds[textureIDs.emissive.textureID];
 	}
 	if (IsMaterialValid(textureIDs.roughness.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].roughness = textureData.textures[textureIDs.roughness.textureID].heapID;
+		instanceData.gpuInfo[currentIndex].roughness = textureData.heapIds[textureIDs.roughness.textureID];
 	}
 	if (IsMaterialValid(textureIDs.specular.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].specular = textureData.textures[textureIDs.specular.textureID].heapID;
+		instanceData.gpuInfo[currentIndex].specular = textureData.heapIds[textureIDs.specular.textureID];
 	}
 	if (IsMaterialValid(textureIDs.metallic.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].metallic = textureData.textures[textureIDs.metallic.textureID].heapID;
+		instanceData.gpuInfo[currentIndex].metallic = textureData.heapIds[textureIDs.metallic.textureID];
 	}
 	if (IsMaterialValid(textureIDs.lightmap.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].lightmap = textureData.textures[textureIDs.lightmap.textureID].heapID;
+		instanceData.gpuInfo[currentIndex].lightmap = textureData.heapIds[textureIDs.lightmap.textureID];
 	}
 	if (IsMaterialValid(textureIDs.opacity.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].opacity = textureData.textures[textureIDs.opacity.textureID].heapID;
+		instanceData.gpuInfo[currentIndex].opacity = textureData.heapIds[textureIDs.opacity.textureID];
 	}
 	if (IsMaterialValid(textureIDs.height.textureID))
 	{
-		instanceData.gpuInfo[currentIndex].height = textureData.textures[textureIDs.height.textureID].heapID;
+		instanceData.gpuInfo[currentIndex].height = textureData.heapIds[textureIDs.height.textureID];
 	}
 
 	instanceData.map[name] = currentIndex;

@@ -11,37 +11,47 @@ TextureManager::TextureManager(const SRVHeapData& srvHeapData)
 
 const TextureInstance& TextureManager::CreateTexture(const std::wstring& path)
 {
+    Texture texture{};
+    SRVHeapID heapID{};
+    TextureRefCount textureRefCount{};
+
     auto device = Application::Get().GetDevice();
     auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
     auto commandList = commandQueue->GetCommandList();
 
-    TextureTuple textureTuple;
-
-    commandList->LoadTextureFromFile(textureTuple.texture, path);
+    commandList->LoadTextureFromFile(texture, path);
     commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(commandList));
 
-    if (!textureTuple.texture.IsValid())
+    if (!texture.IsValid())
     {
        throw std::exception("Failed to create texture resource.");
     }
 
     // Create the Shader Resource View. If it fails, return an empty optional.
     device->CreateShaderResourceView(
-        textureTuple.texture.GetD3D12Resource().Get(), nullptr,
-        m_SrvHeapData.IncrementHandle(textureTuple.heapID));
+        texture.GetD3D12Resource().Get(), nullptr,
+        m_SrvHeapData.IncrementHandle(heapID));
 
     // If everything succeeded, insert the texture in the textures list and update the map.
-    textureData.textureMap[path].textureID = (TextureID)textureData.textures.size();
-    textureData.textures.emplace_back(std::move(textureTuple));
+    textureRegistry.textureInstanceMap[path].textureID = (TextureID)textureRegistry.textures.size();
+    textureRegistry.textures.emplace_back(std::move(texture));
+    textureRegistry.refCounts.emplace_back(textureRefCount);
+    textureRegistry.heapIds.emplace_back(heapID);
+
+    assert((textureRegistry.textures.size() == textureRegistry.refCounts.size() &&
+        textureRegistry.textures.size() == textureRegistry.heapIds.size()) &&
+        "Texture Registry data should have a 1-to-1 relationship.");
+
+    assert((textureRefCount == 0U) && "First texture reference count should always be zero.");
 
     // Return the instance
-    return textureData.textureMap[path];
+    return textureRegistry.textureInstanceMap[path];
 }
 
 const TextureInstance& TextureManager::LoadTexture(const std::wstring& path)
 {
-    auto it = textureData.textureMap.find(path);
-    if (it != textureData.textureMap.end())
+    auto it = textureRegistry.textureInstanceMap.find(path);
+    if (it != textureRegistry.textureInstanceMap.end())
     {
         return it->second;
     }
@@ -52,25 +62,25 @@ const TextureInstance& TextureManager::LoadTexture(const std::wstring& path)
 const Texture* TextureManager::GetTexture(TextureInstance textureInstance) const
 {
     if (!textureInstance.IsValid()) return nullptr;
-    return &textureData.textures[textureInstance.textureID].texture;
+    return &textureRegistry.textures[textureInstance.textureID];
 }
 
 void TextureManager::IncreaseRefCount(TextureID textureID)
 {
-    if (textureID < textureData.textures.size())
+    if (textureID < textureRegistry.textures.size())
     {
-        textureData.textures[textureID].refCount++;
+        textureRegistry.refCounts[textureID]++;
     }
 }
 
 void TextureManager::DecreaseRefCount(TextureID textureID)
 {
-    if (textureID < textureData.textures.size() && textureData.textures[textureID].refCount > 0)
+    if (textureID < textureRegistry.textures.size() && textureRegistry.refCounts[textureID] > 0)
     {
-        if (--textureData.textures[textureID].refCount == 0)
+        if (--textureRegistry.refCounts[textureID] == 0)
         {
             LOG_WARNING("Removing texture with id %i", (int)textureID);
-            textureData.textures[textureID].texture = Texture();
+            textureRegistry.textures[textureID] = Texture();
         }
     }
 }
