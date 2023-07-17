@@ -11,6 +11,12 @@ TextureInstance::TextureInstance()
     :textureID(TEXTURE_INVALID)
 {}
 
+TextureInstance::TextureInstance(TextureID textureID)
+    :textureID(textureID)
+{
+    Application::Get().GetAssetManager()->m_TextureManager.IncreaseRefCount(textureID);  // Increase ref count
+}
+
 TextureInstance::TextureInstance(const std::wstring& path)
 {
     *this = Application::Get().GetAssetManager()->m_TextureManager.LoadTexture(path);

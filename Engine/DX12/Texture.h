@@ -51,10 +51,12 @@ using TextureGPUHandle = std::uint32_t;
 struct TextureInstance
 {
     friend struct TextureManager;
-
+    friend void ReleaseTexture(const TextureID textureID, struct TextureRegistry& textureRegistry);
 public:
 
     TextureInstance();
+
+    TextureInstance(TextureID textureID);
 
     TextureInstance(const std::wstring& path);
 

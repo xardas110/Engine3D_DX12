@@ -28,7 +28,6 @@ const TextureInstance& TextureManager::CreateTexture(const std::wstring& path)
        throw std::exception("Failed to create texture resource.");
     }
 
-    // Create the Shader Resource View. If it fails, return an empty optional.
     device->CreateShaderResourceView(
         texture.GetD3D12Resource().Get(), nullptr,
         m_SrvHeapData.IncrementHandle(textureGPUHandle));
@@ -105,14 +104,35 @@ void TextureManager::IncreaseRefCount(const TextureID textureID)
     }
 }
 
+void ReleaseTexture(const TextureID textureID, TextureRegistry& textureRegistry)
+{
+    LOG_INFO("Releasing texture with id %i", (int)textureID);
+
+    textureRegistry.textures[textureID] = Texture();
+    textureRegistry.refCounts[textureID] = 0U;
+    textureRegistry.gpuHandles[textureID] = 0U;
+
+    //Delete from Texture Instance Map
+    for (auto it = textureRegistry.textureInstanceMap.begin(); it != textureRegistry.textureInstanceMap.end(); )
+    {
+        if (it->second.textureID == textureID)
+        {
+            it = textureRegistry.textureInstanceMap.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+}
+
 void TextureManager::DecreaseRefCount(const TextureID textureID)
 {
     if (textureID < textureRegistry.textures.size() && textureRegistry.refCounts[textureID] > 0)
     {
         if (--textureRegistry.refCounts[textureID] == 0)
-        {
-            LOG_WARNING("Removing texture with id %i", (int)textureID);
-            textureRegistry.textures[textureID] = Texture();
+        {           
+            ReleaseTexture(textureID, textureRegistry);
         }
     }
 }
