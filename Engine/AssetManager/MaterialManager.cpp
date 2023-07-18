@@ -15,56 +15,36 @@ MaterialManager::MaterialManager(const TextureManager& textureManager)
 	:m_TextureManager(textureManager)
 {}
 
-MaterialInstanceID MaterialManager::CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
+void PopulateGPUInfo(MaterialInfoGPU& gpuInfo, const TextureInstance& instance, UINT& gpuField)
 {
-	assert(instanceData.map.find(name) == instanceData.map.end() && "Material instance exists!");
-	if (instanceData.map.find(name) != instanceData.map.end()) return UINT_MAX;
+	if (instance.IsValid())
+	{
+		gpuField = instance.GetTextureGPUHandle().value();
+	}
+}
+
+std::optional<MaterialInstanceID> MaterialManager::CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
+{
+	if (instanceData.map.find(name) != instanceData.map.end())
+	{
+		// Optional without a value indicates an error
+		return std::nullopt;
+	}
 
 	const auto currentIndex = instanceData.cpuInfo.size();
 	instanceData.cpuInfo.emplace_back(textureIDs);
 	instanceData.gpuInfo.emplace_back(MaterialInfoGPU());
-	instanceData.refCounter.emplace_back(UINT(1U));
 
-	if (textureIDs.albedo.IsValid())
-	{
-		instanceData.gpuInfo[currentIndex].albedo = textureIDs.albedo.GetTextureGPUHandle().value();
-	}
-	if (textureIDs.normal.IsValid())
-	{
-		instanceData.gpuInfo[currentIndex].normal = textureIDs.normal.GetTextureGPUHandle().value();
-	}
-	if (textureIDs.ao.IsValid())
-	{
-		instanceData.gpuInfo[currentIndex].ao = textureIDs.ao.GetTextureGPUHandle().value();
-	}
-	if (textureIDs.emissive.IsValid())
-	{
-		instanceData.gpuInfo[currentIndex].emissive = textureIDs.emissive.GetTextureGPUHandle().value();
-	}
-	if (textureIDs.roughness.IsValid())
-	{
-		instanceData.gpuInfo[currentIndex].roughness = textureIDs.roughness.GetTextureGPUHandle().value();
-	}
-	if (textureIDs.specular.IsValid())
-	{
-		instanceData.gpuInfo[currentIndex].specular = textureIDs.specular.GetTextureGPUHandle().value();
-	}
-	if (textureIDs.metallic.IsValid())
-	{
-		instanceData.gpuInfo[currentIndex].metallic = textureIDs.metallic.GetTextureGPUHandle().value();
-	}
-	if (textureIDs.lightmap.IsValid())
-	{
-		instanceData.gpuInfo[currentIndex].lightmap = textureIDs.lightmap.GetTextureGPUHandle().value();
-	}
-	if (textureIDs.opacity.IsValid())
-	{
-		instanceData.gpuInfo[currentIndex].opacity = textureIDs.opacity.GetTextureGPUHandle().value();
-	}
-	if (textureIDs.height.IsValid())
-	{
-		instanceData.gpuInfo[currentIndex].height = textureIDs.height.GetTextureGPUHandle().value();
-	}
+	PopulateGPUInfo(instanceData.gpuInfo[currentIndex], textureIDs.albedo, instanceData.gpuInfo[currentIndex].albedo);
+	PopulateGPUInfo(instanceData.gpuInfo[currentIndex], textureIDs.normal, instanceData.gpuInfo[currentIndex].normal);
+	PopulateGPUInfo(instanceData.gpuInfo[currentIndex], textureIDs.ao, instanceData.gpuInfo[currentIndex].ao);
+	PopulateGPUInfo(instanceData.gpuInfo[currentIndex], textureIDs.emissive, instanceData.gpuInfo[currentIndex].emissive);
+	PopulateGPUInfo(instanceData.gpuInfo[currentIndex], textureIDs.roughness, instanceData.gpuInfo[currentIndex].roughness);
+	PopulateGPUInfo(instanceData.gpuInfo[currentIndex], textureIDs.specular, instanceData.gpuInfo[currentIndex].specular);
+	PopulateGPUInfo(instanceData.gpuInfo[currentIndex], textureIDs.metallic, instanceData.gpuInfo[currentIndex].metallic);
+	PopulateGPUInfo(instanceData.gpuInfo[currentIndex], textureIDs.lightmap, instanceData.gpuInfo[currentIndex].lightmap);
+	PopulateGPUInfo(instanceData.gpuInfo[currentIndex], textureIDs.opacity, instanceData.gpuInfo[currentIndex].opacity);
+	PopulateGPUInfo(instanceData.gpuInfo[currentIndex], textureIDs.height, instanceData.gpuInfo[currentIndex].height);
 
 	instanceData.map[name] = currentIndex;
 

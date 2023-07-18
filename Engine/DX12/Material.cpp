@@ -7,7 +7,7 @@
 MaterialInstanceID MaterialInstance::CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	materialInstanceID = materialManager->CreateMaterialInstance(name, textureIDs);
+	materialInstanceID = materialManager->CreateMaterialInstance(name, textureIDs).value();
 
 	return materialInstanceID;
 }
