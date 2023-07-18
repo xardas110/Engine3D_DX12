@@ -90,6 +90,18 @@ void MaterialManager::SetMaterial(MaterialID materialId, MaterialID matInstanceI
 	instanceData.gpuInfo[matInstanceID].materialID = materialId;
 }
 
+void MaterialManager::SetFlags(MaterialID materialId, const UINT flags)
+{
+	instanceData.gpuInfo[materialId].flags = flags;
+	instanceData.cpuInfo[materialId].flags = flags;
+}
+
+void MaterialManager::AddFlags(MaterialID materialID, const UINT flags)
+{
+	instanceData.gpuInfo[materialID].flags |= flags;
+	instanceData.cpuInfo[materialID].flags |= flags;
+}
+
 TextureInstance MaterialManager::GetTextureInstance(MaterialType::Type type, MaterialID matInstanceId)
 {
 	auto& matInfo = instanceData.cpuInfo[matInstanceId];

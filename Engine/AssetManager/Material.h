@@ -2,8 +2,10 @@
 #include <Texture.h>
 #include <TypesCompat.h>
 
+#define MATERIAL_INVALID UINT_MAX
+
 using MaterialID = std::uint32_t;
-using MaterialID = UINT;
+using MaterialColorID = std::uint32_t;
 
 struct MaterialInstance
 {
@@ -13,14 +15,10 @@ struct MaterialInstance
 
 	MaterialInstance() = default;
 
-	MaterialInstance(UINT instanceID) { materialID = instanceID; };
+	MaterialInstance(MaterialID instanceID) { materialID = instanceID; };
 
-	MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
-	{
-		materialID = CreateMaterialInstance(name, textureIDs);
-	}
+	MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
 
-	MaterialID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
 	bool GetMaterialInstance(const std::wstring& name);
 
 	static MaterialID CreateMaterial(const std::wstring& name, const MaterialColor& material);
@@ -40,6 +38,7 @@ struct MaterialInstance
 	}
 
 private:
+	static MaterialID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
 	MaterialID materialID{UINT_MAX};
 };
 

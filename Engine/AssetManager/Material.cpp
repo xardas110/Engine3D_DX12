@@ -7,15 +7,17 @@
 MaterialID MaterialInstance::CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	materialID = materialManager->CreateMaterialInstance(name, textureIDs).value();
+	return materialManager->CreateMaterialInstance(name, textureIDs).value();
+}
 
-	return materialID;
+MaterialInstance::MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
+{
+	materialID = MaterialInstance::CreateMaterialInstance(name, textureIDs);
 }
 
 bool MaterialInstance::GetMaterialInstance(const std::wstring& name)
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-
 	return materialManager->GetMaterialInstance(name, *this);
 }
 
@@ -34,15 +36,13 @@ void MaterialInstance::SetMaterial(MaterialID materialId)
 void MaterialInstance::SetFlags(UINT flags)
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	materialManager->instanceData.gpuInfo[materialID].flags = flags;
-	materialManager->instanceData.cpuInfo[materialID].flags = flags;
+	materialManager->SetFlags(materialID, flags);
 }
 
 void MaterialInstance::AddFlag(UINT flag)
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	materialManager->instanceData.gpuInfo[materialID].flags |= flag;
-	materialManager->instanceData.cpuInfo[materialID].flags |= flag;
+	materialManager->AddFlags(materialID, flag);
 }
 
 UINT MaterialInstance::GetCPUFlags()

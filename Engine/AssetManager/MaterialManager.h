@@ -20,6 +20,9 @@ struct MaterialManager
 
 	void SetMaterial(MaterialID materialId, MaterialID matInstanceID);
 
+	void SetFlags(MaterialID materialID, const UINT flags);
+	void AddFlags(MaterialID materialID, const UINT flags);
+
 	TextureInstance GetTextureInstance(MaterialType::Type type, MaterialID matInstanceId);
 
 	const std::wstring& GetMaterialInstanceName(MaterialID matInstanceId) const;
