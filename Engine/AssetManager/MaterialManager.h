@@ -11,22 +11,22 @@ struct MaterialManager
 	friend class Editor;
 	friend class MaterialInstance;
 
-	std::optional<MaterialInstanceID> CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
+	std::optional<MaterialID> CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
 	bool GetMaterialInstance(const std::wstring& name, MaterialInstance& outMaterialInstance);
 
 	MaterialID CreateMaterial(const std::wstring& name, const MaterialColor& material);
 
 	MaterialID GetMaterial(const std::wstring& name);
 
-	void SetMaterial(MaterialID materialId, MaterialInstanceID matInstanceID);
+	void SetMaterial(MaterialID materialId, MaterialID matInstanceID);
 
-	TextureInstance GetTextureInstance(MaterialType::Type type, MaterialInstanceID matInstanceId);
+	TextureInstance GetTextureInstance(MaterialType::Type type, MaterialID matInstanceId);
 
-	const std::wstring& GetMaterialInstanceName(MaterialInstanceID matInstanceId) const;
+	const std::wstring& GetMaterialInstanceName(MaterialID matInstanceId) const;
 
-	const std::wstring& GetMaterialName(MaterialInstanceID matInstanceId) const;
+	const std::wstring& GetMaterialName(MaterialID matInstanceId) const;
 
-	MaterialColor& GetUserDefinedMaterial(MaterialInstanceID matInstanceId);
+	MaterialColor& GetUserDefinedMaterial(MaterialID matInstanceId);
 private:
 	MaterialManager(const TextureManager& textureData);
 
@@ -41,7 +41,7 @@ private:
 		//1:1 relations. GPU info will be batched to gpu
 		std::vector<MaterialInfoCPU> cpuInfo;
 		std::vector<MaterialInfoGPU> gpuInfo;	
-		std::map<std::wstring, MaterialInstanceID> map;
+		std::map<std::wstring, MaterialID> map;
 		
 	} instanceData;
 

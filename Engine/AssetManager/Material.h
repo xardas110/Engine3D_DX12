@@ -3,7 +3,7 @@
 #include <TypesCompat.h>
 
 using MaterialID = std::uint32_t;
-using MaterialInstanceID = UINT;
+using MaterialID = UINT;
 
 struct MaterialInstance
 {
@@ -13,14 +13,14 @@ struct MaterialInstance
 
 	MaterialInstance() = default;
 
-	MaterialInstance(UINT instanceID) { materialInstanceID = instanceID; };
+	MaterialInstance(UINT instanceID) { materialID = instanceID; };
 
 	MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
 	{
-		materialInstanceID = CreateMaterialInstance(name, textureIDs);
+		materialID = CreateMaterialInstance(name, textureIDs);
 	}
 
-	MaterialInstanceID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
+	MaterialID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
 	bool GetMaterialInstance(const std::wstring& name);
 
 	static MaterialID CreateMaterial(const std::wstring& name, const MaterialColor& material);
@@ -34,13 +34,13 @@ struct MaterialInstance
 	UINT GetCPUFlags();
 	UINT GetGPUFlags();
 
-	MaterialInstanceID GetMaterialInstanceID() const 
+	MaterialID GetMaterialInstanceID() const 
 	{
-		return materialInstanceID;
+		return materialID;
 	}
 
 private:
-	MaterialInstanceID materialInstanceID{UINT_MAX};
+	MaterialID materialID{UINT_MAX};
 };
 
 class MaterialInfoHelper

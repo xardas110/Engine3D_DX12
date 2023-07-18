@@ -23,7 +23,7 @@ void PopulateGPUInfo(MaterialInfoGPU& gpuInfo, const TextureInstance& instance, 
 	}
 }
 
-std::optional<MaterialInstanceID> MaterialManager::CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
+std::optional<MaterialID> MaterialManager::CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
 {
 	if (instanceData.map.find(name) != instanceData.map.end())
 	{
@@ -57,7 +57,7 @@ bool MaterialManager::GetMaterialInstance(const std::wstring& name, MaterialInst
 
 	if (instanceData.map.find(name) == instanceData.map.end()) return false;
 
-	outMaterialInstance.materialInstanceID = instanceData.map[name];
+	outMaterialInstance.materialID = instanceData.map[name];
 
 	return true;
 }
@@ -83,14 +83,14 @@ MaterialID MaterialManager::GetMaterial(const std::wstring& name)
 	return materialData.map[name];
 }
 
-void MaterialManager::SetMaterial(MaterialID materialId, MaterialInstanceID matInstanceID)
+void MaterialManager::SetMaterial(MaterialID materialId, MaterialID matInstanceID)
 {
 	//Error checking with subscript error
 	instanceData.cpuInfo[matInstanceID].materialID = materialId;
 	instanceData.gpuInfo[matInstanceID].materialID = materialId;
 }
 
-TextureInstance MaterialManager::GetTextureInstance(MaterialType::Type type, MaterialInstanceID matInstanceId)
+TextureInstance MaterialManager::GetTextureInstance(MaterialType::Type type, MaterialID matInstanceId)
 {
 	auto& matInfo = instanceData.cpuInfo[matInstanceId];
 
@@ -119,7 +119,7 @@ TextureInstance MaterialManager::GetTextureInstance(MaterialType::Type type, Mat
 	}
 }
 
-const std::wstring& MaterialManager::GetMaterialInstanceName(MaterialInstanceID matInstanceId) const
+const std::wstring& MaterialManager::GetMaterialInstanceName(MaterialID matInstanceId) const
 {
 	if (matInstanceId == UINT_MAX) return g_NoMaterial;
 
@@ -131,7 +131,7 @@ const std::wstring& MaterialManager::GetMaterialInstanceName(MaterialInstanceID 
 	return g_NoMaterial;
 }
 
-const std::wstring& MaterialManager::GetMaterialName(MaterialInstanceID matInstanceId) const
+const std::wstring& MaterialManager::GetMaterialName(MaterialID matInstanceId) const
 {
 	auto matId = instanceData.cpuInfo[matInstanceId].materialID;
 
@@ -145,7 +145,7 @@ const std::wstring& MaterialManager::GetMaterialName(MaterialInstanceID matInsta
 	return g_NoMaterial;
 }
 
-MaterialColor& MaterialManager::GetUserDefinedMaterial(MaterialInstanceID matInstanceId)
+MaterialColor& MaterialManager::GetUserDefinedMaterial(MaterialID matInstanceId)
 {
 	auto materialID = instanceData.cpuInfo[matInstanceId].materialID;
 	
