@@ -343,7 +343,9 @@ void DeferredRenderer::ExcecuteLightPass(
 
     // Set primitive topology and acceleration structure
     commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    gfxCommandList->SetGraphicsRootShaderResourceView(LightPassParam::AccelerationStructure, m_Raytracer->GetCurrentTLAS()->GetGPUVirtualAddress());
+
+    if (m_Raytracer->GetCurrentTLAS())
+        gfxCommandList->SetGraphicsRootShaderResourceView(LightPassParam::AccelerationStructure, m_Raytracer->GetCurrentTLAS()->GetGPUVirtualAddress());
 
     // Set Descriptor Heap and Graphics Root Descriptor Table for various buffers and heaps
     commandList->SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvHeap.heap.Get());
@@ -571,7 +573,8 @@ void DeferredRenderer::ExecuteCompositionPass(
 
     gfxCommandList->SetGraphicsRootDescriptorTable(CompositionPassParam::GBufferHeap, m_GBuffer->m_SRVHeap.GetGPUHandle(0));
 
-    gfxCommandList->SetGraphicsRootShaderResourceView(
+    if (m_Raytracer->GetCurrentTLAS())
+        gfxCommandList->SetGraphicsRootShaderResourceView(
         CompositionPassParam::AccelerationStructure,
         m_Raytracer->GetCurrentTLAS()->GetGPUVirtualAddress());
 

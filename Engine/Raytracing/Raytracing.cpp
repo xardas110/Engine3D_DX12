@@ -121,6 +121,7 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::ve
     }
 
     auto byteSize = instanceDescs.size() * sizeof(D3D12_RAYTRACING_INSTANCE_DESC);
+
     AllocateUploadBuffer(device.Get(), instanceDescs.data(), byteSize, &m_InstanceResource[m_CurrentBufferIndex], L"InstanceDescs");
 
     D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS buildFlags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;

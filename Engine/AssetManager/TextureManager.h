@@ -25,12 +25,10 @@
 #define SCOPED_UNIQUE_LOCK(...)
 #endif
 
-// The TextureManager class utilizes the Factory and Flyweight design patterns, and follows a data-driven design for 
-// cache efficiency, easier impl for wait free multithreading and CPU-GPU synchronization. It is responsible for creating Textures & Texture instances, 
-// managing their lifetimes. The TextureManager also uses mutexes for thread safety, which can be turned off for a wait-free system.
-
 class TextureManager;
 
+// The TextureManagerAccess class serves as an exclusive access point for creating the TextureManager class. 
+// It restricts the creation of TextureManager instances to its friend classes, specifically the AssetManager class in this context.
 class TextureManagerAccess
 {
     friend class AssetManager;
@@ -38,10 +36,14 @@ class TextureManagerAccess
     static std::unique_ptr<TextureManager> CreateTextureManager(const SRVHeapData& srvHeapData);
 };
 
+// The TextureManager class utilizes the Factory and Flyweight design patterns, and follows a data-driven design for 
+// cache efficiency, easier impl for wait free multithreading and CPU-GPU synchronization. It is responsible for creating Textures & Texture instances, 
+// managing their lifetimes. The TextureManager also uses mutexes for thread safety, which can be turned off for a wait-free multi threaded system.
 class TextureManager
 {  
     friend struct TextureInstance;
     friend class TextureManagerAccess;
+    friend class AssetManagerTest;
 
     explicit TextureManager(const SRVHeapData& srvHeapData);
 
@@ -75,7 +77,7 @@ private:
     const TextureInstance& CreateTexture(const std::wstring& path);
     void IncreaseRefCount(const TextureID textureID);
     void DecreaseRefCount(const TextureID textureID);
-    //TODO: Free the heap on Texture Release
+    //TODO: Release the index handle in the descriptor table
     void ReleaseTexture(const TextureID textureID);
 
     // The registry that holds texture data
@@ -102,7 +104,7 @@ private:
         CREATE_MUTEX(gpuHandles);
     } textureRegistry;
 
-    // Member variables
+    // Released textureIDs, this is used to re-populate the released memory in the Texture Registry
     std::vector<TextureID> releasedTextureIDs;
     CREATE_MUTEX(releasedTextureIDs);
 

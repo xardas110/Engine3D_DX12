@@ -22,6 +22,9 @@ add_subdirectory(Libs/RayTracingDenoiser)
 
 add_subdirectory(Libs/NRI)
 
+# Include Google Test
+add_subdirectory(Libs/googletest)
+
 set( HEADER_FILES 
     "core/KeyCodes.h"
     "core/Helpers.h"
@@ -229,6 +232,8 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PUBLIC Physics
     PUBLIC Libs/PhysX/physx/include
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
+    PUBLIC Libs/googletest/googletest/include
+    PUBLIC Tests/AssetManager
  )
 
  set ( TARGET_LINK_LIBS
@@ -266,14 +271,13 @@ add_library( Engine STATIC
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
-    ${IMGUI_HEADERS} ${IMGUI_SOURCE})
+    ${IMGUI_HEADERS} ${IMGUI_SOURCE} "Tests/AssetManager/TextureManagerTest.h" )
 
  add_executable( EngineBin WIN32
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
-    ${IMGUI_HEADERS} ${IMGUI_SOURCE}
- )
+    ${IMGUI_HEADERS} ${IMGUI_SOURCE} "Tests/AssetManager/TextureManagerTest.h" )
 
 target_link_libraries( Engine
 	${TARGET_LINK_LIBS}   
@@ -499,3 +503,6 @@ add_custom_command(TARGET Engine POST_BUILD COMMAND
         ${CMAKE_CURRENT_SOURCE_DIR}/Config/imgui.ini
         ${CMAKE_BINARY_DIR}/bin/imgui.ini
 )
+
+target_link_libraries(EngineBin PRIVATE gtest gtest_main)
+target_link_libraries(Engine PRIVATE gtest gtest_main)

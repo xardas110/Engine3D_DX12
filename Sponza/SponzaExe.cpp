@@ -4,6 +4,8 @@
 #include <entity.h>
 #include <CommandQueue.h>
 #include <CommandList.h>
+#include <gtest/gtest.h>
+#include <AssetManagerTest.h>
 
 SponzaExe::SponzaExe(const std::wstring& name, int width, int height, bool vSync)
 	:Game(name, width, height, vSync)
@@ -32,6 +34,8 @@ bool SponzaExe::LoadContent()
 
     CQ->ExecuteCommandList(CL);
     CQ->ExecuteCommandList(RTCL);
+
+    
 
     return true;
 }

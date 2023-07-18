@@ -224,7 +224,8 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
     fs::path filePath( fileName );
     if ( !fs::exists( filePath ) )
     {
-        throw std::exception( "File not found." );
+        LOG_ERROR("File not found: %s", std::string(fileName.begin(), fileName.end()).c_str());
+        return;
     }
 
     std::lock_guard<std::mutex> lock(ms_TextureCacheMutex);
@@ -303,8 +304,8 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
         auto device = Application::Get().GetDevice();
         Microsoft::WRL::ComPtr<ID3D12Resource> textureResource;
 
-        std::wcout << "Creating Texture Resource For: " << fileName.c_str() << std::endl;
-      
+        LOG_INFO("Creating Texture Resource For: %s", std::string(fileName.begin(), fileName.end()).c_str());
+
         if (textureDesc.Width == 1)
         { 
             textureDesc.Width = 16;

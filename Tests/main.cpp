@@ -11,7 +11,8 @@
 #include <iostream>
 #include <Window.h>
 #include <Editor.h>
-#include <SponzaExe.h>
+#include <gtest/gtest.h>
+#include <Tests.h>
 
 using namespace Microsoft::WRL;
 
@@ -48,15 +49,16 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
                 SetCurrentDirectoryW(path);
             }
         }
+        ::testing::InitGoogleTest(&argc, argv);
         LocalFree(argv);
     }
 
     Application::Create(hInstance);
     {
-        auto world = std::shared_ptr<SponzaExe>(new SponzaExe(L"Sponza", 1280, 720, false));
+        auto world = std::shared_ptr<Tests>(new Tests(L"Tests", 1280, 720, false));
         Application::Get().Run(world);
+        retCode = world->retCode;
     }
-
     Application::Destroy();
 
     atexit(&ReportLiveObjects);

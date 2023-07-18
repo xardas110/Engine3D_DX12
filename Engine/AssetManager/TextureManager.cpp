@@ -25,7 +25,8 @@ const TextureInstance& TextureManager::CreateTexture(const std::wstring& path)
 
     if (!texture.IsValid())
     {
-        throw std::exception("Failed to create texture resource.");
+        LOG_ERROR("Failed to create texture resource: %s", std::string(path.begin(), path.end()).c_str());
+        return TextureInstance();
     }
 
     device->CreateShaderResourceView(
@@ -142,12 +143,13 @@ void TextureManager::ReleaseTexture(const TextureID textureID)
     if (textureID >= textureRegistry.textures.size())
         return;
 
-    LOG_INFO("Releasing texture with id %i", (int)textureID);
+    LOG_INFO("Releasing texture with id %i", (UINT)textureID);
 
     // Release the texture
     {
         UNIQUE_LOCK(Textures, textureRegistry.texturesMutex);
         textureRegistry.textures[textureID] = Texture();
+        assert(!textureRegistry.textures[textureID].IsValid());
     }
 
     {

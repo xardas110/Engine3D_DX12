@@ -17,6 +17,7 @@ class AssetManager
 	friend class MeshInstance;
 	friend class DeferredRenderer;
 	friend class Editor;
+	friend class AssetManagerTest;
 
 	friend struct StaticMeshInstance;
 
@@ -39,7 +40,8 @@ public:
 
 private:
 	SRVHeapData								m_SrvHeapData;
-	std::shared_ptr<TextureManager>			m_TextureManager;
+public:
+	std::unique_ptr<TextureManager>			m_TextureManager;
 	std::unique_ptr<MaterialManager>		m_MaterialManager;
 	std::unique_ptr<MeshManager>			m_MeshManager;	
 };

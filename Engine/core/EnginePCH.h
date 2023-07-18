@@ -82,6 +82,7 @@ using namespace DirectX;
 #include <sstream>
 #include <optional>
 #include <shared_mutex>
+#include <gtest/gtest.h>
 
 //Assimp
 #include <assimp/Importer.hpp>
