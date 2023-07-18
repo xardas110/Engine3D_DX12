@@ -4,7 +4,7 @@
 
 #define MATERIAL_INVALID UINT_MAX
 
-using MaterialID = std::uint32_t;
+using MaterialInfoID = std::uint32_t;
 using MaterialColorID = std::uint32_t;
 
 class MaterialInstance
@@ -13,26 +13,26 @@ class MaterialInstance
 
 public:
     MaterialInstance() = default;
-    MaterialInstance(MaterialID instanceID) : materialID(instanceID) {}
+    MaterialInstance(MaterialInfoID instanceID) : materialInfoID(instanceID) {}
     MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
 
     bool GetMaterialInstance(const std::wstring& name);
-    static MaterialID CreateMaterial(const std::wstring& name, const MaterialColor& material);
-    void SetMaterial(const MaterialID materialId);
+    static MaterialInfoID CreateMaterial(const std::wstring& name, const MaterialColor& material);
+    void SetMaterial(const MaterialInfoID materialId);
     void SetFlags(const UINT flags);
     void AddFlag(const UINT flag);
     UINT GetCPUFlags() const;
     UINT GetGPUFlags() const;
 
-    MaterialID GetMaterialInstanceID() const
+    MaterialInfoID GetMaterialInstanceID() const
     {
-        return materialID;
+        return materialInfoID;
     }
 
 private:
     MaterialManager* GetMaterialManager() const;
-    static MaterialID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
-    MaterialID materialID{ MATERIAL_INVALID };
+    static MaterialInfoID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
+    MaterialInfoID materialInfoID{ MATERIAL_INVALID };
 };
 
 class MaterialInfoHelper
