@@ -87,10 +87,10 @@ void ApplyMaterialInstanceImportFlags(MaterialInstance& materialInstance, MeshIm
 	materialInstance.SetFlags(INSTANCE_OPAQUE);
 
 	// Check and apply transparency if required
-	//ApplyTransparency(materialInstance, importFlags, materialInfo);
+	ApplyTransparency(materialInstance, importFlags, materialInfo);
 
 	// Apply specific import flags based on the provided importFlags
-	//ApplySpecificImportFlags(materialInstance, importFlags);
+	ApplySpecificImportFlags(materialInstance, importFlags);
 }
 
 MeshManager::MeshManager(const SRVHeapData& srvHeapData)
@@ -122,13 +122,10 @@ void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<Comma
 
         if (mesh.materialData.bHasMaterial)
         {
-            //if (MaterialHelper::IsTransparent(materialData))
-            //{
-           //     ApplyTransparency(matInstance, flags, matInfo);
-           // }
-
-            //const std::wstring materialName = currentName + L"/" + std::wstring(mesh.materialData.name.begin(), mesh.materialData.name.end());
-
+            if (MaterialHelper::IsTransparent(materialData))
+            {
+                ApplyTransparency(matInstance, flags, matInfo);
+            }
         }
 
         MeshInstance meshInstance(currentName);

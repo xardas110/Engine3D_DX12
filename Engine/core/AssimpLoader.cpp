@@ -179,7 +179,7 @@ void AssimpLoader::LoadTextures(AssimpMesh& internalMesh, aiMaterial* material, 
 		aiTextureType_AMBIENT, aiTextureType_DIFFUSE,
 		aiTextureType_SPECULAR, aiTextureType_EMISSIVE,
 		aiTextureType_HEIGHT, aiTextureType_NORMALS,
-		aiTextureType_METALNESS, aiTextureType_DIFFUSE_ROUGHNESS,
+		aiTextureType_AMBIENT, aiTextureType_DIFFUSE_ROUGHNESS,
 		aiTextureType_OPACITY
 	};
 
