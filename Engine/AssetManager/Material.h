@@ -10,21 +10,19 @@ using MaterialColorID = std::uint32_t;
 class MaterialInstance
 {
     friend class MaterialManager;
-    friend class DeferredRenderer;
-    friend class MeshManager;
 
 public:
     MaterialInstance() = default;
-    MaterialInstance(MaterialID instanceID) { materialID = instanceID; }
+    MaterialInstance(MaterialID instanceID) : materialID(instanceID) {}
     MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
 
     bool GetMaterialInstance(const std::wstring& name);
     static MaterialID CreateMaterial(const std::wstring& name, const MaterialColor& material);
-    void SetMaterial(MaterialID materialId);
-    void SetFlags(UINT flags);
-    void AddFlag(UINT flag);
-    UINT GetCPUFlags();
-    UINT GetGPUFlags();
+    void SetMaterial(const MaterialID materialId);
+    void SetFlags(const UINT flags);
+    void AddFlag(const UINT flag);
+    UINT GetCPUFlags() const;
+    UINT GetGPUFlags() const;
 
     MaterialID GetMaterialInstanceID() const
     {
@@ -32,6 +30,7 @@ public:
     }
 
 private:
+    MaterialManager* GetMaterialManager() const;
     static MaterialID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
     MaterialID materialID{ MATERIAL_INVALID };
 };

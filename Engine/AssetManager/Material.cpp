@@ -4,10 +4,14 @@
 #include <Application.h>
 #include <TypesCompat.h>
 
+MaterialManager* MaterialInstance::GetMaterialManager() const 
+{
+	return Application::Get().GetAssetManager()->m_MaterialManager.get();
+}
+
 MaterialID MaterialInstance::CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
 {
-	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	return materialManager->CreateMaterialInstance(name, textureIDs).value();
+	return Application::Get().GetAssetManager()->m_MaterialManager->CreateMaterialInstance(name, textureIDs).value();
 }
 
 MaterialInstance::MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
@@ -17,44 +21,37 @@ MaterialInstance::MaterialInstance(const std::wstring& name, const MaterialInfoC
 
 bool MaterialInstance::GetMaterialInstance(const std::wstring& name)
 {
-	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	return materialManager->GetMaterialInstance(name, *this);
+	return GetMaterialManager()->GetMaterialInstance(name, *this);
 }
 
 MaterialID MaterialInstance::CreateMaterial(const std::wstring& name, const MaterialColor& material)
 {
-	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	return materialManager->CreateMaterial(name, material);
+	return Application::Get().GetAssetManager()->m_MaterialManager->CreateMaterial(name, material);
 }
 
-void MaterialInstance::SetMaterial(MaterialID materialId)
+void MaterialInstance::SetMaterial(const MaterialID materialId)
 {
-	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	materialManager->SetMaterial(materialID, materialId);
+	GetMaterialManager()->SetMaterial(materialID, materialId);
 }
 
-void MaterialInstance::SetFlags(UINT flags)
+void MaterialInstance::SetFlags(const UINT flags)
 {
-	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	materialManager->SetFlags(materialID, flags);
+	GetMaterialManager()->SetFlags(materialID, flags);
 }
 
-void MaterialInstance::AddFlag(UINT flag)
+void MaterialInstance::AddFlag(const UINT flag)
 {
-	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	materialManager->AddFlags(materialID, flag);
+	GetMaterialManager()->AddFlags(materialID, flag);
 }
 
-UINT MaterialInstance::GetCPUFlags()
+UINT MaterialInstance::GetCPUFlags() const
 {
-	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	return materialManager->instanceData.cpuInfo[materialID].flags;
+	return GetMaterialManager()->instanceData.cpuInfo[materialID].flags;
 }
 
-UINT MaterialInstance::GetGPUFlags()
+UINT MaterialInstance::GetGPUFlags() const
 {
-	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	return materialManager->instanceData.gpuInfo[materialID].flags;
+	return GetMaterialManager()->instanceData.gpuInfo[materialID].flags;
 }
 
 MaterialInfoCPU MaterialInfoHelper::PopulateMaterialInfo(const AssimpMesh& mesh, int flags)
