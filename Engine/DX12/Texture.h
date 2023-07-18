@@ -50,7 +50,7 @@ using TextureGPUHandle = std::uint32_t;
 
 struct TextureInstance
 {
-    friend struct TextureManager;
+    friend class TextureManager;
 public:
 
     TextureInstance();

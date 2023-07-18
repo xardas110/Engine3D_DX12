@@ -75,13 +75,13 @@ void CreateTangentAndBiTangent(VertexCollection& vertices, IndexCollection32& in
 
 MeshInstance::MeshInstance(const std::wstring& path)
 {
-    Application::Get().GetAssetManager()->m_MeshManager.CreateMeshInstance(path, *this);
+    Application::Get().GetAssetManager()->m_MeshManager->CreateMeshInstance(path, *this);
 }
 
 void MeshInstance::SetMaterialInstance(const MaterialInstance& matInstance)
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
-    meshManager.instanceData.meshInfo[id].materialInstanceID = matInstance.GetMaterialInstanceID();
+    meshManager->instanceData.meshInfo[id].materialInstanceID = matInstance.GetMaterialInstanceID();
 }
 
 const Texture* MeshInstance::GetTexture(MaterialType::Type type)
@@ -90,51 +90,51 @@ const Texture* MeshInstance::GetTexture(MaterialType::Type type)
     auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
-    auto matInstanceID = meshManager.instanceData.meshInfo[id].materialInstanceID;
+    auto matInstanceID = meshManager->instanceData.meshInfo[id].materialInstanceID;
     
-    auto textureInstance = materialManager.GetTextureInstance(type, matInstanceID);
-    return textureManager.GetTexture(textureInstance);
+    auto textureInstance = materialManager->GetTextureInstance(type, matInstanceID);
+    return textureManager->GetTexture(textureInstance);
 }
 
 const std::wstring& MeshInstance::GetName()
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
 
-    auto meshID = meshManager.instanceData.meshIds[id];
+    auto meshID = meshManager->instanceData.meshIds[id];
 
-    return meshManager.meshData.GetName(meshID);
+    return meshManager->meshData.GetName(meshID);
 }
 
 const std::wstring& MeshInstance::GetMaterialName()
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-    auto matInstanceID = meshManager.instanceData.meshInfo[id].materialInstanceID;
+    auto matInstanceID = meshManager->instanceData.meshInfo[id].materialInstanceID;
 
-    return materialManager.GetMaterialInstanceName(matInstanceID);
+    return materialManager->GetMaterialInstanceName(matInstanceID);
 }
 
 Material& MeshInstance::GetUserMaterial()
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-    auto matInstanceID = meshManager.instanceData.meshInfo[id].materialInstanceID;
-    return materialManager.GetUserDefinedMaterial(matInstanceID);
+    auto matInstanceID = meshManager->instanceData.meshInfo[id].materialInstanceID;
+    return materialManager->GetUserDefinedMaterial(matInstanceID);
 }
 
 const std::wstring& MeshInstance::GetUserMaterialName()
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-    auto matInstanceID = meshManager.instanceData.meshInfo[id].materialInstanceID;
-    return materialManager.GetMaterialName(matInstanceID);
+    auto matInstanceID = meshManager->instanceData.meshInfo[id].materialInstanceID;
+    return materialManager->GetMaterialName(matInstanceID);
 }
 
 bool MeshInstance::IsPointlight()
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-    auto matInstanceID = meshManager.instanceData.meshInfo[id].materialInstanceID;
+    auto matInstanceID = meshManager->instanceData.meshInfo[id].materialInstanceID;
     
     auto matInstance = MaterialInstance(matInstanceID);
 
@@ -625,7 +625,7 @@ StaticMeshInstance::StaticMeshInstance(CommandList& commandList, std::shared_ptr
     const std::string& path, MeshImport::Flags flags)
 {
 
-    Application::Get().GetAssetManager()->m_MeshManager.LoadStaticMesh(commandList, rtCommandList, path, *this, flags);
+    Application::Get().GetAssetManager()->m_MeshManager->LoadStaticMesh(commandList, rtCommandList, path, *this, flags);
 }
 
 Material* StaticMeshInstance::FindMaterialByName(const std::wstring& materialName)

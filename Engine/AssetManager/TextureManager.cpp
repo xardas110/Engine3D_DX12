@@ -33,36 +33,36 @@ const TextureInstance& TextureManager::CreateTexture(const std::wstring& path)
         m_SrvHeapData.IncrementHandle(textureGPUHandle));
 
     
-    UNIQUE_LOCK(Instance, textureRegistry.textureInstanceMapMutex);
-    UNIQUE_LOCK(ReleasedTextureIDs, releasedTextureIDsMutex);
-    UNIQUE_LOCK(Textures, textureRegistry.texturesMutex);
-    UNIQUE_LOCK(Refs, textureRegistry.refCountsMutex);
-    UNIQUE_LOCK(GPUHandles, textureRegistry.gpuHandlesMutex);
+    SCOPED_UNIQUE_LOCK(
+        textureRegistry.textureInstanceMapMutex,
+        releasedTextureIDsMutex,
+        textureRegistry.texturesMutex,
+        textureRegistry.gpuHandlesMutex
+    );
 
     // If everything succeeded, insert the texture in the textures list and update the map.
-    if (!releasedTextureIDs.empty())
+    TextureID textureID = !releasedTextureIDs.empty() ? 
+        releasedTextureIDs.front() : (TextureID)textureRegistry.textures.size();
+
+    if (textureID >= TEXTURE_MANAGER_MAX_TEXTURES)
     {
-        const TextureID textureID = releasedTextureIDs.front();
+        throw std::runtime_error("TextureID exceeds the maximum limit");
+    }
+
+    textureRegistry.textureInstanceMap[path].textureID = textureID;
+    if (!releasedTextureIDs.empty()) 
+    {
         releasedTextureIDs.erase(releasedTextureIDs.begin());
-
-
-        textureRegistry.textureInstanceMap[path].textureID = (TextureID)textureID;
         textureRegistry.textures[textureID] = std::move(texture);
-        textureRegistry.refCounts[textureID] = textureRefCount;
         textureRegistry.gpuHandles[textureID] = textureGPUHandle;
     }
-    else
+    else 
     {
-        textureRegistry.textureInstanceMap[path].textureID = (TextureID)textureRegistry.textures.size();
         textureRegistry.textures.emplace_back(std::move(texture));
-        textureRegistry.refCounts.emplace_back(textureRefCount);
         textureRegistry.gpuHandles.emplace_back(textureGPUHandle);
     }
-
-    UNIQUE_UNLOCK(ReleasedTextureIDs);
-    UNIQUE_UNLOCK(Textures);
-    UNIQUE_UNLOCK(Refs);
-    UNIQUE_UNLOCK(GPUHandles);
+    
+    textureRegistry.refCounts[textureID].store(textureRefCount);
 
     return textureRegistry.textureInstanceMap[path];
 }
@@ -104,8 +104,7 @@ const std::optional<TextureRefCount> TextureManager::GetTextureRefCount(const Te
     if (!IsTextureInstanceValid(textureInstance))
         return std::nullopt;
 
-    SHARED_LOCK(RefCounts, textureRegistry.refCountsMutex);
-    return textureRegistry.refCounts[textureInstance.textureID];
+    return textureRegistry.refCounts[textureInstance.textureID].load();
 }
 
 bool TextureManager::IsTextureInstanceValid(const TextureInstance& textureInstance) const
@@ -120,23 +119,28 @@ bool TextureManager::IsTextureInstanceValid(const TextureInstance& textureInstan
 
 void TextureManager::IncreaseRefCount(const TextureID textureID)
 {
-    UNIQUE_LOCK(Refs, textureRegistry.refCountsMutex);
     if (textureID < textureRegistry.refCounts.size())
     {
-        textureRegistry.refCounts[textureID]++;
+        textureRegistry.refCounts[textureID].fetch_add(1);
     }
 }
 
 void TextureManager::DecreaseRefCount(const TextureID textureID)
 {
-    {
-        UNIQUE_LOCK(Refs, textureRegistry.refCountsMutex);
-        if (textureID >= textureRegistry.textures.size() || textureRegistry.refCounts[textureID] <= 0)
-            return;
+    if (textureID >= textureRegistry.textures.size())
+        return;
 
-        if (--textureRegistry.refCounts[textureID] != 0)
-            return;
-    }
+    if (textureRegistry.refCounts[textureID].fetch_sub(1) != 1)
+        return;
+
+    ReleaseTexture(textureID);
+}
+
+void TextureManager::ReleaseTexture(const TextureID textureID)
+{
+    // Ensure textureID is valid before attempting to release
+    if (textureID >= textureRegistry.textures.size())
+        return;
 
     LOG_INFO("Releasing texture with id %i", (int)textureID);
 
@@ -167,5 +171,12 @@ void TextureManager::DecreaseRefCount(const TextureID textureID)
         }
     }
 
+    // Add to list of released textures
+    UNIQUE_LOCK(ReleasedTextureIDs, releasedTextureIDsMutex);
     releasedTextureIDs.emplace_back(textureID);
+}
+
+std::unique_ptr<TextureManager> TextureManagerAccess::CreateTextureManager(const SRVHeapData& srvHeapData)
+{
+    return std::unique_ptr<TextureManager>(new TextureManager(srvHeapData));
 }

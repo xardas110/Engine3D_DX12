@@ -7,7 +7,7 @@
 MaterialInstanceID MaterialInstance::CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	materialInstanceID = materialManager.CreateMaterialInstance(name, textureIDs);
+	materialInstanceID = materialManager->CreateMaterialInstance(name, textureIDs);
 
 	return materialInstanceID;
 }
@@ -16,45 +16,45 @@ bool MaterialInstance::GetMaterialInstance(const std::wstring& name)
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 
-	return materialManager.GetMaterialInstance(name, *this);
+	return materialManager->GetMaterialInstance(name, *this);
 }
 
 MaterialID MaterialInstance::CreateMaterial(const std::wstring& name, const Material& material)
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	return materialManager.CreateMaterial(name, material);
+	return materialManager->CreateMaterial(name, material);
 }
 
 void MaterialInstance::SetMaterial(MaterialID materialId)
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	materialManager.SetMaterial(materialInstanceID, materialId);
+	materialManager->SetMaterial(materialInstanceID, materialId);
 }
 
 void MaterialInstance::SetFlags(UINT flags)
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	materialManager.instanceData.gpuInfo[materialInstanceID].flags = flags;
-	materialManager.instanceData.cpuInfo[materialInstanceID].flags = flags;
+	materialManager->instanceData.gpuInfo[materialInstanceID].flags = flags;
+	materialManager->instanceData.cpuInfo[materialInstanceID].flags = flags;
 }
 
 void MaterialInstance::AddFlag(UINT flag)
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	materialManager.instanceData.gpuInfo[materialInstanceID].flags |= flag;
-	materialManager.instanceData.cpuInfo[materialInstanceID].flags |= flag;
+	materialManager->instanceData.gpuInfo[materialInstanceID].flags |= flag;
+	materialManager->instanceData.cpuInfo[materialInstanceID].flags |= flag;
 }
 
 UINT MaterialInstance::GetCPUFlags()
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	return materialManager.instanceData.cpuInfo[materialInstanceID].flags;
+	return materialManager->instanceData.cpuInfo[materialInstanceID].flags;
 }
 
 UINT MaterialInstance::GetGPUFlags()
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-	return materialManager.instanceData.gpuInfo[materialInstanceID].flags;
+	return materialManager->instanceData.gpuInfo[materialInstanceID].flags;
 }
 
 MaterialInfoCPU MaterialInfoHelper::PopulateMaterialInfo(const AssimpMesh& mesh, int flags)

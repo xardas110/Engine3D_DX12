@@ -463,7 +463,7 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
 
     if (!mesh.IsValid()) return;
   
-    const auto& materialManager = Application::Get().GetAssetManager()->GetMaterialManager();
+    const auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
   
     const auto& wMatName = mesh.GetUserMaterialName();
     auto& material = mesh.GetUserMaterial();

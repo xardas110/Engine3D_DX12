@@ -2,9 +2,11 @@
 #include <Texture.h>
 #include <StaticDescriptorHeap.h>
 #include <shared_mutex>
+#include <atomic>
+#include <array>
 
-// Macros for thread safety
 #define TEXTURE_MANAGER_THREAD_SAFE true
+#define TEXTURE_MANAGER_MAX_TEXTURES 50000
 
 #if TEXTURE_MANAGER_THREAD_SAFE
 #define CREATE_MUTEX(type) mutable std::shared_mutex type##Mutex
@@ -12,6 +14,7 @@
 #define SHARED_LOCK(type, mutex) std::shared_lock<std::shared_mutex> lock##type(mutex)
 #define UNIQUE_UNLOCK(type) lock##type.unlock();
 #define SHARED_UNLOCK(type) lock##type.unlock_shared();
+#define SCOPED_UNIQUE_LOCK(...) std::scoped_lock lock##type(__VA_ARGS__)
 #else
 #define UNLOCK_MUTEX(mutex)
 #define UNIQUE_UNLOCK(type);
@@ -19,15 +22,26 @@
 #define UNIQUE_LOCK(type, mutex)
 #define SHARED_LOCK(type, mutex)
 #define CREATE_MUTEX(type)
+#define SCOPED_UNIQUE_LOCK(...)
 #endif
 
 // The TextureManager class utilizes the Factory and Flyweight design patterns, and follows a data-driven design for 
-// cache efficiency and CPU-GPU synchronization. It is responsible for creating Textures & Texture instances, 
-// managing their lifetimes. The TextureManager also uses a mutex for thread safety, which can be turned off for a wait-free system.
-class TextureManager
+// cache efficiency, easier impl for wait free multithreading and CPU-GPU synchronization. It is responsible for creating Textures & Texture instances, 
+// managing their lifetimes. The TextureManager also uses mutexes for thread safety, which can be turned off for a wait-free system.
+
+class TextureManager;
+
+class TextureManagerAccess
 {
     friend class AssetManager;
+
+    static std::unique_ptr<TextureManager> CreateTextureManager(const SRVHeapData& srvHeapData);
+};
+
+class TextureManager
+{  
     friend struct TextureInstance;
+    friend class TextureManagerAccess;
 
     explicit TextureManager(const SRVHeapData& srvHeapData);
 
@@ -61,6 +75,8 @@ private:
     const TextureInstance& CreateTexture(const std::wstring& path);
     void IncreaseRefCount(const TextureID textureID);
     void DecreaseRefCount(const TextureID textureID);
+    //TODO: Free the heap on Texture Release
+    void ReleaseTexture(const TextureID textureID);
 
     // The registry that holds texture data
     struct TextureRegistry
@@ -77,13 +93,12 @@ private:
         // Texture data containers
         std::unordered_map<std::wstring, TextureInstance> textureInstanceMap;
         std::vector<Texture> textures;
-        std::vector<TextureRefCount> refCounts;
+        std::array<std::atomic<TextureRefCount>, TEXTURE_MANAGER_MAX_TEXTURES> refCounts;
         std::vector<TextureGPUHandle> gpuHandles;
 
         // Mutexes for thread safety
         CREATE_MUTEX(textureInstanceMap);
         CREATE_MUTEX(textures);
-        CREATE_MUTEX(refCounts);
         CREATE_MUTEX(gpuHandles);
     } textureRegistry;
 

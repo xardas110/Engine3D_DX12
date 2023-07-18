@@ -10,9 +10,12 @@ std::wstring StringToWString(const std::string& s)
 	return std::wstring(s.begin(), s.end());
 }
 
-AssetManager::AssetManager()
-	: m_TextureManager(m_SrvHeapData), m_MaterialManager(m_TextureManager), m_MeshManager(m_SrvHeapData)
-{}
+AssetManager::AssetManager() 
+{
+	m_TextureManager = TextureManagerAccess::CreateTextureManager(m_SrvHeapData);
+	m_MaterialManager = std::unique_ptr<MaterialManager>(new MaterialManager(*m_TextureManager.get()));
+	m_MeshManager = std::unique_ptr<MeshManager>(new MeshManager(m_SrvHeapData));
+}
 
 AssetManager::~AssetManager()
 {}
@@ -25,19 +28,4 @@ std::unique_ptr<AssetManager> AssetManager::CreateInstance()
 const SRVHeapData& AssetManager::GetSRVHeapData() const
 {
 	return m_SrvHeapData;
-}
-
-const TextureManager& AssetManager::GetTextureManager() const
-{
-	return m_TextureManager;
-}
-
-MaterialManager& AssetManager::GetMaterialManager()
-{
-	return m_MaterialManager;
-}
-
-const MeshManager& AssetManager::GetMeshManager() const
-{
-	return m_MeshManager;
 }

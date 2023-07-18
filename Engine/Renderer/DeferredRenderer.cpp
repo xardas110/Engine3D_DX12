@@ -81,12 +81,12 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
     auto assetManager = Application::Get().GetAssetManager();
 
     auto& srvHeap = assetManager->m_SrvHeapData;
-    auto& globalMeshInfo = assetManager->m_MeshManager.instanceData.meshInfo;
-    auto& globalMaterialInfo = assetManager->m_MaterialManager.instanceData.gpuInfo;
-    auto& globalMaterialInfoCPU = assetManager->m_MaterialManager.instanceData.cpuInfo;
-    auto& materials = assetManager->m_MaterialManager.materialData.materials;
-    auto& meshInstanceData = assetManager->m_MeshManager.instanceData;
-    const auto& textures = assetManager->m_TextureManager.GetTextures();
+    auto& globalMeshInfo = assetManager->m_MeshManager->instanceData.meshInfo;
+    auto& globalMaterialInfo = assetManager->m_MaterialManager->instanceData.gpuInfo;
+    auto& globalMaterialInfoCPU = assetManager->m_MaterialManager->instanceData.cpuInfo;
+    auto& materials = assetManager->m_MaterialManager->materialData.materials;
+    auto& meshInstanceData = assetManager->m_MeshManager->instanceData;
+    const auto& textures = assetManager->m_TextureManager->GetTextures();
     auto& directionalLight = game->m_DirectionalLight;
 
     std::vector<MeshInstanceWrapper> pointLights;
@@ -248,7 +248,7 @@ void DeferredRenderer::ExecuteAccelerationStructurePass(
     auto gfxCommandList = commandList->GetGraphicsCommandList();
 
     PIXBeginEvent(gfxCommandList.Get(), 0, L"Building DXR structure");
-    m_Raytracer->BuildAccelerationStructure(*commandList, meshInstances, Application::Get().GetAssetManager()->m_MeshManager, window.m_CurrentBackBufferIndex);
+    m_Raytracer->BuildAccelerationStructure(*commandList, meshInstances, *Application::Get().GetAssetManager()->m_MeshManager.get(), window.m_CurrentBackBufferIndex);
     PIXEndEvent(gfxCommandList.Get());
 }
 
@@ -297,7 +297,7 @@ void DeferredRenderer::ExecuteGBufferPass(
         objectCB.materialGPUID = globalMeshInfo[mesh.id].materialInstanceID;
 
         commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
-        assetManager->m_MeshManager.meshData.meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
+        assetManager->m_MeshManager->meshData.meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
     }
 
     auto TransitionRenderTargetToPixelShaderResource = [&](UINT textureType) {

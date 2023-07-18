@@ -16,6 +16,7 @@ class AssetManager
 	friend class MaterialInstance;
 	friend class MeshInstance;
 	friend class DeferredRenderer;
+	friend class Editor;
 
 	friend struct StaticMeshInstance;
 
@@ -31,17 +32,14 @@ public:
 	template<typename TClass, typename TRet, typename ...Args>
 	void AttachMeshCreatedEvent(TRet(TClass::* func) (Args...), TClass* obj)
 	{
-		m_MeshManager.meshData.AttachMeshCreatedEvent(func, obj);
+		m_MeshManager->meshData.AttachMeshCreatedEvent(func, obj);
 	};
 
 	const SRVHeapData&		GetSRVHeapData() const;
-	const TextureManager&	GetTextureManager() const;
-	const MeshManager&		GetMeshManager() const;
-	MaterialManager&		GetMaterialManager();
 
 private:
-	SRVHeapData				m_SrvHeapData;
-	TextureManager			m_TextureManager;
-	MaterialManager			m_MaterialManager;
-	MeshManager				m_MeshManager;	
+	SRVHeapData								m_SrvHeapData;
+	std::shared_ptr<TextureManager>			m_TextureManager;
+	std::unique_ptr<MaterialManager>		m_MaterialManager;
+	std::unique_ptr<MeshManager>			m_MeshManager;	
 };
