@@ -7,39 +7,33 @@
 using MaterialID = std::uint32_t;
 using MaterialColorID = std::uint32_t;
 
-struct MaterialInstance
+class MaterialInstance
 {
-	friend class MaterialManager;
-	friend class DeferredRenderer;
-	friend class MeshManager;
+    friend class MaterialManager;
+    friend class DeferredRenderer;
+    friend class MeshManager;
 
-	MaterialInstance() = default;
+public:
+    MaterialInstance() = default;
+    MaterialInstance(MaterialID instanceID) { materialID = instanceID; }
+    MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
 
-	MaterialInstance(MaterialID instanceID) { materialID = instanceID; };
+    bool GetMaterialInstance(const std::wstring& name);
+    static MaterialID CreateMaterial(const std::wstring& name, const MaterialColor& material);
+    void SetMaterial(MaterialID materialId);
+    void SetFlags(UINT flags);
+    void AddFlag(UINT flag);
+    UINT GetCPUFlags();
+    UINT GetGPUFlags();
 
-	MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
-
-	bool GetMaterialInstance(const std::wstring& name);
-
-	static MaterialID CreateMaterial(const std::wstring& name, const MaterialColor& material);
-
-	void SetMaterial(MaterialID materialId);
-	
-	void SetFlags(UINT flags);
-
-	void AddFlag(UINT flag);
-
-	UINT GetCPUFlags();
-	UINT GetGPUFlags();
-
-	MaterialID GetMaterialInstanceID() const 
-	{
-		return materialID;
-	}
+    MaterialID GetMaterialInstanceID() const
+    {
+        return materialID;
+    }
 
 private:
-	static MaterialID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
-	MaterialID materialID{UINT_MAX};
+    static MaterialID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
+    MaterialID materialID{ MATERIAL_INVALID };
 };
 
 class MaterialInfoHelper
