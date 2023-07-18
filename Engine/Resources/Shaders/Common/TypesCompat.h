@@ -239,11 +239,11 @@ struct MaterialColor
     XMFLOAT4 specular COMPAT_VEC4F(1.f, 1.f, 1.f, 1.f);
 
     XMFLOAT3 emissive COMPAT_VEC3F(0.f, 0.f, 0.f);
-    float roughness COMPAT_FLOAT(1.f);
+    float roughness COMPAT_FLOAT(1.0f);
     
     //Color for transperent objects
     XMFLOAT3 transparent COMPAT_VEC3F(1.f, 1.f, 1.f);
-    float metallic COMPAT_FLOAT(1.f);
+    float metallic COMPAT_FLOAT(1.0f);
 };
 
 //TODO: Fix right datatype for GPU Material heap handles
