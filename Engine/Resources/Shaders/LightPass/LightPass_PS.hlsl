@@ -266,7 +266,7 @@ bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5f,
     MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
 
     SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData, 0.f, SAMPLE_TYPE_LEVEL);
-    ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
+    ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials[meshInfo.materialInstanceID]);
 
     opacity = hitSurfaceMaterial.opacity;
     
@@ -384,7 +384,7 @@ bool TraceDirectLight(RayInfo ray, RngStateType rng, float ambientFactor, uint f
     
     SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData, 0.f, SAMPLE_TYPE_MIP);
     
-    ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
+    ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials[meshInfo.materialInstanceID]);
 
     if (flags & DIRECT_LIGHT_FLAG_SAVE_OPACITY)
         radiance.a = hitSurfaceMaterial.opacity;
@@ -757,7 +757,7 @@ void TestRT(RayDesc ray, inout float3 debugColor)
     MeshVertex hitSurface = GetHitSurface(hit, meshInfo, g_GlobalMeshVertexData, g_GlobalMeshIndexData);
 
     SurfaceMaterial hitSurfaceMaterial = GetSurfaceMaterial(materialInfo, hitSurface, hit.objToWorld, meshInfo.objRot, g_LinearRepeatSampler, g_GlobalTextureData);
-    ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials);
+    ApplyMaterial(materialInfo, hitSurfaceMaterial, g_GlobalMaterials[meshInfo.materialInstanceID]);
             
     hitSurface.normal = RotatePoint(meshInfo.objRot, hitSurface.normal);
         

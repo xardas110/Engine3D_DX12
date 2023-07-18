@@ -233,17 +233,17 @@ struct LightDataCB
 struct MaterialColor
 {
     //Color with opacity
-    XMFLOAT4 diffuse COMPAT_VEC4F(1.f, 0.f, 0.f, 1.f);
+    XMFLOAT4 diffuse COMPAT_VEC4F(1.f, 1.f, 1.f, 1.f);
 
     //specular shininess
-    XMFLOAT4 specular COMPAT_VEC4F(1.f, 1.f, 1.f, 0.f);
+    XMFLOAT4 specular COMPAT_VEC4F(1.f, 1.f, 1.f, 1.f);
 
-    XMFLOAT3 emissive COMPAT_VEC3F(1.f, 1.f, 1.f);
-    float roughness COMPAT_FLOAT(0.5f);
+    XMFLOAT3 emissive COMPAT_VEC3F(0.f, 0.f, 0.f);
+    float roughness COMPAT_FLOAT(1.f);
     
     //Color for transperent objects
     XMFLOAT3 transparent COMPAT_VEC3F(1.f, 1.f, 1.f);
-    float metallic COMPAT_FLOAT(0.5f);
+    float metallic COMPAT_FLOAT(1.f);
 };
 
 //TODO: Fix right datatype for GPU Material heap handles
@@ -261,18 +261,9 @@ struct MaterialInfoGPU
 
     UINT height TEXTURE_NULL;
     UINT specular TEXTURE_NULL;
-    UINT materialID MATERIAL_ID_NULL; //User defined material
+    UINT pad MATERIAL_ID_NULL; //User defined material
     UINT flags DEFAULT_NULL;
 };
-
-#ifndef HLSL
-struct MaterialInfoCPU
-{
-    TextureInstance textures[MaterialType::NumMaterialTypes];
-    UINT materialID MATERIAL_ID_NULL; //User defined material
-    UINT flags DEFAULT_NULL;
-};
-#endif // !HLSL
 
 struct MeshInfo
 {

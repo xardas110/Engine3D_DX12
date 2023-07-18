@@ -82,9 +82,9 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
 
     auto& srvHeap = assetManager->m_SrvHeapData;
     auto& globalMeshInfo = assetManager->m_MeshManager->instanceData.meshInfo;
-    auto& globalMaterialInfo = assetManager->m_MaterialManager->materialInfoRegistry.gpuInfo;
-    auto& globalMaterialInfoCPU = assetManager->m_MaterialManager->materialInfoRegistry.cpuInfo;
-    auto& materials = assetManager->m_MaterialManager->materialColorRegistry.materials;
+    auto& globalMaterialInfo = assetManager->m_MaterialManager->GetMaterialGPUInfoData();
+    auto& globalMaterialInfoCPU = assetManager->m_MaterialManager->GetMaterialCPUInfoData();
+    auto& materials = assetManager->m_MaterialManager->GetMaterialColorData();
     auto& meshInstanceData = assetManager->m_MeshManager->instanceData;
     const auto& textures = assetManager->m_TextureManager->GetTextures();
     auto& directionalLight = game->m_DirectionalLight;
@@ -254,7 +254,7 @@ void DeferredRenderer::ExecuteAccelerationStructurePass(
 
 void DeferredRenderer::ExecuteGBufferPass( 
     std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap, 
-    std::vector<MaterialColor>& materials, std::vector<MaterialInfoGPU>& globalMaterialInfo,
+    const std::vector<MaterialColor>& materials, const std::vector<MaterialInfoGPU>& globalMaterialInfo,
     std::vector<MeshInstanceWrapper>& meshInstances, ObjectCB& objectCB, 
     const DirectX::XMMATRIX& jitterMat, std::vector<MeshInfo>& globalMeshInfo, 
     AssetManager* assetManager, MeshManager::InstanceData& meshInstance)
@@ -326,7 +326,7 @@ void DeferredRenderer::ExecuteGBufferPass(
 
 void DeferredRenderer::ExcecuteLightPass(
     std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap,
-    std::vector<MaterialColor>& materials, std::vector<MaterialInfoGPU>& globalMaterialInfo,
+    const std::vector<MaterialColor>& materials, const std::vector<MaterialInfoGPU>& globalMaterialInfo,
     std::vector<MeshInfo>& globalMeshInfo, DirectionalLight& directionalLight,
     RaytracingDataCB& rtData, LightDataCB& lightDataCB)
 {
@@ -546,7 +546,7 @@ void DeferredRenderer::ExecuteDenoisingPass(
 
 void DeferredRenderer::ExecuteCompositionPass(
     std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap, 
-    std::vector<MaterialColor>& materials, std::vector<MaterialInfoGPU>& globalMaterialInfo,
+    const std::vector<MaterialColor>& materials, const std::vector<MaterialInfoGPU>& globalMaterialInfo,
     std::vector<MeshInfo>& globalMeshInfo, RaytracingDataCB& rtData)
 {
     auto gfxCommandList = commandList->GetGraphicsCommandList();
@@ -1045,7 +1045,7 @@ void DeferredRenderer::SetupLightDataConstantBuffer(
         auto& ptLight = pointLights[i];
         lightDataCB.numLights++;
 
-        auto& mat = ptLight.instance.GetUserMaterial();
+        auto& mat = ptLight.instance.GetMaterialColor();
 
         lightDataCB.lights[i + 1].type = LIGHT_POINT;
         lightDataCB.lights[i + 1].intensity = XMFLOAT3(20.f, 20.f, 20.f);

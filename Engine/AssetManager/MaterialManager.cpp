@@ -19,89 +19,74 @@ void PopulateGPUInfo(MaterialInfoGPU& gpuInfo, const TextureInstance& instance, 
 	}
 }
 
-std::optional<MaterialInfoID> MaterialManager::CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
+std::optional<MaterialID> MaterialManager::CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor)
 {
-	if (materialInfoRegistry.map.find(name) != materialInfoRegistry.map.end())
+	if (materialRegistry.map.find(name) != materialRegistry.map.end())
 	{
 		// Optional without a value indicates an error
 		return std::nullopt;
 	}
 
-	const auto currentIndex = materialInfoRegistry.cpuInfo.size();
-	materialInfoRegistry.cpuInfo.emplace_back(textureIDs);
-	materialInfoRegistry.gpuInfo.emplace_back(MaterialInfoGPU());
+	const auto currentIndex = materialRegistry.cpuInfo.size();
+	materialRegistry.cpuInfo.emplace_back(textureIDs);
+	materialRegistry.gpuInfo.emplace_back(MaterialInfoGPU());
+	materialRegistry.materialColors.emplace_back(materialColor);
 
-	PopulateGPUInfo(materialInfoRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::albedo], materialInfoRegistry.gpuInfo[currentIndex].albedo);
-	PopulateGPUInfo(materialInfoRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::normal], materialInfoRegistry.gpuInfo[currentIndex].normal);
-	PopulateGPUInfo(materialInfoRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::ao], materialInfoRegistry.gpuInfo[currentIndex].ao);
-	PopulateGPUInfo(materialInfoRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::emissive], materialInfoRegistry.gpuInfo[currentIndex].emissive);
-	PopulateGPUInfo(materialInfoRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::roughness], materialInfoRegistry.gpuInfo[currentIndex].roughness);
-	PopulateGPUInfo(materialInfoRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::specular], materialInfoRegistry.gpuInfo[currentIndex].specular);
-	PopulateGPUInfo(materialInfoRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::metallic], materialInfoRegistry.gpuInfo[currentIndex].metallic);
-	PopulateGPUInfo(materialInfoRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::lightmap], materialInfoRegistry.gpuInfo[currentIndex].lightmap);
-	PopulateGPUInfo(materialInfoRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::opacity], materialInfoRegistry.gpuInfo[currentIndex].opacity);
-	PopulateGPUInfo(materialInfoRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::height], materialInfoRegistry.gpuInfo[currentIndex].height);
+	assert(materialRegistry.cpuInfo.size() == materialRegistry.gpuInfo.size());
+	assert(materialRegistry.gpuInfo.size() == materialRegistry.materialColors.size());
 
-	materialInfoRegistry.map[name] = currentIndex;
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::albedo), materialRegistry.gpuInfo[currentIndex].albedo);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::normal), materialRegistry.gpuInfo[currentIndex].normal);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::ao), materialRegistry.gpuInfo[currentIndex].ao);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::emissive), materialRegistry.gpuInfo[currentIndex].emissive);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::roughness), materialRegistry.gpuInfo[currentIndex].roughness);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::specular), materialRegistry.gpuInfo[currentIndex].specular);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::metallic), materialRegistry.gpuInfo[currentIndex].metallic);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::lightmap), materialRegistry.gpuInfo[currentIndex].lightmap);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::opacity), materialRegistry.gpuInfo[currentIndex].opacity);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::height), materialRegistry.gpuInfo[currentIndex].height);
+
+	materialRegistry.map[name] = currentIndex;
 
 	return currentIndex;
 }
 
 bool MaterialManager::GetMaterialInstance(const std::wstring& name, MaterialInstance& outMaterialInstance)
 {
-	if (materialInfoRegistry.map.find(name) == materialInfoRegistry.map.end()) return false;
-	outMaterialInstance.materialInfoID = materialInfoRegistry.map[name];
+	if (materialRegistry.map.find(name) == materialRegistry.map.end()) return false;
+	outMaterialInstance.materialID = materialRegistry.map[name];
 	return true;
 }
 
-MaterialInfoID MaterialManager::CreateMaterial(const std::wstring& name, const MaterialColor& material)
+MaterialID MaterialManager::GetMaterial(const std::wstring& name)
 {
-	if (materialColorRegistry.map.find(name) != materialColorRegistry.map.end()) return UINT_MAX;
-	
-	auto currentIndex = materialColorRegistry.materials.size();
-
-	materialColorRegistry.materials.emplace_back(material);
-	materialColorRegistry.map[name] = currentIndex;
-	
-	return currentIndex;
+	if (materialRegistry.map.find(name) != materialRegistry.map.end()) return UINT_MAX;
+	return materialRegistry.map[name];
 }
 
-MaterialInfoID MaterialManager::GetMaterial(const std::wstring& name)
+void MaterialManager::SetFlags(MaterialID materialId, const UINT flags)
 {
-	if (materialColorRegistry.map.find(name) != materialColorRegistry.map.end()) return UINT_MAX;
-	return materialColorRegistry.map[name];
+	materialRegistry.gpuInfo[materialId].flags = flags;
+	materialRegistry.cpuInfo[materialId].flags = flags;
 }
 
-void MaterialManager::SetMaterial(MaterialInfoID materialId, MaterialInfoID matInstanceID)
+void MaterialManager::AddFlags(MaterialID materialID, const UINT flags)
 {
-	//Error checking with subscript error
-	materialInfoRegistry.cpuInfo[matInstanceID].materialID = materialId;
-	materialInfoRegistry.gpuInfo[matInstanceID].materialID = materialId;
+	materialRegistry.gpuInfo[materialID].flags |= flags;
+	materialRegistry.cpuInfo[materialID].flags |= flags;
 }
 
-void MaterialManager::SetFlags(MaterialInfoID materialId, const UINT flags)
+TextureInstance MaterialManager::GetTextureInstance(MaterialType::Type type, MaterialID matInstanceId)
 {
-	materialInfoRegistry.gpuInfo[materialId].flags = flags;
-	materialInfoRegistry.cpuInfo[materialId].flags = flags;
+	auto& matInfo = materialRegistry.cpuInfo[matInstanceId];
+	return matInfo.GetTexture(type);
 }
 
-void MaterialManager::AddFlags(MaterialInfoID materialID, const UINT flags)
-{
-	materialInfoRegistry.gpuInfo[materialID].flags |= flags;
-	materialInfoRegistry.cpuInfo[materialID].flags |= flags;
-}
-
-TextureInstance MaterialManager::GetTextureInstance(MaterialType::Type type, MaterialInfoID matInstanceId)
-{
-	auto& matInfo = materialInfoRegistry.cpuInfo[matInstanceId];
-	return matInfo.textures[type];
-}
-
-const std::wstring& MaterialManager::GetMaterialInstanceName(MaterialInfoID matInstanceId) const
+const std::wstring& MaterialManager::GetMaterialInstanceName(MaterialID matInstanceId) const
 {
 	if (matInstanceId == UINT_MAX) return g_NoMaterial;
 
-	for (const auto& [name, id] : materialInfoRegistry.map)
+	for (const auto& [name, id] : materialRegistry.map)
 	{
 		if (id == matInstanceId) return name;
 	}
@@ -109,28 +94,27 @@ const std::wstring& MaterialManager::GetMaterialInstanceName(MaterialInfoID matI
 	return g_NoMaterial;
 }
 
-const std::wstring& MaterialManager::GetMaterialName(MaterialInfoID matInstanceId) const
+const MaterialColor& MaterialManager::GetMaterialColor(const MaterialID materialID)
 {
-	auto matId = materialInfoRegistry.cpuInfo[matInstanceId].materialID;
-
-	if (matId == UINT_MAX) return g_NoMaterial;
-
-	for (const auto& [name, id] : materialColorRegistry.map)
-	{
-		if (id == matInstanceId) return name;
-	}
-
-	return g_NoMaterial;
-}
-
-MaterialColor& MaterialManager::GetUserDefinedMaterial(MaterialInfoID matInstanceId)
-{
-	auto materialID = materialInfoRegistry.cpuInfo[matInstanceId].materialID;
-	
 	if (materialID == UINT_MAX)
 	{
 		return g_NoUserMaterial;
 	}
 
-	return materialColorRegistry.materials[materialID];
+	return materialRegistry.materialColors[materialID];
+}
+
+const std::vector<MaterialInfoCPU>& MaterialManager::GetMaterialCPUInfoData() const
+{
+	return materialRegistry.cpuInfo;
+}
+
+const std::vector<MaterialInfoGPU>& MaterialManager::GetMaterialGPUInfoData() const
+{
+	return materialRegistry.gpuInfo;
+}
+
+const std::vector<MaterialColor>& MaterialManager::GetMaterialColorData() const
+{
+	return materialRegistry.materialColors;
 }

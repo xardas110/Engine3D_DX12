@@ -4,8 +4,9 @@
 
 #define MATERIAL_INVALID UINT_MAX
 
-using MaterialInfoID = std::uint32_t;
-using MaterialColorID = std::uint32_t;
+using MaterialID = std::uint32_t;
+
+struct MaterialInfoCPU;
 
 class MaterialInstance
 {
@@ -13,26 +14,46 @@ class MaterialInstance
 
 public:
     MaterialInstance() = default;
-    MaterialInstance(MaterialInfoID instanceID) : materialInfoID(instanceID) {}
-    MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
+    MaterialInstance(MaterialID instanceID) : materialID(instanceID) {}
+    MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor);
 
     bool GetMaterialInstance(const std::wstring& name);
-    static MaterialInfoID CreateMaterial(const std::wstring& name, const MaterialColor& material);
-    void SetMaterial(const MaterialInfoID materialId);
     void SetFlags(const UINT flags);
     void AddFlag(const UINT flag);
     UINT GetCPUFlags() const;
     UINT GetGPUFlags() const;
 
-    MaterialInfoID GetMaterialInstanceID() const
+    MaterialID GetMaterialInstanceID() const
     {
-        return materialInfoID;
+        return materialID;
     }
 
 private:
     MaterialManager* GetMaterialManager() const;
-    static MaterialInfoID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
-    MaterialInfoID materialInfoID{ MATERIAL_INVALID };
+    static MaterialID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor);
+    MaterialID materialID{ MATERIAL_INVALID };
+};
+
+struct MaterialInfoCPU
+{
+    friend class MaterialInfoHelper;
+    friend class MaterialHelper;
+
+    MaterialInfoCPU();
+
+    const TextureInstance& GetTexture(MaterialType::Type type) const
+    {
+        if (type >= 0 && type < MaterialType::NumMaterialTypes)
+            return textures[type];
+        else
+            throw std::out_of_range("Invalid MaterialType");
+    }
+
+    UINT pad MATERIAL_ID_NULL;
+    UINT flags DEFAULT_NULL;
+
+private:
+    TextureInstance textures[MaterialType::NumMaterialTypes];
 };
 
 class MaterialInfoHelper

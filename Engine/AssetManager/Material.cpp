@@ -9,14 +9,14 @@ MaterialManager* MaterialInstance::GetMaterialManager() const
 	return Application::Get().GetAssetManager()->m_MaterialManager.get();
 }
 
-MaterialInfoID MaterialInstance::CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
+MaterialID MaterialInstance::CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor)
 {
-	return Application::Get().GetAssetManager()->m_MaterialManager->CreateMaterialInstance(name, textureIDs).value();
+	return Application::Get().GetAssetManager()->m_MaterialManager->CreateMaterialInstance(name, textureIDs, materialColor).value();
 }
 
-MaterialInstance::MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs)
+MaterialInstance::MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor)
 {
-	materialInfoID = MaterialInstance::CreateMaterialInstance(name, textureIDs);
+	materialID = MaterialInstance::CreateMaterialInstance(name, textureIDs, materialColor);
 }
 
 bool MaterialInstance::GetMaterialInstance(const std::wstring& name)
@@ -24,34 +24,24 @@ bool MaterialInstance::GetMaterialInstance(const std::wstring& name)
 	return GetMaterialManager()->GetMaterialInstance(name, *this);
 }
 
-MaterialInfoID MaterialInstance::CreateMaterial(const std::wstring& name, const MaterialColor& material)
-{
-	return Application::Get().GetAssetManager()->m_MaterialManager->CreateMaterial(name, material);
-}
-
-void MaterialInstance::SetMaterial(const MaterialInfoID materialId)
-{
-	GetMaterialManager()->SetMaterial(materialInfoID, materialId);
-}
-
 void MaterialInstance::SetFlags(const UINT flags)
 {
-	GetMaterialManager()->SetFlags(materialInfoID, flags);
+	GetMaterialManager()->SetFlags(materialID, flags);
 }
 
 void MaterialInstance::AddFlag(const UINT flag)
 {
-	GetMaterialManager()->AddFlags(materialInfoID, flag);
+	GetMaterialManager()->AddFlags(materialID, flag);
 }
 
 UINT MaterialInstance::GetCPUFlags() const
 {
-	return GetMaterialManager()->materialInfoRegistry.cpuInfo[materialInfoID].flags;
+	return GetMaterialManager()->materialRegistry.cpuInfo[materialID].flags;
 }
 
 UINT MaterialInstance::GetGPUFlags() const
 {
-	return GetMaterialManager()->materialInfoRegistry.gpuInfo[materialInfoID].flags;
+	return GetMaterialManager()->materialRegistry.gpuInfo[materialID].flags;
 }
 
 MaterialInfoCPU MaterialInfoHelper::PopulateMaterialInfo(const AssimpMesh& mesh, int flags)
@@ -165,5 +155,27 @@ MaterialColor MaterialHelper::CreateMaterial(const AssimpMaterialData& materialD
 
 bool MaterialHelper::IsTransparent(const struct MaterialColor& materialData)
 {
+	return false;
 	return materialData.diffuse.z < 1.f;
+}
+
+MaterialInfoCPU::MaterialInfoCPU()
+{
+	LOG("Creating MaterialInfoCPU");
+
+	/*
+	textures[MaterialType::ao] = TextureInstance::GetBlackTexture();
+	textures[MaterialType::albedo] = TextureInstance(L"Assets/Textures/Texture_Black.png");
+	textures[MaterialType::emissive] = TextureInstance(L"Assets/Textures/Texture_Black.png");
+	textures[MaterialType::height] = TextureInstance(L"Assets/Textures/Texture_Black.png");
+	textures[MaterialType::lightmap] = TextureInstance(L"Assets/Textures/Texture_Black.png");
+	textures[MaterialType::metallic] = TextureInstance(L"Assets/Textures/Texture_Black.png");
+	textures[MaterialType::opacity] = TextureInstance(L"Assets/Textures/Texture_Black.png");
+	textures[MaterialType::roughness] = TextureInstance(L"Assets/Textures/Texture_Black.png");
+	textures[MaterialType::normal] = TextureInstance(L"Assets/Textures/Texture_Black.png");
+	textures[MaterialType::specular] = TextureInstance(L"Assets/Textures/Texture_Black.png");
+	*/
+
+	for (int i = 0; i < MaterialType::NumMaterialTypes; i++)
+		textures[i] = TextureInstance::GetWhiteTexture();
 }

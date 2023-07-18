@@ -71,6 +71,8 @@ public:
 
     const std::optional<TextureGPUHandle> GetTextureGPUHandle() const;
 
+    static TextureInstance GetBlackTexture();
+    static TextureInstance GetWhiteTexture();
 protected:
 
 private:

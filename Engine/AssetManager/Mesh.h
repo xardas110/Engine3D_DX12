@@ -153,8 +153,7 @@ struct MeshInstance
     const std::wstring& GetName();
 
     const std::wstring& GetMaterialName();
-    MaterialColor& GetUserMaterial();
-    const std::wstring& GetUserMaterialName();
+    const MaterialColor& GetMaterialColor() const;
 
     MeshInstanceID GetInstanceID() const
     {
@@ -170,7 +169,7 @@ struct MeshInstance
     {
         if (GetTexture(MaterialType::opacity)) return true;
 
-        auto& mat = GetUserMaterial();
+        auto& mat = GetMaterialColor();
         
         if (mat.diffuse.w >= 1.f) return false;
 
@@ -243,7 +242,6 @@ public:
     StaticMeshInstance(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, 
         const std::string& path, MeshImport::Flags flags = MeshImport::None);
 
-    MaterialColor* FindMaterialByName(const std::wstring& materialName);
 private:
     std::uint32_t startOffset{0U};
     std::uint32_t endOffset{0U};

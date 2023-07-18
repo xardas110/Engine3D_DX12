@@ -80,6 +80,15 @@ const std::optional<TextureGPUHandle> TextureInstance::GetTextureGPUHandle() con
     return Application::Get().GetAssetManager()->m_TextureManager->GetTextureGPUHandle(*this);
 }
 
+TextureInstance TextureInstance::GetBlackTexture()
+{
+    return TextureInstance(L"Assets/Textures/Texture_Black.png");
+}
+TextureInstance TextureInstance::GetWhiteTexture()
+{
+    return TextureInstance(L"Assets/Textures/Texture_White.png");
+}
+
 Texture::Texture( TextureUsage textureUsage, const std::wstring& name )
     : Resource(name)
     , m_TextureUsage(textureUsage)

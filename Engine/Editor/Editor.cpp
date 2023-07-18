@@ -385,7 +385,7 @@ void Editor::UpdateSelectedEntity()
             std::string searchName = buffer;
             std::wstring searchMat = std::wstring(searchName.begin(), searchName.end());
 
-            matFound = sm.FindMaterialByName(searchMat);
+            //matFound = sm.FindMaterialByName(searchMat);
         }
 
         if (matFound)
@@ -423,7 +423,8 @@ void Editor::UpdateSelectedEntity()
 
                 const std::wstring& wMeshName = mesh.GetName();
 
-                const auto& wMatName = mesh.GetUserMaterialName();
+                //const auto& wMatName = mesh.GetUserMaterialName();
+                const auto& wMatName = std::wstring(L"Test");
 
                 auto nameIndex = wMatName.find_last_of('/') + 1;
 
@@ -465,8 +466,9 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
   
     const auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
   
-    const auto& wMatName = mesh.GetUserMaterialName();
-    auto& material = mesh.GetUserMaterial();
+    //const auto& wMatName = mesh.GetUserMaterialName();
+    const auto& wMatName = std::wstring(L"Test");
+    const auto& material = mesh.GetMaterialColor();
 
     auto index = wMatName.find_last_of('/') + 1;
     std::string matString = std::string(wMatName.begin() + index, wMatName.end());
@@ -528,7 +530,7 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
 
     if (bNodeOpen)
     {
-        UpdateMaterial(material);
+        //UpdateMaterial(material);
         ImGui::TreePop();
     }
 }

@@ -37,7 +37,7 @@ void ApplyAlphaFlags(MaterialInstance& materialInstance, MeshImport::Flags impor
  */
 void ApplyTransparency(MaterialInstance& materialInstance, MeshImport::Flags importFlags, MaterialInfoCPU materialInfo)
 {
-	if (materialInfo.textures[MaterialType::albedo].IsValid())
+	if (materialInfo.GetTexture(MaterialType::albedo).IsValid())
 	{
 		// Apply translucency flag to the material instance
 		materialInstance.SetFlags(INSTANCE_TRANSLUCENT);
@@ -87,10 +87,10 @@ void ApplyMaterialInstanceImportFlags(MaterialInstance& materialInstance, MeshIm
 	materialInstance.SetFlags(INSTANCE_OPAQUE);
 
 	// Check and apply transparency if required
-	ApplyTransparency(materialInstance, importFlags, materialInfo);
+	//ApplyTransparency(materialInstance, importFlags, materialInfo);
 
 	// Apply specific import flags based on the provided importFlags
-	ApplySpecificImportFlags(materialInstance, importFlags);
+	//ApplySpecificImportFlags(materialInstance, importFlags);
 }
 
 MeshManager::MeshManager(const SRVHeapData& srvHeapData)
@@ -114,22 +114,21 @@ void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<Comma
         auto internalMesh = Mesh::CreateMesh(commandList, rtCommandList, mesh.vertices, mesh.indices, flags & MeshImport::RHCoords, flags & MeshImport::CustomTangent);
         meshData.CreateMesh(currentName, std::move(internalMesh), m_SrvHeapData);
 
+		MaterialColor materialData = MaterialHelper::CreateMaterial(mesh.materialData);
+
         MaterialInfoCPU matInfo = MaterialInfoHelper::PopulateMaterialInfo(mesh, flags);
-        MaterialInstance matInstance(currentName, matInfo);
+        MaterialInstance matInstance(currentName, matInfo, materialData);
         ApplyMaterialInstanceImportFlags(matInstance, flags, matInfo);
 
         if (mesh.materialData.bHasMaterial)
         {
-			MaterialColor materialData = MaterialHelper::CreateMaterial(mesh.materialData);
+            //if (MaterialHelper::IsTransparent(materialData))
+            //{
+           //     ApplyTransparency(matInstance, flags, matInfo);
+           // }
 
-            if (MaterialHelper::IsTransparent(materialData))
-            {
-                ApplyTransparency(matInstance, flags, matInfo);
-            }
+            //const std::wstring materialName = currentName + L"/" + std::wstring(mesh.materialData.name.begin(), mesh.materialData.name.end());
 
-            const std::wstring materialName = currentName + L"/" + std::wstring(mesh.materialData.name.begin(), mesh.materialData.name.end());
-            const auto materialID = MaterialInstance::CreateMaterial(materialName, materialData);
-            matInstance.SetMaterial(materialID);
         }
 
         MeshInstance meshInstance(currentName);

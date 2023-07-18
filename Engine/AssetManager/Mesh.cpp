@@ -114,20 +114,12 @@ const std::wstring& MeshInstance::GetMaterialName()
     return materialManager->GetMaterialInstanceName(matInstanceID);
 }
 
-MaterialColor& MeshInstance::GetUserMaterial()
+const MaterialColor& MeshInstance::GetMaterialColor() const
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
     auto matInstanceID = meshManager->instanceData.meshInfo[id].materialInstanceID;
-    return materialManager->GetUserDefinedMaterial(matInstanceID);
-}
-
-const std::wstring& MeshInstance::GetUserMaterialName()
-{
-    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
-    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-    auto matInstanceID = meshManager->instanceData.meshInfo[id].materialInstanceID;
-    return materialManager->GetMaterialName(matInstanceID);
+    return materialManager->GetMaterialColor(matInstanceID);
 }
 
 bool MeshInstance::IsPointlight()
@@ -626,24 +618,4 @@ StaticMeshInstance::StaticMeshInstance(CommandList& commandList, std::shared_ptr
 {
 
     Application::Get().GetAssetManager()->m_MeshManager->LoadStaticMesh(commandList, rtCommandList, path, *this, flags);
-}
-
-MaterialColor* StaticMeshInstance::FindMaterialByName(const std::wstring& materialName)
-{
-    for (size_t i = startOffset; i < endOffset; i++)
-    {
-        MeshInstance inst((MeshInstanceID)i);
-
-        auto& path = inst.GetUserMaterialName();
-        auto index = path.find_last_of('/') + 1;
-
-        auto name = std::wstring(path.begin() + index, path.end());
-
-        if (name == materialName)
-        {
-            return &inst.GetUserMaterial();
-        }
-    }
-
-    return nullptr;
 }

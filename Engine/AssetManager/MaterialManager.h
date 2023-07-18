@@ -9,38 +9,35 @@ class TextureManager;
 class MaterialManager
 {
     friend class AssetManager;
-    friend class DeferredRenderer;
     friend class Editor;
     friend class MaterialInstance;
 
 public:  // Public member functions
     // Function prototypes are single lined for readability
-    std::optional<MaterialInfoID> CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
+    std::optional<MaterialID> CreateMaterialInstance(const std::wstring& name, 
+        const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor);
+
     bool GetMaterialInstance(const std::wstring& name, MaterialInstance& outMaterialInstance);
-    MaterialInfoID CreateMaterial(const std::wstring& name, const MaterialColor& material);
-    MaterialInfoID GetMaterial(const std::wstring& name);
-    void SetMaterial(MaterialInfoID materialId, MaterialInfoID matInstanceID);
-    void SetFlags(MaterialInfoID materialID, const UINT flags);
-    void AddFlags(MaterialInfoID materialID, const UINT flags);
-    TextureInstance GetTextureInstance(MaterialType::Type type, MaterialInfoID matInstanceId);
-    const std::wstring& GetMaterialInstanceName(MaterialInfoID matInstanceId) const;
-    const std::wstring& GetMaterialName(MaterialInfoID matInstanceId) const;
-    MaterialColor& GetUserDefinedMaterial(MaterialInfoID matInstanceId);
+    MaterialID GetMaterial(const std::wstring& name);
 
-private:  // Private structures
-    // MaterialData and InstanceData are separated for readability
-    struct MaterialColorRegistry
-    {
-        std::vector<MaterialColor> materials;
-        std::map<std::wstring, MaterialColorID> map;
-    } materialColorRegistry;
+    void SetFlags(MaterialID materialID, const UINT flags);
+    void AddFlags(MaterialID materialID, const UINT flags);
 
-    struct MaterialInfoRegistry
+    TextureInstance GetTextureInstance(MaterialType::Type type, MaterialID matInstanceId);
+    const std::wstring& GetMaterialInstanceName(MaterialID matInstanceId) const;
+    const MaterialColor& GetMaterialColor(const MaterialID materialID);
+
+    const std::vector<MaterialInfoCPU>& GetMaterialCPUInfoData() const;
+    const std::vector<MaterialInfoGPU>& GetMaterialGPUInfoData() const;
+    const std::vector<MaterialColor>&   GetMaterialColorData() const;
+
+private:  
+    struct MaterialRegistry
     {
         // 1:1 relations. GPU info will be batched to GPU
         std::vector<MaterialInfoCPU> cpuInfo;
         std::vector<MaterialInfoGPU> gpuInfo;
-        std::map<std::wstring, MaterialInfoID> map;
-    } materialInfoRegistry;
-
+        std::vector<MaterialColor> materialColors;
+        std::map<std::wstring, MaterialID> map;
+    } materialRegistry;
 };
