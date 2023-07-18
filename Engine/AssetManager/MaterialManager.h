@@ -35,16 +35,16 @@ private:  // Private structures
     struct MaterialColorRegistry
     {
         std::vector<MaterialColor> materials;
-        std::map<std::wstring, MaterialID> map;
+        std::map<std::wstring, MaterialColorID> map;
     } materialColorRegistry;
 
-    struct InstanceData
+    struct MaterialInfoRegistry
     {
         // 1:1 relations. GPU info will be batched to GPU
         std::vector<MaterialInfoCPU> cpuInfo;
         std::vector<MaterialInfoGPU> gpuInfo;
         std::map<std::wstring, MaterialID> map;
-    } instanceData;
+    } materialInfoRegistry;
 
 private:  // Private member variables
     const TextureManager& m_TextureManager;

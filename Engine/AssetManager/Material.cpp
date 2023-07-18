@@ -46,12 +46,12 @@ void MaterialInstance::AddFlag(const UINT flag)
 
 UINT MaterialInstance::GetCPUFlags() const
 {
-	return GetMaterialManager()->instanceData.cpuInfo[materialID].flags;
+	return GetMaterialManager()->materialInfoRegistry.cpuInfo[materialID].flags;
 }
 
 UINT MaterialInstance::GetGPUFlags() const
 {
-	return GetMaterialManager()->instanceData.gpuInfo[materialID].flags;
+	return GetMaterialManager()->materialInfoRegistry.gpuInfo[materialID].flags;
 }
 
 MaterialInfoCPU MaterialInfoHelper::PopulateMaterialInfo(const AssimpMesh& mesh, int flags)
