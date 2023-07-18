@@ -50,12 +50,12 @@ namespace MaterialType
 {
     enum Type
     {
-        ao, albedo, normal, roughness, metallic, opacity, emissive, lightmap, height, NumMaterialTypes
+        ao, albedo, normal, roughness, metallic, opacity, emissive, lightmap, height, specular, NumMaterialTypes
     };
 
     inline const char* typeNames[NumMaterialTypes] =
     {
-        "ao", "albedo", "normal", "roughness", "metallic", "opacity", "emissive", "lightmap", "height"
+        "ao", "albedo", "normal", "roughness", "metallic", "opacity", "emissive", "lightmap", "height", "specular"
     };
 }
 
@@ -268,18 +268,7 @@ struct MaterialInfoGPU
 #ifndef HLSL
 struct MaterialInfoCPU
 {
-    TextureInstance ao;
-    TextureInstance albedo;
-    TextureInstance normal;
-    TextureInstance roughness;
-
-    TextureInstance metallic;
-    TextureInstance opacity;
-    TextureInstance emissive;
-    TextureInstance lightmap;
-
-    TextureInstance height;
-    TextureInstance specular;
+    TextureInstance textures[MaterialType::NumMaterialTypes];
     UINT materialID MATERIAL_ID_NULL; //User defined material
     UINT flags DEFAULT_NULL;
 };

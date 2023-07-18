@@ -37,7 +37,7 @@ void ApplyAlphaFlags(MaterialInstance& materialInstance, MeshImport::Flags impor
  */
 void ApplyTransparency(MaterialInstance& materialInstance, MeshImport::Flags importFlags, MaterialInfoCPU materialInfo)
 {
-	if (materialInfo.opacity.IsValid())
+	if (materialInfo.textures[MaterialType::albedo].IsValid())
 	{
 		// Apply translucency flag to the material instance
 		materialInstance.SetFlags(INSTANCE_TRANSLUCENT);
