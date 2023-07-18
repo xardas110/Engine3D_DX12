@@ -1,8 +1,10 @@
 #pragma once
 #include <TypesCompat.h>
 #include <Material.h>
+#include <map>
 
 class TextureData;
+class TextureManager;
 
 class MaterialManager
 {
@@ -30,11 +32,11 @@ private:  // Private member functions
 
 private:  // Private structures
     // MaterialData and InstanceData are separated for readability
-    struct MaterialData
+    struct MaterialColorRegistry
     {
         std::vector<MaterialColor> materials;
         std::map<std::wstring, MaterialID> map;
-    } materialData;
+    } materialColorRegistry;
 
     struct InstanceData
     {

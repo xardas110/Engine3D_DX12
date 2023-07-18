@@ -64,23 +64,20 @@ bool MaterialManager::GetMaterialInstance(const std::wstring& name, MaterialInst
 
 MaterialID MaterialManager::CreateMaterial(const std::wstring& name, const MaterialColor& material)
 {
-	assert(materialData.map.find(name) == materialData.map.end());
-	if (materialData.map.find(name) != materialData.map.end()) return UINT_MAX;
+	if (materialColorRegistry.map.find(name) != materialColorRegistry.map.end()) return UINT_MAX;
 	
-	auto currentIndex = materialData.materials.size();
+	auto currentIndex = materialColorRegistry.materials.size();
 
-	materialData.materials.emplace_back(material);
-	materialData.map[name] = currentIndex;
+	materialColorRegistry.materials.emplace_back(material);
+	materialColorRegistry.map[name] = currentIndex;
 	
 	return currentIndex;
 }
 
 MaterialID MaterialManager::GetMaterial(const std::wstring& name)
 {
-	assert(materialData.map.find(name) == materialData.map.end());
-	if (materialData.map.find(name) != materialData.map.end()) return UINT_MAX;
-
-	return materialData.map[name];
+	if (materialColorRegistry.map.find(name) != materialColorRegistry.map.end()) return UINT_MAX;
+	return materialColorRegistry.map[name];
 }
 
 void MaterialManager::SetMaterial(MaterialID materialId, MaterialID matInstanceID)
@@ -126,7 +123,7 @@ const std::wstring& MaterialManager::GetMaterialName(MaterialID matInstanceId) c
 
 	if (matId == UINT_MAX) return g_NoMaterial;
 
-	for (const auto& [name, id] : materialData.map)
+	for (const auto& [name, id] : materialColorRegistry.map)
 	{
 		if (id == matInstanceId) return name;
 	}
@@ -143,5 +140,5 @@ MaterialColor& MaterialManager::GetUserDefinedMaterial(MaterialID matInstanceId)
 		return g_NoUserMaterial;
 	}
 
-	return materialData.materials[materialID];
+	return materialColorRegistry.materials[materialID];
 }

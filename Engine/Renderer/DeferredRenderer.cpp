@@ -84,7 +84,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
     auto& globalMeshInfo = assetManager->m_MeshManager->instanceData.meshInfo;
     auto& globalMaterialInfo = assetManager->m_MaterialManager->instanceData.gpuInfo;
     auto& globalMaterialInfoCPU = assetManager->m_MaterialManager->instanceData.cpuInfo;
-    auto& materials = assetManager->m_MaterialManager->materialData.materials;
+    auto& materials = assetManager->m_MaterialManager->materialColorRegistry.materials;
     auto& meshInstanceData = assetManager->m_MeshManager->instanceData;
     const auto& textures = assetManager->m_TextureManager->GetTextures();
     auto& directionalLight = game->m_DirectionalLight;
