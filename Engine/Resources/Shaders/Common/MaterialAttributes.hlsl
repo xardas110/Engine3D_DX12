@@ -334,12 +334,12 @@ SurfaceMaterial GetSurfaceMaterial(
     return surface;
 }
 
-void ApplyMaterial(in MaterialInfoGPU matInfo, inout SurfaceMaterial surfaceMat, in StructuredBuffer<Material> materials)
+void ApplyMaterial(in MaterialInfoGPU matInfo, inout SurfaceMaterial surfaceMat, in StructuredBuffer<MaterialColor> materials)
 {
     if (matInfo.materialID == 0xffffffff)
         return;
 
-    Material mat = materials[matInfo.materialID];
+    MaterialColor mat = materials[matInfo.materialID];
    
     surfaceMat.albedo = matInfo.albedo == 0xffffffff ? mat.diffuse.rgb : (surfaceMat.albedo * mat.diffuse.rgb);
     surfaceMat.emissive = matInfo.emissive == 0xffffffff ? mat.emissive : (surfaceMat.emissive * mat.emissive);    

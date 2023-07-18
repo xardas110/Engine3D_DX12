@@ -331,7 +331,7 @@ void Editor::UpdateSceneGraph(entt::entity entity, const std::string& tag, Relat
 void Editor::UpdateMaterialManager()
 {}
 
-void UpdateMaterial(Material& material)
+void UpdateMaterial(MaterialColor& material)
 {
     ImGui::ColorPicker4("Color", &material.diffuse.x, ImGuiColorEditFlags_Float);
     ImGui::ColorPicker3("Transparency", &material.transparent.x, ImGuiColorEditFlags_Float);
@@ -379,7 +379,7 @@ void Editor::UpdateSelectedEntity()
         auto& sm = reg.get<StaticMeshComponent>(selectedEntity);
 
         char buffer[40]{};
-        static Material* matFound = nullptr;
+        static MaterialColor* matFound = nullptr;
         if (ImGui::InputText("Find Material", buffer, 40, ImGuiInputTextFlags_EnterReturnsTrue))
         { 
             std::string searchName = buffer;

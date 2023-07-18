@@ -4,7 +4,7 @@
 #include <Texture.h>
 
 std::wstring g_NoMaterial = L"No Material";
-Material g_NoUserMaterial; //Already initialized with values
+MaterialColor g_NoUserMaterial; //Already initialized with values
 
 bool IsMaterialValid(UINT id)
 {
@@ -62,7 +62,7 @@ bool MaterialManager::GetMaterialInstance(const std::wstring& name, MaterialInst
 	return true;
 }
 
-MaterialID MaterialManager::CreateMaterial(const std::wstring& name, const Material& material)
+MaterialID MaterialManager::CreateMaterial(const std::wstring& name, const MaterialColor& material)
 {
 	assert(materialData.map.find(name) == materialData.map.end());
 	if (materialData.map.find(name) != materialData.map.end()) return UINT_MAX;
@@ -145,7 +145,7 @@ const std::wstring& MaterialManager::GetMaterialName(MaterialInstanceID matInsta
 	return g_NoMaterial;
 }
 
-Material& MaterialManager::GetUserDefinedMaterial(MaterialInstanceID matInstanceId)
+MaterialColor& MaterialManager::GetUserDefinedMaterial(MaterialInstanceID matInstanceId)
 {
 	auto materialID = instanceData.cpuInfo[matInstanceId].materialID;
 	

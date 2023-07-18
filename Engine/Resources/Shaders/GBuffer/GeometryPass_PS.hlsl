@@ -9,7 +9,7 @@ ConstantBuffer<CameraCB>            g_CameraCB                  : register(b1);
     
 Texture2D                           g_GlobalTextureData[]       : register(t1, space0);
 StructuredBuffer<MaterialInfoGPU>   g_GlobalMaterialInfo : register(t3, space4);
-StructuredBuffer<Material>          g_GlobalMaterials           : register(t4, space5);
+StructuredBuffer<MaterialColor> g_GlobalMaterials : register(t4, space5);
   
 SamplerState                        g_LinearRepeatSampler       : register(s0);
 

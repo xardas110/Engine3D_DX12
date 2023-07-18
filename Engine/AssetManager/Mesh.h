@@ -153,7 +153,7 @@ struct MeshInstance
     const std::wstring& GetName();
 
     const std::wstring& GetMaterialName();
-    Material& GetUserMaterial();
+    MaterialColor& GetUserMaterial();
     const std::wstring& GetUserMaterialName();
 
     MeshInstanceID GetInstanceID() const
@@ -243,7 +243,7 @@ public:
     StaticMeshInstance(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, 
         const std::string& path, MeshImport::Flags flags = MeshImport::None);
 
-    Material* FindMaterialByName(const std::wstring& materialName);
+    MaterialColor* FindMaterialByName(const std::wstring& materialName);
 private:
     std::uint32_t startOffset{0U};
     std::uint32_t endOffset{0U};

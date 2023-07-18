@@ -19,7 +19,7 @@ StructuredBuffer<uint>              g_GlobalMeshIndexData[]     : register(t1, s
 
 StructuredBuffer<MeshInfo>          g_GlobalMeshInfo            : register(t2, space3);
 StructuredBuffer<MaterialInfoGPU>   g_GlobalMaterialInfo        : register(t3, space4);
-StructuredBuffer<Material>          g_GlobalMaterials           : register(t4, space5);
+StructuredBuffer<MaterialColor>     g_GlobalMaterials : register(t4, space5);
 
 Texture2D                           g_GBufferHeap[]             : register(t5, space6);
 Texture2D                           g_LightMapHeap[]            : register(t6, space7);

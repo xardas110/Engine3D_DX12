@@ -114,7 +114,7 @@ const std::wstring& MeshInstance::GetMaterialName()
     return materialManager->GetMaterialInstanceName(matInstanceID);
 }
 
-Material& MeshInstance::GetUserMaterial()
+MaterialColor& MeshInstance::GetUserMaterial()
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
@@ -628,7 +628,7 @@ StaticMeshInstance::StaticMeshInstance(CommandList& commandList, std::shared_ptr
     Application::Get().GetAssetManager()->m_MeshManager->LoadStaticMesh(commandList, rtCommandList, path, *this, flags);
 }
 
-Material* StaticMeshInstance::FindMaterialByName(const std::wstring& materialName)
+MaterialColor* StaticMeshInstance::FindMaterialByName(const std::wstring& materialName)
 {
     for (size_t i = startOffset; i < endOffset; i++)
     {

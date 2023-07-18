@@ -120,7 +120,7 @@ void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<Comma
 
         if (mesh.materialData.bHasMaterial)
         {
-            Material materialData = MaterialHelper::CreateMaterial(mesh.materialData);
+			MaterialColor materialData = MaterialHelper::CreateMaterial(mesh.materialData);
 
             if (MaterialHelper::IsTransparent(materialData))
             {

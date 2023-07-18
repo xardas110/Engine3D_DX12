@@ -23,7 +23,7 @@ struct MaterialInstance
 	MaterialInstanceID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs);
 	bool GetMaterialInstance(const std::wstring& name);
 
-	static MaterialID CreateMaterial(const std::wstring& name, const Material& material);
+	static MaterialID CreateMaterial(const std::wstring& name, const MaterialColor& material);
 
 	void SetMaterial(MaterialID materialId);
 	
@@ -53,6 +53,6 @@ public:
 class MaterialHelper
 {
 public:
-	static Material CreateMaterial(const struct AssimpMaterialData& materialData);
-	static bool IsTransparent(const struct Material& materialData);
+	static MaterialColor CreateMaterial(const struct AssimpMaterialData& materialData);
+	static bool IsTransparent(const struct MaterialColor& materialData);
 };

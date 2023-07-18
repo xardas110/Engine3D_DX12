@@ -230,7 +230,7 @@ struct LightDataCB
     Light lights[MAX_LIGHTS];
 };
 
-struct Material
+struct MaterialColor
 {
     //Color with opacity
     XMFLOAT4 diffuse COMPAT_VEC4F(1.f, 0.f, 0.f, 1.f);
@@ -246,6 +246,7 @@ struct Material
     float metallic COMPAT_FLOAT(0.5f);
 };
 
+//TODO: Fix right datatype for GPU Material heap handles
 struct MaterialInfoGPU
 {
     UINT ao TEXTURE_NULL;

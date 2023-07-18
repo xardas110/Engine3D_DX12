@@ -19,7 +19,7 @@ bool MaterialInstance::GetMaterialInstance(const std::wstring& name)
 	return materialManager->GetMaterialInstance(name, *this);
 }
 
-MaterialID MaterialInstance::CreateMaterial(const std::wstring& name, const Material& material)
+MaterialID MaterialInstance::CreateMaterial(const std::wstring& name, const MaterialColor& material)
 {
 	auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
 	return materialManager->CreateMaterial(name, material);
@@ -142,9 +142,9 @@ bool MaterialInfoHelper::IsTextureValid(UINT texture)
 	return texture != UINT_MAX;
 }
 
-Material MaterialHelper::CreateMaterial(const AssimpMaterialData& materialData)
+MaterialColor MaterialHelper::CreateMaterial(const AssimpMaterialData& materialData)
 {
-	Material material;
+	MaterialColor material;
 
 	material.diffuse = {
 	materialData.albedo.x,
@@ -166,7 +166,7 @@ Material MaterialHelper::CreateMaterial(const AssimpMaterialData& materialData)
 	return material;
 }
 
-bool MaterialHelper::IsTransparent(const struct Material& materialData)
+bool MaterialHelper::IsTransparent(const struct MaterialColor& materialData)
 {
 	return materialData.diffuse.z < 1.f;
 }
