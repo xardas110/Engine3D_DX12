@@ -27,9 +27,6 @@ public:  // Public member functions
     const std::wstring& GetMaterialName(MaterialInfoID matInstanceId) const;
     MaterialColor& GetUserDefinedMaterial(MaterialInfoID matInstanceId);
 
-private:  // Private member functions
-    MaterialManager(const TextureManager& textureData);
-
 private:  // Private structures
     // MaterialData and InstanceData are separated for readability
     struct MaterialColorRegistry
@@ -46,6 +43,4 @@ private:  // Private structures
         std::map<std::wstring, MaterialInfoID> map;
     } materialInfoRegistry;
 
-private:  // Private member variables
-    const TextureManager& m_TextureManager;
 };

@@ -13,7 +13,7 @@ std::wstring StringToWString(const std::string& s)
 AssetManager::AssetManager() 
 {
 	m_TextureManager = TextureManagerAccess::CreateTextureManager(m_SrvHeapData);
-	m_MaterialManager = std::unique_ptr<MaterialManager>(new MaterialManager(*m_TextureManager.get()));
+	m_MaterialManager = std::unique_ptr<MaterialManager>(new MaterialManager());
 	m_MeshManager = std::unique_ptr<MeshManager>(new MeshManager(m_SrvHeapData));
 }
 

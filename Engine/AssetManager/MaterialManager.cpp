@@ -11,10 +11,6 @@ bool IsMaterialValid(UINT id)
 	return id != UINT_MAX;
 }
 
-MaterialManager::MaterialManager(const TextureManager& textureManager)
-	:m_TextureManager(textureManager)
-{}
-
 void PopulateGPUInfo(MaterialInfoGPU& gpuInfo, const TextureInstance& instance, UINT& gpuField)
 {
 	if (instance.IsValid())
