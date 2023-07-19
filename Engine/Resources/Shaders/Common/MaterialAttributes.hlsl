@@ -129,16 +129,18 @@ float3 srgbToLinear(float3 srgbColor)
 
 }
 
-float4 GetAlbedo(in MaterialInfoGPU matInfo, in float2 texCoords, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
+float4 SampleTexture(Texture2D texture, SamplerState inSampler, float2 texCoords, float4 mipLevel, int sampleType)
 {
-    Texture2D albedo = globalTextureData[matInfo.albedo];
-        
-    if (sampleType == SAMPLE_TYPE_MIP)
-        return albedo.Sample(inSampler, texCoords, mipLevel.x);
-    else if (sampleType == SAMPLE_TYPE_GRADIENT)
-        return albedo.SampleGrad(inSampler, texCoords, mipLevel.xy, mipLevel.zw);
-            
-    return albedo.SampleLevel(inSampler, texCoords, mipLevel.x);
+    switch (sampleType)
+    {
+        case SAMPLE_TYPE_MIP:
+            return texture.Sample(inSampler, texCoords, mipLevel.x);          
+        case SAMPLE_TYPE_GRADIENT:
+            return texture.SampleGrad(inSampler, texCoords, mipLevel.xy, mipLevel.zw);             
+        case SAMPLE_TYPE_LEVEL:
+        default:
+            return texture.SampleLevel(inSampler, texCoords, mipLevel.x);                    
+    }
 }
 
 float3 GetNormal(in MaterialInfoGPU matInfo, in float2 texCoords, out bool bMatHasNormal, in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
@@ -251,47 +253,20 @@ SurfaceMaterial GetSurfaceMaterial(
     in SamplerState inSampler, in Texture2D globalTextureData[], float4 mipLevel = 0.f, int sampleType = SAMPLE_TYPE_LEVEL)
 {
     SurfaceMaterial surface;    
-    surface.ao = GetAO(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
-    float4 baseColor = GetAlbedo(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType); //* surface.ao;
+    //surface.ao = GetAO(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
 
-    surface.albedo = SrgbToLinear(baseColor.rgb);
-
-    surface.emissive = GetEmissive(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
-    surface.height = GetHeight(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
-    surface.roughness = GetRoughness(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
-    surface.metallic = GetMetallic(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
-    surface.opacity = GetOpacity(matInfo, v.textureCoordinate, inSampler, globalTextureData, mipLevel, sampleType);
-   
-    if (matInfo.flags & MATERIAL_FLAG_BASECOLOR_ALPHA)
-    {
-        surface.opacity = baseColor.a;       
-    }
+    surface.albedo = SrgbToLinear(SampleTexture(globalTextureData[matInfo.albedo], inSampler, v.textureCoordinate, mipLevel, sampleType));
+    surface.emissive = SampleTexture(globalTextureData[matInfo.emissive], inSampler, v.textureCoordinate, mipLevel, sampleType);
+    surface.height = SampleTexture(globalTextureData[matInfo.height], inSampler, v.textureCoordinate, mipLevel, sampleType);
+    surface.roughness = SampleTexture(globalTextureData[matInfo.roughness], inSampler, v.textureCoordinate, mipLevel, sampleType);
+    surface.metallic = SampleTexture(globalTextureData[matInfo.metallic], inSampler, v.textureCoordinate, mipLevel, sampleType);
+    surface.opacity = SampleTexture(globalTextureData[matInfo.opacity], inSampler, v.textureCoordinate, mipLevel, sampleType);
+    surface.specular = SampleTexture(globalTextureData[matInfo.specular], inSampler, v.textureCoordinate, mipLevel, sampleType);
+    surface.normal = SampleTexture(globalTextureData[matInfo.normal], inSampler, v.textureCoordinate, mipLevel, sampleType);
+    surface.normal = TangentToWorldNormal(v.tangent, v.bitangent, v.normal, surface.normal, model);
     
-    bool bHasSpec;
-    surface.specular = GetSpecular(matInfo, v.textureCoordinate, bHasSpec, inSampler, globalTextureData, mipLevel, sampleType);
-    if (bHasSpec == true)
-    {
-        if (matInfo.flags & MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR)
-        {
-            surface.ao = surface.specular.x;
-            surface.roughness = surface.specular.y;
-            surface.metallic = surface.specular.z;
-        }
-    }
-    
-    bool bMatHasNormal;
-    surface.normal = GetNormal(matInfo, v.textureCoordinate, bMatHasNormal, inSampler, globalTextureData, mipLevel, sampleType);
-    
-    if (bMatHasNormal == true)
-    {      
-        float3 sampleNormal = v.normal;
-        sampleNormal *= matInfo.flags & MATERIAL_FLAG_INVERT_NORMALS ? -1.f : 1.f;
-        
-        surface.normal = TangentToWorldNormal(v.tangent, v.bitangent, sampleNormal, surface.normal, model);
-        
-    }                          
-    else
-        surface.normal = RotatePoint(objRotQuat, v.normal);
+    //TODO: Add flag if the material has no normal to use vertex normal instead
+    //surface.normal = RotatePoint(objRotQuat, v.normal);
 
     return surface;
 }
@@ -300,20 +275,8 @@ void ApplyMaterial(in MaterialInfoGPU matInfo, inout SurfaceMaterial surfaceMat,
 {
     surfaceMat.albedo = surfaceMat.albedo * materialColor.diffuse.rgb;
     surfaceMat.emissive = surfaceMat.emissive * materialColor.emissive;
-    surfaceMat.transparent = materialColor.transparent;
-
-    //surfaceMat.emissive *= 20.f;
-    
-    if (!(matInfo.flags & MATERIAL_FLAG_BASECOLOR_ALPHA)) //hardcoded for bistro scene...
-    {
-        surfaceMat.opacity = surfaceMat.opacity * materialColor.diffuse.a;
-    }
-  
-    if (!(matInfo.flags & MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR)) //weird convention on bistro scene...
-    {   
-        surfaceMat.roughness = surfaceMat.roughness * materialColor.roughness;
-        surfaceMat.metallic = surfaceMat.metallic * materialColor.metallic;
-    }
+    surfaceMat.roughness = surfaceMat.roughness * materialColor.roughness;
+    surfaceMat.metallic = surfaceMat.metallic * materialColor.metallic;  
 }
 
 #endif
