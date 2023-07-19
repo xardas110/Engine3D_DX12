@@ -2,7 +2,6 @@
 #include "../Common/TypesCompat.h"
 #include "../GBuffer/GBuffer.hlsl" 
 #include "../Common/Math.hlsl"
-#include "../Common/Phong.hlsl"
 #include "../Common/RaytracingHelper.hlsl"
 #include "../Common/MaterialAttributes.hlsl"
 #include "../Common/BRDF.hlsl"
@@ -14,7 +13,7 @@ StructuredBuffer<uint>              g_GlobalMeshIndexData[]     : register(t1, s
 
 StructuredBuffer<MeshInfo>          g_GlobalMeshInfo            : register(t2, space3);
 StructuredBuffer<MaterialInfoGPU>   g_GlobalMaterialInfo        : register(t3, space4);
-StructuredBuffer<MaterialColor>     g_GlobalMaterials : register(t4, space5);
+StructuredBuffer<MaterialColor>     g_GlobalMaterials           : register(t4, space5);
 
 Texture2D                           g_GBufferHeap[]             : register(t5, space6);
 
