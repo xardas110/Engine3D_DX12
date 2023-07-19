@@ -176,6 +176,6 @@ MaterialInfoCPU::MaterialInfoCPU()
 	textures[MaterialType::specular] = TextureInstance(L"Assets/Textures/Texture_Black.png");
 	*/
 
-	for (int i = 0; i < MaterialType::NumMaterialTypes; i++)
-		textures[i] = TextureInstance::GetWhiteTexture();
+	//for (int i = 0; i < MaterialType::NumMaterialTypes; i++)
+	//	textures[i] = TextureInstance::GetWhiteTexture();
 }
