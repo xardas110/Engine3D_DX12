@@ -2,100 +2,95 @@
 #include "../Common/TypesCompat.h"
 #include "../Common/BRDF.hlsl"
 
-RWBuffer<uint> t_Histogram : register(u0);
-RWTexture2D<float> u_Exposure : register(u1);
+// Buffers and Constants
+RWBuffer<uint>                  t_Histogram     : register(u0);
+RWTexture2D<float>              u_Exposure      : register(u1);
+ConstantBuffer<TonemapCB>       g_ToneMapping   : register(b2);
 
-ConstantBuffer<TonemapCB> g_ToneMapping : register(b2);
-
-// Most of the code below has been shamelessly stolen from UE4 eye adaptation shaders, i.e. PostProcessEyeAdaptation.usf
-
+// Fetches a histogram bucket value, normalizing it
 float GetHistogramBucket(uint BucketIndex)
 {
     return float(t_Histogram[BucketIndex]) / FIXED_POINT_FRAC_MULTIPLIER;
 }
 
+// Computes the sum of the histogram bins
 float ComputeHistogramSum()
 {
-    float Sum = 0;
-
+    float sum = 0.0f;
     [loop]
     for (uint i = 0; i < HISTOGRAM_BINS; ++i)
     {
-        Sum += GetHistogramBucket(i);
+        sum += GetHistogramBucket(i);
     }
-
-    return Sum;
+    return sum;
 }
 
+// Computes luminance from a given histogram position
 float ComputeLuminanceFromHistogramPosition(float HistogramPosition)
 {
     return exp2(HistogramPosition * g_ToneMapping.logLuminanceScale + g_ToneMapping.logLuminanceBias);
 }
 
-float ComputeAverageLuminaneWithoutOutlier(float MinFractionSum, float MaxFractionSum)
+// Computes average luminance excluding outliers
+float ComputeAverageLuminaneWithoutOutlier(float minFractionSum, float maxFractionSum)
 {
-    float2 SumWithoutOutliers = 0;
+    float2 sumWithoutOutliers = 0;
 
     [loop]
     for (uint i = 0; i < HISTOGRAM_BINS; ++i)
     {
-        float LocalValue = GetHistogramBucket(i);
+        float localValue = GetHistogramBucket(i);
 
-        // remove outlier at lower end
-        float Sub = min(LocalValue, MinFractionSum);
-        LocalValue = LocalValue - Sub;
-        MinFractionSum -= Sub;
-        MaxFractionSum -= Sub;
+        // Remove lower end outlier
+        float subtractionValue = min(localValue, minFractionSum);
+        localValue -= subtractionValue;
+        minFractionSum -= subtractionValue;
+        maxFractionSum -= subtractionValue;
 
-        // remove outlier at upper end
-        LocalValue = min(LocalValue, MaxFractionSum);
-        MaxFractionSum -= LocalValue;
+        // Remove upper end outlier
+        localValue = min(localValue, maxFractionSum);
+        maxFractionSum -= localValue;
 
-        float LuminanceAtBucket = ComputeLuminanceFromHistogramPosition(i / (float) HISTOGRAM_BINS);
+        float luminanceAtBucket = ComputeLuminanceFromHistogramPosition(i / float(HISTOGRAM_BINS));
 
-        SumWithoutOutliers += float2(LuminanceAtBucket, 1) * LocalValue;
+        sumWithoutOutliers += float2(luminanceAtBucket, 1) * localValue;
     }
 
-    return SumWithoutOutliers.x / max(0.0001f, SumWithoutOutliers.y);
+    return sumWithoutOutliers.x / max(0.0001f, sumWithoutOutliers.y);
 }
 
+// Computes the target exposure based on the current histogram data
 float ComputeEyeAdaptationExposure()
 {
-    float HistogramSum = ComputeHistogramSum();
+    float histogramSum = ComputeHistogramSum();
 
-    float UnclampedAdaptedLuminance = ComputeAverageLuminaneWithoutOutlier(
-        HistogramSum * g_ToneMapping.histogramLowPercentile,
-        HistogramSum * g_ToneMapping.histogramHighPercentile);
+    float unclampedAdaptedLuminance = ComputeAverageLuminaneWithoutOutlier(
+        histogramSum * g_ToneMapping.histogramLowPercentile,
+        histogramSum * g_ToneMapping.histogramHighPercentile);
 
-    float ClampedAdaptedLuminance = clamp(
-        UnclampedAdaptedLuminance,
-        g_ToneMapping.minAdaptedLuminance,
-        g_ToneMapping.maxAdaptedLuminance);
-    
-    return ClampedAdaptedLuminance;
+    return clamp(unclampedAdaptedLuminance, g_ToneMapping.minAdaptedLuminance, g_ToneMapping.maxAdaptedLuminance);
 }
 
-float ComputeEyeAdaptation(float OldExposure, float TargetExposure, float FrameTime)
+// Computes the adaptation factor between the old and target exposure
+float ComputeEyeAdaptation(float oldExposure, float targetExposure, float frameTime)
 {
-    float Diff = OldExposure - TargetExposure;
+    float diff = oldExposure - targetExposure;
+    float adaptationSpeed = (diff < 0) ? g_ToneMapping.eyeAdaptationSpeedUp : g_ToneMapping.eyeAdaptationSpeedDown;
 
-    float AdaptationSpeed = (Diff < 0) ? g_ToneMapping.eyeAdaptationSpeedUp : g_ToneMapping.eyeAdaptationSpeedDown;
+    // If the adaptation speed is zero or negative, immediately return the target exposure
+    if (adaptationSpeed <= 0.0f)
+        return targetExposure;
 
-    if (AdaptationSpeed <= 0)
-        return TargetExposure;
-
-    float Factor = exp2(-FrameTime * AdaptationSpeed);
-
-    return TargetExposure + Diff * Factor;
+    float factor = exp2(-frameTime * adaptationSpeed);
+    return targetExposure + diff * factor;
 }
 
+// Main compute shader to update the exposure texture
 [numthreads(1, 1, 1)]
 void main()
 {
-    float TargetExposure = ComputeEyeAdaptationExposure();
-    float OldExposure = u_Exposure[uint2(0, 0)];
-
-    float SmoothedExposure = ComputeEyeAdaptation(OldExposure, TargetExposure, g_ToneMapping.frameTime);
-
-    u_Exposure[uint2(0, 0)] = SmoothedExposure;
+    float targetExposure = ComputeEyeAdaptationExposure();
+    float oldExposure = u_Exposure[uint2(0, 0)];
+    float smoothedExposure = ComputeEyeAdaptation(oldExposure, targetExposure, g_ToneMapping.frameTime);
+    u_Exposure[uint2(0, 0)] = smoothedExposure;
 }
