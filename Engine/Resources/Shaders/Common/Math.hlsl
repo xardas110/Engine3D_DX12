@@ -48,4 +48,103 @@ float2 ClipToUV(float2 ClipPos)
     return float2(ClipPos.x * 0.5 + 0.5, 0.5 - ClipPos.y * 0.5);
 }
 
+#define _Pi( x ) radians( 180.0 * x )
+
+float Pi(float x)
+{
+    return _Pi(x);
+}
+
+float2 Pi(float2 x)
+{
+    return _Pi(x);
+}
+
+float3 Pi(float3 x)
+{
+    return _Pi(x);
+}
+
+float4 Pi(float4 x)
+{
+    return _Pi(x);
+}
+
+// Sqrt for values in range [0; 1]
+float Sqrt01(float x)
+{
+    return sqrt(saturate(x));
+}
+
+float2 Sqrt01(float2 x)
+{
+    return sqrt(saturate(x));
+}
+
+float3 Sqrt01(float3 x)
+{
+    return sqrt(saturate(x));
+}
+
+float4 Sqrt01(float4 x)
+{
+    return sqrt(saturate(x));
+}
+
+// These functions are used to compute power operations on values within the range [0; 1]. 
+
+// Pow01 for single float values
+float Pow01(float x, float y)
+{
+    return pow(saturate(x), y);
+}
+
+// Pow01 for float2 values
+float2 Pow01(float2 x, float y)
+{
+    return pow(saturate(x), y);
+}
+
+float2 Pow01(float2 x, float2 y)
+{
+    return pow(saturate(x), y);
+}
+
+// Pow01 for float3 values
+float3 Pow01(float3 x, float y)
+{
+    return pow(saturate(x), y);
+}
+
+float3 Pow01(float3 x, float3 y)
+{
+    return pow(saturate(x), y);
+}
+
+// Pow01 for float4 values
+float4 Pow01(float4 x, float y)
+{
+    return pow(saturate(x), y);
+}
+
+float4 Pow01(float4 x, float4 y)
+{
+    return pow(saturate(x), y);
+}
+
+float3 LinearToSrgb(float3 color)
+{
+    const float4 consts = float4(1.055, 0.41666, -0.055, 12.92);
+    color = saturate(color);
+
+    return lerp(consts.x * pow(color, consts.yyy) + consts.zzz, consts.w * color, color < 0.0031308);
+}
+
+float3 SrgbToLinear(float3 srgbColor)
+{
+    const float4 consts = float4(1.0 / 12.92, 1.0 / 1.055, 0.055 / 1.055, 2.4);
+    srgbColor = saturate(srgbColor);
+    return lerp(srgbColor * consts.x, pow(srgbColor * consts.y + consts.zzz, consts.www), srgbColor > 0.04045);
+}
+
 #endif

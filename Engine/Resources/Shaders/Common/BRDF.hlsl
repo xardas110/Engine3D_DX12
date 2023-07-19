@@ -121,49 +121,6 @@
 #define DiffuseTerm none
 #endif
 
-#define _Pi( x ) radians( 180.0 * x )
-
-float Pi(float x)
-{
-    return _Pi(x);
-}
-
-float2 Pi(float2 x)
-{
-    return _Pi(x);
-}
-
-float3 Pi(float3 x)
-{
-    return _Pi(x);
-}
-
-float4 Pi(float4 x)
-{
-    return _Pi(x);
-}
-
-// Sqrt for values in range [0; 1]
-float Sqrt01(float x)
-{
-    return sqrt(saturate(x));
-}
-
-float2 Sqrt01(float2 x)
-{
-    return sqrt(saturate(x));
-}
-
-float3 Sqrt01(float3 x)
-{
-    return sqrt(saturate(x));
-}
-
-float4 Sqrt01(float4 x)
-{
-    return sqrt(saturate(x));
-}
-
 namespace Cosine
 {
     float GetPDF(float NoL = 1.0) // default can be useful to handle NoL cancelation ( PDF's NoL cancels throughput's NoL )
