@@ -6,30 +6,27 @@
 
 ConstantBuffer<ObjectCB>            g_ObjectCB                  : register(b0);
 ConstantBuffer<CameraCB>            g_CameraCB                  : register(b1);
-    
 Texture2D                           g_GlobalTextureData[]       : register(t1, space0);
-StructuredBuffer<MaterialInfoGPU>   g_GlobalMaterialInfo : register(t3, space4);
-StructuredBuffer<MaterialColor> g_GlobalMaterials : register(t4, space5);
-  
+StructuredBuffer<MaterialInfoGPU>   g_GlobalMaterialInfo        : register(t3, space4);
+StructuredBuffer<MaterialColor>     g_GlobalMaterials           : register(t4, space5);
 SamplerState                        g_LinearRepeatSampler       : register(s0);
 
 struct PixelShaderInput
 {
-	float4 PositionWS	:	POSITION;
-    float4 PrevPositionWS : PREVPOS;
-	float3 NormalWS		:	NORMAL;
-	float2 TexCoord		:	TEXCOORD;
-    float3 Tangent_N    :   TANGENT_N;
-    float3 BiTangent_N  :   BiTangent_N;
-    float3 NormalLS_N   :   NORMALLS_N;
-    float4 PrevPosition :   PREVPOS_CLIP;
-    float4 PositionClip :   POS_CLIP;
-    float  ViewZ        :   VIEW_Z;
-    float4 Position		:   SV_Position;
+    float4 PositionWS      : POSITION;
+    float4 PrevPositionWS  : PREVPOS;
+    float3 NormalWS        : NORMAL;
+    float2 TexCoord        : TEXCOORD;
+    float3 Tangent_N       : TANGENT_N;
+    float3 BiTangent_N     : BITANGENT_N;
+    float3 NormalLS_N      : NORMALLS_N;
+    float4 PrevPosition    : PREVPOS_CLIP;
+    float4 PositionClip    : POS_CLIP;
+    float  ViewZ           : VIEW_Z;
+    float4 Position        : SV_Position;
 };
 
-    
- //Make sure that GBUFFER_XXX defines match the rendertarget   
+// Ensure GBUFFER_XXX defines match the render target   
 struct PixelShaderOutput
 {
     float4 albedo           : SV_TARGET0;
@@ -42,7 +39,7 @@ struct PixelShaderOutput
     float2 motion2D         : SV_TARGET7;
 };
 
-static float alphaCutoff = 0.5f;
+static const float alphaCutoff = 0.5f;
 
 PixelShaderOutput main(PixelShaderInput IN)
 {
@@ -50,8 +47,8 @@ PixelShaderOutput main(PixelShaderInput IN)
     
     MaterialInfoGPU matInfo = g_GlobalMaterialInfo[g_ObjectCB.materialGPUID];
        
-    if (matInfo.flags & INSTANCE_ALPHA_BLEND)
-        discard;
+    // Discard if instance is set to alpha blending
+    if (matInfo.flags & INSTANCE_ALPHA_BLEND) discard;
     
     MeshVertex vert;
     vert.textureCoordinate = IN.TexCoord;
@@ -62,9 +59,9 @@ PixelShaderOutput main(PixelShaderInput IN)
 
     SurfaceMaterial surface = GetSurfaceMaterial(matInfo, vert, g_ObjectCB.model, g_ObjectCB.objRotQuat, g_LinearRepeatSampler, g_GlobalTextureData, 0.f, SAMPLE_TYPE_MIP);
     ApplyMaterial(matInfo, surface, g_GlobalMaterials[g_ObjectCB.materialGPUID]);
-        
-    if (surface.opacity < alphaCutoff)
-        discard;
+    
+    // Discard based on surface opacity
+    if (surface.opacity < alphaCutoff) discard;
     
     GPackInfo gPack = PackGBuffer(g_CameraCB, g_ObjectCB, surface, IN.PositionWS.rgb, IN.PositionClip.z, IN.NormalWS);
       
@@ -74,6 +71,8 @@ PixelShaderOutput main(PixelShaderInput IN)
     OUT.linearDepth = IN.PositionClip.z;
     OUT.normalRoughness = gPack.normalRough;
     OUT.geometryNormal = gPack.geometryNormal;
+    
+    // Calculate motion vectors
     OUT.motionVector = float4(IN.PrevPositionWS.rgb - IN.PositionWS.rgb, 1.f);
        
     float2 res = float2(g_CameraCB.resolution.x, g_CameraCB.resolution.y);
