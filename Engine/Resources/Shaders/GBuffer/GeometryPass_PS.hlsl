@@ -58,7 +58,7 @@ PixelShaderOutput main(PixelShaderInput IN)
     vert.position = IN.PositionClip;
 
     SurfaceMaterial surface = GetSurfaceMaterial(matInfo, vert, g_ObjectCB.model, g_ObjectCB.objRotQuat, g_LinearRepeatSampler, g_GlobalTextureData, 0.f, SAMPLE_TYPE_MIP);
-    ApplyMaterial(matInfo, surface, g_GlobalMaterials[g_ObjectCB.materialGPUID]);
+    ApplyMaterialColor(matInfo, surface, g_GlobalMaterials[g_ObjectCB.materialGPUID]);
     
     // Discard based on surface opacity
     if (surface.opacity < alphaCutoff) discard;

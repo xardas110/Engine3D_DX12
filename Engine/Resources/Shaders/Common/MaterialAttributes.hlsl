@@ -94,7 +94,7 @@ SurfaceMaterial GetSurfaceMaterial(
 }
 
 // Modulates surface material properties with given material colors.
-void ApplyMaterial(in MaterialInfoGPU matInfo, inout SurfaceMaterial surfaceMat, in MaterialColor materialColor)
+void ApplyMaterialColor(in MaterialInfoGPU matInfo, inout SurfaceMaterial surfaceMat, in MaterialColor materialColor)
 {
     surfaceMat.albedo *= materialColor.diffuse.rgb;
     surfaceMat.emissive *= materialColor.emissive;
