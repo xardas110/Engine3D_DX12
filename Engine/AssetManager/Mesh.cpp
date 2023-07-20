@@ -81,7 +81,7 @@ MeshInstance::MeshInstance(const std::wstring& path)
 void MeshInstance::SetMaterialInstance(const MaterialInstance& matInstance)
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
-    meshManager->instanceData.meshInfo[id].materialInstanceID = matInstance.GetMaterialInstanceID();
+    meshManager->instanceData.meshInfo[id].materialInstanceID = matInstance;
 }
 
 const Texture* MeshInstance::GetTexture(MaterialType::Type type)

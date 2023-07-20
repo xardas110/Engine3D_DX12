@@ -7,6 +7,7 @@
 #include <AssimpLoader.h>
 #include <Material.h>
 #include <Logger.h>
+#include <TypesCompat.h>
 
 /**
  * Applies alpha flags to a material instance if applicable.
@@ -37,7 +38,7 @@ void ApplyAlphaFlags(MaterialInstance& materialInstance, MeshFlags::Flags import
  */
 void ApplyTransparency(MaterialInstance& materialInstance, MeshFlags::Flags importFlags, MaterialInfoCPU materialInfo)
 {
-	if (materialInfo.GetTexture(MaterialType::albedo).IsValid())
+	if (materialInfo.textures[MaterialType::albedo].IsValid())
 	{
 		// Apply translucency flag to the material instance
 		materialInstance.SetFlags(INSTANCE_TRANSLUCENT);

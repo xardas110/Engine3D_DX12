@@ -294,7 +294,7 @@ void DeferredRenderer::ExecuteGBufferPass(
         objectCB.objRotQuat = transform.rot;
 
         globalMeshInfo[mesh.id].objRot = transform.rot;
-        objectCB.materialGPUID = globalMeshInfo[mesh.id].materialInstanceID;
+        objectCB.materialGPUID = MaterialInstanceIDAccess::GetMaterialID(globalMeshInfo[mesh.id].materialInstanceID);
 
         commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
         assetManager->m_MeshManager->meshData.meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);

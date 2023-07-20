@@ -4,6 +4,7 @@
 #ifdef HLSL
 #include "HlslCompat.h"
 #else
+#include <Material.h>
 #include <Texture.h>
 #endif
 
@@ -246,7 +247,6 @@ struct MaterialColor
     float metallic COMPAT_FLOAT(1.0f);
 };
 
-//TODO: Fix right datatype for GPU Material heap handles
 struct MaterialInfoGPU
 {
     UINT ao TEXTURE_NULL;
@@ -265,11 +265,25 @@ struct MaterialInfoGPU
     UINT flags DEFAULT_NULL;
 };
 
+#ifndef HLSL
+struct MaterialInfoCPU
+{
+    TextureInstance textures[MaterialType::NumMaterialTypes];
+    UINT pad MATERIAL_ID_NULL;
+    UINT flags DEFAULT_NULL;
+};
+#endif
+
 struct MeshInfo
 {
     UINT vertexOffset UINT_MAX_NULL;
     UINT indexOffset UINT_MAX_NULL;
+#ifdef HLSL
     UINT materialInstanceID UINT_MAX_NULL; //Cpu material index == Gpu material index
+#else
+    MaterialInstance materialInstanceID;
+#endif // Hlsl
+
     UINT flags DEFAULT_NULL;
     XMVECTOR objRot; //quat to rotate normal
 };

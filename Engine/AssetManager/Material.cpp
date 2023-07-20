@@ -4,6 +4,11 @@
 #include <Application.h>
 #include <TypesCompat.h>
 
+MaterialID MaterialInstanceIDAccess::GetMaterialID(const MaterialInstance& materialInstance)
+{
+	return materialInstance.materialID;
+}
+
 MaterialManager* MaterialInstance::GetMaterialManager() const 
 {
 	return Application::Get().GetAssetManager()->m_MaterialManager.get();
@@ -147,25 +152,4 @@ bool MaterialHelper::IsTransparent(const struct MaterialColor& materialData)
 {
 	return false;
 	return materialData.diffuse.z < 1.f;
-}
-
-MaterialInfoCPU::MaterialInfoCPU()
-{
-	LOG("Creating MaterialInfoCPU");
-
-	/*
-	textures[MaterialType::ao] = TextureInstance::GetBlackTexture();
-	textures[MaterialType::albedo] = TextureInstance(L"Assets/Textures/Texture_Black.png");
-	textures[MaterialType::emissive] = TextureInstance(L"Assets/Textures/Texture_Black.png");
-	textures[MaterialType::height] = TextureInstance(L"Assets/Textures/Texture_Black.png");
-	textures[MaterialType::lightmap] = TextureInstance(L"Assets/Textures/Texture_Black.png");
-	textures[MaterialType::metallic] = TextureInstance(L"Assets/Textures/Texture_Black.png");
-	textures[MaterialType::opacity] = TextureInstance(L"Assets/Textures/Texture_Black.png");
-	textures[MaterialType::roughness] = TextureInstance(L"Assets/Textures/Texture_Black.png");
-	textures[MaterialType::normal] = TextureInstance(L"Assets/Textures/Texture_Black.png");
-	textures[MaterialType::specular] = TextureInstance(L"Assets/Textures/Texture_Black.png");
-	*/
-
-	//for (int i = 0; i < MaterialType::NumMaterialTypes; i++)
-	//	textures[i] = TextureInstance::GetWhiteTexture();
 }

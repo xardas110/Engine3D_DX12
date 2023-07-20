@@ -46,16 +46,16 @@ const MaterialInstance& MaterialManager::CreateMaterial(const std::wstring& name
 	assert(materialRegistry.cpuInfo.size() == materialRegistry.gpuInfo.size());
 	assert(materialRegistry.gpuInfo.size() == materialRegistry.materialColors.size());
 
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::albedo), materialRegistry.gpuInfo[currentIndex].albedo);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::normal), materialRegistry.gpuInfo[currentIndex].normal);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::ao), materialRegistry.gpuInfo[currentIndex].ao);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::emissive), materialRegistry.gpuInfo[currentIndex].emissive);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::roughness), materialRegistry.gpuInfo[currentIndex].roughness);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::specular), materialRegistry.gpuInfo[currentIndex].specular);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::metallic), materialRegistry.gpuInfo[currentIndex].metallic);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::lightmap), materialRegistry.gpuInfo[currentIndex].lightmap);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::opacity), materialRegistry.gpuInfo[currentIndex].opacity);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.GetTexture(MaterialType::height), materialRegistry.gpuInfo[currentIndex].height);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::albedo], materialRegistry.gpuInfo[currentIndex].albedo);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::normal], materialRegistry.gpuInfo[currentIndex].normal);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::ao], materialRegistry.gpuInfo[currentIndex].ao);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::emissive], materialRegistry.gpuInfo[currentIndex].emissive);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::roughness], materialRegistry.gpuInfo[currentIndex].roughness);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::specular], materialRegistry.gpuInfo[currentIndex].specular);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::metallic], materialRegistry.gpuInfo[currentIndex].metallic);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::lightmap], materialRegistry.gpuInfo[currentIndex].lightmap);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::opacity], materialRegistry.gpuInfo[currentIndex].opacity);
+	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::height], materialRegistry.gpuInfo[currentIndex].height);
 
 	materialRegistry.map[name] = currentIndex;
 
@@ -136,7 +136,7 @@ void MaterialManager::AddFlags(const MaterialInstance& materialInstance, const U
 TextureInstance MaterialManager::GetTextureInstance(const MaterialInstance& materialInstance, MaterialType::Type type)
 {
 	auto& matInfo = materialRegistry.cpuInfo[materialInstance.materialID];
-	return matInfo.GetTexture(type);
+	return matInfo.textures[type];
 }
 
 const std::wstring& MaterialManager::GetMaterialName(const MaterialInstance& materialInstance) const
