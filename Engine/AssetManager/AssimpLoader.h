@@ -73,8 +73,8 @@ struct AssimpMaterialData
 	DirectX::XMFLOAT3 transparent{ 1.f, 1.f, 1.f };
 	DirectX::XMFLOAT3 ambient{ 1.f, 1.f, 1.f };
 
-	float roughness = 1.0f;
-	float metallic = 1.0f;
+	float roughness = 0.5f;
+	float metallic = 0.0f;
 	float shininess = 1.f;
 	float opacity = 1.f;
 

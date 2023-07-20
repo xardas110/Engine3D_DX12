@@ -25,12 +25,12 @@ SamplerState                        g_NearestRepeatSampler      : register(s0);
 SamplerState                        g_LinearRepeatSampler       : register(s1);
 SamplerState                        g_LinearClampSampler        : register(s2);
 
-ConstantBuffer<DirectionalLightCB> g_DirectionalLight       : register(b0);
-ConstantBuffer<CameraCB>           g_Camera                 : register(b1);
-ConstantBuffer<RaytracingDataCB>   g_RaytracingData         : register(b2);
-ConstantBuffer<LightDataCB>        g_LightData              : register(b3);
+ConstantBuffer<DirectionalLightCB> g_DirectionalLight           : register(b0);
+ConstantBuffer<CameraCB>           g_Camera                     : register(b1);
+ConstantBuffer<RaytracingDataCB>   g_RaytracingData             : register(b2);
+ConstantBuffer<LightDataCB>        g_LightData                  : register(b3);
 
-RWTexture2D<float4>             g_GlobalUAV[]               : register(u0);
+RWTexture2D<float4>                g_GlobalUAV[]                : register(u0);
   
 static float reflectiveAmbient = 0.005f;
 
@@ -477,22 +477,6 @@ bool TranslucentPass(in float2 texcoords, RngStateType rng, float3 troughput, in
     }
 
     return bResult;
-}
-
-float3x3 GetBasis(float3 N)
-{
-    float sz = sign(N.z);
-    float a = 1.0 / (sz + N.z);
-    float ya = N.y * a;
-    float b = N.x * ya;
-    float c = N.x * sz;
-
-    float3 T = float3(c * N.x * a - 1.0, sz * b, c);
-    float3 B = float3(b, N.y * ya - sz, N.y);
-
-    // Note: due to the quaternion formulation, the generated frame is rotated by 180 degrees,
-    // s.t. if N = (0, 0, 1), then T = (-1, 0, 0) and B = (0, -1, 0).
-    return float3x3(T, B, N);
 }
 
 bool DirectLightGBuffer(in float2 texCoords, RngStateType rng, float viewZ, inout float4 radiance, inout float2 shadowData)
