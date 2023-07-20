@@ -6,11 +6,6 @@
 std::wstring g_NoMaterial = L"No Material";
 MaterialColor g_NoUserMaterial; //Already initialized with values
 
-bool IsMaterialValid(UINT id)
-{
-	return id != UINT_MAX;
-}
-
 void PopulateGPUInfo(MaterialInfoGPU& gpuInfo, const TextureInstance& instance, UINT& gpuField)
 {
 	if (instance.IsValid())
@@ -26,11 +21,28 @@ const MaterialInstance& MaterialManager::LoadMaterial(const std::wstring& name, 
 		return materialRegistry.map[name];
 	}
 
-	const auto currentIndex = materialRegistry.cpuInfo.size();
-	materialRegistry.cpuInfo.emplace_back(textureIDs);
-	materialRegistry.gpuInfo.emplace_back(MaterialInfoGPU());
-	materialRegistry.materialColors.emplace_back(materialColor);
+	return CreateMaterial(name, textureIDs, materialColor);
+}
 
+const MaterialInstance& MaterialManager::CreateMaterial(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor)
+{
+	MaterialID currentIndex = 0;
+
+	if (!releasedMaterialIDs.empty())
+	{
+		currentIndex = releasedMaterialIDs.front();
+		releasedMaterialIDs.erase(releasedMaterialIDs.begin());
+	}
+	else
+	{
+		currentIndex = materialRegistry.cpuInfo.size(),
+
+		materialRegistry.cpuInfo.emplace_back(textureIDs);
+		materialRegistry.gpuInfo.emplace_back(MaterialInfoGPU());
+		materialRegistry.materialColors.emplace_back(materialColor);
+		materialRegistry.refCounts[currentIndex].store(0U);
+	}
+	
 	assert(materialRegistry.cpuInfo.size() == materialRegistry.gpuInfo.size());
 	assert(materialRegistry.gpuInfo.size() == materialRegistry.materialColors.size());
 
@@ -47,20 +59,63 @@ const MaterialInstance& MaterialManager::LoadMaterial(const std::wstring& name, 
 
 	materialRegistry.map[name] = currentIndex;
 
-	return currentIndex;
+	return materialRegistry.map[name];
+}
+
+bool MaterialManager::IsMaterialValid(const MaterialInstance& materialInstance) const
+{
+	if (materialInstance.materialID == MATERIAL_INVALID)
+		return false;
+
+	if (materialInstance.materialID >= materialRegistry.cpuInfo.size())
+		return false;
+
+	return true;
+}
+
+void MaterialManager::IncreaseRefCount(const MaterialID materialID)
+{
+	if (IsMaterialValid(materialID))
+	{
+		materialRegistry.refCounts[materialID].fetch_add(1, std::memory_order_relaxed);
+	}
+}
+
+void MaterialManager::DecreaseRefCount(const MaterialID materialID)
+{
+	if (IsMaterialValid(materialID))
+	{
+		if (materialRegistry.refCounts[materialID].fetch_sub(1, std::memory_order_relaxed) == 1)
+		{
+			ReleaseMaterial(materialID);
+		}
+	}
+}
+
+void MaterialManager::ReleaseMaterial(const MaterialID materialID)
+{
+	materialRegistry.cpuInfo[materialID] = {}; // Reset to default
+	materialRegistry.gpuInfo[materialID] = {};
+	materialRegistry.materialColors[materialID] = {};
+
+	for (auto it = materialRegistry.map.begin(); it != materialRegistry.map.end();)
+	{
+		if (it->second.materialID == materialID)
+		{
+			it = materialRegistry.map.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+
+	releasedMaterialIDs.emplace_back(materialID);
 }
 
 std::optional<MaterialInstance> MaterialManager::GetMaterialInstance(const std::wstring& name)
 {
 	if (materialRegistry.map.find(name) == materialRegistry.map.end()) 
-		return std::nullopt;
-
-	return materialRegistry.map[name];
-}
-
-std::optional<MaterialInstance> MaterialManager::GetMaterial(const std::wstring& name)
-{
-	if (materialRegistry.map.find(name) != materialRegistry.map.end()) 
 		return std::nullopt;
 
 	return materialRegistry.map[name];
@@ -91,7 +146,7 @@ const std::wstring& MaterialManager::GetMaterialName(const MaterialInstance& mat
 
 	for (const auto& [name, id] : materialRegistry.map)
 	{
-		if (id == materialInstance.materialID)
+		if (id.materialID == materialInstance.materialID)
 			return name;
 	}
 

@@ -16,13 +16,16 @@ class MaterialManager
     friend class MaterialInstance;
 
 public:  
+    //Creates a material if it does not exist in the cache, or gets the current material in the cache.
     const MaterialInstance& LoadMaterial(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor);
         
+    //Gets a material if it exists
     std::optional<MaterialInstance> GetMaterialInstance(const std::wstring& name);
-    std::optional<MaterialInstance> GetMaterial(const std::wstring& name);
 
     void SetFlags(const MaterialInstance& materialInstance, const UINT flags);
     void AddFlags(const MaterialInstance& materialInstance, const UINT flags);
+
+    bool IsMaterialValid(const MaterialInstance& materialInstance) const;
 
     TextureInstance GetTextureInstance(const MaterialInstance& materialInstance, MaterialType::Type type);
 
@@ -34,7 +37,11 @@ public:
     const std::vector<MaterialColor>&   GetMaterialColorData() const;
 
 private:  
-    //const MaterialInstance& CreateMaterial(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor);
+    const MaterialInstance& CreateMaterial(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor);
+
+    void IncreaseRefCount(const MaterialID materialID);
+    void DecreaseRefCount(const MaterialID materialID);
+    void ReleaseMaterial(const MaterialID materialID);
 
     struct MaterialRegistry
     {
@@ -42,8 +49,11 @@ private:
         std::vector<MaterialInfoCPU> cpuInfo;
         std::vector<MaterialInfoGPU> gpuInfo;
         std::vector<MaterialColor> materialColors;
+
         std::array<std::atomic<RefCount>, MATERIAL_MANAGER_MAX_MATERIALS> refCounts;
 
-        std::map<std::wstring, MaterialID> map;
+        std::map<std::wstring, MaterialInstance> map;
     } materialRegistry;
+
+    std::vector<MaterialID> releasedMaterialIDs;
 };
