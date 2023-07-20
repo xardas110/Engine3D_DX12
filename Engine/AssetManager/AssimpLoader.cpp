@@ -37,12 +37,12 @@ void GetTexturePath(aiTextureType type, aiMaterial* material, const std::string&
 	}
 }
 
-AssimpLoader::AssimpLoader(const std::string& path, MeshImport::Flags flags)
+AssimpLoader::AssimpLoader(const std::string& path, MeshFlags::Flags flags)
 {
 	LoadModel(path, flags);
 }
 
-void AssimpLoader::ProcessNode(aiNode* node, const aiScene* scene, MeshImport::Flags flags)
+void AssimpLoader::ProcessNode(aiNode* node, const aiScene* scene, MeshFlags::Flags flags)
 {
 	for (auto i = 0; i < node->mNumMeshes; i++)
 	{
@@ -64,7 +64,7 @@ void AssimpToDirectX(A& a, const B& b)
 	a.z = b.b;
 }
 
-bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene, MeshImport::Flags flags)
+bool AssimpLoader::LoadMesh(aiMesh* mesh, const aiScene* scene, MeshFlags::Flags flags)
 {
 	AssimpMesh internalMesh;
 
@@ -84,7 +84,7 @@ void AssimpLoader::SetMeshName(AssimpMesh& internalMesh, aiMesh* mesh)
 	internalMesh.name = mesh->mName.C_Str();
 }
 
-void AssimpLoader::LoadVertices(AssimpMesh& internalMesh, aiMesh* mesh, MeshImport::Flags flags)
+void AssimpLoader::LoadVertices(AssimpMesh& internalMesh, aiMesh* mesh, MeshFlags::Flags flags)
 {
 	for (auto i = 0; i < mesh->mNumVertices; i++)
 	{
@@ -113,9 +113,9 @@ void AssimpLoader::SetVertexPosition(VertexPositionNormalTexture& vertex, aiMesh
 	vertex.position.z = mesh->mVertices[i].z;
 }
 
-void AssimpLoader::SetVertexNormal(VertexPositionNormalTexture& vertex, aiMesh* mesh, unsigned int i, MeshImport::Flags flags)
+void AssimpLoader::SetVertexNormal(VertexPositionNormalTexture& vertex, aiMesh* mesh, unsigned int i, MeshFlags::Flags flags)
 {
-	bool bInvertNormals = flags & MeshImport::InvertNormals;
+	bool bInvertNormals = flags & MeshFlags::InvertNormals;
 	vertex.normal.x = bInvertNormals ? -mesh->mNormals[i].x : mesh->mNormals[i].x;
 	vertex.normal.y = bInvertNormals ? -mesh->mNormals[i].y : mesh->mNormals[i].y;
 	vertex.normal.z = bInvertNormals ? -mesh->mNormals[i].z : mesh->mNormals[i].z;
@@ -157,23 +157,23 @@ void AssimpLoader::CheckForBones(aiMesh* mesh)
 	}
 }
 
-void AssimpLoader::LoadMaterials(AssimpMesh& internalMesh, aiMesh* mesh, const aiScene* scene, MeshImport::Flags flags)
+void AssimpLoader::LoadMaterials(AssimpMesh& internalMesh, aiMesh* mesh, const aiScene* scene, MeshFlags::Flags flags)
 {
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
 	if (!material) return;
 
-	if (!(flags & MeshImport::SkipTextures))
+	if (!(flags & MeshFlags::SkipTextures))
 	{
 		LoadTextures(internalMesh, material, flags);
 	}
-	if (!(flags & MeshImport::IgnoreUserMaterial))
+	if (!(flags & MeshFlags::IgnoreUserMaterial))
 	{
 		LoadUserMaterial(material, internalMesh.materialData, flags);
 	}
 }
 
-void AssimpLoader::LoadTextures(AssimpMesh& internalMesh, aiMaterial* material, MeshImport::Flags flags)
+void AssimpLoader::LoadTextures(AssimpMesh& internalMesh, aiMaterial* material, MeshFlags::Flags flags)
 {
 	std::vector<aiTextureType> textureTypes = {
 		aiTextureType_AMBIENT, aiTextureType_DIFFUSE,
@@ -195,7 +195,7 @@ void AssimpLoader::LoadTextures(AssimpMesh& internalMesh, aiMaterial* material, 
 	}
 }
 
-void AssimpLoader::LoadModel(const std::string& path, MeshImport::Flags flags)
+void AssimpLoader::LoadModel(const std::string& path, MeshFlags::Flags flags)
 {
 	if (!ValidatePath(path)) {
 		return;
@@ -226,11 +226,11 @@ bool AssimpLoader::ValidatePath(const std::string& path)
 	return true;
 }
 
-unsigned int AssimpLoader::PrepareFlags(MeshImport::Flags flags)
+unsigned int AssimpLoader::PrepareFlags(MeshFlags::Flags flags)
 {
 	auto flagCopy = aiFlags;
 
-	if (flags & MeshImport::AssimpTangent)
+	if (flags & MeshFlags::AssimpTangent)
 		flagCopy |= aiProcess_CalcTangentSpace;
 
 	return flagCopy;
@@ -278,7 +278,7 @@ const AssimpStaticMesh& AssimpLoader::GetAssimpStaticMesh() const
 	return staticMesh;
 }
 
-void AssimpLoader::LoadUserMaterial(aiMaterial* material, AssimpMaterialData& matData, MeshImport::Flags flags)
+void AssimpLoader::LoadUserMaterial(aiMaterial* material, AssimpMaterialData& matData, MeshFlags::Flags flags)
 {
 	LOG_INFO("Loading material %s", material->GetName().C_Str());
 
@@ -387,7 +387,7 @@ void AssimpLoader::HandleShadingModel(aiMaterial* material, const std::string& m
 	LOG_INFO("Material Shadingmodel: %i", matData.shadingModel);
 }
 
-void AssimpLoader::HandleDiffuseColor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData, MeshImport::Flags flags)
+void AssimpLoader::HandleDiffuseColor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData, MeshFlags::Flags flags)
 {
 	AssimpToDirectX(matData.albedo, GetProperty<aiColor3D>(matKey, material));
 	LOG_INFO("Material Diffuse Color: %f, %f, %f",

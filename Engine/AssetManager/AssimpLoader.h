@@ -124,7 +124,7 @@ public:
 	// Default constructor 
 	AssimpLoader() = delete;
 
-	AssimpLoader(const std::string& path, MeshImport::Flags flags);
+	AssimpLoader(const std::string& path, MeshFlags::Flags flags);
 
 	// Move constructor 
 	AssimpLoader(AssimpLoader&&) = default;
@@ -141,18 +141,18 @@ public:
 	const AssimpStaticMesh& GetAssimpStaticMesh() const;
 
 private:
-	void ProcessNode(aiNode* node, const aiScene* scene, MeshImport::Flags flags);
+	void ProcessNode(aiNode* node, const aiScene* scene, MeshFlags::Flags flags);
 
 	// Loads a mesh from Assimp and stores the data into our custom Mesh class.
-	bool LoadMesh(aiMesh* mesh, const aiScene* scene, MeshImport::Flags flags);
+	bool LoadMesh(aiMesh* mesh, const aiScene* scene, MeshFlags::Flags flags);
 
-	void LoadModel(const std::string& path, MeshImport::Flags flags);
+	void LoadModel(const std::string& path, MeshFlags::Flags flags);
 
 	// Validates that the path exists
 	bool ValidatePath(const std::string& path);
 
 	// Prepares the flag copy for Assimp
-	unsigned int PrepareFlags(MeshImport::Flags flags);
+	unsigned int PrepareFlags(MeshFlags::Flags flags);
 
 	// Loads the scene from the file using Assimp
 	const aiScene* LoadScene(Assimp::Importer& importer, const std::string& path, unsigned int flags);
@@ -164,13 +164,13 @@ private:
 	void SetMeshName(AssimpMesh& internalMesh, aiMesh* mesh);
 
 	// Loads vertices, normals, texture coordinates and tangents of the mesh.
-	void LoadVertices(AssimpMesh& internalMesh, aiMesh* mesh, MeshImport::Flags flags);
+	void LoadVertices(AssimpMesh& internalMesh, aiMesh* mesh, MeshFlags::Flags flags);
 
 	// Sets position of a vertex.
 	void SetVertexPosition(VertexPositionNormalTexture& vertex, aiMesh* mesh, unsigned int i);
 
 	// Sets normal of a vertex.
-	void SetVertexNormal(VertexPositionNormalTexture& vertex, aiMesh* mesh, unsigned int i, MeshImport::Flags flags);
+	void SetVertexNormal(VertexPositionNormalTexture& vertex, aiMesh* mesh, unsigned int i, MeshFlags::Flags flags);
 
 	// Sets texture coordinates of a vertex.
 	void SetVertexTextureCoords(VertexPositionNormalTexture& vertex, aiMesh* mesh, unsigned int i);
@@ -185,14 +185,14 @@ private:
 	void CheckForBones(aiMesh* mesh);
 
 	// Loads materials of the mesh.
-	void LoadMaterials(AssimpMesh& internalMesh, aiMesh* mesh, const aiScene* scene, MeshImport::Flags flags);
+	void LoadMaterials(AssimpMesh& internalMesh, aiMesh* mesh, const aiScene* scene, MeshFlags::Flags flags);
 
 	// Loads textures associated with a material.
-	void LoadTextures(AssimpMesh& internalMesh, aiMaterial* material, MeshImport::Flags flags);
+	void LoadTextures(AssimpMesh& internalMesh, aiMaterial* material, MeshFlags::Flags flags);
 
 	// Loads user material data from Assimp material.
    // This method iterates over material properties and processes each one based on its key.
-	void LoadUserMaterial(aiMaterial* material, AssimpMaterialData& matData, MeshImport::Flags flags);
+	void LoadUserMaterial(aiMaterial* material, AssimpMaterialData& matData, MeshFlags::Flags flags);
 
 	//Handle functions for all the material properties
 	void HandleMaterialName(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
@@ -201,7 +201,7 @@ private:
 	void HandleAmbient(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
 	void HandleTransparencyFactor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
 	void HandleShadingModel(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
-	void HandleDiffuseColor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData, MeshImport::Flags flags);
+	void HandleDiffuseColor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData, MeshFlags::Flags flags);
 	void HandleSpecularColor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
 	void HandleRoughnessFactor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);
 	void HandleMetallicFactor(aiMaterial* material, const std::string& matKey, AssimpMaterialData& matData);

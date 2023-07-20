@@ -48,7 +48,7 @@
 using MeshID = UINT;
 using MeshInstanceID = UINT;
 
-namespace MeshImport
+namespace MeshFlags
 {
     enum Flags
     {
@@ -71,9 +71,9 @@ namespace MeshImport
     };
 }
 
-inline MeshImport::Flags operator|(MeshImport::Flags a, MeshImport::Flags b)
+inline MeshFlags::Flags operator|(MeshFlags::Flags a, MeshFlags::Flags b)
 {
-    return static_cast<MeshImport::Flags>(static_cast<int>(a) | static_cast<int>(b));
+    return static_cast<MeshFlags::Flags>(static_cast<int>(a) | static_cast<int>(b));
 }
 
 // Vertex struct holding position, normal vector, and texture mapping information.
@@ -240,7 +240,7 @@ class StaticMeshInstance
 public:
     StaticMeshInstance() = default;
     StaticMeshInstance(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, 
-        const std::string& path, MeshImport::Flags flags = MeshImport::None);
+        const std::string& path, MeshFlags::Flags flags = MeshFlags::None);
 
 private:
     std::uint32_t startOffset{0U};

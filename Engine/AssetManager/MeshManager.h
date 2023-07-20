@@ -29,7 +29,7 @@ private:
 
 	bool CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID);
 
-	void LoadStaticMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, const std::string& path, StaticMeshInstance& outStaticMesh, MeshImport::Flags flags = MeshImport::None);
+	void LoadStaticMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, const std::string& path, StaticMeshInstance& outStaticMesh, MeshFlags::Flags flags = MeshFlags::None);
 
 	//Per component data
 	struct InstanceData

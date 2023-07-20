@@ -14,15 +14,15 @@
  * @param materialInstance Reference to the material instance being modified.
  * @param importFlags Flags that specify how the material instance should be modified.
  */
-void ApplyAlphaFlags(MaterialInstance& materialInstance, MeshImport::Flags importFlags)
+void ApplyAlphaFlags(MaterialInstance& materialInstance, MeshFlags::Flags importFlags)
 {
 	// If alpha blending is forced by the import flags, apply alpha blending
-	if (importFlags & MeshImport::ForceAlphaBlend)
+	if (importFlags & MeshFlags::ForceAlphaBlend)
 	{
 		materialInstance.AddFlag(INSTANCE_ALPHA_BLEND);
 	}
 	// If alpha cutoff is forced by the import flags, apply alpha cutoff
-	else if (importFlags & MeshImport::ForceAlphaCutoff)
+	else if (importFlags & MeshFlags::ForceAlphaCutoff)
 	{
 		materialInstance.AddFlag(INSTANCE_ALPHA_CUTOFF);
 	}
@@ -35,7 +35,7 @@ void ApplyAlphaFlags(MaterialInstance& materialInstance, MeshImport::Flags impor
  * @param importFlags Flags that specify how the material instance should be modified.
  * @param materialInfo Information about the material.
  */
-void ApplyTransparency(MaterialInstance& materialInstance, MeshImport::Flags importFlags, MaterialInfoCPU materialInfo)
+void ApplyTransparency(MaterialInstance& materialInstance, MeshFlags::Flags importFlags, MaterialInfoCPU materialInfo)
 {
 	if (materialInfo.GetTexture(MaterialType::albedo).IsValid())
 	{
@@ -53,22 +53,22 @@ void ApplyTransparency(MaterialInstance& materialInstance, MeshImport::Flags imp
  * @param materialInstance Reference to the material instance being modified.
  * @param importFlags Flags that specify how the material instance should be modified.
  */
-void ApplySpecificImportFlags(MaterialInstance& materialInstance, MeshImport::Flags importFlags)
+void ApplySpecificImportFlags(MaterialInstance& materialInstance, MeshFlags::Flags importFlags)
 {
 	// Apply Ambient Occlusion, Roughness, and Metalness as Specular Texture if specified in import flags
-	if (importFlags & MeshImport::AO_Rough_Metal_As_Spec_Tex)
+	if (importFlags & MeshFlags::AO_Rough_Metal_As_Spec_Tex)
 	{
 		materialInstance.AddFlag(MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR);
 	}
 
 	// Apply Base Color Alpha if specified in import flags
-	if (importFlags & MeshImport::BaseColorAlpha)
+	if (importFlags & MeshFlags::BaseColorAlpha)
 	{
 		materialInstance.AddFlag(MATERIAL_FLAG_BASECOLOR_ALPHA);
 	}
 
 	// Invert Material Normals if specified in import flags
-	if (importFlags & MeshImport::InvertMaterialNormals)
+	if (importFlags & MeshFlags::InvertMaterialNormals)
 	{
 		materialInstance.AddFlag(MATERIAL_FLAG_INVERT_NORMALS);
 	}
@@ -81,7 +81,7 @@ void ApplySpecificImportFlags(MaterialInstance& materialInstance, MeshImport::Fl
  * @param importFlags Flags that specify how the material instance should be modified.
  * @param materialInfo Information about the material.
  */
-void ApplyMaterialInstanceImportFlags(MaterialInstance& materialInstance, MeshImport::Flags importFlags, MaterialInfoCPU materialInfo)
+void ApplyMaterialInstanceImportFlags(MaterialInstance& materialInstance, MeshFlags::Flags importFlags, MaterialInfoCPU materialInfo)
 {
 	// Set default flags for the material instance
 	materialInstance.SetFlags(INSTANCE_OPAQUE);
@@ -97,7 +97,7 @@ MeshManager::MeshManager(const SRVHeapData& srvHeapData)
 	:m_SrvHeapData(srvHeapData)
 {}
 
-void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, const std::string& path, StaticMeshInstance& outStaticMesh, MeshImport::Flags flags)
+void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, const std::string& path, StaticMeshInstance& outStaticMesh, MeshFlags::Flags flags)
 {
     AssimpLoader loader(path, flags);
     const auto& sm = loader.GetAssimpStaticMesh();
@@ -111,7 +111,7 @@ void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<Comma
 
         const std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(i) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
 
-        auto internalMesh = Mesh::CreateMesh(commandList, rtCommandList, mesh.vertices, mesh.indices, flags & MeshImport::RHCoords, flags & MeshImport::CustomTangent);
+        auto internalMesh = Mesh::CreateMesh(commandList, rtCommandList, mesh.vertices, mesh.indices, flags & MeshFlags::RHCoords, flags & MeshFlags::CustomTangent);
         meshData.CreateMesh(currentName, std::move(internalMesh), m_SrvHeapData);
 
 		MaterialColor materialData = MaterialHelper::CreateMaterial(mesh.materialData);

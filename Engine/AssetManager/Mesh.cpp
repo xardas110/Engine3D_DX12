@@ -92,7 +92,7 @@ const Texture* MeshInstance::GetTexture(MaterialType::Type type)
 
     auto matInstanceID = meshManager->instanceData.meshInfo[id].materialInstanceID;
     
-    auto textureInstance = materialManager->GetTextureInstance(type, matInstanceID);
+    auto textureInstance = materialManager->GetTextureInstance(matInstanceID, type);
     return textureManager->GetTexture(textureInstance);
 }
 
@@ -111,7 +111,7 @@ const std::wstring& MeshInstance::GetMaterialName()
     auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
     auto matInstanceID = meshManager->instanceData.meshInfo[id].materialInstanceID;
 
-    return materialManager->GetMaterialInstanceName(matInstanceID);
+    return materialManager->GetMaterialName(matInstanceID);
 }
 
 const MaterialColor& MeshInstance::GetMaterialColor() const
@@ -614,7 +614,7 @@ void Mesh::InitializeBlas(CommandList& commandList)
 }
 
 StaticMeshInstance::StaticMeshInstance(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList,
-    const std::string& path, MeshImport::Flags flags)
+    const std::string& path, MeshFlags::Flags flags)
 {
 
     Application::Get().GetAssetManager()->m_MeshManager->LoadStaticMesh(commandList, rtCommandList, path, *this, flags);

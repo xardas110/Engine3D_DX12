@@ -5,6 +5,7 @@
 #define MATERIAL_INVALID UINT_MAX
 
 using MaterialID = std::uint32_t;
+using RefCount = std::uint32_t;
 
 struct MaterialInfoCPU;
 
@@ -17,7 +18,6 @@ public:
     MaterialInstance(MaterialID instanceID) : materialID(instanceID) {}
     MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor);
 
-    bool GetMaterialInstance(const std::wstring& name);
     void SetFlags(const UINT flags);
     void AddFlag(const UINT flag);
     UINT GetCPUFlags() const;
@@ -30,7 +30,6 @@ public:
 
 private:
     MaterialManager* GetMaterialManager() const;
-    static MaterialID CreateMaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor);
     MaterialID materialID{ MATERIAL_INVALID };
 };
 
