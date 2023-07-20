@@ -57,20 +57,25 @@ const MaterialInstance& MaterialManager::CreateMaterial(const std::wstring& name
 	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::opacity], materialRegistry.gpuInfo[currentIndex].opacity);
 	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::height], materialRegistry.gpuInfo[currentIndex].height);
 
-	materialRegistry.map[name] = currentIndex;
+	materialRegistry.map[name] = MaterialInstance(currentIndex);
 
 	return materialRegistry.map[name];
 }
 
-bool MaterialManager::IsMaterialValid(const MaterialInstance& materialInstance) const
+bool MaterialManager::IsMaterialValid(const MaterialID materialID) const
 {
-	if (materialInstance.materialID == MATERIAL_INVALID)
+	if (materialID == MATERIAL_INVALID)
 		return false;
 
-	if (materialInstance.materialID >= materialRegistry.cpuInfo.size())
+	if (materialID >= materialRegistry.cpuInfo.size())
 		return false;
 
 	return true;
+}
+
+bool MaterialManager::IsMaterialValid(const MaterialInstance& materialInstance) const
+{
+	return IsMaterialValid(materialInstance.materialID);
 }
 
 void MaterialManager::IncreaseRefCount(const MaterialID materialID)
@@ -161,6 +166,16 @@ const MaterialColor& MaterialManager::GetMaterialColor(const MaterialInstance& m
 	}
 
 	return materialRegistry.materialColors[materialInstance.materialID];
+}
+
+UINT MaterialManager::GetCPUFlags(const MaterialInstance& materialInstance) const
+{
+	return materialRegistry.cpuInfo[materialInstance.materialID].flags;
+}
+
+UINT MaterialManager::GetGPUFlags(const MaterialInstance& materialInstance) const
+{
+	return materialRegistry.gpuInfo[materialInstance.materialID].flags;
 }
 
 const std::vector<MaterialInfoCPU>& MaterialManager::GetMaterialCPUInfoData() const

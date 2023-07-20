@@ -4,39 +4,86 @@
 #include <Application.h>
 #include <TypesCompat.h>
 
-MaterialID MaterialInstanceIDAccess::GetMaterialID(const MaterialInstance& materialInstance)
+MaterialID MaterialInstanceAccess::GetMaterialID(const MaterialInstance& materialInstance)
 {
 	return materialInstance.materialID;
 }
 
-MaterialManager* MaterialInstance::GetMaterialManager() const 
-{
-	return Application::Get().GetAssetManager()->m_MaterialManager.get();
-}
+MaterialInstance::MaterialInstance() 
+	: materialID(MATERIAL_INVALID) 
+{}
 
 MaterialInstance::MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor)
 {
-	*this = Application::Get().GetAssetManager()->m_MaterialManager->LoadMaterial(name, textureIDs, materialColor);
+	materialID = GetMaterialManager()->LoadMaterial(name, textureIDs, materialColor).materialID;
+}
+
+MaterialInstance::MaterialInstance(const MaterialID newMaterialID) : materialID(newMaterialID)
+{
+	GetMaterialManager()->IncreaseRefCount(materialID);
+}
+
+MaterialInstance::MaterialInstance(const MaterialInstance& other) : materialID(other.materialID)
+{
+	GetMaterialManager()->IncreaseRefCount(materialID);
+}
+
+MaterialInstance& MaterialInstance::operator=(const MaterialInstance& other)
+{
+	if (this != &other)
+	{
+		GetMaterialManager()->DecreaseRefCount(materialID);
+		materialID = other.materialID;
+		GetMaterialManager()->IncreaseRefCount(materialID);
+	}
+	return *this;
+}
+
+MaterialInstance::MaterialInstance(MaterialInstance&& other) noexcept 
+	: materialID(other.materialID)
+{
+	other.materialID = MATERIAL_INVALID;
+}
+
+MaterialInstance& MaterialInstance::operator=(MaterialInstance&& other) noexcept
+{
+	if (this != &other)
+	{
+		GetMaterialManager()->DecreaseRefCount(materialID);
+		materialID = other.materialID;
+		other.materialID = MATERIAL_INVALID;
+	}
+	return *this;
+}
+
+MaterialInstance::~MaterialInstance()
+{
+	GetMaterialManager()->DecreaseRefCount(materialID);
 }
 
 void MaterialInstance::SetFlags(const UINT flags)
 {
-	GetMaterialManager()->SetFlags(materialID, flags);
+	GetMaterialManager()->SetFlags(*this, flags);
 }
 
 void MaterialInstance::AddFlag(const UINT flag)
 {
-	GetMaterialManager()->AddFlags(materialID, flag);
+	GetMaterialManager()->AddFlags(*this, flag);
 }
 
 UINT MaterialInstance::GetCPUFlags() const
 {
-	return GetMaterialManager()->materialRegistry.cpuInfo[materialID].flags;
+	return GetMaterialManager()->GetCPUFlags(*this);
 }
 
 UINT MaterialInstance::GetGPUFlags() const
 {
-	return GetMaterialManager()->materialRegistry.gpuInfo[materialID].flags;
+	return GetMaterialManager()->GetGPUFlags(*this);
+}
+
+MaterialManager* MaterialInstance::GetMaterialManager() const
+{
+	return Application::Get().GetAssetManager()->m_MaterialManager.get();
 }
 
 MaterialInfoCPU MaterialInfoHelper::PopulateMaterialInfo(const AssimpMesh& mesh, int flags)

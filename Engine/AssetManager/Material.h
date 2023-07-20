@@ -10,7 +10,7 @@ struct MaterialInfoCPU;
 class MaterialInstance;
 
 //Only specific classes can get the MaterialID due to the ID not being reference counted.
-class MaterialInstanceIDAccess
+class MaterialInstanceAccess
 {
     friend class DeferredRenderer;
 
@@ -20,11 +20,23 @@ class MaterialInstanceIDAccess
 class MaterialInstance
 {
     friend class MaterialManager;
-    friend class MaterialInstanceIDAccess;
+    friend class MaterialInstanceAccess;
 public:
-    MaterialInstance() = default;
-    MaterialInstance(MaterialID instanceID) : materialID(instanceID) {}
-    MaterialInstance(const std::wstring& name, const struct MaterialInfoCPU& textureIDs, const struct MaterialColor& materialColor);
+    MaterialInstance();
+
+    explicit MaterialInstance(MaterialID instanceID);
+
+    MaterialInstance(const std::wstring& name,
+        const struct MaterialInfoCPU& textureIDs, 
+        const struct MaterialColor& materialColor);
+
+    MaterialInstance(const MaterialInstance& other);
+    MaterialInstance& operator=(const MaterialInstance& other);
+
+    MaterialInstance(MaterialInstance&& other) noexcept;
+    MaterialInstance& operator=(MaterialInstance&& other) noexcept;
+
+    MaterialInstance::~MaterialInstance();
 
     void SetFlags(const UINT flags);
     void AddFlag(const UINT flag);

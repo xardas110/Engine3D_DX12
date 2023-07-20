@@ -24,11 +24,15 @@ public:
     TextureInstance GetTextureInstance(const MaterialInstance& materialInstance, MaterialType::Type type);
     const std::wstring& GetMaterialName(const MaterialInstance& materialInstance) const;
     const MaterialColor& GetMaterialColor(const MaterialInstance& materialInstance);
+    UINT GetCPUFlags(const MaterialInstance& materialInstance) const;
+    UINT GetGPUFlags(const MaterialInstance& materialInstance) const;
     const std::vector<MaterialInfoCPU>& GetMaterialCPUInfoData() const;
     const std::vector<MaterialInfoGPU>& GetMaterialGPUInfoData() const;
     const std::vector<MaterialColor>& GetMaterialColorData() const;
 
 private:
+    bool IsMaterialValid(const MaterialID materialID) const;
+
     const MaterialInstance& CreateMaterial(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor);
     void IncreaseRefCount(const MaterialID materialID);
     void DecreaseRefCount(const MaterialID materialID);
