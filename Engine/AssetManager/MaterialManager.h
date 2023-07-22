@@ -3,8 +3,7 @@
 #include <Material.h>
 #include <map>
 #include <array>
-
-#define MATERIAL_MANAGER_MAX_MATERIALS 10000
+#include <AssetManagerDefines.h>
 
 class TextureData;
 class TextureManager;
@@ -45,7 +44,15 @@ private:
         std::vector<MaterialColor> materialColors;
         std::array<std::atomic<RefCount>, MATERIAL_MANAGER_MAX_MATERIALS> refCounts;
         std::map<std::wstring, MaterialInstance> map;
+
+
+        // Mutexes for thread safety
+        CREATE_MUTEX(map);
+        CREATE_MUTEX(materialColors);
+        CREATE_MUTEX(gpuInfo);
+        CREATE_MUTEX(cpuInfo);
     } materialRegistry;
 
+    CREATE_MUTEX(releasedMaterialIDs);
     std::vector<MaterialID> releasedMaterialIDs;
 };

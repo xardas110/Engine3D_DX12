@@ -9,7 +9,8 @@ protected:
     TextureManager* textureManager_;
 
     TextureManagerTest()
-    {
+    {  
+        //TODO: Clear Assetmanager 
         textureManager_ = Application::Get().GetAssetManager()->m_TextureManager.get();
     }
 };

@@ -1,29 +1,7 @@
 #pragma once
 #include <Texture.h>
 #include <StaticDescriptorHeap.h>
-#include <shared_mutex>
-#include <atomic>
-#include <array>
-
-#define TEXTURE_MANAGER_THREAD_SAFE true
-#define TEXTURE_MANAGER_MAX_TEXTURES 50000
-
-#if TEXTURE_MANAGER_THREAD_SAFE
-#define CREATE_MUTEX(type) mutable std::shared_mutex type##Mutex
-#define UNIQUE_LOCK(type, mutex) std::unique_lock<std::shared_mutex> lock##type(mutex)
-#define SHARED_LOCK(type, mutex) std::shared_lock<std::shared_mutex> lock##type(mutex)
-#define UNIQUE_UNLOCK(type) lock##type.unlock();
-#define SHARED_UNLOCK(type) lock##type.unlock_shared();
-#define SCOPED_UNIQUE_LOCK(...) std::scoped_lock lock##type(__VA_ARGS__)
-#else
-#define UNLOCK_MUTEX(mutex)
-#define UNIQUE_UNLOCK(type);
-#define SHARED_UNLOCK(type);
-#define UNIQUE_LOCK(type, mutex)
-#define SHARED_LOCK(type, mutex)
-#define CREATE_MUTEX(type)
-#define SCOPED_UNIQUE_LOCK(...)
-#endif
+#include <AssetManagerDefines.h>
 
 class TextureManager;
 
@@ -32,18 +10,18 @@ class TextureManager;
 class TextureManagerAccess
 {
     friend class AssetManager;
-
+private:
     static std::unique_ptr<TextureManager> CreateTextureManager(const SRVHeapData& srvHeapData);
 };
 
 // The TextureManager class utilizes the Factory and Flyweight design patterns, and follows a data-driven design for 
-// cache efficiency, easier impl for wait free multithreading and CPU-GPU synchronization. It is responsible for creating Textures & Texture instances, 
+// cache efficiency, this is better for wait free multithreading and CPU-GPU synchronization. It is responsible for creating Textures & Texture instances, 
 // managing their lifetimes. The TextureManager also uses mutexes for thread safety, which can be turned off for a wait-free multi threaded system.
 class TextureManager
 {  
     friend struct TextureInstance;
     friend class TextureManagerAccess;
-    friend class AssetManagerTest;
+    friend class TextureManagerTest;
 
     explicit TextureManager(const SRVHeapData& srvHeapData);
 
@@ -60,12 +38,12 @@ public:
 
     // Returns a reference to the textures if thread safety is off, otherwise returns a copy.
     // This is because returning a reference would allow for potential race conditions.
-    template <bool ThreadSafe = TEXTURE_MANAGER_THREAD_SAFE>
+    template <bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
     auto GetTextures() const;
 
     // Returns a reference to the GPU handles if thread safety is off, otherwise returns a copy.
     // This is because returning a reference would allow for potential race conditions.
-    template <bool ThreadSafe = TEXTURE_MANAGER_THREAD_SAFE>
+    template <bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
     auto GetTextureGPUHandles() const;
 
     const Texture* GetTexture(const TextureInstance& textureInstance) const;

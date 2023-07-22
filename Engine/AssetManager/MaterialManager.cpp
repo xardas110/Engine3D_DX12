@@ -16,9 +16,13 @@ void PopulateGPUInfo(MaterialInfoGPU& gpuInfo, const TextureInstance& instance, 
 
 const MaterialInstance& MaterialManager::LoadMaterial(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor)
 {
-	if (materialRegistry.map.find(name) != materialRegistry.map.end())
+	// Shared mutex for materialinstance map lookup
 	{
-		return materialRegistry.map[name];
+		SHARED_LOCK(MaterialRegistryMap, materialRegistry.mapMutex);
+		if (materialRegistry.map.find(name) != materialRegistry.map.end())
+		{
+			return materialRegistry.map[name];
+		}
 	}
 
 	return CreateMaterial(name, textureIDs, materialColor);
@@ -28,37 +32,51 @@ const MaterialInstance& MaterialManager::CreateMaterial(const std::wstring& name
 {
 	MaterialID currentIndex = 0;
 
-	if (!releasedMaterialIDs.empty())
+	// Lock the registry mutexes for write operations.
 	{
-		currentIndex = releasedMaterialIDs.front();
-		releasedMaterialIDs.erase(releasedMaterialIDs.begin());
-	}
-	else
-	{
-		currentIndex = materialRegistry.cpuInfo.size(),
+		SCOPED_UNIQUE_LOCK(
+			releasedMaterialIDsMutex, 
+			materialRegistry.cpuInfoMutex, 
+			materialRegistry.gpuInfoMutex, 
+			materialRegistry.materialColorsMutex);
 
-		materialRegistry.cpuInfo.emplace_back(textureIDs);
-		materialRegistry.gpuInfo.emplace_back(MaterialInfoGPU());
-		materialRegistry.materialColors.emplace_back(materialColor);
-		materialRegistry.refCounts[currentIndex].store(0U);
+		if (!releasedMaterialIDs.empty())
+		{
+			currentIndex = releasedMaterialIDs.front();
+			releasedMaterialIDs.erase(releasedMaterialIDs.begin());
+		}
+		else
+		{
+			currentIndex = materialRegistry.cpuInfo.size(),
+			assert(currentIndex < MATERIAL_MANAGER_MAX_MATERIALS && "Material Manager exceeds maximum materials");
+
+			materialRegistry.cpuInfo.emplace_back(textureIDs);
+			materialRegistry.gpuInfo.emplace_back(MaterialInfoGPU());
+			materialRegistry.materialColors.emplace_back(materialColor);
+			materialRegistry.refCounts[currentIndex].store(0U);
+		}
 	}
-	
+
 	assert(materialRegistry.cpuInfo.size() == materialRegistry.gpuInfo.size());
 	assert(materialRegistry.gpuInfo.size() == materialRegistry.materialColors.size());
 
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::albedo], materialRegistry.gpuInfo[currentIndex].albedo);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::normal], materialRegistry.gpuInfo[currentIndex].normal);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::ao], materialRegistry.gpuInfo[currentIndex].ao);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::emissive], materialRegistry.gpuInfo[currentIndex].emissive);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::roughness], materialRegistry.gpuInfo[currentIndex].roughness);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::specular], materialRegistry.gpuInfo[currentIndex].specular);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::metallic], materialRegistry.gpuInfo[currentIndex].metallic);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::lightmap], materialRegistry.gpuInfo[currentIndex].lightmap);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::opacity], materialRegistry.gpuInfo[currentIndex].opacity);
-	PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::height], materialRegistry.gpuInfo[currentIndex].height);
+	// Lock GPUInfo mutex and populate GPUInfo for the current material ID.
+	{
+		UNIQUE_LOCK(MaterialRegistryGPUInfo, materialRegistry.gpuInfoMutex);
+		PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::albedo], materialRegistry.gpuInfo[currentIndex].albedo);
+		PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::normal], materialRegistry.gpuInfo[currentIndex].normal);
+		PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::ao], materialRegistry.gpuInfo[currentIndex].ao);
+		PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::emissive], materialRegistry.gpuInfo[currentIndex].emissive);
+		PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::roughness], materialRegistry.gpuInfo[currentIndex].roughness);
+		PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::specular], materialRegistry.gpuInfo[currentIndex].specular);
+		PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::metallic], materialRegistry.gpuInfo[currentIndex].metallic);
+		PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::lightmap], materialRegistry.gpuInfo[currentIndex].lightmap);
+		PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::opacity], materialRegistry.gpuInfo[currentIndex].opacity);
+		PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::height], materialRegistry.gpuInfo[currentIndex].height);
+	}
 
+	UNIQUE_LOCK(MaterialRegistryMap, materialRegistry.mapMutex);
 	materialRegistry.map[name] = MaterialInstance(currentIndex);
-
 	return materialRegistry.map[name];
 }
 
@@ -99,22 +117,42 @@ void MaterialManager::DecreaseRefCount(const MaterialID materialID)
 
 void MaterialManager::ReleaseMaterial(const MaterialID materialID)
 {
-	materialRegistry.cpuInfo[materialID] = {}; // Reset to default
-	materialRegistry.gpuInfo[materialID] = {};
-	materialRegistry.materialColors[materialID] = {};
+	if (!IsMaterialValid(materialID))
+		return;
 
-	for (auto it = materialRegistry.map.begin(); it != materialRegistry.map.end();)
-	{
-		if (it->second.materialID == materialID)
+	LOG_INFO("Releaseing material %i", materialID);
+
+	materialRegistry.refCounts[materialID].store(0U);
+
+	// Mutex lock for cpu, gpu info and material color.
+	{ 
+		SCOPED_UNIQUE_LOCK(
+			materialRegistry.cpuInfoMutex, 
+			materialRegistry.gpuInfoMutex, 
+			materialRegistry.materialColorsMutex);
+			
+		materialRegistry.cpuInfo[materialID] = {}; // Reset to default
+		materialRegistry.gpuInfo[materialID] = {};
+		materialRegistry.materialColors[materialID] = {};
+	}
+
+	// Mutex for material instance map.
+	{ 
+		UNIQUE_LOCK(MaterialRegistryMap, materialRegistry.mapMutex);
+		for (auto it = materialRegistry.map.begin(); it != materialRegistry.map.end();)
 		{
-			it = materialRegistry.map.erase(it);
-		}
-		else
-		{
-			++it;
+			if (it->second.materialID == materialID)
+			{
+				it = materialRegistry.map.erase(it);
+			}
+			else
+			{
+				++it;
+			}
 		}
 	}
 
+	UNIQUE_LOCK(releasedMaterialIDs, releasedMaterialIDsMutex);
 	releasedMaterialIDs.emplace_back(materialID);
 }
 

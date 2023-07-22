@@ -189,7 +189,6 @@ float LengthSquared(float4 v)
     return dot(v, v);
 }
 
-// Taken out from NRD
 float GetSpecMagicCurve(float roughness)
 {
     float f = 1.0 - exp2(-200.0 * roughness * roughness);

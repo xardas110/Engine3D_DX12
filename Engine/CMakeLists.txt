@@ -216,6 +216,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     Public Physics
     PUBLIC Libs/physx/include 
     PUBLIC AssetManager
+    PUBLIC AssetManager/Shared
     PUBLIC Resources/Shaders
     PUBLIC Resources/Shaders/Common
     PUBLIC Libs/eventcpp
@@ -271,13 +272,13 @@ add_library( Engine STATIC
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
-    ${IMGUI_HEADERS} ${IMGUI_SOURCE} "Tests/AssetManager/TextureManagerTest.h" )
+    ${IMGUI_HEADERS} ${IMGUI_SOURCE} "Tests/AssetManager/TextureManagerTest.h"  "AssetManager/Shared/AssetManagerDefines.h")
 
  add_executable( EngineBin WIN32
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
-    ${IMGUI_HEADERS} ${IMGUI_SOURCE} "Tests/AssetManager/TextureManagerTest.h" )
+    ${IMGUI_HEADERS} ${IMGUI_SOURCE} "Tests/AssetManager/TextureManagerTest.h"  "AssetManager/Shared/AssetManagerDefines.h")
 
 target_link_libraries( Engine
 	${TARGET_LINK_LIBS}   
