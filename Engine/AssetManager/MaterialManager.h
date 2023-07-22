@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <assert.h>
 #include <AssetManagerDefines.h>
+#include <event.hpp>
 
 class MaterialManager;
 
@@ -89,6 +90,48 @@ public:
     template <bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
     auto GetMaterialColorData() const;
 
+    /**
+   * Attach a member function to the "Material Created" event.
+   *
+   * This function allows external components to be notified when
+   * a new material instance is created. Whenever the event triggers,
+   * the attached member function of the specified class will be called.
+   *
+   * Template Parameters:
+   *   TClass: The class type of the member function.
+   *   TRet: The return type of the member function.
+   *   Args: The argument types for the member function.
+   *
+   * @param[in] func Pointer to the member function to be attached.
+   * @param[in] obj Pointer to the object whose member function will be called.
+   */
+    template<typename TClass, typename TRet, typename ...Args>
+    void AttachToMaterialCreatedEvent(TRet(TClass::* func) (Args...), TClass* obj)
+    {
+        materialInstanceCreatedEvent.attach(func, *obj);
+    }
+
+    /**
+     * Attach a member function to the "Material Deleted" event.
+     *
+     * This function allows external components to be notified when
+     * a material instance is deleted. Whenever the event triggers,
+     * the attached member function of the specified class will be called.
+     *
+     * Template Parameters:
+     *   TClass: The class type of the member function.
+     *   TRet: The return type of the member function.
+     *   Args: The argument types for the member function.
+     *
+     * @param[in] func Pointer to the member function to be attached.
+     * @param[in] obj Pointer to the object whose member function will be called.
+     */
+    template<typename TClass, typename TRet, typename ...Args>
+    void AttachToMaterialDeletedEvent(TRet(TClass::* func) (Args...), TClass* obj)
+    {
+        materialInstanceDeletedEvent.attach(func, *obj);
+    }
+
 private:
     // Checks the validity of a material based on its ID.
     bool IsMaterialValid(const MaterialID materialID) const;
@@ -123,6 +166,10 @@ private:
         CREATE_MUTEX(gpuInfo);
         CREATE_MUTEX(cpuInfo);
     } materialRegistry;
+
+    // Events
+    event::event<void(const MaterialInstance&)> materialInstanceCreatedEvent;
+    event::event<void(const MaterialID&)> materialInstanceDeletedEvent;
 
     // Mutex for releasedMaterialIDs to ensure thread safety.
     CREATE_MUTEX(releasedMaterialIDs);
@@ -244,6 +291,10 @@ inline auto MaterialManager::CreateMaterial(
     // Add the new material instance to the registry map.
     UNIQUE_LOCK(MaterialRegistryMap, materialRegistry.mapMutex);
     materialRegistry.map[name] = MaterialInstance(currentIndex);
+
+    // Send a event that the materialInstance was created.
+    materialInstanceCreatedEvent(materialRegistry.map[name]);
+
     return materialRegistry.map[name];
 }
 
@@ -255,7 +306,7 @@ auto MaterialManager::GetMaterialName(const MaterialInstance& materialInstance) 
     // Check for thread safety requirements during compile-time.
     if constexpr (ThreadSafe)
         static_assert(ASSET_MANAGER_THREAD_SAFE &&
-            "The function is not thread safe if ASSET_MANAGER_THREAD_SAFE == false");
+            "This function is not thread safe since ASSET_MANAGER_THREAD_SAFE == false");
 
     // Return default name if material is invalid.
     if (!IsMaterialValid(materialInstance.materialID))
@@ -279,7 +330,7 @@ auto MaterialManager::GetMaterialColor(const MaterialInstance& materialInstance)
     // Check for thread safety requirements during compile-time.
     if constexpr (ThreadSafe)
         static_assert(ASSET_MANAGER_THREAD_SAFE &&
-            "The function is not thread safe if ASSET_MANAGER_THREAD_SAFE == false");
+            "This function is not thread safe since ASSET_MANAGER_THREAD_SAFE == false");
 
     // Return default color if material is invalid.
     if (!IsMaterialValid(materialInstance.materialID))
@@ -295,8 +346,8 @@ auto MaterialManager::GetMaterialColor(const MaterialInstance& materialInstance)
 template <>
 inline auto MaterialManager::GetMaterialCPUInfoData<true>() const
 {
-    static_assert(ASSET_MANAGER_THREAD_SAFE &&
-        "The function is not thread safe if ASSET_MANAGER_THREAD_SAFE == false");
+    assert(ASSET_MANAGER_THREAD_SAFE &&
+        "This function is not thread safe since ASSET_MANAGER_THREAD_SAFE == false");
     SHARED_LOCK(MaterialRegistryCPUInfo, materialRegistry.cpuInfoMutex);
     return materialRegistry.cpuInfo;
 }
@@ -310,8 +361,8 @@ inline auto MaterialManager::GetMaterialCPUInfoData<false>() const
 template <>
 inline auto MaterialManager::GetMaterialGPUInfoData<true>() const
 {
-    static_assert(ASSET_MANAGER_THREAD_SAFE &&
-        "The function is not thread safe if ASSET_MANAGER_THREAD_SAFE == false");
+    assert(ASSET_MANAGER_THREAD_SAFE &&
+        "This function is not thread safe since ASSET_MANAGER_THREAD_SAFE == false");
     SHARED_LOCK(MaterialRegistryGPUInfo, materialRegistry.gpuInfoMutex);
     return materialRegistry.gpuInfo;
 }
@@ -325,8 +376,8 @@ inline auto MaterialManager::GetMaterialGPUInfoData<false>() const
 template <>
 inline auto MaterialManager::GetMaterialColorData<true>() const
 {
-    static_assert(ASSET_MANAGER_THREAD_SAFE &&
-        "The function is not thread safe if ASSET_MANAGER_THREAD_SAFE == false");
+    assert(ASSET_MANAGER_THREAD_SAFE &&
+        "This function is not thread safe since ASSET_MANAGER_THREAD_SAFE == false");
     SHARED_LOCK(MaterialRegistryMaterialColors, materialRegistry.materialColorsMutex);
     return materialRegistry.materialColors;
 }

@@ -2,6 +2,7 @@
 #include <Texture.h>
 #include <StaticDescriptorHeap.h>
 #include <AssetManagerDefines.h>
+#include <event.hpp>
 
 class TextureManager;
 
@@ -50,6 +51,19 @@ public:
     const std::optional<TextureGPUHandle> GetTextureGPUHandle(const TextureInstance& textureInstance) const;
     const std::optional<TextureRefCount> GetTextureRefCount(const TextureInstance& textureInstance) const;
 
+    // Attach to events.
+    template<typename TClass, typename TRet, typename ...Args>
+    void AttachToMaterialCreatedEvent(TRet(TClass::* func) (Args...), TClass* obj)
+    {
+        textureInstanceCreatedEvent.attach(func, *obj);
+    }
+
+    template<typename TClass, typename TRet, typename ...Args>
+    void AttachToMaterialDeletedEvent(TRet(TClass::* func) (Args...), TClass* obj)
+    {
+        textureInstanceDeletedEvent.attach(func, *obj);
+    }
+
 private:
     // Methods for internal use
     const TextureInstance& CreateTexture(const std::wstring& path);
@@ -81,6 +95,9 @@ private:
         CREATE_MUTEX(textures);
         CREATE_MUTEX(gpuHandles);
     } textureRegistry;
+
+    event::event<void(const TextureInstance&)> textureInstanceCreatedEvent;
+    event::event<void(const TextureID&)> textureInstanceDeletedEvent;
 
     // Released textureIDs, this is used to re-populate the released memory in the Texture Registry
     std::vector<TextureID> releasedTextureIDs;

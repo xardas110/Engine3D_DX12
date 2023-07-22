@@ -89,6 +89,9 @@ void MaterialManager::ReleaseMaterial(const MaterialID materialID)
 
 	UNIQUE_LOCK(releasedMaterialIDs, releasedMaterialIDsMutex);
 	releasedMaterialIDs.emplace_back(materialID);
+
+	// Send a event that the materialInstance was deleted.
+	materialInstanceDeletedEvent(materialID);
 }
 
 std::optional<MaterialInstance> MaterialManager::GetMaterialInstance(const std::wstring& name)

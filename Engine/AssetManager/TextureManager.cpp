@@ -65,6 +65,9 @@ const TextureInstance& TextureManager::CreateTexture(const std::wstring& path)
     
     textureRegistry.refCounts[textureID].store(textureRefCount);
 
+    // Send a event that a texture was created.
+    textureInstanceCreatedEvent(textureRegistry.textureInstanceMap[path]);
+
     return textureRegistry.textureInstanceMap[path];
 }
 
@@ -176,6 +179,9 @@ void TextureManager::ReleaseTexture(const TextureID textureID)
     // Add to list of released textures
     UNIQUE_LOCK(ReleasedTextureIDs, releasedTextureIDsMutex);
     releasedTextureIDs.emplace_back(textureID);
+
+    // Send event that the texture was deleted.
+    textureInstanceDeletedEvent(textureID);
 }
 
 std::unique_ptr<TextureManager> TextureManagerAccess::CreateTextureManager(const SRVHeapData& srvHeapData)
