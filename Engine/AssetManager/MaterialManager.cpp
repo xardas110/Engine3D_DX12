@@ -11,6 +11,124 @@ std::unique_ptr<MaterialManager> MaterialManagerAccess::CreateMaterialManager()
 	return std::unique_ptr<MaterialManager>(new MaterialManager);
 }
 
+// Function to populate GPU Information.
+inline void PopulateGPUInfo(MaterialInfoGPU& gpuInfo, const TextureInstance& instance, UINT& gpuField)
+{
+    if (instance.IsValid())
+    {
+        gpuField = instance.GetTextureGPUHandle().value();
+    }
+}
+
+// Ensures that materials are only created once and reused if requested again.
+std::optional<MaterialInstance> MaterialManager::LoadMaterial(
+    const std::wstring& name,
+    const MaterialInfoCPU& textureIDs,
+    const MaterialColor& materialColor)
+{
+    // Check if material already exists.
+    {
+        SHARED_LOCK(MaterialRegistryMap, materialRegistry.mapMutex);
+        auto found = materialRegistry.map.find(name);
+        if (found != materialRegistry.map.end())
+        {
+            return found->second;
+        }
+    }
+
+    // If material doesn't exist, create a new one.
+    return CreateMaterial(name, textureIDs, materialColor);
+}
+
+std::optional<MaterialInstance> MaterialManager::CreateMaterial(
+    const std::wstring& name,
+    const MaterialInfoCPU& textureIDs,
+    const MaterialColor& materialColor)
+{
+    MaterialID currentIndex = 0;
+	
+	/*
+	bool bHasValidTexture = false;
+	for (size_t i = 0; i < MaterialType::NumMaterialTypes; i++)
+	{
+		if (textureIDs.textures[i].IsValid())
+		{ 
+			bHasValidTexture = true;
+			break;
+		}
+	}
+
+	if (!bHasValidTexture)
+	{
+		LOG_INFO("The provided MaterialInfo struct contains no valid texture instances");
+		return std::nullopt;
+	}
+	*/
+
+    // Acquire necessary locks and either reuse or create material index.
+    {
+        SCOPED_UNIQUE_LOCK(
+            releasedMaterialIDsMutex,
+            materialRegistry.cpuInfoMutex,
+            materialRegistry.gpuInfoMutex,
+            materialRegistry.materialColorsMutex);
+
+        // If there are released IDs, use them.
+        if (!releasedMaterialIDs.empty())
+        {
+            currentIndex = releasedMaterialIDs.front();
+            releasedMaterialIDs.erase(releasedMaterialIDs.begin());
+        }
+        else
+        {
+            // Otherwise, get the next index and ensure we haven't exceeded the limit.
+            currentIndex = materialRegistry.cpuInfo.size();
+            assert(currentIndex < MATERIAL_MANAGER_MAX_MATERIALS && "Material Manager exceeds maximum materials");
+
+            // Add material data.
+            materialRegistry.cpuInfo.emplace_back(textureIDs);
+            materialRegistry.gpuInfo.emplace_back(MaterialInfoGPU());
+            materialRegistry.materialColors.emplace_back(materialColor);
+            materialRegistry.refCounts[currentIndex].store(0U);
+        }
+    }
+
+    // Sanity checks.
+    assert(materialRegistry.cpuInfo.size() == materialRegistry.gpuInfo.size());
+    assert(materialRegistry.gpuInfo.size() == materialRegistry.materialColors.size());
+
+    // Populate GPU Information.
+    {
+        UNIQUE_LOCK(MaterialRegistryGPUInfo, materialRegistry.gpuInfoMutex);
+
+        // For every material type, fetch its respective texture and populate its GPU data.
+#define POPULATE_GPU_INFO_FOR_TYPE(type) \
+            PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::type], materialRegistry.gpuInfo[currentIndex].type)
+
+        POPULATE_GPU_INFO_FOR_TYPE(albedo);
+        POPULATE_GPU_INFO_FOR_TYPE(normal);
+        POPULATE_GPU_INFO_FOR_TYPE(ao);
+        POPULATE_GPU_INFO_FOR_TYPE(emissive);
+        POPULATE_GPU_INFO_FOR_TYPE(roughness);
+        POPULATE_GPU_INFO_FOR_TYPE(specular);
+        POPULATE_GPU_INFO_FOR_TYPE(metallic);
+        POPULATE_GPU_INFO_FOR_TYPE(lightmap);
+        POPULATE_GPU_INFO_FOR_TYPE(opacity);
+        POPULATE_GPU_INFO_FOR_TYPE(height);
+
+#undef POPULATE_GPU_INFO_FOR_TYPE
+    }
+
+    // Add the new material instance to the registry map.
+    UNIQUE_LOCK(MaterialRegistryMap, materialRegistry.mapMutex);
+    materialRegistry.map[name] = MaterialInstance(currentIndex);
+
+    // Send a event that the materialInstance was created.
+    materialInstanceCreatedEvent(materialRegistry.map[name]);
+
+    return materialRegistry.map[name];
+}
+
 bool MaterialManager::IsMaterialValid(const MaterialID materialID) const
 {
 	if (materialID == MATERIAL_INVALID)
@@ -106,6 +224,9 @@ std::optional<MaterialInstance> MaterialManager::GetMaterialInstance(const std::
 
 void MaterialManager::SetFlags(const MaterialInstance& materialInstance, const UINT flags)
 {
+	if (!IsMaterialValid(materialInstance.materialID))
+		return;
+
 	SCOPED_UNIQUE_LOCK(materialRegistry.cpuInfoMutex, materialRegistry.gpuInfoMutex);
 	materialRegistry.gpuInfo[materialInstance.materialID].flags = flags;
 	materialRegistry.cpuInfo[materialInstance.materialID].flags = flags;
@@ -113,25 +234,37 @@ void MaterialManager::SetFlags(const MaterialInstance& materialInstance, const U
 
 void MaterialManager::AddFlags(const MaterialInstance& materialInstance, const UINT flags)
 {
+	if (!IsMaterialValid(materialInstance.materialID))
+		return;
+
 	SCOPED_UNIQUE_LOCK(materialRegistry.cpuInfoMutex, materialRegistry.gpuInfoMutex);
 	materialRegistry.gpuInfo[materialInstance.materialID].flags |= flags;
 	materialRegistry.cpuInfo[materialInstance.materialID].flags |= flags;
 }
 
-TextureInstance MaterialManager::GetTextureInstance(const MaterialInstance& materialInstance, MaterialType::Type type)
+std::optional<TextureInstance> MaterialManager::GetTextureInstance(const MaterialInstance& materialInstance, MaterialType::Type type)
 {
+	if (!IsMaterialValid(materialInstance.materialID))
+		return std::nullopt;
+
 	SHARED_LOCK(MaterialRegistryCPUInfo, materialRegistry.cpuInfoMutex);
 	return materialRegistry.cpuInfo[materialInstance.materialID].textures[type];
 }
 
 UINT MaterialManager::GetCPUFlags(const MaterialInstance& materialInstance) const
 {
+	if (!IsMaterialValid(materialInstance.materialID))
+		return 0U;
+
 	SHARED_LOCK(MaterialRegistryCPUInfo, materialRegistry.cpuInfoMutex);
 	return materialRegistry.cpuInfo[materialInstance.materialID].flags;
 }
 
 UINT MaterialManager::GetGPUFlags(const MaterialInstance& materialInstance) const
 {
+	if (!IsMaterialValid(materialInstance.materialID))
+		return 0U;
+
 	SHARED_LOCK(MaterialRegistryGPUInfo, materialRegistry.gpuInfoMutex);
 	return materialRegistry.gpuInfo[materialInstance.materialID].flags;
 }

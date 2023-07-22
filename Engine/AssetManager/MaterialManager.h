@@ -21,8 +21,6 @@ private:
 // Responsible for managing materials, follows the same pattern as texture manager.
 class MaterialManager
 {
-    // Granting access to certain classes that might need to interact directly
-    // with the internals of the MaterialManager.
     friend class MaterialManagerAccess;
     friend struct MaterialInstance;
     friend class MaterialManagerTest;
@@ -37,10 +35,7 @@ public:
     MaterialManager& operator=(MaterialManager&&) = delete;
 
     // Loads a material with the specified name, textureIDs, and materialColor.
-    // If ThreadSafe is enabled, it returns a copy; otherwise, it returns a reference.
-    template<bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
-    auto LoadMaterial(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor)
-        -> std::conditional_t<ThreadSafe, MaterialInstance, const MaterialInstance&>;
+    std::optional<MaterialInstance> LoadMaterial(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor);
 
     // Retrieves a material instance based on its name.
     std::optional<MaterialInstance> GetMaterialInstance(const std::wstring& name);
@@ -55,7 +50,7 @@ public:
     bool IsMaterialValid(const MaterialInstance& materialInstance) const;
 
     // Retrieves a specific texture instance associated with a material.
-    TextureInstance GetTextureInstance(const MaterialInstance& materialInstance, MaterialType::Type type);
+    std::optional<TextureInstance> GetTextureInstance(const MaterialInstance& materialInstance, MaterialType::Type type);
 
     // Retrieves the name of the material.
     // If ThreadSafe is enabled, it returns a copy; otherwise, it returns a reference.
@@ -136,10 +131,7 @@ private:
     // Checks the validity of a material based on its ID.
     bool IsMaterialValid(const MaterialID materialID) const;
 
-    // Creates a new material. If ThreadSafe is enabled, it returns a copy; otherwise, it returns a reference.
-    template<bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
-    auto CreateMaterial(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor)
-        -> std::conditional_t<ThreadSafe, MaterialInstance, const MaterialInstance&>;
+    std::optional<MaterialInstance> CreateMaterial(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor);
 
     // Increases the reference count for a given material ID.
     void IncreaseRefCount(const MaterialID materialID);
@@ -153,6 +145,14 @@ private:
     // Registry to contain all the materialinfo for CPU and GPU.
     struct MaterialRegistry
     {
+        MaterialRegistry() = default;
+
+        MaterialRegistry(const MaterialRegistry&) = delete;
+        MaterialRegistry& operator=(const MaterialRegistry&) = delete;
+
+        MaterialRegistry(MaterialRegistry&&) = delete;
+        MaterialRegistry& operator=(MaterialRegistry&&) = delete;
+
         // 1:1 relations
         std::vector<MaterialInfoCPU> cpuInfo; // CPU information for materials
         std::vector<MaterialInfoGPU> gpuInfo; // GPU information for materials
@@ -181,122 +181,6 @@ private:
     const static std::wstring ms_NoMaterial;
     const static MaterialColor ms_DefaultMaterialColor;
 };
-
-// Function to populate GPU Information.
-inline void PopulateGPUInfo(MaterialInfoGPU& gpuInfo, const TextureInstance& instance, UINT& gpuField)
-{
-    if (instance.IsValid())
-    {
-        gpuField = instance.GetTextureGPUHandle().value();
-    }
-}
-
-// Function template to load material.
-// Ensures that materials are only created once and reused if requested again.
-template<bool ThreadSafe>
-inline auto MaterialManager::LoadMaterial(
-    const std::wstring& name,
-    const MaterialInfoCPU& textureIDs,
-    const MaterialColor& materialColor)
-    -> std::conditional_t<ThreadSafe, MaterialInstance, const MaterialInstance&>
-{
-    // Check for thread safety requirements during compile-time.
-    if constexpr (ThreadSafe)
-        static_assert(ASSET_MANAGER_THREAD_SAFE &&
-            "This function is not thread safe since ASSET_MANAGER_THREAD_SAFE == false");
-
-    // Check if material already exists.
-    {
-        SHARED_LOCK(MaterialRegistryMap, materialRegistry.mapMutex);
-        auto found = materialRegistry.map.find(name);
-        if (found != materialRegistry.map.end())
-        {
-            return found->second;
-        }
-    }
-
-    // If material doesn't exist, create a new one.
-    return CreateMaterial(name, textureIDs, materialColor);
-}
-
-// Function template to create material.
-template<bool ThreadSafe>
-inline auto MaterialManager::CreateMaterial(
-    const std::wstring& name,
-    const MaterialInfoCPU& textureIDs,
-    const MaterialColor& materialColor)
-    -> std::conditional_t<ThreadSafe, MaterialInstance, const MaterialInstance&>
-{
-    // Check for thread safety requirements during compile-time.
-    if constexpr (ThreadSafe)
-        static_assert(ASSET_MANAGER_THREAD_SAFE &&
-            "This function is not thread safe since ASSET_MANAGER_THREAD_SAFE == false");
-
-    MaterialID currentIndex = 0;
-
-    // Acquire necessary locks and either reuse or create material index.
-    {
-        SCOPED_UNIQUE_LOCK(
-            releasedMaterialIDsMutex,
-            materialRegistry.cpuInfoMutex,
-            materialRegistry.gpuInfoMutex,
-            materialRegistry.materialColorsMutex);
-
-        // If there are released IDs, use them.
-        if (!releasedMaterialIDs.empty())
-        {
-            currentIndex = releasedMaterialIDs.front();
-            releasedMaterialIDs.erase(releasedMaterialIDs.begin());
-        }
-        else
-        {
-            // Otherwise, get the next index and ensure we haven't exceeded the limit.
-            currentIndex = materialRegistry.cpuInfo.size();
-            assert(currentIndex < MATERIAL_MANAGER_MAX_MATERIALS && "Material Manager exceeds maximum materials");
-
-            // Add material data.
-            materialRegistry.cpuInfo.emplace_back(textureIDs);
-            materialRegistry.gpuInfo.emplace_back(MaterialInfoGPU());
-            materialRegistry.materialColors.emplace_back(materialColor);
-            materialRegistry.refCounts[currentIndex].store(0U);
-        }
-    }
-
-    // Sanity checks.
-    assert(materialRegistry.cpuInfo.size() == materialRegistry.gpuInfo.size());
-    assert(materialRegistry.gpuInfo.size() == materialRegistry.materialColors.size());
-
-    // Populate GPU Information.
-    {
-        UNIQUE_LOCK(MaterialRegistryGPUInfo, materialRegistry.gpuInfoMutex);
-
-        // For every material type, fetch its respective texture and populate its GPU data.
-#define POPULATE_GPU_INFO_FOR_TYPE(type) \
-            PopulateGPUInfo(materialRegistry.gpuInfo[currentIndex], textureIDs.textures[MaterialType::type], materialRegistry.gpuInfo[currentIndex].type)
-
-        POPULATE_GPU_INFO_FOR_TYPE(albedo);
-        POPULATE_GPU_INFO_FOR_TYPE(normal);
-        POPULATE_GPU_INFO_FOR_TYPE(ao);
-        POPULATE_GPU_INFO_FOR_TYPE(emissive);
-        POPULATE_GPU_INFO_FOR_TYPE(roughness);
-        POPULATE_GPU_INFO_FOR_TYPE(specular);
-        POPULATE_GPU_INFO_FOR_TYPE(metallic);
-        POPULATE_GPU_INFO_FOR_TYPE(lightmap);
-        POPULATE_GPU_INFO_FOR_TYPE(opacity);
-        POPULATE_GPU_INFO_FOR_TYPE(height);
-
-#undef POPULATE_GPU_INFO_FOR_TYPE
-    }
-
-    // Add the new material instance to the registry map.
-    UNIQUE_LOCK(MaterialRegistryMap, materialRegistry.mapMutex);
-    materialRegistry.map[name] = MaterialInstance(currentIndex);
-
-    // Send a event that the materialInstance was created.
-    materialInstanceCreatedEvent(materialRegistry.map[name]);
-
-    return materialRegistry.map[name];
-}
 
 // Retrieves the name associated with a material instance.
 template <bool ThreadSafe>

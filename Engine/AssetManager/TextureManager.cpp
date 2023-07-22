@@ -7,8 +7,27 @@
 #include <Logger.h>
 #include <StaticDescriptorHeap.h>
 
+std::unique_ptr<TextureManager> TextureManagerAccess::CreateTextureManager(const SRVHeapData& srvHeapData)
+{
+    return std::unique_ptr<TextureManager>(new TextureManager(srvHeapData));
+}
+
 TextureManager::TextureManager(const SRVHeapData& srvHeapData)
     :m_SrvHeapData(srvHeapData) {}
+
+const TextureInstance& TextureManager::LoadTexture(const std::wstring& path)
+{
+    SHARED_LOCK(TextureInstanceMap, textureRegistry.textureInstanceMapMutex);
+    auto it = textureRegistry.textureInstanceMap.find(path);
+    UNIQUE_UNLOCK(TextureInstanceMap);
+
+    if (it != textureRegistry.textureInstanceMap.end())
+    {
+        return it->second;
+    }
+
+    return CreateTexture(path);
+}
 
 const TextureInstance& TextureManager::CreateTexture(const std::wstring& path)
 {
@@ -69,20 +88,6 @@ const TextureInstance& TextureManager::CreateTexture(const std::wstring& path)
     textureInstanceCreatedEvent(textureRegistry.textureInstanceMap[path]);
 
     return textureRegistry.textureInstanceMap[path];
-}
-
-const TextureInstance& TextureManager::LoadTexture(const std::wstring& path)
-{
-    SHARED_LOCK(TextureInstanceMap, textureRegistry.textureInstanceMapMutex);
-    auto it = textureRegistry.textureInstanceMap.find(path);
-    UNIQUE_UNLOCK(TextureInstanceMap);
-
-    if (it != textureRegistry.textureInstanceMap.end())
-    {
-        return it->second;
-    }
-
-    return CreateTexture(path);
 }
 
 const Texture* TextureManager::GetTexture(const TextureInstance& textureInstance) const
@@ -182,9 +187,4 @@ void TextureManager::ReleaseTexture(const TextureID textureID)
 
     // Send event that the texture was deleted.
     textureInstanceDeletedEvent(textureID);
-}
-
-std::unique_ptr<TextureManager> TextureManagerAccess::CreateTextureManager(const SRVHeapData& srvHeapData)
-{
-    return std::unique_ptr<TextureManager>(new TextureManager(srvHeapData));
 }

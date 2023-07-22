@@ -15,7 +15,10 @@ MaterialInstance::MaterialInstance()
 
 MaterialInstance::MaterialInstance(const std::wstring& name, const MaterialInfoCPU& textureIDs, const MaterialColor& materialColor)
 {
-	materialID = GetMaterialManager()->LoadMaterial(name, textureIDs, materialColor).materialID;
+	auto materialInstance = GetMaterialManager()->LoadMaterial(name, textureIDs, materialColor);
+
+	if (materialInstance.has_value())
+		materialID = materialInstance.value().materialID;
 }
 
 MaterialInstance::MaterialInstance(const MaterialID newMaterialID) : materialID(newMaterialID)

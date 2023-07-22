@@ -93,7 +93,11 @@ const Texture* MeshInstance::GetTexture(MaterialType::Type type)
     auto matInstanceID = meshManager->instanceData.meshInfo[id].materialInstanceID;
     
     auto textureInstance = materialManager->GetTextureInstance(matInstanceID, type);
-    return textureManager->GetTexture(textureInstance);
+
+    if (!textureInstance.has_value())
+        return nullptr;
+
+    return textureManager->GetTexture(textureInstance.value());
 }
 
 const std::wstring& MeshInstance::GetName()

@@ -53,13 +53,13 @@ public:
 
     // Attach to events.
     template<typename TClass, typename TRet, typename ...Args>
-    void AttachToMaterialCreatedEvent(TRet(TClass::* func) (Args...), TClass* obj)
+    void AttachToTextureCreatedEvent(TRet(TClass::* func) (Args...), TClass* obj)
     {
         textureInstanceCreatedEvent.attach(func, *obj);
     }
 
     template<typename TClass, typename TRet, typename ...Args>
-    void AttachToMaterialDeletedEvent(TRet(TClass::* func) (Args...), TClass* obj)
+    void AttachToTextureDeletedEvent(TRet(TClass::* func) (Args...), TClass* obj)
     {
         textureInstanceDeletedEvent.attach(func, *obj);
     }
