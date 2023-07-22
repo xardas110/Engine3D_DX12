@@ -110,6 +110,7 @@ private:
     // Registry to contain all the materialinfo for CPU and GPU.
     struct MaterialRegistry
     {
+        // 1:1 relations
         std::vector<MaterialInfoCPU> cpuInfo; // CPU information for materials
         std::vector<MaterialInfoGPU> gpuInfo; // GPU information for materials
         std::vector<MaterialColor> materialColors; // Colors associated with materials
