@@ -85,8 +85,12 @@ bool MaterialManager::IsMaterialValid(const MaterialID materialID) const
 	if (materialID == MATERIAL_INVALID)
 		return false;
 
-	if (materialID >= materialRegistry.cpuInfo.size())
-		return false;
+	// Shared mutex lock for CPUinfo and check if the materialID exceeds the vector.
+	{
+		SHARED_LOCK(MaterialRegistryCPUInfo, materialRegistry.cpuInfoMutex);
+		if (materialID >= materialRegistry.cpuInfo.size())
+			return false;
+	}
 
 	return true;
 }
@@ -158,6 +162,8 @@ void MaterialManager::ReleaseMaterial(const MaterialID materialID)
 
 std::optional<MaterialInstance> MaterialManager::GetMaterialInstance(const std::wstring& name)
 {
+	SHARED_LOCK(MaterialRegistryMap, materialRegistry.mapMutex);
+
 	if (materialRegistry.map.find(name) == materialRegistry.map.end()) 
 		return std::nullopt;
 
