@@ -6,6 +6,11 @@
 const std::wstring MaterialManager::ms_NoMaterial = L"No Material";
 const MaterialColor MaterialManager::ms_DefaultMaterialColor = MaterialColor();
 
+std::unique_ptr<MaterialManager> MaterialManagerAccess::CreateMaterialManager()
+{
+	return std::unique_ptr<MaterialManager>(new MaterialManager);
+}
+
 bool MaterialManager::IsMaterialValid(const MaterialID materialID) const
 {
 	if (materialID == MATERIAL_INVALID)
