@@ -272,13 +272,13 @@ add_library( Engine STATIC
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
-    ${IMGUI_HEADERS} ${IMGUI_SOURCE} "Tests/AssetManager/TextureManagerTest.h"  "AssetManager/Shared/AssetManagerDefines.h")
+    ${IMGUI_HEADERS} ${IMGUI_SOURCE} "Tests/AssetManager/TextureManagerTest.h"  "AssetManager/Shared/AssetManagerDefines.h" "AssetManager/Vertex.h" "AssetManager/Vertex.cpp")
 
  add_executable( EngineBin WIN32
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
-    ${IMGUI_HEADERS} ${IMGUI_SOURCE} "Tests/AssetManager/TextureManagerTest.h"  "AssetManager/Shared/AssetManagerDefines.h")
+    ${IMGUI_HEADERS} ${IMGUI_SOURCE} "Tests/AssetManager/TextureManagerTest.h"  "AssetManager/Shared/AssetManagerDefines.h" "AssetManager/Vertex.h" "AssetManager/Vertex.cpp")
 
 target_link_libraries( Engine
 	${TARGET_LINK_LIBS}   
