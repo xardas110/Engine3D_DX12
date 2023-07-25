@@ -86,9 +86,9 @@ private:
 
         // Texture data containers
         std::unordered_map<std::wstring, TextureInstance> textureInstanceMap;
-        std::vector<Texture> textures;
-        std::array<std::atomic<TextureRefCount>, TEXTURE_MANAGER_MAX_TEXTURES> refCounts;
+        std::vector<Texture> textures;        
         std::vector<TextureGPUHandle> gpuHandles;
+        std::array<std::atomic<TextureRefCount>, TEXTURE_MANAGER_MAX_TEXTURES> refCounts;
 
         // Mutexes for thread safety
         CREATE_MUTEX(textureInstanceMap);

@@ -1,33 +1,4 @@
 #pragma once
-/*
- *  Copyright(c) 2018 Jeremiah van Oosten
- *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files(the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions :
- *
- *  The above copyright notice and this permission notice shall be included in
- *  all copies or substantial portions of the Software.
- *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- *  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
- *  IN THE SOFTWARE.
- */
-
-/**
- *  @file Mesh.h
- *  @date October 24, 2018
- *  @author Jeremiah van Oosten
- *
- *  @brief A mesh class encapsulates the index and vertex buffers for a geometric primitive.
- */
 
 #include <CommandList.h>
 #include <VertexBuffer.h>
@@ -38,7 +9,7 @@
 
 #include <wrl.h>
 
-#include <memory> // For std::unique_ptr
+#include <memory>
 #include <vector>
 #include <Material.h>
 #include <TypesCompat.h>
@@ -46,8 +17,12 @@
 #include <Transform.h>
 #include <Vertex.h>
 
-using MeshID = UINT;
-using MeshInstanceID = UINT;
+#define MESH_INVALID 0xffffffff
+
+class MeshManager;
+
+using MeshID = std::uint32_t;
+using MeshRefCount = std::uint32_t;
 
 namespace MeshFlags
 {
@@ -77,61 +52,37 @@ inline MeshFlags::Flags operator|(MeshFlags::Flags a, MeshFlags::Flags b)
     return static_cast<MeshFlags::Flags>(static_cast<int>(a) | static_cast<int>(b));
 }
 
-namespace Primitives
-{
-    enum Type
-    {
-        Cube,
-        Size
-    };
-}
-
 struct MeshInstance
 {
-    friend class DeferredRenderer;
     friend class MeshManager;
-    friend class Raytracing;
-    friend class Editor;
-    friend class StaticMeshInstance;
 
-    //Path or name
-    MeshInstance(const std::wstring& path);
-    void SetMaterialInstance(const MaterialInstance& matInstance);
+    MeshInstance();
+    MeshInstance(const std::wstring& name);
 
-    const Texture* GetTexture(MaterialType::Type type);
+    explicit MeshInstance(const MeshID id);
+    explicit MeshInstance(const MeshInstance& meshInstance);
 
-    const std::wstring& GetName();
+    MeshInstance& operator= (const MeshInstance& meshInstance);
+    MeshInstance& operator= (MeshInstance&& meshInstance);
 
-    const std::wstring& GetMaterialName();
-    const MaterialColor& GetMaterialColor() const;
+    ~MeshInstance();
 
-    MeshInstanceID GetInstanceID() const
-    {
-        return id;
-    }
-
-    bool IsValid() const
-    {
-        return id != UINT_MAX;
-    }
-
-    bool HasOpacity()
-    {
-        if (GetTexture(MaterialType::opacity)) return true;
-
-        auto& mat = GetMaterialColor();
-        
-        if (mat.diffuse.w >= 1.f) return false;
-
-        return true;
-    }
-
+    bool IsValid() const;
+    
+    // TODO: fix flags for mesh 
     bool IsPointlight();
 
 private:
-    MeshInstance() = default;
-    MeshInstance(MeshInstanceID id) :id(id) {};
-    MeshInstanceID id{UINT_MAX};
+    MeshID id{ MESH_INVALID };
+};
+
+struct MeshInstanceWrapper
+{
+    MeshInstanceWrapper(Transform& trans, MeshInstance instance)
+        :trans(trans), instance(instance) {}
+
+    Transform& trans; //complete world transform
+    MeshInstance instance;
 };
 
 //Internal mesh
@@ -178,30 +129,4 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> scratchResource;
 
     UINT m_IndexCount;
-};
-
-class StaticMeshInstance
-{
-    friend class AssetManager;
-    friend class DeferredRenderer;
-    friend class MeshManager;
-    friend class Editor;
-
-public:
-    StaticMeshInstance() = default;
-    StaticMeshInstance(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, 
-        const std::string& path, MeshFlags::Flags flags = MeshFlags::None);
-
-private:
-    std::uint32_t startOffset{0U};
-    std::uint32_t endOffset{0U};
-};
-
-struct MeshInstanceWrapper
-{
-    MeshInstanceWrapper(Transform& trans, MeshInstance instance)
-        :trans(trans), instance(instance) {}
-        
-    Transform& trans; //complete world transform
-    MeshInstance instance;    
 };

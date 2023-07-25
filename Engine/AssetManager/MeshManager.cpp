@@ -9,182 +9,35 @@
 #include <Logger.h>
 #include <TypesCompat.h>
 
-/**
- * Applies alpha flags to a material instance if applicable.
- *
- * @param materialInstance Reference to the material instance being modified.
- * @param importFlags Flags that specify how the material instance should be modified.
- */
-void ApplyAlphaFlags(MaterialInstance& materialInstance, MeshFlags::Flags importFlags)
+std::unique_ptr<MeshManager> MeshManagerAccess::CreateMeshManager(const SRVHeapData& srvHeapData)
 {
-	// If alpha blending is forced by the import flags, apply alpha blending
-	if (importFlags & MeshFlags::ForceAlphaBlend)
-	{
-		materialInstance.AddFlag(INSTANCE_ALPHA_BLEND);
-	}
-	// If alpha cutoff is forced by the import flags, apply alpha cutoff
-	else if (importFlags & MeshFlags::ForceAlphaCutoff)
-	{
-		materialInstance.AddFlag(INSTANCE_ALPHA_CUTOFF);
-	}
-}
-
-/**
- * Applies transparency to a material instance if applicable.
- *
- * @param materialInstance Reference to the material instance being modified.
- * @param importFlags Flags that specify how the material instance should be modified.
- * @param materialInfo Information about the material.
- */
-void ApplyTransparency(MaterialInstance& materialInstance, MeshFlags::Flags importFlags, MaterialInfoCPU materialInfo)
-{
-	if (materialInfo.textures[MaterialType::albedo].IsValid())
-	{
-		// Apply translucency flag to the material instance
-		materialInstance.SetFlags(INSTANCE_TRANSLUCENT);
-
-		// Apply appropriate alpha blending or cutoff based on the import flags
-		ApplyAlphaFlags(materialInstance, importFlags);
-	}
-}
-
-/**
- * Applies import flags to a material instance.
- *
- * @param materialInstance Reference to the material instance being modified.
- * @param importFlags Flags that specify how the material instance should be modified.
- */
-void ApplySpecificImportFlags(MaterialInstance& materialInstance, MeshFlags::Flags importFlags)
-{
-	// Apply Ambient Occlusion, Roughness, and Metalness as Specular Texture if specified in import flags
-	if (importFlags & MeshFlags::AO_Rough_Metal_As_Spec_Tex)
-	{
-		materialInstance.AddFlag(MATERIAL_FLAG_AO_ROUGH_METAL_AS_SPECULAR);
-	}
-
-	// Apply Base Color Alpha if specified in import flags
-	if (importFlags & MeshFlags::BaseColorAlpha)
-	{
-		materialInstance.AddFlag(MATERIAL_FLAG_BASECOLOR_ALPHA);
-	}
-
-	// Invert Material Normals if specified in import flags
-	if (importFlags & MeshFlags::InvertMaterialNormals)
-	{
-		materialInstance.AddFlag(MATERIAL_FLAG_INVERT_NORMALS);
-	}
-}
-
-/**
- * Applies import flags to a material instance.
- *
- * @param materialInstance Reference to the material instance being modified.
- * @param importFlags Flags that specify how the material instance should be modified.
- * @param materialInfo Information about the material.
- */
-void ApplyMaterialInstanceImportFlags(MaterialInstance& materialInstance, MeshFlags::Flags importFlags, MaterialInfoCPU materialInfo)
-{
-	// Set default flags for the material instance
-	materialInstance.SetFlags(INSTANCE_OPAQUE);
-
-	// Check and apply transparency if required
-	ApplyTransparency(materialInstance, importFlags, materialInfo);
-
-	// Apply specific import flags based on the provided importFlags
-	ApplySpecificImportFlags(materialInstance, importFlags);
+	return std::unique_ptr<MeshManager>(new MeshManager(srvHeapData));
 }
 
 MeshManager::MeshManager(const SRVHeapData& srvHeapData)
-	:m_SrvHeapData(srvHeapData)
+	:srvHeapData(srvHeapData)
 {}
 
-void MeshManager::LoadStaticMesh(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, const std::string& path, StaticMeshInstance& outStaticMesh, MeshFlags::Flags flags)
+std::optional<MeshInstance> MeshManager::CreateMesh(
+	const std::wstring& name,
+	std::shared_ptr<CommandList> commandList,
+	std::shared_ptr<CommandList> rtCommandList,
+	VertexCollection& vertices, IndexCollection32& indices,
+	bool rhcoords, bool calcTangent)
 {
-    AssimpLoader loader(path, flags);
-    const auto& sm = loader.GetAssimpStaticMesh();
-    LOG_INFO("Num meshes in static mesh: %i", (int)sm.meshes.size());
-
-    outStaticMesh.startOffset = instanceData.meshInfo.size();
-
-    for (size_t i = 0; i < sm.meshes.size(); i++)
-    {
-		auto mesh = sm.meshes[i];
-
-        const std::wstring currentName = std::wstring(path.begin(), path.end()) + L"/" + std::to_wstring(i) + L"/" + std::wstring(mesh.name.begin(), mesh.name.end());
-
-        auto internalMesh = Mesh::CreateMesh(commandList, rtCommandList, mesh.vertices, mesh.indices, flags & MeshFlags::RHCoords, flags & MeshFlags::CustomTangent);
-        meshData.CreateMesh(currentName, std::move(internalMesh), m_SrvHeapData);
-
-		MaterialColor materialData = MaterialHelper::CreateMaterial(mesh.materialData);
-
-        MaterialInfoCPU matInfo = MaterialInfoHelper::PopulateMaterialInfo(mesh, flags);
-        MaterialInstance matInstance(currentName, matInfo, materialData);
-        ApplyMaterialInstanceImportFlags(matInstance, flags, matInfo);
-
-        if (mesh.materialData.bHasMaterial)
-        {
-            if (MaterialHelper::IsTransparent(materialData))
-            {
-                ApplyTransparency(matInstance, flags, matInfo);
-            }
-        }
-
-        MeshInstance meshInstance(currentName);
-        meshInstance.SetMaterialInstance(matInstance);
-    }
-
-    outStaticMesh.endOffset = outStaticMesh.startOffset + sm.meshes.size();
-}
-
-bool MeshManager::CreateMeshInstance(const std::wstring& path, MeshInstance& outMeshInstanceID)
-{
-	assert(meshData.map.find(path) != meshData.map.end());
-
-	if (meshData.map.find(path) != meshData.map.end())
+	if (IsMeshValid(name))
 	{
-		const auto meshID = meshData.GetMeshID(path);
-		const auto& meshInfo = meshData.meshes[meshID].meshInfo;
-
-		outMeshInstanceID.id = instanceData.CreateInstance(meshID, meshInfo);
-
-		return true;
+		LOG_INFO("Mesh exists with name: %s, returning an instance", std::string(name.begin(), name.end()).c_str());
+		return GetMeshInstance(name);
 	}
 
-	return false;
-}
-
-MeshID MeshManager::MeshData::GetMeshID(const std::wstring& name)
-{
-	assert(map.find(name) != map.end() && "AssetManager::MeshManager::MeshData::GetMeshID name or path not found!");
-	const auto id = map[name];
-	return id;
-}
-
-const std::wstring& MeshManager::MeshData::GetName(MeshID id)
-{
-	for (const auto& [name, mId] : map)
-	{
-		if (id == mId) return name;
-	}
-
-	return L"No Name";
-}
-
-void MeshManager::MeshData::AddMesh(const std::wstring& name, MeshTuple& tuple)
-{
-	const auto currentIndex = meshes.size();
-	map[name] = currentIndex;
-	meshes.emplace_back(std::move(tuple));
-}
-
-MeshManager::MeshTuple MeshManager::MeshData::CreateMesh(const std::wstring& name, Mesh&& mesh, const SRVHeapData& heap)
-{
-	MeshInfo meshInfo;
+	auto mesh = Mesh::CreateMesh(*commandList, rtCommandList, vertices, indices, rhcoords, calcTangent);
 
 	auto device = Application::Get().GetDevice();
+	MeshGPUHeapHandles gpuHeapHandles;
 
 	{
-		const auto cpuHandle = heap.IncrementHandle(meshInfo.vertexOffset);
+		const auto cpuHandle = srvHeapData.IncrementHandle(gpuHeapHandles.vertexHandle);
 		D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
 		D3D12_BUFFER_SRV bufferSRV;
 		bufferSRV.FirstElement = 0;
@@ -199,7 +52,7 @@ MeshManager::MeshTuple MeshManager::MeshData::CreateMesh(const std::wstring& nam
 		device->CreateShaderResourceView(mesh.m_VertexBuffer.GetD3D12Resource().Get(), &desc, cpuHandle);
 	}
 	{
-		const auto cpuHandle = heap.IncrementHandle(meshInfo.indexOffset);
+		const auto cpuHandle = srvHeapData.IncrementHandle(gpuHeapHandles.indexHandle);
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
 		D3D12_BUFFER_SRV bufferSRV;
@@ -215,19 +68,133 @@ MeshManager::MeshTuple MeshManager::MeshData::CreateMesh(const std::wstring& nam
 		device->CreateShaderResourceView(mesh.m_IndexBuffer.GetD3D12Resource().Get(), &desc, cpuHandle);
 	}
 
-	MeshTuple meshTuple(std::move(mesh), meshInfo);
+	auto currentIndex = 0;
 
-	meshCreationEvent(meshTuple.mesh);
+	{
+		UNIQUE_LOCK(ReleasedMeshIDs, releasedMeshIDsMutex);
+		if (!releasedMeshIDs.empty())
+		{
+			currentIndex = releasedMeshIDs.front();
+			releasedMeshIDs.erase(releasedMeshIDs.begin());
+		}
+		else
+		{
+			currentIndex = meshRegistry.meshes.size();
+		}
+	}
+	{
+		SCOPED_UNIQUE_LOCK(meshRegistry.mapMutex, meshRegistry.meshesMutex, meshRegistry.gpuHeapHandlesMutex);
 
-	AddMesh(name, meshTuple);
+		meshRegistry.map[name] = MeshInstance(currentIndex);
+		meshRegistry.meshes.emplace_back(std::move(mesh));
+		meshRegistry.gpuHeapHandles.emplace_back(gpuHeapHandles);
+		meshRegistry.refCounts[currentIndex].store(0u);
+	}
 
-	return meshTuple;
+	return meshRegistry.map[name];
 }
 
-MeshInstanceID MeshManager::InstanceData::CreateInstance(MeshID meshID, const MeshInfo& meshInfo)
+bool MeshManager::IsMeshValid(const MeshInstance meshInstance) const
 {
-	const auto currentIndex = meshIds.size();
-	meshIds.emplace_back(meshID);
-	this->meshInfo.emplace_back(meshInfo);
-	return (MeshInstanceID)currentIndex;
+	return IsMeshValid(meshInstance.id);
+}
+
+std::optional<MeshRefCount> MeshManager::GetRefCount(const MeshInstance meshInstance) const
+{
+	if (!IsMeshValid(meshInstance))
+		return std::nullopt;
+
+	return meshRegistry.refCounts[meshInstance.id];
+}
+
+bool MeshManager::IsMeshValid(const std::wstring& name) const
+{
+	SHARED_LOCK(MeshRegistryMap, meshRegistry.mapMutex);
+	if (meshRegistry.map.find(name) == meshRegistry.map.end())
+		return false;
+	
+	return IsMeshValid(meshRegistry.map[name]);
+}
+
+bool MeshManager::IsMeshValid(const MeshID meshID) const
+{
+	if (meshID == MESH_INVALID)
+		return false;
+
+	{
+		SHARED_LOCK(MeshRegistryMeshes, meshRegistry.meshesMutex);
+		if (meshID >= meshRegistry.meshes.size())
+			return false;
+
+		if (!meshRegistry.meshes[meshID].m_VertexBuffer.IsValid())
+			return false;
+	}
+
+	return true;
+}
+
+void MeshManager::IncreaseRefCount(const MeshID meshID)
+{
+	if (IsMeshValid(meshID))
+	{
+		meshRegistry.refCounts[meshID].fetch_add(1);
+	}
+}
+
+void MeshManager::DecreaseRefCount(const MeshID meshID)
+{
+	if (!IsMeshValid(meshID))
+		return;
+	
+	if (meshRegistry.refCounts[meshID].fetch_sub(1) != 1)
+		return;
+
+	ReleaseMesh(meshID);
+}
+
+void MeshManager::ReleaseMesh(const MeshID meshID)
+{	
+	SCOPED_UNIQUE_LOCK(releasedMeshIDsMutex, meshRegistry.mapMutex, meshRegistry.gpuHeapHandlesMutex, meshRegistry.meshesMutex);
+	releasedMeshIDs.emplace_back(meshID);
+	
+	meshRegistry.meshes[meshID] = Mesh();
+	meshRegistry.refCounts[meshID].store(0U);
+	meshRegistry.gpuHeapHandles[meshID] = MeshGPUHeapHandles();
+
+	for (auto it = meshRegistry.map.begin(); it != meshRegistry.map.end(); )
+	{
+		if (it->second.id == meshID)
+		{
+			it = meshRegistry.map.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	};
+}
+
+std::optional<MeshInstance> MeshManager::GetMeshInstance(const std::wstring& name)
+{
+	if (!IsMeshValid(name))
+		return std::nullopt;
+
+	SHARED_LOCK(MeshRegistryMap, meshRegistry.mapMutex);
+	return meshRegistry.map[name];
+}
+
+std::optional<std::wstring> MeshManager::GetMeshName(const MeshInstance meshInstance) const
+{
+	if (!IsMeshValid(meshInstance))
+		return std::nullopt;
+
+	{
+		SHARED_MUTEX(MeshRegistryMap, meshRegistry.map);
+		for (auto [name, instance] : meshRegistry.map)
+		{
+			if (instance.id == meshInstance.id)
+				return name;
+		}
+	}
+	return std::nullopt;
 }

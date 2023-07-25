@@ -10,6 +10,80 @@
 using namespace DirectX;
 using namespace Microsoft::WRL;
 
+MeshManager* GetMeshManager()
+{
+    return Application::Get().GetAssetManager()->m_MeshManager.get();
+}
+
+MeshInstance::MeshInstance()
+    : id(MESH_INVALID)
+{};
+
+MeshInstance::MeshInstance(const std::wstring& name)
+    :id(MESH_INVALID)
+{
+    auto meshInstance = GetMeshManager()->GetMeshInstance(name);
+
+    if (meshInstance.has_value())
+    {
+        *this = meshInstance.value();
+    }
+}
+
+MeshInstance::MeshInstance(const MeshID id)
+    :id(id)
+{
+    GetMeshManager()->IncreaseRefCount(id);
+}
+
+MeshInstance::MeshInstance(const MeshInstance& other)
+    :id(other.id)
+{
+    GetMeshManager()->IncreaseRefCount(id);
+}
+
+MeshInstance& MeshInstance::operator= (const MeshInstance& other)
+{
+    if (this != &other)
+    {
+        GetMeshManager()->DecreaseRefCount(id);
+
+        id = other.id;
+
+        GetMeshManager()->IncreaseRefCount(id);
+    }
+    return *this;
+}
+
+MeshInstance& MeshInstance::operator= (MeshInstance&& other)
+{
+    if (this != &other)
+    {
+        GetMeshManager()->DecreaseRefCount(id);
+
+        id = other.id;
+
+        other.id = MESH_INVALID;
+    }
+
+    return *this;
+}
+
+MeshInstance::~MeshInstance()
+{
+    GetMeshManager()->DecreaseRefCount(id);
+}
+
+bool MeshInstance::IsPointlight()
+{
+    return false;
+}
+
+bool MeshInstance::IsValid() const
+{
+    return GetMeshManager()->IsMeshValid(id);
+}
+
 const D3D12_INPUT_ELEMENT_DESC VertexPositionNormalTexture::InputElements[] =
 {
     { "POSITION",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -71,73 +145,6 @@ void CreateTangentAndBiTangent(VertexCollection& vertices, IndexCollection32& in
         XMStoreFloat3(&vertices[i1].bitTangent, bitangent);
         XMStoreFloat3(&vertices[i2].bitTangent, bitangent);
     }
-}
-
-MeshInstance::MeshInstance(const std::wstring& path)
-{
-    Application::Get().GetAssetManager()->m_MeshManager->CreateMeshInstance(path, *this);
-}
-
-void MeshInstance::SetMaterialInstance(const MaterialInstance& matInstance)
-{
-    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
-    meshManager->instanceData.meshInfo[id].materialInstanceID = matInstance;
-}
-
-const Texture* MeshInstance::GetTexture(MaterialType::Type type)
-{
-    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
-    auto& textureManager = Application::Get().GetAssetManager()->m_TextureManager;
-    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-
-    auto matInstanceID = meshManager->instanceData.meshInfo[id].materialInstanceID;
-    
-    auto textureInstance = materialManager->GetTextureInstance(matInstanceID, type);
-
-    if (!textureInstance.has_value())
-        return nullptr;
-
-    return textureManager->GetTexture(textureInstance.value());
-}
-
-const std::wstring& MeshInstance::GetName()
-{
-    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
-
-    auto meshID = meshManager->instanceData.meshIds[id];
-
-    return meshManager->meshData.GetName(meshID);
-}
-
-const std::wstring& MeshInstance::GetMaterialName()
-{
-    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
-    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-    auto matInstanceID = meshManager->instanceData.meshInfo[id].materialInstanceID;
-
-    return materialManager->GetMaterialName(matInstanceID);
-}
-
-const MaterialColor& MeshInstance::GetMaterialColor() const
-{
-    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
-    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-    auto matInstanceID = meshManager->instanceData.meshInfo[id].materialInstanceID;
-    return materialManager->GetMaterialColor(matInstanceID);
-}
-
-bool MeshInstance::IsPointlight()
-{
-    auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
-    auto& materialManager = Application::Get().GetAssetManager()->m_MaterialManager;
-    auto matInstanceID = meshManager->instanceData.meshInfo[id].materialInstanceID;
-    
-    auto matInstance = MaterialInstance(matInstanceID);
-
-    if (matInstance.GetCPUFlags() & INSTANCE_LIGHT || matInstance.GetGPUFlags() & INSTANCE_LIGHT)
-        return true;
-
-    return false;
 }
 
 Mesh::Mesh()
@@ -615,11 +622,4 @@ void Mesh::InitializeBlas(CommandList& commandList)
     blas->SetName(L"Blas");
 
     commandList.GetGraphicsCommandList()->BuildRaytracingAccelerationStructure(&blasDesc, 0, nullptr);
-}
-
-StaticMeshInstance::StaticMeshInstance(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList,
-    const std::string& path, MeshFlags::Flags flags)
-{
-
-    Application::Get().GetAssetManager()->m_MeshManager->LoadStaticMesh(commandList, rtCommandList, path, *this, flags);
 }
