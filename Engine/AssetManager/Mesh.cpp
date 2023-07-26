@@ -56,6 +56,11 @@ MeshInstance::MeshInstance(const MeshID id)
     GetMeshManager()->IncreaseRefCount(id);
 }
 
+auto MeshInstance::GetGPUInfo() const
+{
+    return GetMeshManager()->GetMeshGPUHandle(*this);
+}
+
 MeshInstance::MeshInstance(const MeshInstance& other)
     :id(other.id)
 {

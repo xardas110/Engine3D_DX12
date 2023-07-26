@@ -69,6 +69,10 @@ public:
 		->std::conditional_t<ThreadSafe, const Mesh*, const Mesh*>;
 
 	template<bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
+	auto GetMeshGPUHandle(const MeshInstance meshInstance) const
+		->std::conditional_t<ThreadSafe, const struct MeshInfo, const MeshInfo&>;
+
+	template<bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
 	auto GetMeshData() const
 		-> std::conditional_t<ThreadSafe, const std::vector<Mesh>, const std::vector<Mesh>&>;
 
@@ -155,6 +159,17 @@ inline auto MeshManager::GetMesh(const std::wstring& name) const
 
 	SHARED_LOCK(MeshRegistryMeshes, meshRegistry.meshesMutex);
 	return &meshRegistry.meshes[meshInstance.id];
+}
+
+template<bool ThreadSafe>
+auto MeshManager::GetMeshGPUHandle(const MeshInstance meshInstance) const
+->std::conditional_t<ThreadSafe, const struct MeshInfo, const MeshInfo&>
+{
+	if (!meshInstance.IsValid())
+		return MeshInfo();
+
+	SHARED_LOCK(MeshRegistryGPUHandle, meshRegistry.gpuHeapHandles);
+	return meshRegistry.gpuHeapHandles[meshInstance.id];
 }
 
 template<bool ThreadSafe>

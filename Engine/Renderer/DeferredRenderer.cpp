@@ -184,13 +184,16 @@ void DeferredRenderer::SetupDLSSResolution(int width, int height)
     }
 }
 
-std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(entt::registry& registry, std::vector<MeshInstanceWrapper>* pointLights)
+std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(
+    entt::registry& registry, 
+    std::vector<MeshInfo>& meshGPUInstances,
+    std::vector<MeshInstanceWrapper>* pointLights)
 {
     auto& meshManager = Application::Get().GetAssetManager()->m_MeshManager;
     std::vector<MeshInstanceWrapper> instances;
     {
-        auto& view = registry.view<TransformComponent, MeshComponent>();
-        for (auto [entity, transform, mesh] : view.each())
+        auto& view = registry.view<TransformComponent, MeshComponent, MaterialComponent, RelationComponent>();
+        for (auto [entity, transform, mesh, material, relation] : view.each())
         {
             MeshInstanceWrapper wrap(transform, mesh);
 
@@ -200,25 +203,13 @@ std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(entt::regist
                     pointLights->emplace_back(wrap);
             }
 
+            MeshInfo gpuInfo = mesh.GetGPUInfo();
+            gpuInfo.materialInstanceID = material;
+            
+            meshGPUInstances.emplace_back(gpuInfo);
+
+
             instances.emplace_back(wrap);           
-        }
-    }
-    {
-        auto& view = registry.view<TransformComponent, StaticMeshComponent>();
-        for (auto [entity, transform, sm] : view.each())
-        {
-            for (size_t i = sm.startOffset; i < sm.endOffset; i++)
-            {
-                MeshInstanceWrapper wrap(transform, i);
-
-                if (MeshInstance(i).IsPointlight())
-                {
-                    if (pointLights)
-                        pointLights->emplace_back(wrap);
-                }
-
-                instances.emplace_back(wrap);             
-            }
         }
     }
     return instances;

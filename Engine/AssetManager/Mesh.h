@@ -1,7 +1,5 @@
 #pragma once
 
-#include <EnginePCH.h>
-#include <Mesh.h>
 #include <CommandList.h>
 #include <VertexBuffer.h>
 #include <IndexBuffer.h>
@@ -77,6 +75,8 @@ struct MeshInstance
     MeshInstance& operator= (MeshInstance&& meshInstance) noexcept;
 
     ~MeshInstance();
+
+    auto GetGPUInfo() const;
 
     void SetFlags(UINT flags);
     void AddFlags(UINT flags);
