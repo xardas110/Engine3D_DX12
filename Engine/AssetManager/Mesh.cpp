@@ -30,6 +30,26 @@ MeshInstance::MeshInstance(const std::wstring& name)
     }
 }
 
+MeshInstance::MeshInstance(MeshInstance&& other) noexcept
+    : id(other.id)
+{
+    other.id = MESH_INVALID;
+}
+
+MeshInstance::MeshInstance(const std::wstring& name, 
+    std::shared_ptr<CommandList> cmdList, 
+    std::shared_ptr<CommandList> rtCmdList, 
+    VertexCollection& vertices, IndexCollection32& indices, 
+    bool rhcoords, bool calcTangent)
+    :id(MESH_INVALID)
+{
+    const auto meshInstance = GetMeshManager()->CreateMesh(name, cmdList, rtCmdList, vertices, indices, rhcoords, calcTangent);
+    if (meshInstance.has_value())
+    {
+        *this = meshInstance.value();
+    }
+}
+
 MeshInstance::MeshInstance(const MeshID id)
     :id(id)
 {
@@ -55,7 +75,7 @@ MeshInstance& MeshInstance::operator= (const MeshInstance& other)
     return *this;
 }
 
-MeshInstance& MeshInstance::operator= (MeshInstance&& other)
+MeshInstance& MeshInstance::operator= (MeshInstance&& other) noexcept
 {
     if (this != &other)
     {
@@ -74,8 +94,19 @@ MeshInstance::~MeshInstance()
     GetMeshManager()->DecreaseRefCount(id);
 }
 
+void MeshInstance::SetFlags(UINT flags)
+{
+    GetMeshManager()->SetFlags(*this, flags);
+}
+
+void MeshInstance::AddFlags(UINT flags)
+{
+    GetMeshManager()->AddFlags(*this, flags);
+}
+
 bool MeshInstance::IsPointlight()
 {
+    //TODO
     return false;
 }
 

@@ -5,6 +5,11 @@
 #include <Window.h>
 #include <Entity.h>
 #include <Components.h>
+#include <AssimpLoader.h>
+#include <CommandList.h>
+#include <CommandQueue.h>
+#include <Components.h>
+#include <Mesh.h>
 
 // Clamp a value between a min and max range.
 template<typename T>
@@ -73,6 +78,46 @@ Entity Game::CreateEntity(const std::string& tag)
     ent.AddComponent<TagComponent>(tag);
     ent.AddComponent<RelationComponent>();
     return ent;
+}
+
+Entity Game::CreateStaticMesh(const std::string& tag, const std::string& path, UINT meshFlags)
+{
+    auto cq = Application::Get().GetCommandQueue();
+    auto cmdList = cq->GetCommandList();
+    auto rtCmdList = cq->GetCommandList();
+    AssimpLoader assimpImport(path, static_cast<MeshFlags::Flags>(meshFlags));
+
+    const auto& sm = assimpImport.GetAssimpStaticMesh();
+    
+    Entity root = CreateEntity(tag);
+
+    for (auto mesh : sm.meshes)
+    {
+        Entity child = CreateEntity(mesh.name);
+
+        const auto meshNameWString = std::wstring(mesh.name.begin(), mesh.name.end());
+
+        auto meshComponent = MeshComponent(
+            meshNameWString,
+            cmdList,
+            rtCmdList,
+            mesh.vertices, mesh.indices,
+            meshFlags & MeshFlags::RHCoords, meshFlags & MeshFlags::CustomTangent);
+
+        MaterialColor materialColor = MaterialHelper::CreateMaterial(mesh.materialData);
+        MaterialInfoCPU materialInfoCPU = MaterialInfoHelper::PopulateMaterialInfo(mesh, meshFlags);
+        MaterialComponent materialComponent(meshNameWString, materialInfoCPU, materialColor);
+        
+        child.AddComponent<MeshComponent>(meshComponent);
+        child.AddComponent<MaterialComponent>(materialComponent);
+        root.AddChild(child);
+    }
+
+    cq->ExecuteCommandList(cmdList);
+    cq->ExecuteCommandList(rtCmdList);
+
+
+    return root;
 }
 
 void Game::OnUpdate(UpdateEventArgs& e)

@@ -14,7 +14,7 @@ AssetManager::AssetManager()
 {
 	m_TextureManager = TextureManagerAccess::CreateTextureManager(m_SrvHeapData);
 	m_MaterialManager = MaterialManagerAccess::CreateMaterialManager();
-	m_MeshManager = std::unique_ptr<MeshManager>(new MeshManager(m_SrvHeapData));
+	m_MeshManager = MeshManagerAccess::CreateMeshManager(m_SrvHeapData);
 }
 
 AssetManager::~AssetManager()

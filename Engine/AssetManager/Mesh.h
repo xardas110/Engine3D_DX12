@@ -1,5 +1,7 @@
 #pragma once
 
+#include <EnginePCH.h>
+#include <Mesh.h>
 #include <CommandList.h>
 #include <VertexBuffer.h>
 #include <IndexBuffer.h>
@@ -60,12 +62,24 @@ struct MeshInstance
     MeshInstance(const std::wstring& name);
 
     explicit MeshInstance(const MeshID id);
-    explicit MeshInstance(const MeshInstance& meshInstance);
+    MeshInstance(const MeshInstance& meshInstance);
+    MeshInstance(MeshInstance&& meshInstance) noexcept;
+
+    MeshInstance(
+        const std::wstring& name,
+        std::shared_ptr<CommandList> cmdList,
+        std::shared_ptr<CommandList> rtCmdList,
+        VertexCollection& vertices, IndexCollection32& indices,
+        bool rhcoords, bool calcTangent);
+        
 
     MeshInstance& operator= (const MeshInstance& meshInstance);
-    MeshInstance& operator= (MeshInstance&& meshInstance);
+    MeshInstance& operator= (MeshInstance&& meshInstance) noexcept;
 
     ~MeshInstance();
+
+    void SetFlags(UINT flags);
+    void AddFlags(UINT flags);
 
     bool IsValid() const;
     

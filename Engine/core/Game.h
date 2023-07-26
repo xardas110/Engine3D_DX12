@@ -103,6 +103,8 @@ public:
 
     Entity CreateEntity(const std::string& tag);
 
+    Entity CreateStaticMesh(const std::string& tag, const std::string& path, UINT meshFlags);
+
     /**
     * Clear game world
     */

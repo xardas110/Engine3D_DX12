@@ -346,6 +346,7 @@ void UpdateMaterial(MaterialColor& material)
 
 void Editor::UpdateSelectedEntity()
 {
+    /*
     if (selectedEntity == entt::null) return;
 
     auto& reg = m_World->registry;
@@ -454,10 +455,12 @@ void Editor::UpdateSelectedEntity()
          }
     }
     ImGui::End();
+    */
 }
 
 void Editor::UpdateMeshComponent(MeshComponent& mesh)
 {
+    /*
     auto device = Application::Get().GetDevice();
     auto window = m_World->m_pWindow;
     auto& gui = window->m_GUI;
@@ -533,6 +536,7 @@ void Editor::UpdateMeshComponent(MeshComponent& mesh)
         //UpdateMaterial(material);
         ImGui::TreePop();
     }
+    */
 }
 
 void Editor::SelectEntity(entt::entity entity)

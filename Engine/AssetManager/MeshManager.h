@@ -19,12 +19,6 @@ private:
 	static std::unique_ptr<MeshManager> CreateMeshManager(const SRVHeapData& srvHeapData);
 };
 
-struct MeshGPUHeapHandles
-{
-	UINT vertexHandle{ MESH_GPU_HEAP_HANDLE_INVALID };
-	UINT indexHandle{ MESH_GPU_HEAP_HANDLE_INVALID };
-};
-
 class MeshManager
 {
 	friend struct MeshInstance;
@@ -53,13 +47,17 @@ public:
 
 	bool IsMeshValid(const std::wstring& name) const;
 	bool IsMeshValid(const MeshInstance meshInstance) const;
-
 	template<bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
 	bool IsMeshValid(std::conditional_t<ThreadSafe, const Mesh, const Mesh*>) const;
 
-	std::optional<MeshInstance> GetMeshInstance(const std::wstring& name);
-	std::optional<std::wstring> GetMeshName(const MeshInstance meshInstance) const;
+	void SetFlags(const MeshInstance meshInstance, const UINT meshFlags);
+	void SetFlags(const std::wstring& meshName, const UINT meshFlags);
 
+	void AddFlags(const MeshInstance meshInstance, const UINT meshFlags);
+	void AddFlags(const std::wstring& meshName, const UINT meshFlags);
+
+	std::optional<MeshInstance> GetMeshInstance(const std::wstring& name) const;
+	std::optional<std::wstring> GetMeshName(const MeshInstance meshInstance) const;
 	std::optional<MeshRefCount> GetRefCount(const MeshInstance meshInstance) const;
 
 	template<bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
@@ -76,12 +74,11 @@ public:
 
 	template<bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
 	auto GetMeshGPUHandlesData() const
-		->std::conditional_t<ThreadSafe, const std::vector<struct MeshGPUHeapHandles>, const std::vector<struct MeshGPUHeapHandles>&>;
+		->std::conditional_t<ThreadSafe, const std::vector<struct MeshInfo>, const std::vector<struct MeshInfo>&>;
 
 private:
 	
 	bool IsMeshValid(const MeshID meshID) const;
-
 	void IncreaseRefCount(const MeshID meshID);
 	void DecreaseRefCount(const MeshID meshID);
 	void ReleaseMesh(const MeshID meshID);
@@ -99,11 +96,12 @@ private:
 		~MeshRegistry() = default;
 
 		std::vector<Mesh> meshes;		
-		std::vector<MeshGPUHeapHandles> gpuHeapHandles;
+		std::vector<MeshInfo> gpuHeapHandles;
 		std::unordered_map<std::wstring, MeshInstance> map;
 		std::array<std::atomic<MeshRefCount>, MESH_MANAGER_MAX_MESHES> refCounts;
-
+	
 		CREATE_MUTEX(meshes);
+		CREATE_MUTEX(flags);
 		CREATE_MUTEX(gpuHeapHandles);
 		CREATE_MUTEX(map);
 
@@ -169,7 +167,7 @@ inline auto MeshManager::GetMeshData() const
 
 template<bool ThreadSafe>
 inline auto MeshManager::GetMeshGPUHandlesData() const
--> std::conditional_t<ThreadSafe, const std::vector<MeshGPUHeapHandles>, const std::vector<MeshGPUHeapHandles>&>
+-> std::conditional_t<ThreadSafe, const std::vector<MeshInfo>, const std::vector<MeshInfo>&>
 {
 	SHARED_LOCK(MeshRegistryMeshGPUHeaphandles, meshRegistry.gpuHeapHandlesMutex);
 	return meshRegistry.gpuHeapHandles;
