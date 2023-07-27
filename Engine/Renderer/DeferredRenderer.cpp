@@ -192,50 +192,29 @@ std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(
     std::vector<MeshInstanceWrapper> instances;
     {
         auto& view = registry.view<TransformComponent, MeshComponent, MaterialComponent, RelationComponent>();
+        meshGPUInstances.resize(registry.view<MeshComponent>().size());
         for (auto [entity, transform, mesh, material, relation] : view.each())
         {          
-            Transform worldTransform = transform;
+            Transform trans = transform;
             
-            RelationComponent* currentRelation = &relation;
-            while (currentRelation)
-            {
-                if (currentRelation->HasParent())
-                { 
-                    Entity parentEntity(currentRelation->GetParent(), game);
-                    if (parentEntity.HasComponent<TransformComponent>())
-                    {
-                        auto newTransform = worldTransform.GetTransform() * parentEntity.GetComponent<TransformComponent>().GetTransform();
-                        worldTransform.SetTransform(newTransform);
-                    }
-                    if (parentEntity.HasComponent<RelationComponent>())
-                    {
-                        currentRelation = &parentEntity.GetComponent<RelationComponent>();
-                    }
-                    else
-                    {
-                        currentRelation = nullptr;
-                    }
-                }
-                else
-                {
-                    currentRelation = nullptr;
-                }
-            }
-                    
-            MeshInstanceWrapper wrap(worldTransform, mesh, material.HasOpacity());
-
-            if (mesh.IsPointlight())
+            if (relation.HasParent())
             { 
-                if (pointLights)
-                    pointLights->emplace_back(wrap);
+                Entity parentEntity(relation.GetParent(), game);
+                if (parentEntity.HasComponent<TransformComponent>())
+                { 
+                    auto ws = transform.GetTransform() * parentEntity.GetComponent<TransformComponent>().GetTransform();
+                    trans.SetTransform(ws);
+                }
             }
 
+            MeshInstanceWrapper wrap(trans, mesh, material);
             MeshInfo gpuInfo = mesh.GetGPUInfo();
             gpuInfo.materialInstanceID = material;
             gpuInfo.objRot = transform.rot;
             gpuInfo.flags = mesh.GetFlags();
-            meshGPUInstances.emplace_back(gpuInfo);
-            instances.emplace_back(wrap);           
+            meshGPUInstances[MeshInstanceAccess::GetMeshID(mesh)] = gpuInfo;
+
+            instances.emplace_back(wrap);          
         }
     }
     return instances;
@@ -292,14 +271,10 @@ void DeferredRenderer::ExecuteGBufferPass(
     commandList->SetGraphicsDynamicStructuredBuffer(GBufferParam::GlobalMatInfo, globalMaterialInfo);
     commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::CameraCB, m_CachedCameraCB);
 
+    const auto& meshData = assetManager->m_MeshManager->GetMeshData();
     for (int i = 0; i < meshInstances.size(); i++)
     {
-        auto& [transform, meshInstance, bHasOpacity] = meshInstances[i];
-
-        if (meshInstance.IsPointlight())
-        {
-            continue;
-        }
+        auto& [transform, meshInstance, material] = meshInstances[i];
 
         auto meshID = MeshInstanceAccess::GetMeshID(meshInstance);
 
@@ -311,10 +286,9 @@ void DeferredRenderer::ExecuteGBufferPass(
         objectCB.prevModel = m_LastFrameMeshTransforms[i].GetTransform();
         objectCB.transposeInverseModel = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model));
         objectCB.objRotQuat = transform.rot;
-        objectCB.materialGPUID = MaterialInstanceAccess::GetMaterialID(globalMeshInfo[meshID].materialInstanceID);
+        objectCB.materialGPUID = MaterialInstanceAccess::GetMaterialID(material);
 
-        commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
-        auto& meshData = assetManager->m_MeshManager->GetMeshData();
+        commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);       
         meshData[meshID].Draw(*commandList);
     }
 

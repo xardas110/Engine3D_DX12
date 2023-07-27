@@ -93,18 +93,20 @@ Entity Game::CreateStaticMesh(const std::string& tag, const std::string& path, U
 
     LOG_INFO("Creating static mesh: %s", tag.c_str());
 
+    int i = 0;
     for (auto mesh : sm.meshes)
     {
         Entity child = CreateEntity(mesh.name);
 
-        const auto meshNameWString = std::wstring(mesh.name.begin(), mesh.name.end());
+        const auto meshNameWithNr = mesh.name + std::to_string(i++);
+        const auto meshNameWString = std::wstring(meshNameWithNr.begin(), meshNameWithNr.end());
 
         auto meshComponent = MeshComponent(
             meshNameWString,
             cmdList,
             rtCmdList,
             mesh.vertices, mesh.indices,
-            meshFlags & MeshFlags::RHCoords, meshFlags & MeshFlags::CustomTangent);
+            true, true);//meshFlags & MeshFlags::RHCoords, meshFlags & MeshFlags::CustomTangent);
    
         MaterialColor materialColor = MaterialHelper::CreateMaterial(mesh.materialData);
         MaterialInfoCPU materialInfoCPU = MaterialInfoHelper::PopulateMaterialInfo(mesh, meshFlags);
@@ -120,7 +122,6 @@ Entity Game::CreateStaticMesh(const std::string& tag, const std::string& path, U
 
     cq->ExecuteCommandList(cmdList);
     cq->ExecuteCommandList(rtCmdList);
-
 
     return root;
 }

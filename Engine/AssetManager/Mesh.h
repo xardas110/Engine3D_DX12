@@ -150,10 +150,10 @@ private:
 
 struct MeshInstanceWrapper
 {
-    MeshInstanceWrapper(Transform& trans, MeshInstance instance, bool bHasOpacity)
-        :trans(trans), instance(instance), bHasOpacity(bHasOpacity) {}
+    MeshInstanceWrapper(Transform& trans, MeshInstance instance, MaterialInstance matInstance)
+        :trans(trans), instance(instance), matInstance(matInstance) {}
 
-    Transform& trans; //complete world transform
+    Transform trans; //complete world transform
     MeshInstance instance;
-    bool bHasOpacity{ false };
+    MaterialInstance matInstance;
 };

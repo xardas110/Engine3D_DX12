@@ -66,7 +66,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
 
     // Combine lighting contributions
     float3 color = (directDiffuse.rgb * denoisedShadow) + denoisedIndirectDiffuse.rgb + denoisedIndirectSpecular.rgb + fi.emissive;
-    color = lerp(color, transparentColor.rgb, transparentColor.a);
+    //color = lerp(color, transparentColor.rgb, transparentColor.a);
     
     // Debug options
     if (g_RaytracingData.debugSettings == DEBUG_LIGHTBUFFER_DENOISED_INDIRECT_DIFFUSE)

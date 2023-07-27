@@ -71,7 +71,7 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::ve
 
     auto& meshes = Application::Get().GetAssetManager()->m_MeshManager->GetMeshData();
 
-    for (auto[trans, mesh, bHasOpacity] : meshWrapperInstances)
+    for (auto[trans, mesh, material] : meshWrapperInstances)
     {
         auto meshID = MeshInstanceAccess::GetMeshID(mesh);
         const auto& internalMesh = meshes[meshID];
@@ -100,22 +100,24 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::ve
         instanceDesc.Transform[1][3] = transform.r[3].m128_f32[1];
         instanceDesc.Transform[2][3] = transform.r[3].m128_f32[2];
 
-        if (bHasOpacity)
-        {
-            instanceDesc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_FORCE_NON_OPAQUE;
-            instanceDesc.InstanceMask |= INSTANCE_TRANSLUCENT;
-        } 
+      //  if (material.HasOpacity())
+       // {
+        //    instanceDesc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_FORCE_NON_OPAQUE;
+       //     instanceDesc.InstanceMask |= INSTANCE_TRANSLUCENT;
+       // } 
+        /*
         else if (mesh.IsPointlight())
         {
             instanceDesc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_FORCE_OPAQUE;
             instanceDesc.InstanceMask = INSTANCE_LIGHT;
         }
-        else
-        {
+        */
+       // else
+       // {
             instanceDesc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_FORCE_OPAQUE;
             instanceDesc.InstanceMask |= INSTANCE_OPAQUE;
-        }
-
+       // }
+        
         instanceDesc.AccelerationStructure = internalMesh.blas->GetGPUVirtualAddress();
         instanceDescs.emplace_back(instanceDesc);
     }
