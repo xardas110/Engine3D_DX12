@@ -116,7 +116,7 @@ void MeshInstance::AddFlags(UINT flags)
 
 UINT MeshInstance::GetFlags() const
 {
-    GetMeshManager()->GetMeshFlags(*this);
+    return static_cast<UINT>(GetMeshManager()->GetMeshFlags(*this).value());
 }
 
 bool MeshInstance::IsPointlight()

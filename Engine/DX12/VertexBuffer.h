@@ -38,6 +38,9 @@ class VertexBuffer : public Buffer
 public:
     VertexBuffer(const std::wstring& name = L"");
 
+    VertexBuffer(const VertexBuffer&) = default;
+    VertexBuffer& operator=(const VertexBuffer&) = default;
+
     VertexBuffer(VertexBuffer&&) = default;
     VertexBuffer& operator=(VertexBuffer&&) = default;
 

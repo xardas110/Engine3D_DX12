@@ -108,10 +108,14 @@ class Mesh
     friend class MeshManager;
     friend class Raytracing;
 public:
+    Mesh();
+
+    Mesh(const Mesh& copy) = default;
+    Mesh& operator=(const Mesh&) = default;
 
     Mesh(Mesh&& move) = default;
     Mesh& operator=(Mesh&&) = default;
-
+   
     virtual ~Mesh();
 
     void Draw(CommandList& commandList);
@@ -132,9 +136,6 @@ private:
     friend class AssetManager;
     friend struct std::default_delete<Mesh>;
 
-    Mesh();
-    Mesh(const Mesh& copy) = delete;
-    
     void Initialize(CommandList& commandList, VertexCollection& vertices, IndexCollection32& indices, bool rhcoords);
     void InitializeBlas(CommandList& commandList);
 
@@ -149,8 +150,8 @@ private:
 
 struct MeshInstanceWrapper
 {
-    MeshInstanceWrapper(Transform& trans, MeshInstance instance)
-        :trans(trans), instance(instance) {}
+    MeshInstanceWrapper(Transform& trans, MeshInstance instance, bool bHasOpacity)
+        :trans(trans), instance(instance), bHasOpacity(bHasOpacity) {}
 
     Transform& trans; //complete world transform
     MeshInstance instance;

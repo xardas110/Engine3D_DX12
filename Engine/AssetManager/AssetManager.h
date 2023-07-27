@@ -30,11 +30,6 @@ private:
 	static std::unique_ptr<AssetManager>	CreateInstance();
 
 public:
-	template<typename TClass, typename TRet, typename ...Args>
-	void AttachMeshCreatedEvent(TRet(TClass::* func) (Args...), TClass* obj)
-	{
-		m_MeshManager->meshData.AttachMeshCreatedEvent(func, obj);
-	};
 
 	const SRVHeapData&		GetSRVHeapData() const;
 

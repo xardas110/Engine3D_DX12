@@ -37,6 +37,9 @@ class IndexBuffer : public Buffer
 public:
     IndexBuffer( const std::wstring& name = L"");
 
+    IndexBuffer(const IndexBuffer&) = default;
+    IndexBuffer& operator=(const IndexBuffer&) = default;
+
     IndexBuffer(IndexBuffer&&) = default;
     IndexBuffer& operator=(IndexBuffer&&) = default;
 

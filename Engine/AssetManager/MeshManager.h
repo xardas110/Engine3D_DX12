@@ -25,9 +25,8 @@ class MeshManager
 	friend class MeshManagerAccess;
 	friend class MeshManagerTest;
 private:
-
 	MeshManager(const SRVHeapData& srvHeapData);
-
+public:
 	MeshManager(const MeshManager&) = delete;
 	MeshManager& operator=(const MeshManager&) = delete;
 
@@ -35,8 +34,6 @@ private:
 	MeshManager& operator=(MeshManager&&) = delete;
 
 	~MeshManager() = default;
-
-public:
 
 	std::optional<MeshInstance> CreateMesh(
 		const std::wstring& name,
@@ -169,7 +166,7 @@ auto MeshManager::GetMeshGPUHandle(const MeshInstance meshInstance) const
 	if (!meshInstance.IsValid())
 		return MeshInfo();
 
-	SHARED_LOCK(MeshRegistryGPUHandle, meshRegistry.gpuHeapHandles);
+	SHARED_LOCK(MeshRegistryGPUHandle, meshRegistry.gpuHeapHandlesMutex);
 	return meshRegistry.gpuHeapHandles[meshInstance.id];
 }
 

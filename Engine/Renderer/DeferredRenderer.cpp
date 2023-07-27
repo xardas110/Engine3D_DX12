@@ -193,7 +193,7 @@ std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(
         auto& view = registry.view<TransformComponent, MeshComponent, MaterialComponent, RelationComponent>();
         for (auto [entity, transform, mesh, material, relation] : view.each())
         {
-            MeshInstanceWrapper wrap(transform, mesh);
+            MeshInstanceWrapper wrap(transform, mesh, material.HasOpacity());
 
             if (mesh.IsPointlight())
             { 
@@ -265,7 +265,7 @@ void DeferredRenderer::ExecuteGBufferPass(
 
     for (int i = 0; i < meshInstances.size(); i++)
     {
-        auto& [transform, meshInstance] = meshInstances[i];
+        auto& [transform, meshInstance, bHasOpacity] = meshInstances[i];
 
         if (meshInstance.IsPointlight())
         {
@@ -965,7 +965,7 @@ void DeferredRenderer::CachePreviousFrameData(std::vector<MeshInstanceWrapper>& 
 {
     for (size_t i = 0; i < meshInstances.size(); i++)
     {
-        auto& [transform, mesh] = meshInstances[i];
+        auto& [transform, mesh, bHasOpacity] = meshInstances[i];
         m_LastFrameMeshTransforms[i] = transform;
     }
 
@@ -1029,19 +1029,21 @@ void DeferredRenderer::SetupLightDataConstantBuffer(
     XMStoreFloat3(&lightDataCB.lights[0].pos, -directionalLight.GetData().direction);
     lightDataCB.numLights++;
 
+    /*
     for (size_t i = 0; i < pointLights.size(); i++)
     {
         if (i + 1 >= MAX_LIGHTS) break;
 
         auto& ptLight = pointLights[i];
         lightDataCB.numLights++;
-
+        
         auto& mat = ptLight.instance.GetMaterialColor();
 
         lightDataCB.lights[i + 1].type = LIGHT_POINT;
         lightDataCB.lights[i + 1].intensity = XMFLOAT3(20.f, 20.f, 20.f);
         XMStoreFloat3(&lightDataCB.lights[i + 1].pos, ptLight.trans.pos);
     }
+    */
 }
 
 void DeferredRenderer::SetupRaytracingConstantBuffer(RaytracingDataCB& rtData, int listbox_item_debug, Window& window)

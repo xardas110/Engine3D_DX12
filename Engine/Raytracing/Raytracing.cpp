@@ -53,8 +53,8 @@ void AllocateUploadBuffer(ID3D12Device* pDevice, void* pData, UINT64 datasize, I
 
 Raytracing::Raytracing()
 {
-    auto* assetManager = Application::Get().GetAssetManager();
-    assetManager->AttachMeshCreatedEvent(&Raytracing::OnMeshCreated, this);
+    //auto* assetManager = Application::Get().GetAssetManager();
+    //assetManager->AttachMeshCreatedEvent(&Raytracing::OnMeshCreated, this);
 }
 
 void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::vector<MeshInstanceWrapper>& meshWrapperInstances, MeshManager& meshManager, UINT backbufferIndex)
