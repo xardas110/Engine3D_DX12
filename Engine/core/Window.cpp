@@ -308,6 +308,12 @@ void Window::OnMouseWheel(MouseWheelEventArgs& e)
 
 void Window::OnResize(ResizeEventArgs& e)
 {
+    if (e.Width < 16 || e.Height < 16)
+    {
+        e.Width = 16;
+        e.Height = 16;
+    }
+
     // Update the client size.
     if (m_ClientWidth != e.Width || m_ClientHeight != e.Height)
     {

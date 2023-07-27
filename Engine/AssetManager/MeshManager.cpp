@@ -71,7 +71,7 @@ std::optional<MeshInstance> MeshManager::CreateMesh(
 	auto currentIndex = 0;
 
 	{
-		//UNIQUE_LOCK(ReleasedMeshIDs, releasedMeshIDsMutex);
+		UNIQUE_LOCK(ReleasedMeshIDs, releasedMeshIDsMutex);
 		if (!releasedMeshIDs.empty())
 		{
 			currentIndex = releasedMeshIDs.front();
@@ -83,7 +83,7 @@ std::optional<MeshInstance> MeshManager::CreateMesh(
 		}
 	}
 	{
-		//SCOPED_UNIQUE_LOCK(meshRegistry.mapMutex, meshRegistry.meshesMutex, meshRegistry.gpuHeapHandlesMutex);
+		SCOPED_UNIQUE_LOCK(meshRegistry.mapMutex, meshRegistry.meshesMutex, meshRegistry.gpuHeapHandlesMutex);
 		meshRegistry.map[name] = MeshInstance(currentIndex);
 		meshRegistry.meshes.emplace_back(std::move(mesh));
 		meshRegistry.gpuHeapHandles.emplace_back(gpuHeapHandles);

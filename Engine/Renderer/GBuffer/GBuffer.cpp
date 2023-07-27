@@ -30,7 +30,7 @@ void GBuffer::CreateRenderTarget(int width, int height)
     albedoDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     albedoDesc.MipLevels = 1;
 
-    auto normalRoughDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_UNORM, width, height);
+    auto normalRoughDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_SNORM, width, height);
     normalRoughDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     normalRoughDesc.MipLevels = 1;
 

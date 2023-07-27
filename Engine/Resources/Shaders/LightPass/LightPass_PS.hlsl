@@ -256,7 +256,7 @@ float2 GetBlueNoise(uint2 pixelPos, uint seed, uint sampleIndex, uint sppVirtual
     return saturate(blue.xy);
 }
 
-// Test opacity of a hit point and modify the opacity value accordingly
+// Test opacity of a hit point
 bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5, uint anyhitFlags = 0)
 {
     MeshInfo meshInfo = g_GlobalMeshInfo[hit.instanceIndex];
@@ -269,11 +269,11 @@ bool TestOpacity(in HitAttributes hit, inout float opacity, float cutOff = 0.5, 
 
     opacity = hitSurfaceMaterial.opacity;
 
-    if (hitSurfaceMaterial.opacity < cutOff && materialInfo.flags & INSTANCE_ALPHA_CUTOFF)
+    if (hitSurfaceMaterial.opacity < cutOff) //&& materialInfo.flags & INSTANCE_ALPHA_CUTOFF)
         return true;
 
-    if (ANY_HIT_FLAGS_SKIP_BLEND & anyhitFlags && materialInfo.flags & INSTANCE_ALPHA_BLEND)
-        return true;
+    //if (ANY_HIT_FLAGS_SKIP_BLEND & anyhitFlags && materialInfo.flags & INSTANCE_ALPHA_BLEND)
+    //    return true;
 
     return false;
 }
@@ -687,7 +687,7 @@ PixelShaderOutput main(float2 TexCoord : TEXCOORD)
     OUT.rtDebug = float4(0.f, 0.f, 0.f, 0.f);
 
     // Compute translucent pass
-    TranslucentPass(TexCoord, rngState, float3(1.f, 1.f, 1.f), OUT.TransparentColor);
+    //TranslucentPass(TexCoord, rngState, float3(1.f, 1.f, 1.f), OUT.TransparentColor);
 
     // Compute direct lighting from G-buffer
     if (!DirectLightGBuffer(TexCoord, rngState, viewZ, OUT.DirectLight, OUT.ShadowData))

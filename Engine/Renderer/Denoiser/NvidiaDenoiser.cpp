@@ -124,7 +124,7 @@ NvidiaDenoiser::NvidiaDenoiser(int width, int height, DenoiserTextures& texs)
 		auto& current = nriTextures[nriTypes::inNormalRoughness];
 
 		nriTextures[nriTypes::inNormalRoughness].entryFormat =
-			nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R16G16B16A16_UNORM);
+			nri::ConvertDXGIFormatToNRI(DXGI_FORMAT_R16G16B16A16_SNORM);
 
 		NRDERRORCHECK(NRI.CreateTextureD3D12(*m_NRIDevice, normalRoughDesc, current.texture));
 
