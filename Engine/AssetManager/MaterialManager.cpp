@@ -184,7 +184,7 @@ void MaterialManager::DecreaseRefCount(const MaterialID materialID)
 	{
 		if (materialRegistry.refCounts[materialID].fetch_sub(1, std::memory_order_relaxed) == 1)
 		{
-			ReleaseMaterial(materialID);
+			//ReleaseMaterial(materialID);
 		}
 	}
 }

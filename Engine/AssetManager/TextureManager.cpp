@@ -142,7 +142,7 @@ void TextureManager::DecreaseRefCount(const TextureID textureID)
     if (textureRegistry.refCounts[textureID].fetch_sub(1) != 1)
         return;
 
-    ReleaseTexture(textureID);
+   // ReleaseTexture(textureID);
 }
 
 void TextureManager::ReleaseTexture(const TextureID textureID)

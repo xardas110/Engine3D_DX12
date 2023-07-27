@@ -89,7 +89,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
 
     std::vector<MeshInfo> globalMeshInfo;
     std::vector<MeshInstanceWrapper> pointLights; 
-    auto meshInstances = GetMeshInstances(game->registry, globalMeshInfo , &pointLights);
+    auto meshInstances = GetMeshInstances(game->registry, game, globalMeshInfo , &pointLights);
     m_LastFrameMeshTransforms.resize(meshInstances.size());
 
     ObjectCB objectCB;
@@ -184,6 +184,7 @@ void DeferredRenderer::SetupDLSSResolution(int width, int height)
 
 std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(
     entt::registry& registry, 
+    std::shared_ptr<Game> game,
     std::vector<MeshInfo>& meshGPUInstances,
     std::vector<MeshInstanceWrapper>* pointLights)
 {
@@ -192,8 +193,36 @@ std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(
     {
         auto& view = registry.view<TransformComponent, MeshComponent, MaterialComponent, RelationComponent>();
         for (auto [entity, transform, mesh, material, relation] : view.each())
-        {
-            MeshInstanceWrapper wrap(transform, mesh, material.HasOpacity());
+        {          
+            Transform worldTransform = transform;
+            
+            RelationComponent* currentRelation = &relation;
+            while (currentRelation)
+            {
+                if (currentRelation->HasParent())
+                { 
+                    Entity parentEntity(currentRelation->GetParent(), game);
+                    if (parentEntity.HasComponent<TransformComponent>())
+                    {
+                        auto newTransform = worldTransform.GetTransform() * parentEntity.GetComponent<TransformComponent>().GetTransform();
+                        worldTransform.SetTransform(newTransform);
+                    }
+                    if (parentEntity.HasComponent<RelationComponent>())
+                    {
+                        currentRelation = &parentEntity.GetComponent<RelationComponent>();
+                    }
+                    else
+                    {
+                        currentRelation = nullptr;
+                    }
+                }
+                else
+                {
+                    currentRelation = nullptr;
+                }
+            }
+                    
+            MeshInstanceWrapper wrap(worldTransform, mesh, material.HasOpacity());
 
             if (mesh.IsPointlight())
             { 
@@ -282,12 +311,10 @@ void DeferredRenderer::ExecuteGBufferPass(
         objectCB.prevModel = m_LastFrameMeshTransforms[i].GetTransform();
         objectCB.transposeInverseModel = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model));
         objectCB.objRotQuat = transform.rot;
-
-        //globalMeshInfo[meshID].objRot = transform.rot;
         objectCB.materialGPUID = MaterialInstanceAccess::GetMaterialID(globalMeshInfo[meshID].materialInstanceID);
 
         commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
-        auto meshData = assetManager->m_MeshManager->GetMeshData();
+        auto& meshData = assetManager->m_MeshManager->GetMeshData();
         meshData[meshID].Draw(*commandList);
     }
 

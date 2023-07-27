@@ -51,7 +51,7 @@ MeshInstance::MeshInstance(const std::wstring& name,
     const auto meshInstance = GetMeshManager()->CreateMesh(name, cmdList, rtCmdList, vertices, indices, rhcoords, calcTangent);
     if (meshInstance.has_value())
     {
-        *this = meshInstance.value();
+        this->id = meshInstance.value().id;
     }
 }
 
@@ -139,7 +139,7 @@ Mesh::~Mesh()
     // Allocated resources will be cleaned automatically when the pointers go out of scope.
 }
 
-void Mesh::Draw(CommandList& commandList)
+void Mesh::Draw(CommandList& commandList) const
 {
     commandList.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     commandList.SetVertexBuffer(0, m_VertexBuffer);

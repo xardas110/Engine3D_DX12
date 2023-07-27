@@ -69,7 +69,7 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::ve
 
     if (meshWrapperInstances.empty()) return;
 
-    auto meshes = Application::Get().GetAssetManager()->m_MeshManager->GetMeshData();
+    auto& meshes = Application::Get().GetAssetManager()->m_MeshManager->GetMeshData();
 
     for (auto[trans, mesh, bHasOpacity] : meshWrapperInstances)
     {

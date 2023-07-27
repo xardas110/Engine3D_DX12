@@ -71,7 +71,7 @@ std::optional<MeshInstance> MeshManager::CreateMesh(
 	auto currentIndex = 0;
 
 	{
-		UNIQUE_LOCK(ReleasedMeshIDs, releasedMeshIDsMutex);
+		//UNIQUE_LOCK(ReleasedMeshIDs, releasedMeshIDsMutex);
 		if (!releasedMeshIDs.empty())
 		{
 			currentIndex = releasedMeshIDs.front();
@@ -83,8 +83,7 @@ std::optional<MeshInstance> MeshManager::CreateMesh(
 		}
 	}
 	{
-		SCOPED_UNIQUE_LOCK(meshRegistry.mapMutex, meshRegistry.meshesMutex, meshRegistry.gpuHeapHandlesMutex);
-
+		//SCOPED_UNIQUE_LOCK(meshRegistry.mapMutex, meshRegistry.meshesMutex, meshRegistry.gpuHeapHandlesMutex);
 		meshRegistry.map[name] = MeshInstance(currentIndex);
 		meshRegistry.meshes.emplace_back(std::move(mesh));
 		meshRegistry.gpuHeapHandles.emplace_back(gpuHeapHandles);
@@ -168,7 +167,8 @@ bool MeshManager::IsMeshValid(const std::wstring& name) const
 	auto it = meshRegistry.map.find(name);
 	if (it == meshRegistry.map.end())
 		return false;
-	
+	UNIQUE_UNLOCK(MeshRegistryMap);
+
 	return IsMeshValid(it->second);
 }
 
@@ -205,7 +205,7 @@ void MeshManager::DecreaseRefCount(const MeshID meshID)
 	if (meshRegistry.refCounts[meshID].fetch_sub(1) != 1)
 		return;
 
-	ReleaseMesh(meshID);
+	//ReleaseMesh(meshID);
 }
 
 void MeshManager::ReleaseMesh(const MeshID meshID)

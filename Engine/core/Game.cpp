@@ -91,6 +91,8 @@ Entity Game::CreateStaticMesh(const std::string& tag, const std::string& path, U
     
     Entity root = CreateEntity(tag);
 
+    LOG_INFO("Creating static mesh: %s", tag.c_str());
+
     for (auto mesh : sm.meshes)
     {
         Entity child = CreateEntity(mesh.name);
@@ -103,15 +105,18 @@ Entity Game::CreateStaticMesh(const std::string& tag, const std::string& path, U
             rtCmdList,
             mesh.vertices, mesh.indices,
             meshFlags & MeshFlags::RHCoords, meshFlags & MeshFlags::CustomTangent);
-
+   
         MaterialColor materialColor = MaterialHelper::CreateMaterial(mesh.materialData);
         MaterialInfoCPU materialInfoCPU = MaterialInfoHelper::PopulateMaterialInfo(mesh, meshFlags);
         MaterialComponent materialComponent(meshNameWString, materialInfoCPU, materialColor);
         
         child.AddComponent<MeshComponent>(meshComponent);
         child.AddComponent<MaterialComponent>(materialComponent);
+        
         root.AddChild(child);
     }
+
+    LOG_INFO("Finished creating static mesh: %s", tag.c_str());
 
     cq->ExecuteCommandList(cmdList);
     cq->ExecuteCommandList(rtCmdList);

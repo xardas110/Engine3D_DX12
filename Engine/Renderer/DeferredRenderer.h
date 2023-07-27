@@ -53,6 +53,7 @@ class DeferredRenderer
 
 	std::vector<MeshInstanceWrapper> GetMeshInstances(
 		entt::registry& registry, 
+		std::shared_ptr<class Game> game,
 		std::vector<MeshInfo>& meshGPUInstances,
 		std::vector<MeshInstanceWrapper>* pointLights = nullptr);
 
@@ -159,6 +160,5 @@ class DeferredRenderer
 
 	int m_Width{}, m_Height{};
 	int m_NativeWidth{}, m_NativeHeight{};
-
 };
 

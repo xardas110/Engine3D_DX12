@@ -110,15 +110,15 @@ class Mesh
 public:
     Mesh();
 
-    Mesh(const Mesh& copy) = default;
-    Mesh& operator=(const Mesh&) = default;
+    Mesh(const Mesh& copy) = delete;
+    Mesh& operator=(const Mesh&) = delete;
 
     Mesh(Mesh&& move) = default;
     Mesh& operator=(Mesh&&) = default;
    
     virtual ~Mesh();
 
-    void Draw(CommandList& commandList);
+    void Draw(CommandList& commandList) const;
 
     static std::unique_ptr<Mesh> CreateCube(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, float size = 1, bool rhcoords = false);
 

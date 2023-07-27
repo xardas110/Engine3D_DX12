@@ -4,7 +4,7 @@
 #include <atomic>
 #include <array>
 
-#define ASSET_MANAGER_THREAD_SAFE true
+#define ASSET_MANAGER_THREAD_SAFE false
 
 #define TEXTURE_MANAGER_MAX_TEXTURES 50000
 #define MATERIAL_MANAGER_MAX_MATERIALS 10000
