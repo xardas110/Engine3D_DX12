@@ -64,6 +64,11 @@ MaterialInstance::~MaterialInstance()
 	GetMaterialManager()->DecreaseRefCount(materialID);
 }
 
+bool MaterialInstance::HasOpacity() const
+{
+	return GetMaterialManager()->HasOpacity(*this);
+}
+
 void MaterialInstance::SetFlags(const UINT flags)
 {
 	GetMaterialManager()->SetFlags(*this, flags);

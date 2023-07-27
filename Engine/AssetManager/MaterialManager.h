@@ -49,8 +49,11 @@ public:
     // Checks if a material instance is valid.
     bool IsMaterialValid(const MaterialInstance& materialInstance) const;
 
+    // Checks if material color or opacity texture has opacity.
+    bool HasOpacity(const MaterialInstance materialInstnace) const;
+
     // Retrieves a specific texture instance associated with a material.
-    std::optional<TextureInstance> GetTextureInstance(const MaterialInstance& materialInstance, MaterialType::Type type);
+    std::optional<TextureInstance> GetTextureInstance(const MaterialInstance& materialInstance, MaterialType::Type type) const;
 
     // Retrieves the name of the material.
     // If ThreadSafe is enabled, it returns a copy; otherwise, it returns a reference.
@@ -61,7 +64,7 @@ public:
     // Retrieves the color of the material.
     // If ThreadSafe is enabled, it returns a copy; otherwise, it returns a reference.
     template <bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
-    auto GetMaterialColor(const MaterialInstance& materialInstance)
+    auto GetMaterialColor(const MaterialInstance& materialInstance) const
         -> std::conditional_t<ThreadSafe, MaterialColor, const MaterialColor&>;
 
     // Retrieves the CPU flags for the material.
@@ -208,7 +211,7 @@ auto MaterialManager::GetMaterialName(const MaterialInstance& materialInstance) 
 
 // Retrieves the color associated with a material instance.
 template <bool ThreadSafe>
-auto MaterialManager::GetMaterialColor(const MaterialInstance& materialInstance)
+auto MaterialManager::GetMaterialColor(const MaterialInstance& materialInstance) const
 -> std::conditional_t<ThreadSafe, MaterialColor, const MaterialColor&>
 {
     // Check for thread safety requirements during compile-time.

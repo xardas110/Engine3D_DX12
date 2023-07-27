@@ -38,6 +38,8 @@ public:
 
     MaterialInstance::~MaterialInstance();
 
+    bool HasOpacity() const;
+
     void SetFlags(const UINT flags);
     void AddFlag(const UINT flag);
     UINT GetCPUFlags() const;

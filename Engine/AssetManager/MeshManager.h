@@ -59,6 +59,7 @@ public:
 	std::optional<MeshInstance> GetMeshInstance(const std::wstring& name) const;
 	std::optional<std::wstring> GetMeshName(const MeshInstance meshInstance) const;
 	std::optional<MeshRefCount> GetRefCount(const MeshInstance meshInstance) const;
+	std::optional<UINT>			GetMeshFlags(const MeshInstance meshInstance) const;
 
 	template<bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
 	auto GetMesh(const MeshInstance meshInstance) const

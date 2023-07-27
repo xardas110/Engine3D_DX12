@@ -10,6 +10,11 @@
 using namespace DirectX;
 using namespace Microsoft::WRL;
 
+MeshID MeshInstanceAccess::GetMeshID(const MeshInstance meshInstance)
+{
+    return meshInstance.id;
+}
+
 MeshManager* GetMeshManager()
 {
     return Application::Get().GetAssetManager()->m_MeshManager.get();
@@ -56,7 +61,7 @@ MeshInstance::MeshInstance(const MeshID id)
     GetMeshManager()->IncreaseRefCount(id);
 }
 
-auto MeshInstance::GetGPUInfo() const
+MeshInfo MeshInstance::GetGPUInfo() const
 {
     return GetMeshManager()->GetMeshGPUHandle(*this);
 }
@@ -109,6 +114,11 @@ void MeshInstance::AddFlags(UINT flags)
     GetMeshManager()->AddFlags(*this, flags);
 }
 
+UINT MeshInstance::GetFlags() const
+{
+    GetMeshManager()->GetMeshFlags(*this);
+}
+
 bool MeshInstance::IsPointlight()
 {
     //TODO
@@ -118,6 +128,23 @@ bool MeshInstance::IsPointlight()
 bool MeshInstance::IsValid() const
 {
     return GetMeshManager()->IsMeshValid(id);
+}
+
+Mesh::Mesh()
+    : m_IndexCount(0)
+{}
+
+Mesh::~Mesh()
+{
+    // Allocated resources will be cleaned automatically when the pointers go out of scope.
+}
+
+void Mesh::Draw(CommandList& commandList)
+{
+    commandList.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    commandList.SetVertexBuffer(0, m_VertexBuffer);
+    commandList.SetIndexBuffer(m_IndexBuffer);
+    commandList.DrawIndexed(m_IndexCount);
 }
 
 const D3D12_INPUT_ELEMENT_DESC VertexPositionNormalTexture::InputElements[] =
@@ -181,23 +208,6 @@ void CreateTangentAndBiTangent(VertexCollection& vertices, IndexCollection32& in
         XMStoreFloat3(&vertices[i1].bitTangent, bitangent);
         XMStoreFloat3(&vertices[i2].bitTangent, bitangent);
     }
-}
-
-Mesh::Mesh()
-    : m_IndexCount(0)
-{}
-
-Mesh::~Mesh()
-{
-    // Allocated resources will be cleaned automatically when the pointers go out of scope.
-}
-
-void Mesh::Draw(CommandList& commandList)
-{
-    commandList.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    commandList.SetVertexBuffer(0, m_VertexBuffer);
-    commandList.SetIndexBuffer(m_IndexBuffer);
-    commandList.DrawIndexed(m_IndexCount);
 }
 
 std::unique_ptr<Mesh> Mesh::CreateSphere(CommandList& commandList, std::shared_ptr<CommandList> rtCommandList, float diameter, size_t tessellation, bool rhcoords)

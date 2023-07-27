@@ -81,16 +81,15 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
     auto assetManager = Application::Get().GetAssetManager();
 
     auto& srvHeap = assetManager->m_SrvHeapData;
-    auto& globalMeshInfo = assetManager->m_MeshManager->instanceData.meshInfo;
     auto& globalMaterialInfo = assetManager->m_MaterialManager->GetMaterialGPUInfoData();
     auto& globalMaterialInfoCPU = assetManager->m_MaterialManager->GetMaterialCPUInfoData();
     auto& materials = assetManager->m_MaterialManager->GetMaterialColorData();
-    auto& meshInstanceData = assetManager->m_MeshManager->instanceData;
     const auto& textures = assetManager->m_TextureManager->GetTextures();
     auto& directionalLight = game->m_DirectionalLight;
 
-    std::vector<MeshInstanceWrapper> pointLights;
-    auto meshInstances = GetMeshInstances(game->registry, &pointLights);
+    std::vector<MeshInfo> globalMeshInfo;
+    std::vector<MeshInstanceWrapper> pointLights; 
+    auto meshInstances = GetMeshInstances(game->registry, globalMeshInfo , &pointLights);
     m_LastFrameMeshTransforms.resize(meshInstances.size());
 
     ObjectCB objectCB;
@@ -124,8 +123,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         objectCB,
         jitterMat,
         globalMeshInfo,
-        assetManager,
-        meshInstanceData);
+        assetManager);
     ExcecuteLightPass(
         commandList,
         srvHeap,
@@ -205,10 +203,9 @@ std::vector<MeshInstanceWrapper> DeferredRenderer::GetMeshInstances(
 
             MeshInfo gpuInfo = mesh.GetGPUInfo();
             gpuInfo.materialInstanceID = material;
-            
+            gpuInfo.objRot = transform.rot;
+            gpuInfo.flags = mesh.GetFlags();
             meshGPUInstances.emplace_back(gpuInfo);
-
-
             instances.emplace_back(wrap);           
         }
     }
@@ -247,8 +244,8 @@ void DeferredRenderer::ExecuteGBufferPass(
     std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap, 
     const std::vector<MaterialColor>& materials, const std::vector<MaterialInfoGPU>& globalMaterialInfo,
     std::vector<MeshInstanceWrapper>& meshInstances, ObjectCB& objectCB, 
-    const DirectX::XMMATRIX& jitterMat, std::vector<MeshInfo>& globalMeshInfo, 
-    AssetManager* assetManager, MeshManager::InstanceData& meshInstance)
+    const DirectX::XMMATRIX& jitterMat, const std::vector<MeshInfo>& globalMeshInfo, 
+    AssetManager* assetManager)
 {
     auto gfxCommandList = commandList->GetGraphicsCommandList();
 
@@ -268,27 +265,30 @@ void DeferredRenderer::ExecuteGBufferPass(
 
     for (int i = 0; i < meshInstances.size(); i++)
     {
-        auto& [transform, mesh] = meshInstances[i];
+        auto& [transform, meshInstance] = meshInstances[i];
 
-        if (mesh.IsPointlight())
+        if (meshInstance.IsPointlight())
         {
             continue;
         }
+
+        auto meshID = MeshInstanceAccess::GetMeshID(meshInstance);
 
         objectCB.model = transform.GetTransform();
         objectCB.mvp = objectCB.model * objectCB.view * objectCB.proj * jitterMat;
         objectCB.prevMVP = m_LastFrameMeshTransforms[i].GetTransform() * m_CachedCameraCB.prevView * m_CachedCameraCB.prevProj * jitterMat;
         objectCB.invTransposeMvp = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.mvp));
-        objectCB.meshId = mesh.id;
+        objectCB.meshId = meshID;
         objectCB.prevModel = m_LastFrameMeshTransforms[i].GetTransform();
         objectCB.transposeInverseModel = XMMatrixInverse(nullptr, XMMatrixTranspose(objectCB.model));
         objectCB.objRotQuat = transform.rot;
 
-        globalMeshInfo[mesh.id].objRot = transform.rot;
-        objectCB.materialGPUID = MaterialInstanceAccess::GetMaterialID(globalMeshInfo[mesh.id].materialInstanceID);
+        //globalMeshInfo[meshID].objRot = transform.rot;
+        objectCB.materialGPUID = MaterialInstanceAccess::GetMaterialID(globalMeshInfo[meshID].materialInstanceID);
 
         commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::ObjectCB, objectCB);
-        assetManager->m_MeshManager->meshData.meshes[meshInstance.meshIds[mesh.id]].mesh.Draw(*commandList);
+        auto meshData = assetManager->m_MeshManager->GetMeshData();
+        meshData[meshID].Draw(*commandList);
     }
 
     auto TransitionRenderTargetToPixelShaderResource = [&](UINT textureType) {

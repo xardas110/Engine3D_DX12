@@ -67,22 +67,22 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::ve
   
     std::vector<D3D12_RAYTRACING_INSTANCE_DESC> instanceDescs;
 
-    auto& meshes = meshManager.meshData.meshes;
-    auto& meshInstances = meshManager.instanceData;
-
     if (meshWrapperInstances.empty()) return;
 
-    for (auto[trans, mesh] : meshWrapperInstances)
-    {
-        const auto& internalMesh = meshes[meshInstances.meshIds[mesh.id]];
+    auto meshes = Application::Get().GetAssetManager()->m_MeshManager->GetMeshData();
 
-        if (!internalMesh.mesh.blas) continue;
+    for (auto[trans, mesh, bHasOpacity] : meshWrapperInstances)
+    {
+        auto meshID = MeshInstanceAccess::GetMeshID(mesh);
+        const auto& internalMesh = meshes[meshID];
+
+        if (!internalMesh.blas) continue;
 
         auto transform = trans.GetTransform();
 
         D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
        
-        instanceDesc.InstanceID = mesh.id;
+        instanceDesc.InstanceID = meshID;
 
         instanceDesc.Transform[0][0] = transform.r[0].m128_f32[0];
         instanceDesc.Transform[1][0] = transform.r[0].m128_f32[1];
@@ -100,7 +100,7 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::ve
         instanceDesc.Transform[1][3] = transform.r[3].m128_f32[1];
         instanceDesc.Transform[2][3] = transform.r[3].m128_f32[2];
 
-        if (mesh.HasOpacity())
+        if (bHasOpacity)
         {
             instanceDesc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_FORCE_NON_OPAQUE;
             instanceDesc.InstanceMask |= INSTANCE_TRANSLUCENT;
@@ -116,7 +116,7 @@ void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::ve
             instanceDesc.InstanceMask |= INSTANCE_OPAQUE;
         }
 
-        instanceDesc.AccelerationStructure = internalMesh.mesh.blas->GetGPUVirtualAddress();
+        instanceDesc.AccelerationStructure = internalMesh.blas->GetGPUVirtualAddress();
         instanceDescs.emplace_back(instanceDesc);
     }
 

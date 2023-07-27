@@ -149,6 +149,27 @@ bool MaterialManager::IsMaterialValid(const MaterialInstance& materialInstance) 
 	return IsMaterialValid(materialInstance.materialID);
 }
 
+bool MaterialManager::HasOpacity(const MaterialInstance materialInstnace) const
+{
+	if (!IsMaterialValid(materialInstnace))
+		return false;
+
+	auto materialColor = GetMaterialColor(materialInstnace);
+
+	if (materialColor.diffuse.w < 1.f)
+		return true;
+
+	auto opacityTexture = GetTextureInstance(materialInstnace, MaterialType::opacity);
+
+	if (!opacityTexture.has_value())
+		return false;
+
+	if (!opacityTexture.value().IsValid())
+		return false;
+
+	return true;
+}
+
 void MaterialManager::IncreaseRefCount(const MaterialID materialID)
 {
 	if (IsMaterialValid(materialID))
@@ -242,7 +263,7 @@ void MaterialManager::AddFlags(const MaterialInstance& materialInstance, const U
 	materialRegistry.cpuInfo[materialInstance.materialID].flags |= flags;
 }
 
-std::optional<TextureInstance> MaterialManager::GetTextureInstance(const MaterialInstance& materialInstance, MaterialType::Type type)
+std::optional<TextureInstance> MaterialManager::GetTextureInstance(const MaterialInstance& materialInstance, MaterialType::Type type) const
 {
 	if (!IsMaterialValid(materialInstance.materialID))
 		return std::nullopt;

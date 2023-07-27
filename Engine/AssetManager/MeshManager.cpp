@@ -153,6 +153,15 @@ std::optional<MeshRefCount> MeshManager::GetRefCount(const MeshInstance meshInst
 	return meshRegistry.refCounts[meshInstance.id];
 }
 
+std::optional<UINT> MeshManager::GetMeshFlags(const MeshInstance meshInstance) const
+{
+	if (!IsMeshValid(meshInstance))
+		return std::nullopt;
+
+	SHARED_LOCK(MeshRegistryGpuHandles, meshRegistry.gpuHeapHandlesMutex);
+	return meshRegistry.gpuHeapHandles[meshInstance.id].flags;
+}
+
 bool MeshManager::IsMeshValid(const std::wstring& name) const
 {
 	SHARED_LOCK(MeshRegistryMap, meshRegistry.mapMutex);

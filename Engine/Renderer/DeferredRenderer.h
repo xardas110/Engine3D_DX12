@@ -91,8 +91,8 @@ class DeferredRenderer
 		std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap,
 		const std::vector<MaterialColor>& materials, const std::vector<MaterialInfoGPU>& globalMaterialInfo,
 		std::vector<MeshInstanceWrapper>& meshInstances, ObjectCB& objectCB,
-		const DirectX::XMMATRIX& jitterMat, std::vector<MeshInfo>& globalMeshInfo,
-		AssetManager* assetManager, MeshManager::InstanceData& meshInstance);
+		const DirectX::XMMATRIX& jitterMat, const std::vector<MeshInfo>& globalMeshInfo,
+		AssetManager* assetManager);
 
 	void ExcecuteLightPass(
 		std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap, 

@@ -20,6 +20,7 @@
 #define MESH_INVALID 0xffffffff
 
 class MeshManager;
+struct MeshInstance;
 
 using MeshID = std::uint32_t;
 using MeshRefCount = std::uint32_t;
@@ -52,9 +53,18 @@ inline MeshFlags::Flags operator|(MeshFlags::Flags a, MeshFlags::Flags b)
     return static_cast<MeshFlags::Flags>(static_cast<int>(a) | static_cast<int>(b));
 }
 
+class MeshInstanceAccess
+{
+    friend class DeferredRenderer;
+    friend class Raytracing;
+
+    static MeshID GetMeshID(const MeshInstance meshInstance);
+};
+
 struct MeshInstance
 {
     friend class MeshManager;
+    friend class MeshInstanceAccess;
 
     MeshInstance();
     MeshInstance(const std::wstring& name);
@@ -76,27 +86,19 @@ struct MeshInstance
 
     ~MeshInstance();
 
-    auto GetGPUInfo() const;
+    MeshInfo GetGPUInfo() const;
 
     void SetFlags(UINT flags);
     void AddFlags(UINT flags);
 
+    UINT GetFlags() const;
+
     bool IsValid() const;
     
-    // TODO: fix flags for mesh 
     bool IsPointlight();
 
 private:
     MeshID id{ MESH_INVALID };
-};
-
-struct MeshInstanceWrapper
-{
-    MeshInstanceWrapper(Transform& trans, MeshInstance instance)
-        :trans(trans), instance(instance) {}
-
-    Transform& trans; //complete world transform
-    MeshInstance instance;
 };
 
 //Internal mesh
@@ -143,4 +145,14 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> scratchResource;
 
     UINT m_IndexCount;
+};
+
+struct MeshInstanceWrapper
+{
+    MeshInstanceWrapper(Transform& trans, MeshInstance instance)
+        :trans(trans), instance(instance) {}
+
+    Transform& trans; //complete world transform
+    MeshInstance instance;
+    bool bHasOpacity{ false };
 };
