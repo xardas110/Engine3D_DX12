@@ -14,7 +14,7 @@ TextureInstance::TextureInstance()
 TextureInstance::TextureInstance(TextureID textureID)
     :textureID(textureID)
 {
-    Application::Get().GetAssetManager()->m_TextureManager->IncreaseRefCount(textureID);  // Increase ref count
+    Application::Get().GetAssetManager()->m_TextureManager->IncreaseRefCount(textureID);
 }
 
 TextureInstance::TextureInstance(const std::wstring& path)
@@ -25,7 +25,7 @@ TextureInstance::TextureInstance(const std::wstring& path)
 TextureInstance::TextureInstance(const TextureInstance& other)
     :textureID(other.textureID)
 {
-    Application::Get().GetAssetManager()->m_TextureManager->IncreaseRefCount(other.textureID);  // Increase ref count
+    Application::Get().GetAssetManager()->m_TextureManager->IncreaseRefCount(other.textureID);
 }
 
 TextureInstance::TextureInstance(TextureInstance&& other) noexcept

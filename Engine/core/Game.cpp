@@ -98,7 +98,7 @@ Entity Game::CreateStaticMesh(const std::string& tag, const std::string& path, U
     {
         Entity child = CreateEntity(mesh.name);
 
-        const auto meshNameWithNr = mesh.name;
+        const auto meshNameWithNr = mesh.name + std::to_string(i++);
         const auto meshNameWString = std::wstring(meshNameWithNr.begin(), meshNameWithNr.end());
 
         auto meshComponent = MeshComponent(

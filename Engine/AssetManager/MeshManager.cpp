@@ -71,7 +71,6 @@ std::optional<MeshInstance> MeshManager::CreateMesh(
 	auto currentIndex = 0;
 
 	{
-		UNIQUE_LOCK(ReleasedMeshIDs, releasedMeshIDsMutex);
 		if (!releasedMeshIDs.empty())
 		{
 			currentIndex = releasedMeshIDs.front();
@@ -83,7 +82,6 @@ std::optional<MeshInstance> MeshManager::CreateMesh(
 		}
 	}
 	{
-		SCOPED_UNIQUE_LOCK(meshRegistry.mapMutex, meshRegistry.meshesMutex, meshRegistry.gpuHeapHandlesMutex);
 		meshRegistry.map[name] = MeshInstance(currentIndex);
 		meshRegistry.meshes.emplace_back(std::move(mesh));
 		meshRegistry.gpuHeapHandles.emplace_back(gpuHeapHandles);
@@ -93,17 +91,11 @@ std::optional<MeshInstance> MeshManager::CreateMesh(
 	return meshRegistry.map[name];
 }
 
-bool MeshManager::IsMeshValid(const MeshInstance meshInstance) const
-{
-	return IsMeshValid(meshInstance.id);
-}
-
 void MeshManager::SetFlags(const MeshInstance meshInstance, const UINT meshFlags)
 {
 	if (!meshInstance.IsValid())
 		return;
 
-	UNIQUE_LOCK(MeshRegistryFlags, meshRegistry.flagsMutex);
 	meshRegistry.gpuHeapHandles[meshInstance.id].flags = meshFlags;
 }
 
@@ -117,7 +109,6 @@ void MeshManager::SetFlags(const std::wstring& meshName, const UINT meshFlags)
 	if (!meshInstance.value().IsValid())
 		return;
 
-	UNIQUE_LOCK(MeshRegistryFlags, meshRegistry.flagsMutex);
 	meshRegistry.gpuHeapHandles[meshInstance.value().id].flags = meshFlags;
 }
 
@@ -126,7 +117,6 @@ void MeshManager::AddFlags(const MeshInstance meshInstance, const UINT meshFlags
 	if (!meshInstance.IsValid())
 		return;
 
-	UNIQUE_LOCK(MeshRegistryFlags, meshRegistry.flagsMutex);
 	meshRegistry.gpuHeapHandles[meshInstance.id].flags |= meshFlags;
 }
 
@@ -140,7 +130,6 @@ void MeshManager::AddFlags(const std::wstring& meshName, const UINT meshFlags)
 	if (!meshInstance.value().IsValid())
 		return;
 
-	UNIQUE_LOCK(MeshRegistryFlags, meshRegistry.flagsMutex);
 	meshRegistry.gpuHeapHandles[meshInstance.value().id].flags |= meshFlags;
 }
 
@@ -157,17 +146,19 @@ std::optional<UINT> MeshManager::GetMeshFlags(const MeshInstance meshInstance) c
 	if (!IsMeshValid(meshInstance))
 		return std::nullopt;
 
-	SHARED_LOCK(MeshRegistryGpuHandles, meshRegistry.gpuHeapHandlesMutex);
 	return meshRegistry.gpuHeapHandles[meshInstance.id].flags;
+}
+
+bool MeshManager::IsMeshValid(const MeshInstance meshInstance) const
+{
+	return IsMeshValid(meshInstance.id);
 }
 
 bool MeshManager::IsMeshValid(const std::wstring& name) const
 {
-	SHARED_LOCK(MeshRegistryMap, meshRegistry.mapMutex);
 	auto it = meshRegistry.map.find(name);
 	if (it == meshRegistry.map.end())
 		return false;
-	UNIQUE_UNLOCK(MeshRegistryMap);
 
 	return IsMeshValid(it->second);
 }
@@ -178,7 +169,6 @@ bool MeshManager::IsMeshValid(const MeshID meshID) const
 		return false;
 
 	{
-		SHARED_LOCK(MeshRegistryMeshes, meshRegistry.meshesMutex);
 		if (meshID >= meshRegistry.meshes.size())
 			return false;
 
@@ -205,12 +195,14 @@ void MeshManager::DecreaseRefCount(const MeshID meshID)
 	if (meshRegistry.refCounts[meshID].fetch_sub(1) != 1)
 		return;
 
-	//ReleaseMesh(meshID);
+	ReleaseMesh(meshID);
 }
 
 void MeshManager::ReleaseMesh(const MeshID meshID)
 {	
-	SCOPED_UNIQUE_LOCK(releasedMeshIDsMutex, meshRegistry.mapMutex, meshRegistry.gpuHeapHandlesMutex, meshRegistry.meshesMutex);
+
+	LOG_INFO("Releaseing mesh with id: %i", (int)meshID);
+
 	releasedMeshIDs.emplace_back(meshID);
 	
 	meshRegistry.meshes[meshID] = Mesh();
@@ -235,7 +227,6 @@ std::optional<MeshInstance> MeshManager::GetMeshInstance(const std::wstring& nam
 	if (!IsMeshValid(name))
 		return std::nullopt;
 
-	SHARED_LOCK(MeshRegistryMap, meshRegistry.mapMutex);
 	auto it = meshRegistry.map.find(name);
 	if (it != meshRegistry.map.end())
 	{
@@ -250,13 +241,11 @@ std::optional<std::wstring> MeshManager::GetMeshName(const MeshInstance meshInst
 	if (!IsMeshValid(meshInstance))
 		return std::nullopt;
 
+	for (auto [name, instance] : meshRegistry.map)
 	{
-		SHARED_LOCK(MeshRegistryMap, meshRegistry.mapMutex);
-		for (auto [name, instance] : meshRegistry.map)
-		{
-			if (instance.id == meshInstance.id)
-				return name;
-		}
+		if (instance.id == meshInstance.id)
+			return name;
 	}
+	
 	return std::nullopt;
 }

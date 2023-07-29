@@ -47,24 +47,6 @@ std::optional<MaterialInstance> MaterialManager::CreateMaterial(
 {
     MaterialID currentIndex = 0;
 	
-	/*
-	bool bHasValidTexture = false;
-	for (size_t i = 0; i < MaterialType::NumMaterialTypes; i++)
-	{
-		if (textureIDs.textures[i].IsValid())
-		{ 
-			bHasValidTexture = true;
-			break;
-		}
-	}
-
-	if (!bHasValidTexture)
-	{
-		LOG_INFO("The provided MaterialInfo struct contains no valid texture instances");
-		return std::nullopt;
-	}
-	*/
-
     // Acquire necessary locks and either reuse or create material index.
     {
         SCOPED_UNIQUE_LOCK(
@@ -184,7 +166,7 @@ void MaterialManager::DecreaseRefCount(const MaterialID materialID)
 	{
 		if (materialRegistry.refCounts[materialID].fetch_sub(1, std::memory_order_relaxed) == 1)
 		{
-			//ReleaseMaterial(materialID);
+			ReleaseMaterial(materialID);
 		}
 	}
 }

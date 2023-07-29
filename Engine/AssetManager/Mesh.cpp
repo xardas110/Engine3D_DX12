@@ -51,7 +51,7 @@ MeshInstance::MeshInstance(const std::wstring& name,
     const auto meshInstance = GetMeshManager()->CreateMesh(name, cmdList, rtCmdList, vertices, indices, rhcoords, calcTangent);
     if (meshInstance.has_value())
     {
-        this->id = meshInstance.value().id;
+        *this = meshInstance.value();
     }
 }
 
