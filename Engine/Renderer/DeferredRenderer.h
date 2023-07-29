@@ -42,32 +42,12 @@ class DeferredRenderer
 
 	void LoadContent();
 
-	void Render(class Window& window, const RenderEventArgs& e);
+	void Render(const class Window& window, const RenderEventArgs& e);
 
 	void OnResize(ResizeEventArgs& e);
 
 	//Custom Subscription event sent by DLSS struct
 	void OnDlssChanged(const bool& bDlssOn, const NVSDK_NGX_PerfQuality_Value& qualityMode);
-
-	void Shutdown();
-
-	std::vector<MeshInstanceWrapper> GetMeshInstances(
-		entt::registry& registry, 
-		std::shared_ptr<class Game> game,
-		std::vector<MeshInfo>& meshGPUInstances,
-		std::vector<MeshInstanceWrapper>* pointLights = nullptr);
-
-	void SetRenderTexture(const Texture* texture)
-	{
-		renderTexture = texture;
-	}
-
-	const Texture* GetRenderTexture()
-	{
-		return renderTexture;
-	}
-	
-	DenoiserTextures GetDenoiserTextures();
 
 	void DeferredRenderer::SetupDLSSResolution(int width, int height);
 
@@ -77,38 +57,37 @@ class DeferredRenderer
 
 	void SetupCameraConstantBuffer(const Camera* camera, const DirectX::XMFLOAT2& scaledCameraJitter);
 
-	void SetupLightDataConstantBuffer(LightDataCB& lightDataCB, struct DirectionalLight& directionalLight, std::vector<MeshInstanceWrapper>& pointLights);
+	void SetupLightDataConstantBuffer(LightDataCB& lightDataCB, const struct DirectionalLight& directionalLight, std::vector<MeshInstanceWrapper>& pointLights);
 
-	void SetupRaytracingConstantBuffer(RaytracingDataCB& rtData, int listbox_item_debug, Window& window);
+	void SetupRaytracingConstantBuffer(RaytracingDataCB& rtData, int listbox_item_debug, const Window& window);
 
 	void ClearRenderTargets(std::shared_ptr<CommandList>& commandList);
 
 	void ExecuteAccelerationStructurePass(
 		std::shared_ptr<CommandList>& commandList,
-		std::vector<MeshInstanceWrapper>& meshInstances,
-		Window& window);
+		const std::vector<MeshInstanceWrapper>& meshInstances,
+		const Window& window);
 
 	void ExecuteGBufferPass(
-		std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap,
+		std::shared_ptr<CommandList>& commandList, const SRVHeapData& srvHeap,
 		const std::vector<MaterialColor>& materials, const std::vector<MaterialInfoGPU>& globalMaterialInfo,
-		std::vector<MeshInstanceWrapper>& meshInstances, ObjectCB& objectCB,
-		const DirectX::XMMATRIX& jitterMat, const std::vector<MeshInfo>& globalMeshInfo,
-		AssetManager* assetManager);
+		const std::vector<MeshInstanceWrapper>& meshInstances, ObjectCB& objectCB,
+		const DirectX::XMMATRIX& jitterMat, const std::vector<MeshInfo>& globalMeshInfo);
 
 	void ExcecuteLightPass(
-		std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap, 
+		std::shared_ptr<CommandList>& commandList, const SRVHeapData& srvHeap,
 		const std::vector<MaterialColor>& materials, const std::vector<MaterialInfoGPU>& globalMaterialInfo,
-		std::vector<MeshInfo>& globalMeshInfo, struct DirectionalLight& directionalLight, 
-		RaytracingDataCB& rtData, LightDataCB& lightDataCB);
+		const std::vector<MeshInfo>& globalMeshInfo, const struct DirectionalLight& directionalLight, 
+		const RaytracingDataCB& rtData, const LightDataCB& lightDataCB);
 
 	void ExecuteDenoisingPass(
 		std::shared_ptr<CommandList>& commandList,
-		const Camera* camera, Window& window);
+		const Camera* camera, const Window& window);
 
 	void ExecuteCompositionPass(
-		std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap,
+		std::shared_ptr<CommandList>& commandList, const SRVHeapData& srvHeap,
 		const std::vector<MaterialColor>& materials, const std::vector<MaterialInfoGPU>& globalMaterialInfo,
-		std::vector<MeshInfo>& globalMeshInfo, RaytracingDataCB& rtData);
+		const std::vector<MeshInfo>& globalMeshInfo, const RaytracingDataCB& rtData);
 
 	void ExecuteHistogramExposurePass(std::shared_ptr<CommandList>& commandList);
 
@@ -133,7 +112,25 @@ class DeferredRenderer
 	///
 	/// \param meshInstances The instances of meshes rendered in the current frame.
 	/// \param cameraCB The camera's constant buffer data for the current frame.
-	void CachePreviousFrameData(std::vector<MeshInstanceWrapper>& meshInstances, CameraCB& cameraCB);
+	void CachePreviousFrameData(const std::vector<MeshInstanceWrapper>& meshInstances, CameraCB& cameraCB);
+
+	std::vector<MeshInstanceWrapper> GetMeshInstances(
+		entt::registry& registry,
+		std::shared_ptr<class Game> game,
+		std::vector<MeshInfo>& meshGPUInstances,
+		std::vector<MeshInstanceWrapper>* pointLights = nullptr);
+
+	void SetRenderTexture(const Texture* texture)
+	{
+		renderTexture = texture;
+	}
+
+	const Texture* GetRenderTexture() const
+	{
+		return renderTexture;
+	}
+
+	DenoiserTextures GetDenoiserTextures();
 
 	CameraCB m_CachedCameraCB{};
 

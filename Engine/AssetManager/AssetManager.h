@@ -12,31 +12,26 @@
 class AssetManager
 {
 	friend class Application;
-	friend class TextureInstance;
-	friend class MaterialInstance;
-	friend class MeshInstance;
-	friend class DeferredRenderer;
-	friend class Editor;
-	friend class AssetManagerTest;
-
-	friend struct StaticMeshInstance;
-
 	friend class std::default_delete<AssetManager>;
 
 private:
 	AssetManager();
 	~AssetManager();
 
+	AssetManager(const AssetManager& other) = delete;
+	AssetManager& operator=(const AssetManager& other) = delete;
+
+	AssetManager(AssetManager&& other) = delete;
+	AssetManager& operator=(AssetManager&&) = delete;
+
 	static std::unique_ptr<AssetManager>	CreateInstance();
 
 public:
-
 	const SRVHeapData&		GetSRVHeapData() const;
 
-private:
-	SRVHeapData								m_SrvHeapData;
-public:
 	std::unique_ptr<TextureManager>			m_TextureManager;
 	std::unique_ptr<MaterialManager>		m_MaterialManager;
-	std::unique_ptr<MeshManager>			m_MeshManager;	
+	std::unique_ptr<MeshManager>			m_MeshManager;
+private:
+	SRVHeapData								m_SrvHeapData;
 };

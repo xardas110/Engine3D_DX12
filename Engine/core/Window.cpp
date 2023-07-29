@@ -103,8 +103,6 @@ void Window::Destroy()
         DestroyWindow(m_hWnd);
         m_hWnd = nullptr;
     }
-
-    m_DeferredRenderer.Shutdown();
 }
 
 int Window::GetClientWidth() const

@@ -12,11 +12,7 @@ public:
 
 	void UpdateUI();
 
-	const DirectionalLightCB& GetData()
-	{
-		data.tanAngularRadius = tan(DirectX::XMConvertToRadians(data.angularDiameter * 0.5f));
-		return data;
-	}
+	const DirectionalLightCB& GetData() const;
 
 private:
 	DirectionalLightCB data;

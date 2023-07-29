@@ -7,6 +7,8 @@ DirectionalLight::DirectionalLight()
     SetDirection(XMFLOAT3(-0.815f, -0.573f, 0.086f));
     SetColor(XMFLOAT3(1.f, 0.4f, 0.f));
     SetItensity(3.0f);
+
+    data.tanAngularRadius = tan(DirectX::XMConvertToRadians(data.angularDiameter * 0.5f));
 }
 
 void DirectionalLight::SetDirection(const XMFLOAT3 newDir)
@@ -43,4 +45,9 @@ void DirectionalLight::UpdateUI()
     ImGui::SliderFloat("Lux", &data.color.m128_f32[3], 0, 1000.f);
     ImGui::ColorPicker3("Color", &data.color.m128_f32[0], ImGuiColorEditFlags_Float);
     ImGui::End();
+}
+
+const DirectionalLightCB& DirectionalLight::GetData() const
+{
+    return data;
 }

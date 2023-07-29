@@ -66,7 +66,7 @@ void SetupObjectConstantBuffer(ObjectCB& inoutObjectCB, const Camera* camera)
     inoutObjectCB.invProj = XMMatrixInverse(nullptr, inoutObjectCB.proj);
 }
 
-void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
+void DeferredRenderer::Render(const Window& window, const RenderEventArgs& e)
 {
     if (!window.m_pGame.lock()) return;
     auto game = window.m_pGame.lock();
@@ -80,7 +80,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
 
     auto assetManager = Application::Get().GetAssetManager();
 
-    auto& srvHeap = assetManager->m_SrvHeapData;
+    auto& srvHeap = assetManager->GetSRVHeapData();
     auto& globalMaterialInfo = assetManager->m_MaterialManager->GetMaterialGPUInfoData();
     auto& globalMaterialInfoCPU = assetManager->m_MaterialManager->GetMaterialCPUInfoData();
     auto& materials = assetManager->m_MaterialManager->GetMaterialColorData();
@@ -122,8 +122,7 @@ void DeferredRenderer::Render(Window& window, const RenderEventArgs& e)
         meshInstances,
         objectCB,
         jitterMat,
-        globalMeshInfo,
-        assetManager);
+        globalMeshInfo);
     ExcecuteLightPass(
         commandList,
         srvHeap,
@@ -238,22 +237,21 @@ DenoiserTextures DeferredRenderer::GetDenoiserTextures()
 
 void DeferredRenderer::ExecuteAccelerationStructurePass(
     std::shared_ptr<CommandList>& commandList, 
-    std::vector<MeshInstanceWrapper>& meshInstances, 
-    Window& window)
+    const std::vector<MeshInstanceWrapper>& meshInstances, 
+    const Window& window)
 {
     auto gfxCommandList = commandList->GetGraphicsCommandList();
 
     PIXBeginEvent(gfxCommandList.Get(), 0, L"Building DXR structure");
-    m_Raytracer->BuildAccelerationStructure(*commandList, meshInstances, *Application::Get().GetAssetManager()->m_MeshManager.get(), window.m_CurrentBackBufferIndex);
+    m_Raytracer->BuildAccelerationStructure(*commandList, meshInstances, window.m_CurrentBackBufferIndex);
     PIXEndEvent(gfxCommandList.Get());
 }
 
 void DeferredRenderer::ExecuteGBufferPass( 
-    std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap, 
+    std::shared_ptr<CommandList>& commandList, const SRVHeapData& srvHeap, 
     const std::vector<MaterialColor>& materials, const std::vector<MaterialInfoGPU>& globalMaterialInfo,
-    std::vector<MeshInstanceWrapper>& meshInstances, ObjectCB& objectCB, 
-    const DirectX::XMMATRIX& jitterMat, const std::vector<MeshInfo>& globalMeshInfo, 
-    AssetManager* assetManager)
+    const std::vector<MeshInstanceWrapper>& meshInstances, ObjectCB& objectCB, 
+    const DirectX::XMMATRIX& jitterMat, const std::vector<MeshInfo>& globalMeshInfo)
 {
     auto gfxCommandList = commandList->GetGraphicsCommandList();
 
@@ -271,7 +269,7 @@ void DeferredRenderer::ExecuteGBufferPass(
     commandList->SetGraphicsDynamicStructuredBuffer(GBufferParam::GlobalMatInfo, globalMaterialInfo);
     commandList->SetGraphicsDynamicConstantBuffer(GBufferParam::CameraCB, m_CachedCameraCB);
 
-    const auto& meshData = assetManager->m_MeshManager->GetMeshData();
+    const auto& meshData = Application::Get().GetAssetManager()->m_MeshManager->GetMeshData();
     for (int i = 0; i < meshInstances.size(); i++)
     {
         auto& [transform, meshInstance, material] = meshInstances[i];
@@ -317,10 +315,10 @@ void DeferredRenderer::ExecuteGBufferPass(
 }
 
 void DeferredRenderer::ExcecuteLightPass(
-    std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap,
+    std::shared_ptr<CommandList>& commandList, const SRVHeapData& srvHeap,
     const std::vector<MaterialColor>& materials, const std::vector<MaterialInfoGPU>& globalMaterialInfo,
-    std::vector<MeshInfo>& globalMeshInfo, DirectionalLight& directionalLight,
-    RaytracingDataCB& rtData, LightDataCB& lightDataCB)
+    const std::vector<MeshInfo>& globalMeshInfo, const DirectionalLight& directionalLight,
+    const RaytracingDataCB& rtData, const LightDataCB& lightDataCB)
 {
     auto gfxCommandList = commandList->GetGraphicsCommandList();
 
@@ -407,7 +405,7 @@ void DeferredRenderer::ExcecuteLightPass(
 
 void DeferredRenderer::ExecuteDenoisingPass(
     std::shared_ptr<CommandList>& commandList, 
-    const Camera* camera, Window& window)
+    const Camera* camera, const Window& window)
 {
     auto gfxCommandList = commandList->GetGraphicsCommandList();
 
@@ -537,9 +535,9 @@ void DeferredRenderer::ExecuteDenoisingPass(
 }
 
 void DeferredRenderer::ExecuteCompositionPass(
-    std::shared_ptr<CommandList>& commandList, SRVHeapData& srvHeap, 
+    std::shared_ptr<CommandList>& commandList, const SRVHeapData& srvHeap, 
     const std::vector<MaterialColor>& materials, const std::vector<MaterialInfoGPU>& globalMaterialInfo,
-    std::vector<MeshInfo>& globalMeshInfo, RaytracingDataCB& rtData)
+    const std::vector<MeshInfo>& globalMeshInfo, const RaytracingDataCB& rtData)
 {
     auto gfxCommandList = commandList->GetGraphicsCommandList();
 
@@ -962,7 +960,7 @@ void DeferredRenderer::ExecuteCommandLists(std::shared_ptr<CommandQueue>& graphi
     PIXEndEvent(graphicsQueue->GetD3D12CommandQueue().Get());
 }
 
-void DeferredRenderer::CachePreviousFrameData(std::vector<MeshInstanceWrapper>& meshInstances, CameraCB& cameraCB)
+void DeferredRenderer::CachePreviousFrameData(const std::vector<MeshInstanceWrapper>& meshInstances, CameraCB& cameraCB)
 {
     for (size_t i = 0; i < meshInstances.size(); i++)
     {
@@ -1021,7 +1019,7 @@ void DeferredRenderer::SetupCameraConstantBuffer(const Camera* camera, const Dir
 
 void DeferredRenderer::SetupLightDataConstantBuffer(
     LightDataCB& lightDataCB, 
-    DirectionalLight& directionalLight, 
+    const DirectionalLight& directionalLight, 
     std::vector<MeshInstanceWrapper>& pointLights)
 {
     //Populate directional light first, to make sure it will always be importance sampled
@@ -1047,7 +1045,7 @@ void DeferredRenderer::SetupLightDataConstantBuffer(
     */
 }
 
-void DeferredRenderer::SetupRaytracingConstantBuffer(RaytracingDataCB& rtData, int listbox_item_debug, Window& window)
+void DeferredRenderer::SetupRaytracingConstantBuffer(RaytracingDataCB& rtData, int listbox_item_debug, const Window& window)
 {
     rtData.frameNumber = Application::GetFrameCount();
     rtData.debugSettings = listbox_item_debug;
@@ -1089,20 +1087,15 @@ void DeferredRenderer::OnResize(ResizeEventArgs& e)
     m_Width = res.x;
     m_Height = res.y;
 
-    std::cout << "Native Res: " << e.Width << "x" << e.Height << std::endl;
-    std::cout << "Dlss prefered res: " << res.x << "x" << res.y << std::endl;
+    LOG_INFO("Native Resolution: %ix%i", e.Width, e.Height);
+    LOG_INFO("DLSS Preferred Resolution: %ix%i", res.x, res.y);
 
     m_GBuffer->OnResize(m_Width, m_Height);
     m_LightPass->OnResize(m_Width, m_Height);
     m_CompositionPass->OnResize(m_Width, m_Height);
     m_DebugTexturePass->OnResize(m_NativeWidth, m_NativeHeight);
     
-    //Recreate the denoiser(nvidia documentation)
     m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height, GetDenoiserTextures()));
 
     m_HDR->OnResize(m_NativeWidth, m_NativeHeight);
-}
-
-void DeferredRenderer::Shutdown()
-{
 }

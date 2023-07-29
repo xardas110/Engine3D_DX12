@@ -57,7 +57,7 @@ Raytracing::Raytracing()
     //assetManager->AttachMeshCreatedEvent(&Raytracing::OnMeshCreated, this);
 }
 
-void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::vector<MeshInstanceWrapper>& meshWrapperInstances, MeshManager& meshManager, UINT backbufferIndex)
+void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, const std::vector<MeshInstanceWrapper>& meshWrapperInstances, UINT backbufferIndex)
 {
     if (!bUpdate) return;
 

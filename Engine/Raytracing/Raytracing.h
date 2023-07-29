@@ -30,7 +30,7 @@ class Raytracing
 
     Raytracing();
 
-    void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, std::vector<MeshInstanceWrapper>& meshWrapperInstances, MeshManager& meshManager, UINT backbufferIndex);
+    void Raytracing::BuildAccelerationStructure(CommandList& dxrCommandList, const std::vector<MeshInstanceWrapper>& meshWrapperInstances, UINT backbufferIndex);
 
     //Called when a new mesh is created, to insert into BLAS
     void OnMeshCreated(const Mesh& mesh);
