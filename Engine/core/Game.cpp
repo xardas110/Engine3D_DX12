@@ -146,15 +146,6 @@ void Game::OnUpdate(UpdateEventArgs& e)
     halt.y -= -0.5f;
 
     m_Camera.jitter = m_Camera.bJitter ? halt: DirectX::XMFLOAT2(0.f, 0.f);
-    
-    if (m_CameraController.forward > 0.f ||
-        m_CameraController.backward > 0.f ||
-        m_CameraController.left > 0.f ||
-        m_CameraController.right > 0.f)       
-    {
-        bCamMoved = true;
-    }
-
     m_PhysicsSystem.OnUpdate(e.ElapsedTime);
 }
 
@@ -250,8 +241,6 @@ void Game::OnMouseMoved(class MouseMotionEventArgs& e)
 
     if (e.RightButton)
     {        
-        bCamMoved = true;
-
         int relX = m_CameraController.globalMousePos.x - m_CameraController.previousGlobalMousePos.x;
         int relY = m_CameraController.globalMousePos.y - m_CameraController.previousGlobalMousePos.y;
 

@@ -18,5 +18,6 @@ protected:
 	virtual void OnUpdate(UpdateEventArgs& e);
 	virtual void OnGui(RenderEventArgs& e);
 
+	//TODO: weak ref
 	Game* game{nullptr};
 };

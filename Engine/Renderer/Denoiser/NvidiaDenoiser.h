@@ -130,6 +130,5 @@ class NvidiaDenoiser
 
 	const int width{}, height{};
 	DenoiserSettings denoiserSettings{};
-
 	nrd::SigmaSettings shadowSettings{};
 };

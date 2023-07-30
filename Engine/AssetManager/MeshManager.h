@@ -58,11 +58,11 @@ public:
 	std::optional<MeshRefCount> GetRefCount(const MeshInstance meshInstance) const;
 	std::optional<UINT>			GetMeshFlags(const MeshInstance meshInstance) const;
 
-	template<bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
+	template<bool ThreadSafe = false>
 	auto GetMesh(const MeshInstance meshInstance) const
 		->std::conditional_t<ThreadSafe, const Mesh*, const Mesh*>;
 
-	template<bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
+	template<bool ThreadSafe = false>
 	auto GetMesh(const std::wstring& name) const
 		->std::conditional_t<ThreadSafe, const Mesh*, const Mesh*>;
 
@@ -70,13 +70,27 @@ public:
 	auto GetMeshGPUHandle(const MeshInstance meshInstance) const
 		->std::conditional_t<ThreadSafe, const struct MeshInfo, const MeshInfo&>;
 
-	template<bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
+	// TODO: Make Mesh threadsafe
+	template<bool ThreadSafe = false>
 	auto GetMeshData() const
 		-> std::conditional_t<ThreadSafe, const std::vector<Mesh>&, const std::vector<Mesh>&>;
 
 	template<bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
 	auto GetMeshGPUHandlesData() const
 		->std::conditional_t<ThreadSafe, const std::vector<struct MeshInfo>, const std::vector<struct MeshInfo>&>;
+
+	// Attach to events.
+	template<typename TClass, typename TRet, typename ...Args>
+	void AttachToMeshCreatedEvent(TRet(TClass::* func) (Args...), TClass* obj)
+	{
+		meshInstanceCreatedEvent.attach(func, *obj);
+	}
+
+	template<typename TClass, typename TRet, typename ...Args>
+	void AttachToMeshDeletedEvent(TRet(TClass::* func) (Args...), TClass* obj)
+	{
+		meshInstanceDeletedEvent.attach(func, *obj);
+	}
 
 private:
 	
@@ -109,6 +123,9 @@ private:
 
 	} meshRegistry;
 
+	event::event<void(const MeshInstance&)> meshInstanceCreatedEvent;
+	event::event<void(const MeshID&)> meshInstanceDeletedEvent;
+
 	std::vector<MeshID> releasedMeshIDs;
 	CREATE_MUTEX(releasedMeshIDs);
 
@@ -126,7 +143,7 @@ bool MeshManager::IsMeshValid(std::conditional_t<ThreadSafe, const Mesh*, const 
 		return mesh->m_VertexBuffer.IsValid();
 	}
 
-	return mesh.m_VertexBuffer.IsValid();
+	return mesh->m_VertexBuffer.IsValid();
 }
 
 

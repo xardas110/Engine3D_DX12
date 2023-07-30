@@ -165,8 +165,8 @@ protected:
     virtual void OnWindowDestroy();
 
     std::shared_ptr<Window> m_pWindow;
-    DirectionalLight m_DirectionalLight;
 
+    DirectionalLight m_DirectionalLight;
     PhysicsSystem m_PhysicsSystem;
 
     entt::registry registry;
@@ -202,7 +202,4 @@ private:
         POINT previousGlobalMousePos;
 
     } m_CameraController;
-   
-    bool bCamMoved = false;
-
 };
