@@ -4,6 +4,7 @@ To build:
 1. Install the latest Vulkan and Windows SDK.
 2. Open the root folder with visual studio 2022 or any other IDE with Cmake support
 3. Right-Click CMakeLists.txt->delete and reconfigure then Select SponzaBin.exe as target.
+4. Run SponzaBin.exe in x64 debug/release
 
 ## Engine Information
 3D engine created for the game engine semester (2 Months).
