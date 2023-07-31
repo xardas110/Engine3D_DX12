@@ -15,9 +15,6 @@ private:
     static std::unique_ptr<TextureManager> CreateTextureManager(const SRVHeapData& srvHeapData);
 };
 
-// The TextureManager class utilizes the Factory and Flyweight design patterns, and follows a data-driven design for 
-// cache efficiency, this is better for wait free multithreading and CPU-GPU synchronization. It is responsible for creating Textures & Texture instances, 
-// managing their lifetimes. The TextureManager also uses mutexes for thread safety, which can be turned off for a wait-free multi threaded system.
 class TextureManager
 {  
     friend struct TextureInstance;

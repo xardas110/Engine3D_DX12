@@ -10,7 +10,9 @@
 
 class MaterialManager;
 
-// The MaterialManagerAccess class serves as an exclusive access point for creating the MaterialManagerAccess class. 
+// The MaterialManager class utilizes the Factory and Flyweight design patterns, and follows a data-driven design for 
+// cache efficiency, this is better for wait free multithreading and CPU-GPU synchronization. It is responsible for creating material instances, 
+// managing their lifetimes. The MaterialManager also uses mutexes for thread safety, which can be turned off for a wait-free multi threaded system.
 class MaterialManagerAccess
 {
     friend class AssetManager;
