@@ -6,7 +6,7 @@ DirectionalLight::DirectionalLight()
 {
     SetDirection(XMFLOAT3(-0.603f, -0.786f, -0.134f));
     SetColor(XMFLOAT3(1.f, 0.945f, 0.866f));
-    SetItensity(15.0f);
+    SetItensity(20.0f);
 }
 
 void DirectionalLight::SetDirection(const XMFLOAT3 newDir)

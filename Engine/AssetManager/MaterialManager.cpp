@@ -254,19 +254,19 @@ std::optional<TextureInstance> MaterialManager::GetTextureInstance(const Materia
 	return materialRegistry.cpuInfo[materialInstance.materialID].textures[type];
 }
 
-UINT MaterialManager::GetCPUFlags(const MaterialInstance& materialInstance) const
+std::optional<UINT> MaterialManager::GetCPUFlags(const MaterialInstance& materialInstance) const
 {
 	if (!IsMaterialValid(materialInstance.materialID))
-		return 0U;
+		return std::nullopt;
 
 	SHARED_LOCK(MaterialRegistryCPUInfo, materialRegistry.cpuInfoMutex);
 	return materialRegistry.cpuInfo[materialInstance.materialID].flags;
 }
 
-UINT MaterialManager::GetGPUFlags(const MaterialInstance& materialInstance) const
+std::optional<UINT> MaterialManager::GetGPUFlags(const MaterialInstance& materialInstance) const
 {
 	if (!IsMaterialValid(materialInstance.materialID))
-		return 0U;
+		return std::nullopt;
 
 	SHARED_LOCK(MaterialRegistryGPUInfo, materialRegistry.gpuInfoMutex);
 	return materialRegistry.gpuInfo[materialInstance.materialID].flags;

@@ -42,11 +42,10 @@ public:
 
     void SetFlags(const UINT flags);
     void AddFlag(const UINT flag);
-    UINT GetCPUFlags() const;
-    UINT GetGPUFlags() const;
+    std::optional<UINT> GetCPUFlags() const;
+    std::optional<UINT> GetGPUFlags() const;
 
 private:
-    MaterialManager* GetMaterialManager() const;
     MaterialID materialID{ MATERIAL_INVALID };
 };
 

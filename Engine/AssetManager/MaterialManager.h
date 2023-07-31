@@ -57,6 +57,12 @@ public:
     // Retrieves a specific texture instance associated with a material.
     std::optional<TextureInstance> GetTextureInstance(const MaterialInstance& materialInstance, MaterialType::Type type) const;
 
+    // Retrieves the CPU flags for the material.
+    std::optional<UINT> GetCPUFlags(const MaterialInstance& materialInstance) const;
+
+    // Retrieves the GPU flags for the material.
+    std::optional<UINT> GetGPUFlags(const MaterialInstance& materialInstance) const;
+
     // Retrieves the name of the material.
     // If ThreadSafe is enabled, it returns a copy; otherwise, it returns a reference.
     template <bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
@@ -68,12 +74,6 @@ public:
     template <bool ThreadSafe = ASSET_MANAGER_THREAD_SAFE>
     auto GetMaterialColor(const MaterialInstance& materialInstance) const
         -> std::conditional_t<ThreadSafe, MaterialColor, const MaterialColor&>;
-
-    // Retrieves the CPU flags for the material.
-    UINT GetCPUFlags(const MaterialInstance& materialInstance) const;
-
-    // Retrieves the GPU flags for the material.
-    UINT GetGPUFlags(const MaterialInstance& materialInstance) const;
 
     // Retrieves the CPU information for the material.
     // If ThreadSafe is enabled, it returns a copy; otherwise, it returns a reference.
@@ -236,7 +236,8 @@ template <>
 inline auto MaterialManager::GetMaterialCPUInfoData<true>() const
 {
     assert(ASSET_MANAGER_THREAD_SAFE &&
-        "This function is not thread safe since ASSET_MANAGER_THREAD_SAFE == false");
+        "Attempted to use a thread-safe function while ASSET_MANAGER_THREAD_SAFE is set to false. Ensure you enable thread safety when using this function.");
+
     SHARED_LOCK(MaterialRegistryCPUInfo, materialRegistry.cpuInfoMutex);
     return materialRegistry.cpuInfo;
 }
@@ -251,7 +252,7 @@ template <>
 inline auto MaterialManager::GetMaterialGPUInfoData<true>() const
 {
     assert(ASSET_MANAGER_THREAD_SAFE &&
-        "This function is not thread safe since ASSET_MANAGER_THREAD_SAFE == false");
+        "Attempted to use a thread-safe function while ASSET_MANAGER_THREAD_SAFE is set to false. Ensure you enable thread safety when using this function.");
 
     SHARED_LOCK(MaterialRegistryGPUInfo, materialRegistry.gpuInfoMutex);
     return materialRegistry.gpuInfo;
@@ -267,7 +268,7 @@ template <>
 inline auto MaterialManager::GetMaterialColorData<true>() const
 {
     assert(ASSET_MANAGER_THREAD_SAFE &&
-        "This function is not thread safe since ASSET_MANAGER_THREAD_SAFE == false");
+        "Attempted to use a thread-safe function while ASSET_MANAGER_THREAD_SAFE is set to false. Ensure you enable thread safety when using this function.");
 
     SHARED_LOCK(MaterialRegistryMaterialColors, materialRegistry.materialColorsMutex);
     return materialRegistry.materialColors;

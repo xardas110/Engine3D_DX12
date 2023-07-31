@@ -4,6 +4,11 @@
 #include <Application.h>
 #include <TypesCompat.h>
 
+MaterialManager* GetMaterialManager()
+{
+	return Application::Get().GetAssetManager()->m_MaterialManager.get();
+}
+
 MaterialID MaterialInstanceAccess::GetMaterialID(const MaterialInstance& materialInstance)
 {
 	return materialInstance.materialID;
@@ -79,19 +84,14 @@ void MaterialInstance::AddFlag(const UINT flag)
 	GetMaterialManager()->AddFlags(*this, flag);
 }
 
-UINT MaterialInstance::GetCPUFlags() const
+std::optional<UINT> MaterialInstance::GetCPUFlags() const
 {
 	return GetMaterialManager()->GetCPUFlags(*this);
 }
 
-UINT MaterialInstance::GetGPUFlags() const
+std::optional<UINT> MaterialInstance::GetGPUFlags() const
 {
 	return GetMaterialManager()->GetGPUFlags(*this);
-}
-
-MaterialManager* MaterialInstance::GetMaterialManager() const
-{
-	return Application::Get().GetAssetManager()->m_MaterialManager.get();
 }
 
 MaterialInfoCPU MaterialInfoHelper::PopulateMaterialInfo(const AssimpMesh& mesh, int flags)

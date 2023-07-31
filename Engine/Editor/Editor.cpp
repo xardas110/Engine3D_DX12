@@ -198,8 +198,6 @@ void Editor::UpdateGameMenuBar()
                 m_World->m_pWindow->SetFullscreen(fullscreen);
             }
 
-            ImGui::MenuItem("DockSpace Fullscreen", nullptr, &m_UI.bDockFullScreen);
-
             ImGui::EndMenu();
         }
 
