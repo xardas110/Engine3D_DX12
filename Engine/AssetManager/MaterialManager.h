@@ -248,6 +248,9 @@ inline auto MaterialManager::GetMaterialCPUInfoData<false>() const
 template <>
 inline auto MaterialManager::GetMaterialGPUInfoData<true>() const
 {
+    assert(ASSET_MANAGER_THREAD_SAFE &&
+        "This function is not thread safe since ASSET_MANAGER_THREAD_SAFE == false");
+
     SHARED_LOCK(MaterialRegistryGPUInfo, materialRegistry.gpuInfoMutex);
     return materialRegistry.gpuInfo;
 }
@@ -261,6 +264,9 @@ inline auto MaterialManager::GetMaterialGPUInfoData<false>() const
 template <>
 inline auto MaterialManager::GetMaterialColorData<true>() const
 {
+    assert(ASSET_MANAGER_THREAD_SAFE &&
+        "This function is not thread safe since ASSET_MANAGER_THREAD_SAFE == false");
+
     SHARED_LOCK(MaterialRegistryMaterialColors, materialRegistry.materialColorsMutex);
     return materialRegistry.materialColors;
 }

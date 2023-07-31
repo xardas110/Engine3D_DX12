@@ -69,7 +69,6 @@ private:
     const TextureInstance& CreateTexture(const std::wstring& path);
     void IncreaseRefCount(const TextureID textureID);
     void DecreaseRefCount(const TextureID textureID);
-    //TODO: Release the index handle in the descriptor table
     void ReleaseTexture(const TextureID textureID);
 
     // The registry that holds texture data
@@ -110,7 +109,7 @@ template <>
 inline auto TextureManager::GetTextures<true>() const
 {
     SHARED_LOCK(Textures, textureRegistry.texturesMutex);
-    return std::ref(textureRegistry.textures); //TODO: return a copy. This isn't thread safe.
+    return textureRegistry.textures; //TODO: return a copy. This isn't thread safe.
 }
 
 template <>

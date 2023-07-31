@@ -10,14 +10,14 @@
 using namespace DirectX;
 using namespace Microsoft::WRL;
 
-MeshID MeshInstanceAccess::GetMeshID(const MeshInstance meshInstance)
-{
-    return meshInstance.id;
-}
-
 MeshManager* GetMeshManager()
 {
     return Application::Get().GetAssetManager()->m_MeshManager.get();
+}
+
+MeshID MeshInstanceAccess::GetMeshID(const MeshInstance meshInstance)
+{
+    return meshInstance.id;
 }
 
 MeshInstance::MeshInstance()

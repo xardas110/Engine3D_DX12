@@ -171,18 +171,10 @@ protected:
 
     entt::registry registry;
 
-private:
 
-    std::wstring m_Name;
-    int m_Width;
-    int m_Height;
-    bool m_vSync;
-
+protected:
     //Window camera
     Camera m_Camera;
-
-    //Window Render camera. Weak Ref.
-    Camera* m_RenderCamera{ &m_Camera };
 
     struct CameraController
     {
@@ -202,4 +194,13 @@ private:
         POINT previousGlobalMousePos;
 
     } m_CameraController;
+
+private:    
+    //Window Render camera. Weak Ref.
+    Camera* m_RenderCamera{ &m_Camera };
+
+    std::wstring m_Name;
+    int m_Width;
+    int m_Height;
+    bool m_vSync;
 };

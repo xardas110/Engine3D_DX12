@@ -370,6 +370,15 @@ inline void PrintMatrix(const DirectX::XMMATRIX& mat)
     std::cout << std::endl;
 }
 
+inline void PrintVector(const DirectX::XMVECTOR& vec)
+{
+    for (size_t i = 0; i < 4; i++)
+    {  
+        std::cout << vec.m128_f32[i] << " ";
+    }
+    std::cout << std::endl;
+}
+
 inline std::uint32_t ReverseBits32(std::uint32_t x)
 {
     x = (x << 16) | (x >> 16);

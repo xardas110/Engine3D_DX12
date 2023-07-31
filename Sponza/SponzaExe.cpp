@@ -16,7 +16,11 @@ SponzaExe::~SponzaExe()
 {}
 
 bool SponzaExe::LoadContent()
-{
+{  
+    m_Camera.set_LookAt({ -13.f, 3.5f, 2.8f }, {0.f, 0.f, 0.f}, {0.f, 1.f, 0.f});
+    m_CameraController.pitch = 19.f;
+    m_CameraController.yaw = -230.f;
+
     {
         auto sponza = CreateStaticMesh("sponza", "Assets/Models/sponza/Sponza.fbx", 
             MeshFlags::ForceAlphaCutoff | MeshFlags::CustomTangent);
@@ -28,10 +32,10 @@ bool SponzaExe::LoadContent()
     return true;
 }
 
-void SponzaExe::UnloadContent()
-{}
-
 void SponzaExe::OnUpdate(UpdateEventArgs& e)
 {
-	Game::OnUpdate(e);
+	Game::OnUpdate(e);   
 }
+
+void SponzaExe::UnloadContent()
+{}

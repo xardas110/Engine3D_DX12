@@ -7,6 +7,11 @@
 #include <ResourceStateTracker.h>
 #include <AssetManager.h>
 
+TextureManager* GetTextureManager()
+{
+    return Application::Get().GetAssetManager()->m_TextureManager.get();
+}
+
 TextureInstance::TextureInstance()
     :textureID(TEXTURE_INVALID)
 {}
@@ -14,18 +19,18 @@ TextureInstance::TextureInstance()
 TextureInstance::TextureInstance(TextureID textureID)
     :textureID(textureID)
 {
-    Application::Get().GetAssetManager()->m_TextureManager->IncreaseRefCount(textureID);
+    GetTextureManager()->IncreaseRefCount(textureID);
 }
 
 TextureInstance::TextureInstance(const std::wstring& path)
 {
-    *this = Application::Get().GetAssetManager()->m_TextureManager->LoadTexture(path);
+    *this = GetTextureManager()->LoadTexture(path);
 }
 
 TextureInstance::TextureInstance(const TextureInstance& other)
     :textureID(other.textureID)
 {
-    Application::Get().GetAssetManager()->m_TextureManager->IncreaseRefCount(other.textureID);
+    GetTextureManager()->IncreaseRefCount(other.textureID);
 }
 
 TextureInstance::TextureInstance(TextureInstance&& other) noexcept
@@ -39,12 +44,12 @@ TextureInstance& TextureInstance::operator=(const TextureInstance& other)
 {
     if (this != &other)
     {     
-        Application::Get().GetAssetManager()->m_TextureManager->DecreaseRefCount(textureID);
+        GetTextureManager()->DecreaseRefCount(textureID);
 
         textureID = other.textureID;
 
         // Increase ref count for new texture
-        Application::Get().GetAssetManager()->m_TextureManager->IncreaseRefCount(textureID);
+        GetTextureManager()->IncreaseRefCount(textureID);
     }
     return *this;
 }
@@ -54,7 +59,7 @@ TextureInstance& TextureInstance::operator=(TextureInstance&& other) noexcept
     if (this != &other)
     {
         // Decrease the ref count of the current texture
-        Application::Get().GetAssetManager()->m_TextureManager->DecreaseRefCount(textureID);
+        GetTextureManager()->DecreaseRefCount(textureID);
 
         // Transfer ownership from other object
         textureID = other.textureID;
@@ -67,17 +72,17 @@ TextureInstance& TextureInstance::operator=(TextureInstance&& other) noexcept
 
 TextureInstance::~TextureInstance()
 {
-    Application::Get().GetAssetManager()->m_TextureManager->DecreaseRefCount(textureID);
+    GetTextureManager()->DecreaseRefCount(textureID);
 }
 
 bool TextureInstance::IsValid() const
 {
-    return Application::Get().GetAssetManager()->m_TextureManager->IsTextureInstanceValid(*this);
+    return GetTextureManager()->IsTextureInstanceValid(*this);
 }
 
 const std::optional<TextureGPUHandle> TextureInstance::GetTextureGPUHandle() const
 {
-    return Application::Get().GetAssetManager()->m_TextureManager->GetTextureGPUHandle(*this);
+    return GetTextureManager()->GetTextureGPUHandle(*this);
 }
 
 TextureInstance TextureInstance::GetBlackTexture()
