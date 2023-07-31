@@ -329,7 +329,7 @@ struct DirectionalLightCB
 
     float azimuth COMPAT_FLOAT(-147.f);
     float elevation COMPAT_FLOAT(45.f);
-    float angularDiameter COMPAT_FLOAT(8.0);
+    float angularDiameter COMPAT_FLOAT(0.5);
     float tanAngularRadius; //Tan( DegToRad( m_Settings.sunAngularDiameter * 0.5f ) ); in application
 };
 

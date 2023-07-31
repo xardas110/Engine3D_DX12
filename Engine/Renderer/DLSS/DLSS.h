@@ -105,7 +105,7 @@ private:
 	void ShutDown();
 
 	bool bDlssOn = false;
-	int list_item = 3; //balanced
+	int list_item = 0;
 
 	Texture resolvedTexture{};
 

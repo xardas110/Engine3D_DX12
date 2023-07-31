@@ -235,6 +235,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/Shaders"
     PUBLIC Libs/googletest/googletest/include
     PUBLIC Tests/AssetManager
+    PUBLIC Collision
  )
 
  set ( TARGET_LINK_LIBS
@@ -272,13 +273,13 @@ add_library( Engine STATIC
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
-    ${IMGUI_HEADERS} ${IMGUI_SOURCE} "Tests/AssetManager/TextureManagerTest.h"  "AssetManager/Shared/AssetManagerDefines.h" "AssetManager/Vertex.h" "AssetManager/Vertex.cpp")
+    ${IMGUI_HEADERS} ${IMGUI_SOURCE} "Tests/AssetManager/TextureManagerTest.h"  "AssetManager/Shared/AssetManagerDefines.h" "AssetManager/Vertex.h" "AssetManager/Vertex.cpp" "Collision/BoundingVolumes.h" "Collision/Octree.h")
 
  add_executable( EngineBin WIN32
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
-    ${IMGUI_HEADERS} ${IMGUI_SOURCE} "Tests/AssetManager/TextureManagerTest.h"  "AssetManager/Shared/AssetManagerDefines.h" "AssetManager/Vertex.h" "AssetManager/Vertex.cpp")
+    ${IMGUI_HEADERS} ${IMGUI_SOURCE} "Tests/AssetManager/TextureManagerTest.h"  "AssetManager/Shared/AssetManagerDefines.h" "AssetManager/Vertex.h" "AssetManager/Vertex.cpp" "Collision/BoundingVolumes.h" "Collision/Octree.h")
 
 target_link_libraries( Engine
 	${TARGET_LINK_LIBS}   

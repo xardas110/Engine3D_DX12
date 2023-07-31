@@ -16,6 +16,7 @@
 #include <TypesCompat.h>
 #include <WinPixEventRuntime/pix3.h>
 #include <HighResolutionClock.h>
+#include <Octree.h>
 
 using namespace DirectX;
 
@@ -40,6 +41,7 @@ DeferredRenderer::DeferredRenderer(int width, int height)
     m_Raytracer = std::unique_ptr<Raytracing>(new Raytracing());
     m_NvidiaDenoiser = std::unique_ptr<NvidiaDenoiser>(new NvidiaDenoiser(m_Width, m_Height, GetDenoiserTextures()));
     m_Skybox = std::unique_ptr<Skybox>(new Skybox(L"Assets/Textures/belfast_sunset_puresky_4k.hdr"));  
+    m_Octree = std::unique_ptr<Octree<OctreeEntity>>(new Octree<OctreeEntity>(AABB({ -500.f, -500.f, -500.f }, { 500.f, 500.f, 500.f })));
 }
 
 DeferredRenderer::~DeferredRenderer()
@@ -1053,7 +1055,7 @@ void DeferredRenderer::SetupRaytracingConstantBuffer(RaytracingDataCB& rtData, i
     rtData.hitParams = { hitParams.A, hitParams.B, hitParams.C, hitParams.D };
     rtData.frameIndex = window.m_CurrentBackBufferIndex;
 
-    static int numBounces = 3;
+    static int numBounces = 2;
     static float bounceAmbientStrength = 0.5f;
 
     ImGui::Begin("Raytracing Settings");

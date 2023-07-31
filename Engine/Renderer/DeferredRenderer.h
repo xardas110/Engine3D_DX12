@@ -1,4 +1,5 @@
 #pragma once
+#include <Octree.h>
 #include <Application.h>
 #include <RenderTarget.h>
 #include <Events.h>
@@ -154,6 +155,7 @@ class DeferredRenderer
 
 	std::unique_ptr<BlueNoise> m_BlueNoise;
 	std::unique_ptr<DebugTexturePass> m_DebugTexturePass;
+	std::unique_ptr<Octree<OctreeEntity>> m_Octree;
 
 	int m_Width{}, m_Height{};
 	int m_NativeWidth{}, m_NativeHeight{};

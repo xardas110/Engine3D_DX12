@@ -103,7 +103,7 @@ public:
     void XM_CALLCONV Translate( DirectX::FXMVECTOR translation, Space space = Space::Local );
     void Rotate( DirectX::FXMVECTOR quaternion );
 
-    bool bJitter = true;
+    bool bJitter = false;
     DirectX::XMFLOAT2 jitter{ 0.f, 0.f };
 
 protected:
